@@ -2,7 +2,10 @@
 
 use App\Events\ProductComissions;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CategoryProductsController;
 use App\Http\Controllers\ProductDetailsController;
+use App\Http\Controllers\ProductsIndexController;
+use App\Http\Controllers\ProductOrderController;
 use App\Http\Controllers\ProductComissionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
@@ -96,15 +99,20 @@ Route::middleware('auth')->prefix('/u/')->group(function () {
 
 
 
-Route::get('products', userProductsPage::class)->name('products.index');
-Route::get('category/{cat}/products', userProductsForCategoryPage::class)->name('category.products');
+Route::get('products/old', userProductsPage::class)->name('products.index.old');
+Route::get('products', [ProductsIndexController::class, 'index'])->name('products.index');
+Route::get('category/{cat}/products/old', userProductsForCategoryPage::class)->name('category.products.old');
+Route::get('category/{cat}/products', [CategoryProductsController::class, 'index'])->name('category.products');
 Route::get('category', userCategoriesPage::class)->name('category.index');
 
 Route::get('product/{id}/{slug}/old', userProductsDetailsPage::class)->name('products.details.old')->middleware('products.view.add');
 Route::get('product/{id}/{slug}', [ProductDetailsController::class, 'show'])->name('products.details')->middleware('products.view.add');
 Route::middleware('auth')->post('product/{id}/{slug}/task', [ProductDetailsController::class, 'countTask'])->name('products.details.task');
 
-Route::get('product/order/{id}/{slug}', SingleProductOrder::class)->name('product.makeOrder')->middleware('auth');
+Route::get('product/order/{id}/{slug}/old', SingleProductOrder::class)->name('product.makeOrder.old')->middleware('auth');
+Route::get('product/order/{id}/{slug}', [ProductOrderController::class, 'create'])->name('product.makeOrder')->middleware('auth');
+Route::post('product/order/{id}/{slug}', [ProductOrderController::class, 'store'])->name('product.makeOrder.store')->middleware('auth');
+Route::get('product/order/location/cities/{state}', [ProductOrderController::class, 'cities'])->name('product.makeOrder.cities')->middleware('auth');
 
 
 /**shops */

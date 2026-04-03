@@ -1,4 +1,4 @@
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import axios from "axios";
 
 export default function ProductCard({ product }) {
