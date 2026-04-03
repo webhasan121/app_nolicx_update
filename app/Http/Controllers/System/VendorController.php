@@ -10,10 +10,12 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use App\HandleVendor;
 use App\Http\Middleware\Owner;
+use App\Models\Product;
 use App\Models\vendor;
 use App\Models\vendor_has_document;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Can;
 use Spatie\Permission\Models\Permission;
@@ -155,6 +157,59 @@ class VendorController extends Controller
         // }
         $vendors = vendor::where(['status' => 'Pending'])->orderBy('id', 'desc')->get();
         return view('auth.system.vendors.index', compact('vendors'));
+    }
+
+    public function indexReact(Request $request)
+    {
+        $filter = $request->input('filter', 'Active');
+        $find = $request->input('find');
+
+        $query = vendor::query()
+            ->with('user')
+            ->orderBy('id', 'desc');
+
+        if ($filter !== '*') {
+            $query->where('status', $filter);
+        }
+
+        if (!empty($find)) {
+            $query->where('shop_name_en', 'like', '%' . $find . '%');
+        }
+
+        $vendors = $query->get()->map(function ($vendor) {
+            return [
+                'id' => $vendor->id,
+                'user_name' => $vendor->user?->name ?? 'N/A',
+                'shop_name_en' => $vendor->shop_name_en ?? 'N/A',
+                'email' => $vendor->user?->email ?? 'N/A',
+                'phone' => $vendor->user?->phone ?? 'N/A',
+                'location' => collect([
+                    $vendor->user?->upazila ?? 'N/A',
+                    $vendor->user?->district ?? 'N/A',
+                    $vendor->user?->country ?? 'N/A',
+                ])->join(', '),
+                'status' => $vendor->status ?? 'N/A',
+                'system_get_comission' => $vendor->system_get_comission ?? 'N/A',
+                'products_count' => Product::query()
+                    ->vendor()
+                    ->where('user_id', $vendor->user_id)
+                    ->count(),
+                'created_at_formatted' => $vendor->created_at?->toFormattedDateString(),
+            ];
+        })->values()->all();
+
+        return Inertia::render('Auth/system/vendors/index', [
+            'filter' => $filter,
+            'find' => $find,
+            'widgets' => [
+                ['title' => 'Total Vendor', 'content' => vendor::query()->count()],
+                ['title' => 'Pending', 'content' => vendor::query()->pending()->count()],
+                ['title' => 'Active', 'content' => vendor::query()->active()->count()],
+                ['title' => 'Disabled', 'content' => vendor::query()->disabled()->count()],
+                ['title' => 'Suspended', 'content' => vendor::query()->suspended()->count()],
+            ],
+            'vendors' => $vendors,
+        ]);
     }
 
     /**

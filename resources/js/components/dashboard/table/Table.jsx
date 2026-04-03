@@ -19,7 +19,7 @@ export default function Table({ data = [], children, ...props }) {
       </style>
 
       {data && data.length > 0 ? (
-        <table id="myTable" className="w-full mb-2 border border-collapse">
+        <table id="myTable" className="w-full mb-2 border-collapse border">
           {children}
         </table>
       ) : (

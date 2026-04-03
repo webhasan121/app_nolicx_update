@@ -39,8 +39,6 @@ use Inertia\Inertia;
 
 Route::get('/old', Welcome::class)->name('home.old');
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
-Route::get('/asnv', [WelcomeController::class, 'index'])->name('home');
-Route::get('/dfee', [WelcomeController::class, 'index'])->name('home');
 Route::middleware('auth')->post('/cart/add', [CartController::class, 'store']);
 
 Route::get('dashboard/old', function () {

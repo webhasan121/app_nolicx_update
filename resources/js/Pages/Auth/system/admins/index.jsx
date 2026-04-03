@@ -7,6 +7,7 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../components/dashboard/section/Section";
 import Table from "../../../../components/dashboard/table/Table";
+import NavLink from "../../../../components/NavLink";
 
 export default function Index() {
     const { admins = [] } = usePage().props;
@@ -36,19 +37,25 @@ export default function Index() {
                                     <tr key={item.id}>
                                         <td>{index + 1}</td>
                                         <td>{item.name ?? "N/A"}</td>
-                                        <td>{item.permissions_count ?? "N/A"}</td>
-                                        <td>{item.updated_at_formatted ?? "N/A"}</td>
                                         <td>
-                                            <form
-                                                action={route("system.users.edit", {
-                                                    id: item.id,
-                                                })}
-                                                method="get"
+                                            {item.permissions_count ?? "N/A"}
+                                        </td>
+                                        <td>
+                                            {item.updated_at_formatted ?? "N/A"}
+                                        </td>
+                                        <td>
+                                            <NavLink
+                                                href={route(
+                                                    "system.users.edit",
+                                                    {
+                                                        id: item.id,
+                                                    },
+                                                )}
                                             >
-                                                <PrimaryButton type="submit">
+                                                <PrimaryButton type="button">
                                                     Edit
                                                 </PrimaryButton>
-                                            </form>
+                                            </NavLink>
                                         </td>
                                     </tr>
                                 ))}

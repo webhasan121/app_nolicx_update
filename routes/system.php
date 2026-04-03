@@ -24,9 +24,7 @@ use App\Livewire\System\Geolocation\States;
 use App\Livewire\System\Geolocation\Cities;
 use App\Livewire\System\Geolocation\Area;
 use Illuminate\Auth\Middleware\Authenticate;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Livewire\Volt\Volt;
 
 use App\Livewire\System\Users\Edit as systemUserEditPage;
@@ -86,6 +84,8 @@ use App\Livewire\System\Vip\PrintSummery as VipPrintSummery;
 use App\Livewire\System\Withdraw\Pdf;
 use App\Models\DistributeComissions;
 use App\Models\TakeComissions;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -120,7 +120,8 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
          * route for vendor index
          * as per permision
          */
-        Route::get('/', vendorIndexPage::class)->name('vendor.index')->middleware(AbleTo::class . ":vendors_view");
+        Route::get('/old', vendorIndexPage::class)->name('vendor.index.old')->middleware(AbleTo::class . ":vendors_view");
+        Route::get('/', [VendorController::class, 'indexReact'])->name('vendor.index')->middleware(AbleTo::class . ":vendors_view");
         // Route::view('/', vendorIndexPage::class)->name('vendor.index');
 
 
@@ -158,28 +159,13 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::prefix('users')->group(function () {
 
         // permit to make users task
-        Route::get('/', systemUserIndexPage::class)->name('users.view')->middleware(AbleTo::class . ":users_view");
-        Route::get('/edit/{id}/old', systemUserEditPage::class)->name('users.edit.old')->middleware(AbleTo::class . ":users_edit");
-        Route::get('/edit/{id}', function ($id) {
-            $user = User::findOrFail($id);
+        Route::get('/old', systemUserIndexPage::class)->name('users.view.old')->middleware(AbleTo::class . ":users_view");
+        Route::get('/', [SystemUsersController::class, 'indexReact'])->name('users.view')->middleware(AbleTo::class . ":users_view");
 
-            return Inertia::render('Auth/system/users/Edit', [
-                'editUser' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'coin' => $user->coin,
-                    'reference' => $user->reference,
-                    'reference_owner_name' => $user->getReffOwner?->owner?->name,
-                    'roles' => $user->getRoleNames()->values()->all(),
-                    'permissions' => $user->getPermissionNames()->values()->all(),
-                    'permissions_via_role' => $user->getPermissionsViaRoles()->pluck('name')->values()->all(),
-                ],
-                'roles' => Role::query()->get(['id', 'name'])->toArray(),
-                'permissions' => Permission::query()->get(['id', 'name'])->toArray(),
-                'defaultAdminRef' => config('app.ref'),
-            ]);
-        })->name('users.edit')->middleware(AbleTo::class . ":users_edit");
+
+
+        Route::get('/edit/{id}/old', systemUserEditPage::class)->name('users.edit.old')->middleware(AbleTo::class . ":users_edit");
+        Route::get('/edit/{id}', [SystemUsersController::class, 'editReact'])->name('users.edit')->middleware(AbleTo::class . ":users_edit");
         Route::post('/update/{id}', [SystemUsersController::class, 'admin_update'])->name("users.update")->middleware(AbleTo::class . ":users_update");
         Route::post('/{user}/roles', [SystemUsersController::class, 'update_roles'])->name('users.roles.update')->middleware(AbleTo::class . ":sync_role_to_user");
         Route::post('/{user}/permissions', [SystemUsersController::class, 'update_permissions'])->name('users.permissions.update')->middleware(AbleTo::class . ":sync_permission_to_role");
