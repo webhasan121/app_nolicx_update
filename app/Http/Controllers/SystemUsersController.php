@@ -64,4 +64,28 @@ class SystemUsersController extends Controller
 
         return redirect()->back()->with('success', 'User updated successfully.');
     }
+
+    public function update_roles(Request $request, User $user)
+    {
+        $request->validate([
+            'role' => ['array'],
+            'role.*' => ['string', 'exists:roles,name'],
+        ]);
+
+        $user->syncRoles($request->input('role', []));
+
+        return redirect()->back()->with('success', 'Role Attached');
+    }
+
+    public function update_permissions(Request $request, User $user)
+    {
+        $request->validate([
+            'permissions' => ['array'],
+            'permissions.*' => ['string', 'exists:permissions,name'],
+        ]);
+
+        $user->syncPermissions($request->input('permissions', []));
+
+        return redirect()->back()->with('success', 'Permission Synced !');
+    }
 }

@@ -24,7 +24,9 @@ use App\Livewire\System\Geolocation\States;
 use App\Livewire\System\Geolocation\Cities;
 use App\Livewire\System\Geolocation\Area;
 use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Livewire\Volt\Volt;
 
 use App\Livewire\System\Users\Edit as systemUserEditPage;
@@ -84,14 +86,29 @@ use App\Livewire\System\Vip\PrintSummery as VipPrintSummery;
 use App\Livewire\System\Withdraw\Pdf;
 use App\Models\DistributeComissions;
 use App\Models\TakeComissions;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 use function Laravel\Prompts\form;
 
 Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group(function () {
 
     // route for admin index to system dashboard
-    Route::get('admins', function () {
+    Route::get('admins/old', function () {
         return view('auth.system.admins.index', ['admins' => User::role('admin')->latest('id')->get()]);
+    })->name('admin.old')->middleware(AbleTo::class . ":admin_view");
+
+    Route::get('admins', function () {
+        return Inertia::render('Auth/system/admins/index', [
+            'admins' => User::role('admin')->latest('id')->get()->map(function ($admin) {
+                return [
+                    'id' => $admin->id,
+                    'name' => $admin->name,
+                    'permissions_count' => $admin->getPermissionNames()?->count() ?? 0,
+                    'updated_at_formatted' => $admin->updated_at?->toFormattedDateString(),
+                ];
+            })->values()->all(),
+        ]);
     })->name('admin')->middleware(AbleTo::class . ":admin_view");
 
 
@@ -126,7 +143,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
 
     /**
-     * Rotue prefix dedicated for reseller management 
+     * Rotue prefix dedicated for reseller management
      */
     Route::prefix('reseller')->group(function () {
         Route::get('/', systemResellerIndexPage::class)->name('reseller.index')->middleware(AbleTo::class . ":resellers_view");
@@ -140,17 +157,59 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
     Route::prefix('users')->group(function () {
 
-        // permit to make users task    
+        // permit to make users task
         Route::get('/', systemUserIndexPage::class)->name('users.view')->middleware(AbleTo::class . ":users_view");
-        Route::get('/edit/{id}', systemUserEditPage::class)->name('users.edit')->middleware(AbleTo::class . ":users_edit");
+        Route::get('/edit/{id}/old', systemUserEditPage::class)->name('users.edit.old')->middleware(AbleTo::class . ":users_edit");
+        Route::get('/edit/{id}', function ($id) {
+            $user = User::findOrFail($id);
+
+            return Inertia::render('Auth/system/users/Edit', [
+                'editUser' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'coin' => $user->coin,
+                    'reference' => $user->reference,
+                    'reference_owner_name' => $user->getReffOwner?->owner?->name,
+                    'roles' => $user->getRoleNames()->values()->all(),
+                    'permissions' => $user->getPermissionNames()->values()->all(),
+                    'permissions_via_role' => $user->getPermissionsViaRoles()->pluck('name')->values()->all(),
+                ],
+                'roles' => Role::query()->get(['id', 'name'])->toArray(),
+                'permissions' => Permission::query()->get(['id', 'name'])->toArray(),
+                'defaultAdminRef' => config('app.ref'),
+            ]);
+        })->name('users.edit')->middleware(AbleTo::class . ":users_edit");
         Route::post('/update/{id}', [SystemUsersController::class, 'admin_update'])->name("users.update")->middleware(AbleTo::class . ":users_update");
+        Route::post('/{user}/roles', [SystemUsersController::class, 'update_roles'])->name('users.roles.update')->middleware(AbleTo::class . ":sync_role_to_user");
+        Route::post('/{user}/permissions', [SystemUsersController::class, 'update_permissions'])->name('users.permissions.update')->middleware(AbleTo::class . ":sync_permission_to_role");
+        Route::post('/recharge/{id}', function (Request $request, $id) {
+            $request->validate([
+                'rechargeAmount' => 'required|numeric|min:1',
+            ]);
+
+            $user = User::query()->withoutAdmin()->findOrFail($id);
+            $user->increment('coin', $request->rechargeAmount);
+
+            return redirect()->back()->with('success', 'User recharged successfully!');
+        })->name('users.recharge')->middleware(AbleTo::class . ":users_update");
+        Route::post('/refund/{id}', function (Request $request, $id) {
+            $request->validate([
+                'rechargeAmount' => 'required|numeric|min:1',
+            ]);
+
+            $user = User::query()->withoutAdmin()->findOrFail($id);
+            $user->decrement('coin', $request->rechargeAmount);
+
+            return redirect()->back()->with('success', 'User refunded successfully!');
+        })->name('users.refund')->middleware(AbleTo::class . ":users_update");
         Route::get('/print-summery', UsersPrintSummery::class)->name('users.print-summery');
     });
 
 
     /**
      * routes dedicated for rider management
-     * 
+     *
      */
     Route::prefix('rider')->group(function () {
         Route::get('/', systemRiderIndexPage::class)->name("rider.index")->middleware(AbleTo::class . ":riders_view");
@@ -158,8 +217,8 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     });
 
 
-    /** 
-     * VIP 
+    /**
+     * VIP
      */
     Route::get('/packages', systemVipIndexPage::class)->name('vip.index')->middleware(AbleTo::class . ":vip_view");
     Route::get('/package/create', systemVipCreatePage::class)->name('vip.crate')->middleware(AbleTo::class . ":vip_add");
@@ -238,7 +297,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     })->name('comissions.confirm')->middleware(AbleTo::class . ":comission_confim");
 
     Route::post('/comissions/confirm/take/{id}', function ($id) {
-        // 
+        //
         // return 'hellow';
         try {
 
@@ -252,7 +311,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
 
     Route::get('/comissions/refund/take/{id}', function ($id) {
-        // 
+        //
         try {
 
             $cc = new ProductComissionController();
@@ -313,7 +372,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     )->middleware(AbleTo::class . ":withdraw_view");
 
 
-    // settings 
+    // settings
     Route::get('/settings', SettingsIndex::class)->name('settings.index');
     Route::get('/pages', PagesIndex::class)->name('pages.index');
     Route::get('/pages/add-new', PagesCreate::class)->name('pages.create');

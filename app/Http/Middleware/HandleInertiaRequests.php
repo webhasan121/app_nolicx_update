@@ -78,6 +78,9 @@ class HandleInertiaRequests extends Middleware
                     'user' =>  $user
                         ? $user->loadCount('myCarts')->load('roles')
                         : null,
+                    'roles' => $user
+                        ? $user->getRoleNames()->values()->all()
+                        : [],
                     'cartCount' => $user?->myCarts()->count() ?? 0,
                     'availableCoin' => $user?->abailCoin() ?? 0,
                     'shopSlug' => $user ? Str::slug($user->name) : null,

@@ -3,14 +3,23 @@ import Hr from "../components/Hr";
 import ResponsiveNavLink from "../components/ResponsiveNavLink";
 
 export default function ResponsiveNavigation() {
-    const { auth, roles = [], permissions = [] } = usePage().props;
+    const { auth, permissions = [] } = usePage().props;
     const user = auth?.user;
-    const roleNames = roles.length
-        ? roles
+    const roleNames = auth?.roles?.length
+        ? auth.roles
         : user?.roles?.map((role) => role.name) ?? [];
+    const permissionNames = Array.isArray(permissions)
+        ? permissions
+              .map((permission) =>
+                  typeof permission === "string"
+                      ? permission
+                      : permission?.name
+                )
+              .filter(Boolean)
+        : [];
 
     const isSystem = roleNames.includes("admin") || roleNames.includes("system");
-    const can = (permission) => permissions.includes(permission);
+    const can = (p) => permissionNames.includes(p);
 
     if (!isSystem) {
         return null;

@@ -1,4 +1,4 @@
-import InputLabel from "@/Components/InputLabel";
+import InputLabel from "./InputLabel";
 
 export default function InputFile({ label, error, children, name, errors }) {
 
