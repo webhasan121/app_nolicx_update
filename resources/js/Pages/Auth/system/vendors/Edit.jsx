@@ -4,14 +4,11 @@ import AppLayout from "../../../../Layouts/App";
 import DangerButton from "../../../../components/DangerButton";
 import Hr from "../../../../components/Hr";
 import InputFile from "../../../../components/InputFile";
-import InputLabel from "../../../../components/InputLabel";
 import Modal from "../../../../components/Modal";
-import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import SecondaryButton from "../../../../components/SecondaryButton";
 import TextInput from "../../../../components/TextInput";
-import PageHeader from "../../../../components/dashboard/PageHeader";
-import SectionHeader from "../../../../components/dashboard/section/Header";
+import Container from "../../../../components/dashboard/Container";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../components/dashboard/section/Section";
 import UpdateProfileInformation from "../../../../livewire/system/users/partials/UpdateProfileInformation";
@@ -19,9 +16,11 @@ import UpdateProfilePermission, {
     PermissionGroup,
 } from "../../../../livewire/system/users/partials/UpdateProfilePermission";
 import UpdateProfileRole from "../../../../livewire/system/users/partials/UpdateProfileRole";
+import VendorNavigation from "./_VendorNavigation";
 
 export default function Edit() {
     const {
+        vendor,
         editUser,
         roles = [],
         permissions = [],
@@ -130,50 +129,41 @@ export default function Edit() {
 
     return (
         <AppLayout
-            title="User Update"
+            title="Vendor Edit"
             header={
-                <PageHeader>
-                    User Update
-                    <br />
-                    <NavLink href={route("system.users.view")}>
-                        <i className="fa-solid fa-up-right-from-square me-2"></i>
-                        Users
-                    </NavLink>
-                </PageHeader>
+                <VendorNavigation
+                    vendor={vendor}
+                    activeRoute="system.vendor.edit"
+                />
             }
         >
-            <div className="my-3">
-                <div className="w-full px-2 mx-auto space-y-6 max-w-8xl sm:px-6 lg:px-8 ">
+            <div>
+                <Container>
                     <SectionSection>
-                        <SectionHeader
-                            title={editUser?.name}
-                            content={
-                                <div>
-                                    <NavLink
-                                        href="#"
-                                        active={nav === "profile"}
-                                        className={nav === "profile" ? "active" : ""}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setNav("profile");
-                                        }}
-                                    >
-                                        Profile
-                                    </NavLink>
-                                    <NavLink
-                                        href="#"
-                                        active={nav === "role"}
-                                        className={nav === "role" ? "active" : ""}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setNav("role");
-                                        }}
-                                    >
-                                        Permission
-                                    </NavLink>
-                                </div>
-                            }
-                        />
+                        <SectionInner>
+                            <div>
+                                <a
+                                    href="#"
+                                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out ${nav === "profile" ? "border-orange-400 text-gray-900 active" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}`}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setNav("profile");
+                                    }}
+                                >
+                                    Profile
+                                </a>
+                                <a
+                                    href="#"
+                                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out ${nav === "role" ? "border-orange-400 text-gray-900 active" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}`}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setNav("role");
+                                    }}
+                                >
+                                    Permission
+                                </a>
+                            </div>
+                        </SectionInner>
                     </SectionSection>
 
                     {nav === "profile" ? (
@@ -248,7 +238,7 @@ export default function Edit() {
                             </SectionInner>
                         </SectionSection>
                     ) : null}
-                </div>
+                </Container>
             </div>
 
             <Modal
@@ -257,35 +247,35 @@ export default function Edit() {
                 maxWidth="2xl"
             >
                 <div className="p-3">
-                        <p>Permissions</p>
-                        <Hr />
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns:
-                                    "repeat(auto-fit, minmax(230px, 1fr))",
-                                gap: 10,
-                            }}
+                    <p>Permissions</p>
+                    <Hr />
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns:
+                                "repeat(auto-fit, minmax(230px, 1fr))",
+                            gap: 10,
+                        }}
+                    >
+                        {groupedPermissions.map(([title, items]) => (
+                            <PermissionGroup
+                                key={title}
+                                title={title}
+                                permissions={items}
+                                selected={editUser?.permissions_via_role ?? []}
+                                onToggle={() => {}}
+                                disabled
+                            />
+                        ))}
+                    </div>
+                    <div className="mt-4">
+                        <DangerButton
+                            type="button"
+                            onClick={() => setShowViaRole(false)}
                         >
-                            {groupedPermissions.map(([title, items]) => (
-                                <PermissionGroup
-                                    key={title}
-                                    title={title}
-                                    permissions={items}
-                                    selected={editUser?.permissions_via_role ?? []}
-                                    onToggle={() => {}}
-                                    disabled
-                                />
-                            ))}
-                        </div>
-                        <div className="mt-4">
-                            <DangerButton
-                                type="button"
-                                onClick={() => setShowViaRole(false)}
-                            >
-                                Close
-                            </DangerButton>
-                        </div>
+                            Close
+                        </DangerButton>
+                    </div>
                 </div>
             </Modal>
 
@@ -295,33 +285,33 @@ export default function Edit() {
                 maxWidth="xl"
             >
                 <div className="p-4">
-                        <div className="text-lg">Confirm Recharge</div>
-                        <Hr />
-                        <p className="py-5">
-                            Are you sure to add {profileForm.data.rechargeAmount} TK
-                            amount to {editUser?.name}, {editUser?.email}
-                        </p>
-                        <Hr />
-                        <div className="flex">
-                            <SecondaryButton
-                                type="button"
-                                onClick={() => setShowRechargeModal(false)}
-                            >
-                                Cancel
-                            </SecondaryButton>
-                            <PrimaryButton
-                                type="button"
-                                onClick={submitRecharge}
-                            >
-                                Recharge
-                            </PrimaryButton>
-                            <DangerButton
-                                type="button"
-                                onClick={submitRefund}
-                            >
-                                Refund
-                            </DangerButton>
-                        </div>
+                    <div className="text-lg">Confirm Recharge</div>
+                    <Hr />
+                    <p className="py-5">
+                        Are you sure to add {profileForm.data.rechargeAmount} TK
+                        amount to {editUser?.name}, {editUser?.email}
+                    </p>
+                    <Hr />
+                    <div className="flex">
+                        <SecondaryButton
+                            type="button"
+                            onClick={() => setShowRechargeModal(false)}
+                        >
+                            Cancel
+                        </SecondaryButton>
+                        <PrimaryButton
+                            type="button"
+                            onClick={submitRecharge}
+                        >
+                            Recharge
+                        </PrimaryButton>
+                        <DangerButton
+                            type="button"
+                            onClick={submitRefund}
+                        >
+                            Refund
+                        </DangerButton>
+                    </div>
                 </div>
             </Modal>
         </AppLayout>

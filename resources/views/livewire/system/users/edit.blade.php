@@ -1,6 +1,6 @@
 <div>
     <x-dashboard.page-header>
-        User Update
+        User Update s
         <br />
         <x-nav-link href="{{route('system.users.view')}}"> <i class="fa-solid fa-up-right-from-square me-2"></i> Users </x-nav-link>
     </x-dashboard.page-header>

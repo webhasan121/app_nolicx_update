@@ -130,9 +130,12 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
          * @return Vendor edit page
          */
         Route::middleware(AbleTo::class . ":vendors_edit")->group(function () {
-            Route::get('/{id}/edit', vendorEdit::class)->name('vendor.edit');
-            Route::get('/{id}/settings', systemVendorSettingspage::class)->name('vendor.settings');
-            Route::get('/{id}/documents', systemVendorDocumentsPage::class)->name('vendor.documents');
+            Route::get('/{id}/edit/old', vendorEdit::class)->name('vendor.edit.old');
+            Route::get('/{id}/edit', [VendorController::class, 'editReact'])->name('vendor.edit');
+            Route::get('/{id}/settings/old', systemVendorSettingspage::class)->name('vendor.settings.old');
+            Route::get('/{id}/settings', [VendorController::class, 'settingsReact'])->name('vendor.settings');
+            Route::get('/{id}/documents/old', systemVendorDocumentsPage::class)->name('vendor.documents.old');
+            Route::get('/{id}/documents', [VendorController::class, 'documentsReact'])->name('vendor.documents');
             Route::get('/{id}/products', systemVendorProductsPage::class)->name('vendor.products');
             Route::get('/{id}/categories', systemVendorCategoriesPage::class)->name('vendor.categories');
             Route::get('/{id}/orders', [VendorController::class, 'viewOrders'])->name('vendor.orders');
@@ -140,6 +143,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
 
         Route::post('/{id}/update', [VendorController::class, 'updateBySystem'])->name('vendor.update')->middleware(AbleTo::class . ":vendors_update");
+        Route::post('/{id}/documents/deatline', [VendorController::class, 'updateDocumentDeadline'])->name('vendor.documents.deatline')->middleware(AbleTo::class . ":vendors_update");
     });
 
 
