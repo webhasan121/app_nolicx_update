@@ -2,6 +2,7 @@
 
 use App\Events\ProductComissions;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ProductDetailsController;
 use App\Http\Controllers\ProductComissionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
@@ -41,6 +42,7 @@ Route::get('/old', Welcome::class)->name('home.old');
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 Route::get('/asnv', [WelcomeController::class, 'index'])->name('home');
 Route::get('/dfee', [WelcomeController::class, 'index'])->name('home');
+
 Route::middleware('auth')->post('/cart/add', [CartController::class, 'store']);
 
 Route::get('dashboard/old', function () {
@@ -97,7 +99,11 @@ Route::middleware('auth')->prefix('/u/')->group(function () {
 Route::get('products', userProductsPage::class)->name('products.index');
 Route::get('category/{cat}/products', userProductsForCategoryPage::class)->name('category.products');
 Route::get('category', userCategoriesPage::class)->name('category.index');
-Route::get('product/{id}/{slug}', userProductsDetailsPage::class)->name('products.details')->middleware('products.view.add');
+
+Route::get('product/{id}/{slug}/old', userProductsDetailsPage::class)->name('products.details.old')->middleware('products.view.add');
+Route::get('product/{id}/{slug}', [ProductDetailsController::class, 'show'])->name('products.details')->middleware('products.view.add');
+Route::middleware('auth')->post('product/{id}/{slug}/task', [ProductDetailsController::class, 'countTask'])->name('products.details.task');
+
 Route::get('product/order/{id}/{slug}', SingleProductOrder::class)->name('product.makeOrder')->middleware('auth');
 
 

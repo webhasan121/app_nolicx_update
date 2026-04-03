@@ -7,7 +7,7 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import { Ziggy } from './ziggy';
 import { route } from 'ziggy-js';
 
-window.route = (name, params, absolute = true) =>
+window.route = (name, params, absolute = false) =>
     route(name, params, absolute, Ziggy);
 
 createInertiaApp({
