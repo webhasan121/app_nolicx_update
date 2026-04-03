@@ -1,0 +1,8 @@
+[31-Dec-2025 03:25:13 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function it() in /home/noliywta/public_html/tests/Feature/ExampleTest.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/tests/Feature/ExampleTest.php on line 3
+[31-Dec-2025 04:15:14 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function test() in /home/noliywta/public_html/tests/Feature/ProfileTest.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/tests/Feature/ProfileTest.php on line 6

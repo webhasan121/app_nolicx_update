@@ -1,0 +1,384 @@
+[30-Dec-2025 23:02:08 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_10_09_122419_create_static_sliders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_10_09_122419_create_static_sliders_table.php on line 7
+[30-Dec-2025 23:02:14 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_102224_create_slider_has_slides_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_102224_create_slider_has_slides_table.php on line 7
+[30-Dec-2025 23:17:07 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_11_07_001112_create_tas_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_11_07_001112_create_tas_table.php on line 7
+[30-Dec-2025 23:32:07 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_11_07_001005_create_cities_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_11_07_001005_create_cities_table.php on line 7
+[30-Dec-2025 23:39:44 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_12_035904_create_navigations_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_12_035904_create_navigations_table.php on line 7
+[30-Dec-2025 23:50:52 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_11_07_000941_create_countries_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_11_07_000941_create_countries_table.php on line 7
+[30-Dec-2025 23:53:22 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_102009_create_sliders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_102009_create_sliders_table.php on line 7
+[31-Dec-2025 00:34:16 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_04_12_063759_create_vendor_has_nominis_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_04_12_063759_create_vendor_has_nominis_table.php on line 7
+[31-Dec-2025 00:38:02 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_08_103607_create_reseller_order_details_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_08_103607_create_reseller_order_details_table.php on line 7
+[31-Dec-2025 00:41:35 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_18_031838_create_user_logins_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_18_031838_create_user_logins_table.php on line 7
+[31-Dec-2025 01:01:33 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_25_091648_create_distribute_comissions_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_25_091648_create_distribute_comissions_table.php on line 7
+[31-Dec-2025 01:15:11 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_11_07_000959_create_states_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_11_07_000959_create_states_table.php on line 7
+[31-Dec-2025 01:19:05 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_043436_create_orders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_043436_create_orders_table.php on line 7
+[31-Dec-2025 01:36:59 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_18_031040_create_user_has_addresses_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_18_031040_create_user_has_addresses_table.php on line 7
+[31-Dec-2025 01:42:27 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_10_09_022014_add_field_to_sliders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_10_09_022014_add_field_to_sliders_table.php on line 7
+[31-Dec-2025 01:43:22 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_12_040415_create_navigations_has_links_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_12_040415_create_navigations_has_links_table.php on line 7
+[31-Dec-2025 01:45:27 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_30_035649_create_withdraws_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_30_035649_create_withdraws_table.php on line 7
+[31-Dec-2025 01:48:31 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_091723_create_user_tasks_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_091723_create_user_tasks_table.php on line 7
+[31-Dec-2025 01:53:08 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_12_040415_create_navigations_has_links_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_12_040415_create_navigations_has_links_table.php on line 7
+[31-Dec-2025 01:55:26 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_07_152259_create_reseller_resel_products_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_07_152259_create_reseller_resel_products_table.php on line 7
+[31-Dec-2025 01:57:36 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/0001_01_01_000001_create_cache_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/0001_01_01_000001_create_cache_table.php on line 7
+[31-Dec-2025 01:58:16 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_103031_create_cart_orders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_103031_create_cart_orders_table.php on line 7
+[31-Dec-2025 01:59:21 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_22_090837_create_stores_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_22_090837_create_stores_table.php on line 7
+[31-Dec-2025 01:59:47 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_10_09_122419_create_static_sliders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_10_09_122419_create_static_sliders_table.php on line 7
+[31-Dec-2025 01:59:47 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_043436_create_orders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_043436_create_orders_table.php on line 7
+[31-Dec-2025 02:01:00 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_10_09_013917_add_field_to_slider_has_slides_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_10_09_013917_add_field_to_slider_has_slides_table.php on line 7
+[31-Dec-2025 02:01:57 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_07_152330_create_reseller_like_products_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_07_152330_create_reseller_like_products_table.php on line 7
+[31-Dec-2025 02:02:37 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_25_091636_create_take_comissions_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_25_091636_create_take_comissions_table.php on line 7
+[31-Dec-2025 02:03:28 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_10_09_122432_create_static_slider_slides_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_10_09_122432_create_static_slider_slides_table.php on line 7
+[31-Dec-2025 02:04:04 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_07_152243_create_reseller_has_orders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_07_152243_create_reseller_has_orders_table.php on line 7
+[31-Dec-2025 02:04:07 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_041609_create_categories_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_041609_create_categories_table.php on line 7
+[31-Dec-2025 02:04:47 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_07_152243_create_reseller_has_orders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_07_152243_create_reseller_has_orders_table.php on line 7
+[31-Dec-2025 02:06:18 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_11_07_001112_create_tas_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_11_07_001112_create_tas_table.php on line 7
+[31-Dec-2025 02:08:24 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_043115_create_carts_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_043115_create_carts_table.php on line 7
+[31-Dec-2025 02:08:28 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_11_07_001005_create_cities_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_11_07_001005_create_cities_table.php on line 7
+[31-Dec-2025 02:10:39 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_103031_create_cart_orders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_103031_create_cart_orders_table.php on line 7
+[31-Dec-2025 02:10:53 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_26_094649_create_reseller_resell_profits_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_26_094649_create_reseller_resell_profits_table.php on line 7
+[31-Dec-2025 02:13:30 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_07_30_103735_create_sync_orders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_07_30_103735_create_sync_orders_table.php on line 7
+[31-Dec-2025 02:14:18 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_11_07_000941_create_countries_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_11_07_000941_create_countries_table.php on line 7
+[31-Dec-2025 02:15:00 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_07_22_104624_create_user_deposits_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_07_22_104624_create_user_deposits_table.php on line 7
+[31-Dec-2025 02:15:39 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_18_031838_create_user_logins_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_18_031838_create_user_logins_table.php on line 7
+[31-Dec-2025 02:17:10 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_042728_create_products_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_042728_create_products_table.php on line 7
+[31-Dec-2025 02:17:43 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_10_04_020131_create_resellser_purchase_products_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_10_04_020131_create_resellser_purchase_products_table.php on line 7
+[31-Dec-2025 02:17:50 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_07_152330_create_reseller_like_products_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_07_152330_create_reseller_like_products_table.php on line 7
+[31-Dec-2025 02:19:21 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_07_13_120122_create_products_has_comments_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_07_13_120122_create_products_has_comments_table.php on line 7
+[31-Dec-2025 02:19:25 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_26_104036_create_page_settings_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_26_104036_create_page_settings_table.php on line 7
+[31-Dec-2025 02:20:00 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_07_29_050849_add_colum_to_vendor_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_07_29_050849_add_colum_to_vendor_table.php on line 7
+[31-Dec-2025 02:25:52 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_091058_create_product_has_attributes_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_091058_create_product_has_attributes_table.php on line 7
+[31-Dec-2025 02:26:14 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_22_095606_create_product_sales_indices_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_22_095606_create_product_sales_indices_table.php on line 7
+[31-Dec-2025 02:26:31 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_091314_create_vips_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_091314_create_vips_table.php on line 7
+[31-Dec-2025 02:27:56 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_25_091636_create_take_comissions_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_25_091636_create_take_comissions_table.php on line 7
+[31-Dec-2025 02:28:02 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_07_30_103735_create_sync_orders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_07_30_103735_create_sync_orders_table.php on line 7
+[31-Dec-2025 02:28:03 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_04_12_063808_create_vendor_has_documents_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_04_12_063808_create_vendor_has_documents_table.php on line 7
+[31-Dec-2025 02:28:42 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_07_03_154048_add_colum_to_products_model.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_07_03_154048_add_colum_to_products_model.php on line 7
+[31-Dec-2025 02:29:38 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_04_16_115725_create_reseller_has_documents_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_04_16_115725_create_reseller_has_documents_table.php on line 7
+[31-Dec-2025 02:30:13 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_085902_create_packages_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_085902_create_packages_table.php on line 7
+[31-Dec-2025 02:30:31 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_091101_create_product_has_images_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_091101_create_product_has_images_table.php on line 7
+[31-Dec-2025 02:31:21 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/0001_01_01_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/0001_01_01_000000_create_users_table.php on line 7
+[31-Dec-2025 02:33:03 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_27_081732_create_footer_layouts_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_27_081732_create_footer_layouts_table.php on line 7
+[31-Dec-2025 02:35:13 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_091058_create_product_has_attributes_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_091058_create_product_has_attributes_table.php on line 7
+[31-Dec-2025 02:39:34 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_04_16_115725_create_reseller_has_documents_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_04_16_115725_create_reseller_has_documents_table.php on line 7
+[31-Dec-2025 02:40:21 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_26_002831_create_permission_tables.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_26_002831_create_permission_tables.php on line 7
+[31-Dec-2025 02:41:44 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_09_01_030051_create_cod_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_09_01_030051_create_cod_table.php on line 7
+[31-Dec-2025 02:46:05 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_18_031040_create_user_has_addresses_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_18_031040_create_user_has_addresses_table.php on line 7
+[31-Dec-2025 02:46:41 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_11_07_000959_create_states_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_11_07_000959_create_states_table.php on line 7
+[31-Dec-2025 02:48:16 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_042728_create_products_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_042728_create_products_table.php on line 7
+[31-Dec-2025 02:50:06 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_091101_create_product_has_images_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_091101_create_product_has_images_table.php on line 7
+[31-Dec-2025 02:51:48 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_102009_create_sliders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_102009_create_sliders_table.php on line 7
+[31-Dec-2025 02:53:30 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_25_091648_create_distribute_comissions_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_25_091648_create_distribute_comissions_table.php on line 7
+[31-Dec-2025 02:55:12 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_12_035904_create_navigations_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_12_035904_create_navigations_table.php on line 7
+[31-Dec-2025 02:56:55 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_04_12_063759_create_vendor_has_nominis_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_04_12_063759_create_vendor_has_nominis_table.php on line 7
+[31-Dec-2025 02:56:57 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_085902_create_packages_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_085902_create_packages_table.php on line 7
+[31-Dec-2025 03:02:29 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/0001_01_01_000002_create_jobs_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/0001_01_01_000002_create_jobs_table.php on line 7
+[31-Dec-2025 03:05:40 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_041609_create_categories_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_041609_create_categories_table.php on line 7
+[31-Dec-2025 03:07:24 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_04_06_054320_create_vendors_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_04_06_054320_create_vendors_table.php on line 7
+[31-Dec-2025 03:07:50 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/0001_01_01_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/0001_01_01_000000_create_users_table.php on line 7
+[31-Dec-2025 03:10:00 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_19_123711_add_column_to_vendor_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_19_123711_add_column_to_vendor_table.php on line 7
+[31-Dec-2025 03:14:47 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_08_103607_create_reseller_order_details_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_08_103607_create_reseller_order_details_table.php on line 7
+[31-Dec-2025 03:20:52 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_07_22_104624_create_user_deposits_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_07_22_104624_create_user_deposits_table.php on line 7
+[31-Dec-2025 03:36:06 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_04_18_053102_create_riders_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_04_18_053102_create_riders_table.php on line 7
+[31-Dec-2025 03:41:50 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_04_16_115712_create_resellers_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_04_16_115712_create_resellers_table.php on line 7
+[31-Dec-2025 03:42:37 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/0001_01_01_000001_create_cache_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/0001_01_01_000001_create_cache_table.php on line 7
+[31-Dec-2025 03:44:48 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_07_152259_create_reseller_resel_products_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_07_152259_create_reseller_resel_products_table.php on line 7
+[31-Dec-2025 03:49:08 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_033617_create_user_has_refs_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_033617_create_user_has_refs_table.php on line 7
+[31-Dec-2025 03:57:50 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_07_13_120122_create_products_has_comments_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_07_13_120122_create_products_has_comments_table.php on line 7
+[31-Dec-2025 04:00:00 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_29_091723_create_user_tasks_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_29_091723_create_user_tasks_table.php on line 7
+[31-Dec-2025 04:03:58 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_28_144252_create_telescope_entries_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_28_144252_create_telescope_entries_table.php on line 7
+[31-Dec-2025 04:17:24 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_27_081732_create_footer_layouts_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_27_081732_create_footer_layouts_table.php on line 7
+[31-Dec-2025 04:18:43 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_24_141606_add_colum_to_products_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_24_141606_add_colum_to_products_table.php on line 7
+[31-Dec-2025 04:28:16 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_10_04_020131_create_resellser_purchase_products_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_10_04_020131_create_resellser_purchase_products_table.php on line 7
+[31-Dec-2025 04:32:37 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_05_12_051038_create_package_pays_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_05_12_051038_create_package_pays_table.php on line 7
+[31-Dec-2025 04:43:29 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_06_10_075915_create_personal_access_tokens_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_06_10_075915_create_personal_access_tokens_table.php on line 7
+[31-Dec-2025 04:53:09 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_22_095606_create_product_sales_indices_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_22_095606_create_product_sales_indices_table.php on line 7
+[31-Dec-2025 05:00:54 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_03_30_035649_create_withdraws_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_03_30_035649_create_withdraws_table.php on line 7
+[31-Dec-2025 05:45:01 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_26_104036_create_page_settings_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_26_104036_create_page_settings_table.php on line 7
+[31-Dec-2025 05:58:16 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/noliywta/public_html/database/migrations/2025_08_19_123651_add_column_to_reseller_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/database/migrations/2025_08_19_123651_add_column_to_reseller_table.php on line 7

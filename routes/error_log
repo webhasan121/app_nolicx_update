@@ -1,0 +1,12 @@
+[30-Dec-2025 15:26:44 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Support\Facades\Route" not found in /home/noliywta/public_html/routes/rider.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/routes/rider.php on line 10
+[31-Dec-2025 07:22:08 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Support\Facades\Artisan" not found in /home/noliywta/public_html/routes/console.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/routes/console.php on line 8
+[31-Dec-2025 08:13:06 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Support\Facades\Route" not found in /home/noliywta/public_html/routes/rider.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/routes/rider.php on line 10

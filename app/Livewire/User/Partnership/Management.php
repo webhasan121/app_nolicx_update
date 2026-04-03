@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Livewire\User\Partnership;
+
+use App\Models\ManagementAccess;
+use Livewire\Component;
+use Livewire\Attributes\Layout;
+use Illuminate\Support\Facades\Auth;
+
+#[layout('layouts.user.dash.userDash')]
+class Management extends Component {
+    public $name;
+    public $email;
+    public $phone;
+    public $message;
+
+    public $hasApplied = false;
+    public $managementRequest = null;
+
+    public function mount() {
+        $user = Auth::user();
+
+        $this->name = $user->name;
+        $this->email = $user->email;
+        $this->phone = $user->phone;
+
+        $this->managementRequest = ManagementAccess::where('applied_id', $user->id)->first();
+
+        if ($this->managementRequest) {
+            $this->hasApplied = true;
+        }
+    }
+
+    protected $rules = [
+        'message' => 'nullable|max:500',
+    ];
+
+    public function submit() {
+        if ($this->hasApplied) {
+            $this->dispatch('error', 'You already applied!');
+            return;
+        }
+
+        $this->validate();
+
+        $applied = ManagementAccess::create([
+            'applied_id' => auth()->id(),
+            'message' => $this->message,
+            'status' => null,
+        ]);
+
+        $this->dispatch('success', 'Successfully applied!!!');
+        $this->dispatch('$refresh');
+    }
+
+    public function render()
+    {
+        return view('livewire.user.partnership.management');
+    }
+}

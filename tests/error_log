@@ -1,0 +1,4 @@
+[30-Dec-2025 16:06:32 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Foundation\Testing\TestCase" not found in /home/noliywta/public_html/tests/TestCase.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/tests/TestCase.php on line 7

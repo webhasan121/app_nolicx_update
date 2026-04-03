@@ -1,0 +1,56 @@
+[01-Jan-2026 05:01:01 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/services.php on line 18
+[01-Jan-2026 05:09:38 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/app.php on line 16
+[01-Jan-2026 05:47:54 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/services.php on line 18
+[01-Jan-2026 06:01:03 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/database.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/database.php on line 19
+[01-Jan-2026 06:06:39 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function resource_path() in /home/noliywta/public_html/config/livewire.php:29
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/livewire.php on line 29
+[01-Jan-2026 06:16:04 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function resource_path() in /home/noliywta/public_html/config/livewire.php:29
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/livewire.php on line 29
+[01-Jan-2026 06:49:37 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/app.php on line 16
+[01-Jan-2026 06:50:53 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/sanctum.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/sanctum.php on line 18
+[01-Jan-2026 07:05:20 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/mail.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/mail.php on line 17
+[01-Jan-2026 07:09:36 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/filesystems.php on line 16
+[01-Jan-2026 07:09:38 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/cache.php on line 18
+[01-Jan-2026 07:52:27 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/sanctum.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/sanctum.php on line 18
+[01-Jan-2026 07:59:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/error-solutions.php:32
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/error-solutions.php on line 32
+[01-Jan-2026 08:07:27 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/noliywta/public_html/config/telescope.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/config/telescope.php on line 19

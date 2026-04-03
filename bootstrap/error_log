@@ -1,0 +1,4 @@
+[30-Dec-2025 23:43:25 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Foundation\Application" not found in /home/noliywta/public_html/bootstrap/app.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/bootstrap/app.php on line 11

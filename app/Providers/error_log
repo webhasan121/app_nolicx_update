@@ -1,0 +1,24 @@
+[31-Dec-2025 02:36:44 UTC] PHP Fatal error:  Uncaught Error: Class "Laravel\Telescope\TelescopeApplicationServiceProvider" not found in /home/noliywta/public_html/app/Providers/TelescopeServiceProvider.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/app/Providers/TelescopeServiceProvider.php on line 10
+[31-Dec-2025 02:45:26 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Support\ServiceProvider" not found in /home/noliywta/public_html/app/Providers/AppServiceProvider.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/app/Providers/AppServiceProvider.php on line 8
+[31-Dec-2025 02:54:08 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Support\ServiceProvider" not found in /home/noliywta/public_html/app/Providers/VoltServiceProvider.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/app/Providers/VoltServiceProvider.php on line 8
+[31-Dec-2025 03:31:45 UTC] PHP Fatal error:  Uncaught Error: Class "Laravel\Telescope\TelescopeApplicationServiceProvider" not found in /home/noliywta/public_html/app/Providers/TelescopeServiceProvider.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/app/Providers/TelescopeServiceProvider.php on line 10
+[31-Dec-2025 04:41:18 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Support\ServiceProvider" not found in /home/noliywta/public_html/app/Providers/AppServiceProvider.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/app/Providers/AppServiceProvider.php on line 8
+[31-Dec-2025 05:36:12 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Support\ServiceProvider" not found in /home/noliywta/public_html/app/Providers/VoltServiceProvider.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/app/Providers/VoltServiceProvider.php on line 8

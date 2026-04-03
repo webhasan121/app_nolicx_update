@@ -1,0 +1,24 @@
+[31-Dec-2025 01:37:01 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function test() in /home/noliywta/public_html/tests/Feature/Auth/EmailVerificationTest.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/tests/Feature/Auth/EmailVerificationTest.php on line 8
+[31-Dec-2025 01:43:53 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function test() in /home/noliywta/public_html/tests/Feature/Auth/AuthenticationTest.php:6
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/tests/Feature/Auth/AuthenticationTest.php on line 6
+[31-Dec-2025 01:57:16 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function Tests\Feature\Auth\test() in /home/noliywta/public_html/tests/Feature/Auth/RegistrationTest.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/tests/Feature/Auth/RegistrationTest.php on line 7
+[31-Dec-2025 02:00:40 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function Tests\Feature\Auth\test() in /home/noliywta/public_html/tests/Feature/Auth/PasswordConfirmationTest.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/tests/Feature/Auth/PasswordConfirmationTest.php on line 8
+[31-Dec-2025 02:09:11 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function Tests\Feature\Auth\test() in /home/noliywta/public_html/tests/Feature/Auth/PasswordUpdateTest.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/tests/Feature/Auth/PasswordUpdateTest.php on line 9
+[31-Dec-2025 02:16:00 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function Tests\Feature\Auth\test() in /home/noliywta/public_html/tests/Feature/Auth/PasswordResetTest.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/noliywta/public_html/tests/Feature/Auth/PasswordResetTest.php on line 10
