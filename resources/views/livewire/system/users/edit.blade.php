@@ -1,6 +1,6 @@
 <div>
     <x-dashboard.page-header>
-        User Update
+        User Update s
         <br />
         <x-nav-link href="{{route('system.users.view')}}"> <i class="fa-solid fa-up-right-from-square me-2"></i> Users </x-nav-link>
     </x-dashboard.page-header>
@@ -11,7 +11,7 @@
                     {{$user->name}}
                 </x-slot>
                 <x-slot name="content">
-                    
+
                     <div>
                         <x-nav-link @class="{nav == 'profile' ? 'active' : ''}" @click="nav = 'profile'">Profile</x-nav-link>
                         <x-nav-link @class="{nav == 'role' ? 'active' : ''}" @click="nav = 'role'" >Permission</x-nav-link>
@@ -22,16 +22,16 @@
 
         <x-dashboard.section x-show="nav == 'profile'">
             <x-dashboard.section.inner>
-                
+
                @livewire('system.users.partials.update-profile-information', ['user' => $user], key($user->id))
-                    
+
                 <x-hr/>
                     <x-input-file label="User Coin" error="coin" name="coin" >
                         <div class="rounded-lg">
                             <x-text-input type="text"  class=" border-0 w-32" disabled wire:model.live="users.coin"/>
 
                             {{-- click button to show a livewire modal  --}}
-                            <div class="p-2 bg-ref-900 rounded border inline-block">    
+                            <div class="p-2 bg-ref-900 rounded border inline-block">
                                 <div class="text-xs">Recharge</div>
                                 <form wire:submit.prevent="rechargeUser">
                                     <x-text-input type="number" class="py-1 w-32" wire:model.live="rechargeAmount" />
@@ -43,7 +43,7 @@
                         </div>
                     </x-input-file>
                 <x-hr/>
-                    
+
             </x-dashboard.section.inner>
         </x-dashboard.section>
 
@@ -60,8 +60,8 @@
                 </div>
             </x-dashboard.section.inner>
         </x-dashboard.section>
-       
-        
+
+
     </x-dashboard.container>
 
 
@@ -82,6 +82,6 @@
             </div>
         </div>
     </x-modal>
-   
+
 </div>
 

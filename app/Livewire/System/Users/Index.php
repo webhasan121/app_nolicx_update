@@ -65,7 +65,7 @@ class Index extends Component
         return [
             [ 'head' => 'Total', 'data' => $users->count() ],
             [ 'head' => 'Today', 'data' => $users->where('created_at', today())->count() ],
-            [ 'head' => 'VIP', 'data' => $users->where('vip', '!==', '0')->count() ],
+            [ 'head' => 'VIP', 'data' => $users->where('vip', '!=', '0')->count() ],
         ];
     }
 }

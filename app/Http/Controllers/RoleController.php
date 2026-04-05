@@ -83,7 +83,7 @@ class RoleController extends Controller
         // dd(request()->all());
         // DB::table('role_has_permissions')->where('role_id', $user->id)->delete();
         $user->syncPermissions(request('permissions'));
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Permission Synced !');
     }
 
 
@@ -133,7 +133,7 @@ class RoleController extends Controller
                 $user = User::findOrFail($value);
                 $user->syncRoles(request('role'));
             }
-            return redirect()->back();
+            return redirect()->back()->with('success', 'Role Attached');
         } else {
             return redirect()->back()->withInput();
         }

@@ -7,6 +7,9 @@ use App\Models\user_has_refs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\View;
+use Inertia\Inertia;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class SystemUsersController extends Controller
 {
@@ -28,6 +31,133 @@ class SystemUsersController extends Controller
     {
         $user = User::withoutRole('system')->where('email', request('email'))->first();
         return view('auth.system.users.edit', compact('user'));
+    }
+
+    public function editReact($id)
+    {
+        $user = User::findOrFail($id);
+
+        return Inertia::render('Auth/system/users/Edit', [
+            'editUser' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'coin' => $user->coin,
+                'reference' => $user->reference,
+                'reference_owner_name' => $user->getReffOwner?->owner?->name,
+                'roles' => $user->getRoleNames()->values()->all(),
+                'permissions' => $user->getPermissionNames()->values()->all(),
+                'permissions_via_role' => $user->getPermissionsViaRoles()->pluck('name')->values()->all(),
+            ],
+            'roles' => Role::query()->get(['id', 'name'])->toArray(),
+            'permissions' => Permission::query()->get(['id', 'name'])->toArray(),
+            'defaultAdminRef' => config('app.ref'),
+        ]);
+    }
+
+    public function indexReact(Request $request)
+    {
+        $search = (string) $request->string('search');
+        $sd = $request->input('sd', now()->subDays(30)->format('Y-m-d'));
+        $ed = $request->input('ed', now()->format('Y-m-d'));
+
+        $query = User::query()
+            ->withoutAdmin()
+            ->orderBy('id', 'desc')
+            ->with(['myRef', 'getReffOwner.owner', 'subscription.package', 'roles', 'permissions'])
+            ->withCount('myOrderAsUser');
+
+        if (!empty($search)) {
+            $query->where(function ($builder) use ($search) {
+                $builder
+                    ->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('reference', 'like', '%' . $search . '%')
+                    ->orWhere('id', 'like', '%' . $search . '%')
+                    ->orWhereHas('subscription.package', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('myRef', function ($q) use ($search) {
+                        $q->where('ref', 'like', '%' . $search . '%');
+                    });
+            });
+        } else {
+            $query->whereBetween('created_at', [$sd, Carbon::parse($ed)->endOfDay()]);
+        }
+
+        $users = $query->paginate(config('app.paginate'))->withQueryString();
+        $allUsers = User::get();
+
+        return Inertia::render('Auth/system/users/index', [
+            'filters' => [
+                'search' => $search,
+                'sd' => $sd,
+                'ed' => $ed,
+            ],
+            'widgets' => [
+                ['head' => 'Total', 'data' => $allUsers->count()],
+                ['head' => 'Today', 'data' => $allUsers->where('created_at', today())->count()],
+                ['head' => 'VIP', 'data' => $allUsers->where('vip', '!=', '0')->count()],
+            ],
+            'users' => [
+                'data' => $users->getCollection()->map(function ($user) {
+                    $subscription = $user->subscription;
+                    $vipStatus = [
+                        'label' => 'NO',
+                        'className' => 'px-1 rounded inline-flex bg-red-200 text-xs',
+                    ];
+
+                    if ($subscription) {
+                        if ($subscription->valid_till > now() && $subscription->status) {
+                            $vipStatus = [
+                                'label' => $subscription?->package?->name ?? 'N/A',
+                                'className' => 'px-1 rounded inline-flex bg-green-200 text-xs',
+                            ];
+                        } elseif ($subscription->valid_till < now() && $subscription->status) {
+                            $vipStatus = [
+                                'label' => 'Expired',
+                                'className' => 'px-1 rounded inline-flex bg-yellow-200 text-xs',
+                            ];
+                        } elseif (!$subscription->status) {
+                            $vipStatus = [
+                                'label' => 'Pending',
+                                'className' => 'px-1 rounded inline-flex bg-blue-200 text-xs',
+                            ];
+                        }
+                    }
+
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name ?? 'N/A',
+                        'email' => $user->email ?? 'N/A',
+                        'ref' => $user->myRef?->ref ?? 'N/A',
+                        'reference' => $user->reference ?? 'Not Found',
+                        'reference_owner_name' => $user->getReffOwner?->owner?->name,
+                        'roles' => $user->getRoleNames()->values()->all(),
+                        'permissions_count' => $user->permissions?->count() ?? 0,
+                        'vip_status' => $vipStatus,
+                        'orders_count' => $user->my_order_as_user_count ?? 0,
+                        'coin' => $user->coin ?? 0,
+                        'created_at_formatted' => $user->created_at?->toFormattedDateString() ?? '',
+                    ];
+                })->values()->all(),
+                'links' => collect($users->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $users->firstItem(),
+                'to' => $users->lastItem(),
+                'total' => $users->total(),
+            ],
+            'printUrl' => route('system.users.print-summery', [
+                'search' => $search,
+                'sd' => $sd,
+                'ed' => $ed,
+            ]),
+        ]);
     }
 
     public function admin_update(Request $request, $id)
@@ -63,5 +193,29 @@ class SystemUsersController extends Controller
         $user->save();
 
         return redirect()->back()->with('success', 'User updated successfully.');
+    }
+
+    public function update_roles(Request $request, User $user)
+    {
+        $request->validate([
+            'role' => ['array'],
+            'role.*' => ['string', 'exists:roles,name'],
+        ]);
+
+        $user->syncRoles($request->input('role', []));
+
+        return redirect()->back()->with('success', 'Role Attached');
+    }
+
+    public function update_permissions(Request $request, User $user)
+    {
+        $request->validate([
+            'permissions' => ['array'],
+            'permissions.*' => ['string', 'exists:permissions,name'],
+        ]);
+
+        $user->syncPermissions($request->input('permissions', []));
+
+        return redirect()->back()->with('success', 'Permission Synced !');
     }
 }

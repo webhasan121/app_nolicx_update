@@ -84,14 +84,31 @@ use App\Livewire\System\Vip\PrintSummery as VipPrintSummery;
 use App\Livewire\System\Withdraw\Pdf;
 use App\Models\DistributeComissions;
 use App\Models\TakeComissions;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 use function Laravel\Prompts\form;
 
 Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group(function () {
 
     // route for admin index to system dashboard
-    Route::get('admins', function () {
+    Route::get('admins/old', function () {
         return view('auth.system.admins.index', ['admins' => User::role('admin')->latest('id')->get()]);
+    })->name('admin.old')->middleware(AbleTo::class . ":admin_view");
+
+    Route::get('admins', function () {
+        return Inertia::render('Auth/system/admins/index', [
+            'admins' => User::role('admin')->latest('id')->get()->map(function ($admin) {
+                return [
+                    'id' => $admin->id,
+                    'name' => $admin->name,
+                    'permissions_count' => $admin->getPermissionNames()?->count() ?? 0,
+                    'updated_at_formatted' => $admin->updated_at?->toFormattedDateString(),
+                ];
+            })->values()->all(),
+        ]);
     })->name('admin')->middleware(AbleTo::class . ":admin_view");
 
 
@@ -103,7 +120,8 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
          * route for vendor index
          * as per permision
          */
-        Route::get('/', vendorIndexPage::class)->name('vendor.index')->middleware(AbleTo::class . ":vendors_view");
+        Route::get('/old', vendorIndexPage::class)->name('vendor.index.old')->middleware(AbleTo::class . ":vendors_view");
+        Route::get('/', [VendorController::class, 'indexReact'])->name('vendor.index')->middleware(AbleTo::class . ":vendors_view");
         // Route::view('/', vendorIndexPage::class)->name('vendor.index');
 
 
@@ -112,9 +130,12 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
          * @return Vendor edit page
          */
         Route::middleware(AbleTo::class . ":vendors_edit")->group(function () {
-            Route::get('/{id}/edit', vendorEdit::class)->name('vendor.edit');
-            Route::get('/{id}/settings', systemVendorSettingspage::class)->name('vendor.settings');
-            Route::get('/{id}/documents', systemVendorDocumentsPage::class)->name('vendor.documents');
+            Route::get('/{id}/edit/old', vendorEdit::class)->name('vendor.edit.old');
+            Route::get('/{id}/edit', [VendorController::class, 'editReact'])->name('vendor.edit');
+            Route::get('/{id}/settings/old', systemVendorSettingspage::class)->name('vendor.settings.old');
+            Route::get('/{id}/settings', [VendorController::class, 'settingsReact'])->name('vendor.settings');
+            Route::get('/{id}/documents/old', systemVendorDocumentsPage::class)->name('vendor.documents.old');
+            Route::get('/{id}/documents', [VendorController::class, 'documentsReact'])->name('vendor.documents');
             Route::get('/{id}/products', systemVendorProductsPage::class)->name('vendor.products');
             Route::get('/{id}/categories', systemVendorCategoriesPage::class)->name('vendor.categories');
             Route::get('/{id}/orders', [VendorController::class, 'viewOrders'])->name('vendor.orders');
@@ -122,11 +143,12 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
 
         Route::post('/{id}/update', [VendorController::class, 'updateBySystem'])->name('vendor.update')->middleware(AbleTo::class . ":vendors_update");
+        Route::post('/{id}/documents/deatline', [VendorController::class, 'updateDocumentDeadline'])->name('vendor.documents.deatline')->middleware(AbleTo::class . ":vendors_update");
     });
 
 
     /**
-     * Rotue prefix dedicated for reseller management 
+     * Rotue prefix dedicated for reseller management
      */
     Route::prefix('reseller')->group(function () {
         Route::get('/', systemResellerIndexPage::class)->name('reseller.index')->middleware(AbleTo::class . ":resellers_view");
@@ -140,17 +162,44 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
     Route::prefix('users')->group(function () {
 
-        // permit to make users task    
-        Route::get('/', systemUserIndexPage::class)->name('users.view')->middleware(AbleTo::class . ":users_view");
-        Route::get('/edit/{id}', systemUserEditPage::class)->name('users.edit')->middleware(AbleTo::class . ":users_edit");
+        // permit to make users task
+        Route::get('/old', systemUserIndexPage::class)->name('users.view.old')->middleware(AbleTo::class . ":users_view");
+        Route::get('/', [SystemUsersController::class, 'indexReact'])->name('users.view')->middleware(AbleTo::class . ":users_view");
+
+
+
+        Route::get('/edit/{id}/old', systemUserEditPage::class)->name('users.edit.old')->middleware(AbleTo::class . ":users_edit");
+        Route::get('/edit/{id}', [SystemUsersController::class, 'editReact'])->name('users.edit')->middleware(AbleTo::class . ":users_edit");
         Route::post('/update/{id}', [SystemUsersController::class, 'admin_update'])->name("users.update")->middleware(AbleTo::class . ":users_update");
+        Route::post('/{user}/roles', [SystemUsersController::class, 'update_roles'])->name('users.roles.update')->middleware(AbleTo::class . ":sync_role_to_user");
+        Route::post('/{user}/permissions', [SystemUsersController::class, 'update_permissions'])->name('users.permissions.update')->middleware(AbleTo::class . ":sync_permission_to_role");
+        Route::post('/recharge/{id}', function (Request $request, $id) {
+            $request->validate([
+                'rechargeAmount' => 'required|numeric|min:1',
+            ]);
+
+            $user = User::query()->withoutAdmin()->findOrFail($id);
+            $user->increment('coin', $request->rechargeAmount);
+
+            return redirect()->back()->with('success', 'User recharged successfully!');
+        })->name('users.recharge')->middleware(AbleTo::class . ":users_update");
+        Route::post('/refund/{id}', function (Request $request, $id) {
+            $request->validate([
+                'rechargeAmount' => 'required|numeric|min:1',
+            ]);
+
+            $user = User::query()->withoutAdmin()->findOrFail($id);
+            $user->decrement('coin', $request->rechargeAmount);
+
+            return redirect()->back()->with('success', 'User refunded successfully!');
+        })->name('users.refund')->middleware(AbleTo::class . ":users_update");
         Route::get('/print-summery', UsersPrintSummery::class)->name('users.print-summery');
     });
 
 
     /**
      * routes dedicated for rider management
-     * 
+     *
      */
     Route::prefix('rider')->group(function () {
         Route::get('/', systemRiderIndexPage::class)->name("rider.index")->middleware(AbleTo::class . ":riders_view");
@@ -158,8 +207,8 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     });
 
 
-    /** 
-     * VIP 
+    /**
+     * VIP
      */
     Route::get('/packages', systemVipIndexPage::class)->name('vip.index')->middleware(AbleTo::class . ":vip_view");
     Route::get('/package/create', systemVipCreatePage::class)->name('vip.crate')->middleware(AbleTo::class . ":vip_add");
@@ -238,7 +287,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     })->name('comissions.confirm')->middleware(AbleTo::class . ":comission_confim");
 
     Route::post('/comissions/confirm/take/{id}', function ($id) {
-        // 
+        //
         // return 'hellow';
         try {
 
@@ -252,7 +301,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
 
     Route::get('/comissions/refund/take/{id}', function ($id) {
-        // 
+        //
         try {
 
             $cc = new ProductComissionController();
@@ -313,7 +362,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     )->middleware(AbleTo::class . ":withdraw_view");
 
 
-    // settings 
+    // settings
     Route::get('/settings', SettingsIndex::class)->name('settings.index');
     Route::get('/pages', PagesIndex::class)->name('pages.index');
     Route::get('/pages/add-new', PagesCreate::class)->name('pages.create');

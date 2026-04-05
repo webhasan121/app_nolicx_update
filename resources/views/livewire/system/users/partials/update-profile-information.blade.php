@@ -36,7 +36,7 @@ new class extends Component {
         // $this->getData();
         $this->dispatch('success', "Updated!");
     }
-}; 
+};
 ?>
 
 <div>
@@ -44,8 +44,8 @@ new class extends Component {
     <form wire:submit.prevent="save">
 
         <div class=" m-0">
-            
- 
+
+
             <x-input-file label="User Name" error="name" name="name" >
                 <x-text-input type="text" class="w-full" wire:model.live="users.name"/>
             </x-input-file>
