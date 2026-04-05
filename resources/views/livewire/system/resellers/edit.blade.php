@@ -199,6 +199,9 @@
         </x-dashboard.section>
 
         @if ($nav == 'documents')
+            @php
+                $resellersDocument = $resellers->documents;
+            @endphp
     
             <x-dashboard.section>
                 <x-dashboard.section.header>
@@ -212,7 +215,11 @@
                 <x-dashboard.section.inner>
                     <x-input-file label="Document Submited Last Date" error="deatline">
                         <div class="border px-2 rounded shadow-sm">    
-                            {{Carbon\Carbon::parse($resellers->documents->deatline)->toFormattedDateString()}} - {{Carbon\Carbon::parse($resellers->documents->deatline)->diffForHumans()}}
+                            @if ($resellersDocument?->deatline)
+                                {{Carbon\Carbon::parse($resellersDocument->deatline)->toFormattedDateString()}} - {{Carbon\Carbon::parse($resellersDocument->deatline)->diffForHumans()}}
+                            @else
+                                N/A
+                            @endif
                         </div>
                     </x-input-file>
                     <x-hr />
@@ -229,45 +236,57 @@
             </x-dashboard.section>
       
             <x-dashboard.section>
-                @php
-                    $resellersDocument = $resellers->documents;
-                @endphp
-    
                 <x-input-file label="Nid" error="nid">
-                    <x-text-input type="number" class="form-control py-1" value="{{$resellersDocument->nid}}" label="NID No" name="nid" error="nid" />
+                    <x-text-input type="number" class="form-control py-1" value="{{$resellersDocument?->nid}}" label="NID No" name="nid" error="nid" />
                 </x-input-file>
                 <x-hr/>
     
                 <x-input-file label="NID Image (front side)" error='nid_front'>
-                    <img width="300px" height="200px" src="{{asset('storage/'.$resellersDocument->nid_front)}}" alt="">                
+                    @if ($resellersDocument?->nid_front)
+                        <img width="300px" height="200px" src="{{asset('storage/'.$resellersDocument->nid_front)}}" alt="">
+                    @else
+                        <div>N/A</div>
+                    @endif
                 </x-input-file>
                 <x-hr/>
                 
                 <x-input-file label="NID Image (back side)" error='nid_back'>
-                    <img width="300px" height="200px" src="{{asset('storage/'.$resellersDocument->nid_back)}}" alt="">                    
+                    @if ($resellersDocument?->nid_back)
+                        <img width="300px" height="200px" src="{{asset('storage/'.$resellersDocument->nid_back)}}" alt="">
+                    @else
+                        <div>N/A</div>
+                    @endif
                 </x-input-file>
                 <x-hr />
             </x-dashboard.section>
             <x-dashboard.section>
                 
                 <x-input-file label="TIN No" error='tin'>
-                    <x-text-input type="text" name="" value="{{$resellersDocument->shop_tin}}" id="" />
+                    <x-text-input type="text" name="" value="{{$resellersDocument?->shop_tin}}" id="" />
                 </x-input-file>
                 <x-hr/>
     
                 <x-input-file label="TIN Image" error='shop_tin'>
-                        <img width="300px" height="200px" src="{{asset('storage/'.$resellersDocument['shop_tin_image'])}}" alt="">                  
+                        @if ($resellersDocument?->shop_tin_image)
+                            <img width="300px" height="200px" src="{{asset('storage/'.$resellersDocument->shop_tin_image)}}" alt="">
+                        @else
+                            <div>N/A</div>
+                        @endif
                 </x-input-file>
             </x-dashboard.section>
     
             <x-dashboard.section>
                 <x-input-file label="Shop Trade" error="shop_trade">
-                    <x-text-input type="text" name="" value="{{$resellersDocument->shop_trade}}" id="" />
+                    <x-text-input type="text" name="" value="{{$resellersDocument?->shop_trade}}" id="" />
                 </x-input-file>
                 <x-hr/>
     
                 <x-input-file label="Trade License Image" error='shop_trade_image'>
-                    <img width="300px" height="200px" src="{{asset('storage/'.$resellersDocument['shop_trade_image'])}}" alt="">
+                    @if ($resellersDocument?->shop_trade_image)
+                        <img width="300px" height="200px" src="{{asset('storage/'.$resellersDocument->shop_trade_image)}}" alt="">
+                    @else
+                        <div>N/A</div>
+                    @endif
                 </x-input-file>
     
             

@@ -22,7 +22,6 @@ export default function InputField({
                 >
                     {label} {required ? "*" : ""}
                 </InputLabel>
-                {error && <div className="text-sm text-red-600">{error}</div>}
             </div>
 
             <TextInput
@@ -35,6 +34,8 @@ export default function InputField({
                 placeholder={label}
                 required={required}
             />
+                {error && <div className="text-sm text-red-600">{error}</div>}
+
         </div>
     );
 }

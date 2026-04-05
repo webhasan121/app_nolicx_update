@@ -173,7 +173,13 @@ class VendorController extends Controller
         }
 
         if (!empty($find)) {
-            $query->where('shop_name_en', 'like', '%' . $find . '%');
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('shop_name_en', 'like', '%' . $find . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($find) {
+                        $userQuery->where('name', 'like', '%' . $find . '%');
+                    });
+            });
         }
 
         $vendors = $query->get()->map(function ($vendor) {

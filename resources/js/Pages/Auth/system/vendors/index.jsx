@@ -1,5 +1,5 @@
 import { router, usePage } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Modal from "../../../../components/Modal";
 import NavLink from "../../../../components/NavLink";
@@ -37,6 +37,21 @@ export default function Index() {
             find: search,
         });
     };
+
+    useEffect(() => {
+        if ((find ?? "") === search) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            visitWithQuery({
+                filter,
+                find: search,
+            });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search, filter]);
 
     return (
         <AppLayout title="Vendors" header={<PageHeader>Vendors</PageHeader>}>
@@ -76,11 +91,6 @@ export default function Index() {
                                     className="my-1 py-1 mr-1"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
-                                            runSearch();
-                                        }
-                                    }}
                                 />
                                 <PrimaryButton
                                     type="button"
