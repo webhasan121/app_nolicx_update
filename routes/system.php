@@ -282,11 +282,6 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
      * navigations
      */
     Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
-    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
-    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
-    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
-    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
-    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
     Route::get('/navigations/list', [NavigationController::class, 'indexReact'])->name('navigations.index');
     Route::post('/navigations/list/menus', [NavigationController::class, 'storeMenu'])->name('navigations.menus.store');
     Route::post('/navigations/list/menus/{menu}/rename', [NavigationController::class, 'renameMenu'])->name('navigations.menus.rename');
