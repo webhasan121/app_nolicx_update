@@ -4,13 +4,13 @@ export default function SectionHeader({ title, content }) {
     return (
         <div>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">
+                <div className="text-lg font-medium text-gray-900">
                     {title}
-                </h2>
+                </div>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <div className="mt-1 text-sm text-gray-600">
                     {content}
-                </p>
+                </div>
             </header>
         </div>
     );

@@ -1,6 +1,13 @@
 <?php
 
 use App\Http\Controllers\ProductComissionController;
+use App\Http\Controllers\System\CategoryController;
+use App\Http\Controllers\System\NavigationController;
+use App\Http\Controllers\System\ProductController;
+use App\Http\Controllers\System\RiderController;
+use App\Http\Controllers\System\ResellerController;
+use App\Http\Controllers\System\StoreController;
+use App\Http\Controllers\System\VipController;
 use App\Http\Controllers\System\VendorController;
 use App\Http\Middleware\AbleTo;
 use App\Models\User;
@@ -151,8 +158,13 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
      * Rotue prefix dedicated for reseller management
      */
     Route::prefix('reseller')->group(function () {
-        Route::get('/', systemResellerIndexPage::class)->name('reseller.index')->middleware(AbleTo::class . ":resellers_view");
-        Route::get('/{id}/edit', systemResellerEditPage::class)->name('reseller.edit')->middleware(AbleTo::class . ":resellers_edit");
+        Route::get('/old', systemResellerIndexPage::class)->name('reseller.index.old')->middleware(AbleTo::class . ":resellers_view");
+        Route::get('/', [ResellerController::class, 'indexReact'])->name('reseller.index')->middleware(AbleTo::class . ":resellers_view");
+        Route::get('/{id}/edit/old', systemResellerEditPage::class)->name('reseller.edit.old')->middleware(AbleTo::class . ":resellers_edit");
+        Route::get('/{id}/edit', [ResellerController::class, 'editReact'])->name('reseller.edit')->middleware(AbleTo::class . ":resellers_edit");
+        Route::post('/{id}/status', [ResellerController::class, 'updateStatus'])->name('reseller.status.update')->middleware(AbleTo::class . ":resellers_edit");
+        Route::post('/{id}/comission', [ResellerController::class, 'updateComission'])->name('reseller.comission.update')->middleware(AbleTo::class . ":resellers_edit");
+        Route::post('/{id}/documents/deatline', [ResellerController::class, 'updateDocumentDeadline'])->name('reseller.documents.deatline')->middleware(AbleTo::class . ":resellers_edit");
     });
 
 
@@ -193,7 +205,8 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
             return redirect()->back()->with('success', 'User refunded successfully!');
         })->name('users.refund')->middleware(AbleTo::class . ":users_update");
-        Route::get('/print-summery', UsersPrintSummery::class)->name('users.print-summery');
+        Route::get('/print-summery/old', UsersPrintSummery::class)->name('users.print-summery.old');
+        Route::get('/print-summery', [SystemUsersController::class, 'printReact'])->name('users.print-summery');
     });
 
 
@@ -202,49 +215,79 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
      *
      */
     Route::prefix('rider')->group(function () {
-        Route::get('/', systemRiderIndexPage::class)->name("rider.index")->middleware(AbleTo::class . ":riders_view");
-        Route::get('/{id}/edit', systemRiderEditPage::class)->name('rider.edit')->middleware(AbleTo::class . ":riders_edit");
+        Route::get('/old', systemRiderIndexPage::class)->name("rider.index.old")->middleware(AbleTo::class . ":riders_view");
+        Route::get('/', [RiderController::class, 'indexReact'])->name("rider.index")->middleware(AbleTo::class . ":riders_view");
+        Route::get('/{id}/edit/old', systemRiderEditPage::class)->name('rider.edit.old')->middleware(AbleTo::class . ":riders_edit");
+        Route::get('/{id}/edit', [RiderController::class, 'editReact'])->name('rider.edit')->middleware(AbleTo::class . ":riders_edit");
+        Route::post('/{id}/status', [RiderController::class, 'updateStatus'])->name('rider.status.update')->middleware(AbleTo::class . ":riders_edit");
     });
 
 
     /**
      * VIP
      */
-    Route::get('/packages', systemVipIndexPage::class)->name('vip.index')->middleware(AbleTo::class . ":vip_view");
-    Route::get('/package/create', systemVipCreatePage::class)->name('vip.crate')->middleware(AbleTo::class . ":vip_add");
-    Route::get('/package/{packages}', systemVipEditPage::class)->name('package.edit')->middleware(AbleTo::class . ":vip_update");
+    Route::get('/packages/old', systemVipIndexPage::class)->name('vip.index.old')->middleware(AbleTo::class . ":vip_view");
+    Route::get('/packages', [VipController::class, 'indexReact'])->name('vip.index')->middleware(AbleTo::class . ":vip_view");
+    Route::get('/package/create/old', systemVipCreatePage::class)->name('vip.crate.old')->middleware(AbleTo::class . ":vip_add");
+    Route::get('/package/create', [VipController::class, 'createReact'])->name('vip.crate')->middleware(AbleTo::class . ":vip_add");
+    Route::post('/package/store', [VipController::class, 'store'])->name('vip.store')->middleware(AbleTo::class . ":vip_add");
+    Route::get('/package/{packages}/old', systemVipEditPage::class)->name('package.edit.old')->middleware(AbleTo::class . ":vip_update");
+    Route::get('/package/{packages}', [VipController::class, 'editReact'])->name('package.edit')->middleware(AbleTo::class . ":vip_update");
+    Route::post('/package/{packages}/update', [VipController::class, 'update'])->name('package.update')->middleware(AbleTo::class . ":vip_update");
+    Route::post('/packages/{id}/trash', [VipController::class, 'trash'])->name('vip.trash')->middleware(AbleTo::class . ":vip_update");
+    Route::post('/packages/{id}/restore', [VipController::class, 'restore'])->name('vip.restore')->middleware(AbleTo::class . ":vip_update");
 
     Route::get('/vip/{vip}', Edit::class)->name('vip.edit')->middleware(AbleTo::class . ":vip_user_edit");
-    Route::get('/vips', systemVipUsersIndex::class)->name('vip.users')->middleware(AbleTo::class . ":vip_user_view");
-    Route::get('/vips/print-summery', VipPrintSummery::class)->name('vip.print-summery')->middleware(AbleTo::class . ":vip_user_view");
+    Route::get('/vips/old', systemVipUsersIndex::class)->name('vip.users.old')->middleware(AbleTo::class . ":vip_user_view");
+    Route::get('/vips', [VipController::class, 'usersReact'])->name('vip.users')->middleware(AbleTo::class . ":vip_user_view");
+    Route::get('/vips/print-summery/old', VipPrintSummery::class)->name('vip.print-summery.old')->middleware(AbleTo::class . ":vip_user_view");
+    Route::get('/vips/print-summery', [VipController::class, 'printReact'])->name('vip.print-summery')->middleware(AbleTo::class . ":vip_user_view");
 
 
 
     /**
      * system coin store management
      */
-    Route::get('/coins', Index::class)->name('store.index')->middleware(AbleTo::class . ":store_view");
+    Route::get('/coins/old', Index::class)->name('store.index.old')->middleware(AbleTo::class . ":store_view");
+    Route::get('/coins', [StoreController::class, 'indexReact'])->name('store.index')->middleware(AbleTo::class . ":store_view");
 
 
     /**
      * routes for products management for system
      */
     Route::prefix('products')->group(function () {
-        Route::get('/index', systemGlobalProductsIndexPage::class)->name('products.index');
-        Route::get('/{product}/edit', systemGlobalProductsEditPage::class)->name('products.edit');
-    })->middleware(AbleTo::class . 'product_view');
+        Route::get('/index/old', systemGlobalProductsIndexPage::class)->name('products.index.old');
+        Route::get('/index', [ProductController::class, 'indexReact'])->name('products.index');
+        Route::get('/{product}/edit/old', systemGlobalProductsEditPage::class)->name('products.edit.old');
+        Route::get('/{product}/edit', [ProductController::class, 'editReact'])->name('products.edit');
+        Route::post('/{product}/update', [ProductController::class, 'updateReact'])->name('products.update')->middleware(AbleTo::class . ":product_update");
+        Route::post('/{product}/restore', [ProductController::class, 'restore'])->name('products.restore')->middleware(AbleTo::class . ":product_update");
+        Route::post('/{product}/trash', [ProductController::class, 'trash'])->name('products.trash')->middleware(AbleTo::class . ":product_update");
+        Route::delete('/{product}/images/{image}', [ProductController::class, 'destroyImage'])->name('products.images.destroy')->middleware(AbleTo::class . ":product_update");
+    })->middleware(AbleTo::class . ":product_view");
 
 
     /**
      * Routes for manage syste categories
      */
-    Route::get('/categories',  SystemCategoriesIndex::class)->name('categories.index')->middleware(AbleTo::class . ":category_view");
-    Route::get('/categories/{cid}', CategoriesEdit::class)->name('categories.edit')->middleware(AbleTo::class . ":category_edit");
+    Route::get('/categories/old',  SystemCategoriesIndex::class)->name('categories.index.old')->middleware(AbleTo::class . ":category_view");
+    Route::get('/categories', [CategoryController::class, 'indexReact'])->name('categories.index')->middleware(AbleTo::class . ":category_view");
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store')->middleware(AbleTo::class . ":category_add");
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy')->middleware(AbleTo::class . ":category_view");
+    Route::get('/categories/{cid}/old', CategoriesEdit::class)->name('categories.edit.old')->middleware(AbleTo::class . ":category_edit");
+    Route::get('/categories/{cid}', [CategoryController::class, 'editReact'])->name('categories.edit')->middleware(AbleTo::class . ":category_edit");
+    Route::post('/categories/{cid}', [CategoryController::class, 'update'])->name('categories.update')->middleware(AbleTo::class . ":category_edit");
 
     /**
      * navigations
      */
-    Route::get('/navigations/list', NavigationsIndex::class)->name('navigations.index');
+    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
+    Route::get('/navigations/list', [NavigationController::class, 'indexReact'])->name('navigations.index');
+    Route::post('/navigations/list/menus', [NavigationController::class, 'storeMenu'])->name('navigations.menus.store');
+    Route::post('/navigations/list/menus/{menu}/rename', [NavigationController::class, 'renameMenu'])->name('navigations.menus.rename');
+    Route::delete('/navigations/list/menus/{menu}', [NavigationController::class, 'destroyMenu'])->name('navigations.menus.destroy');
+    Route::post('/navigations/list/menus/{menu}/items', [NavigationController::class, 'updateMenuItems'])->name('navigations.items.update');
+    Route::delete('/navigations/list/items/{item}', [NavigationController::class, 'destroyMenuItem'])->name('navigations.items.destroy');
 
 
     /**
