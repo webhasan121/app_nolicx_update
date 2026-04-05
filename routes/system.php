@@ -281,7 +281,11 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     /**
      * navigations
      */
-    // Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quas dolores fugit rerum ut, laborum harum quisquam quaerat quod ullam hic velit cupiditate, minima saepe voluptatem nulla? Sapiente maxime exercitationem harum.
+    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
+    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
+    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
+    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
+    Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
     Route::get('/navigations/list/old', NavigationsIndex::class)->name('navigations.index.old');
     Route::get('/navigations/list', [NavigationController::class, 'indexReact'])->name('navigations.index');
     Route::post('/navigations/list/menus', [NavigationController::class, 'storeMenu'])->name('navigations.menus.store');
