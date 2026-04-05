@@ -2,7 +2,6 @@
 
 use App\Events\ProductComissions;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\CategoryProductsController;
 use App\Http\Controllers\ProductDetailsController;
 use App\Http\Controllers\ProductsIndexController;
 use App\Http\Controllers\ProductOrderController;
@@ -101,8 +100,8 @@ Route::middleware('auth')->prefix('/u/')->group(function () {
 
 Route::get('products/old', userProductsPage::class)->name('products.index.old');
 Route::get('products', [ProductsIndexController::class, 'index'])->name('products.index');
-Route::get('category/{cat}/products/old', userProductsForCategoryPage::class)->name('category.products.old');
-Route::get('category/{cat}/products', [CategoryProductsController::class, 'index'])->name('category.products');
+Route::get('category/{cat}/products', userProductsForCategoryPage::class)->name('category.products');
+
 Route::get('category', userCategoriesPage::class)->name('category.index');
 
 Route::get('product/{id}/{slug}/old', userProductsDetailsPage::class)->name('products.details.old')->middleware('products.view.add');
