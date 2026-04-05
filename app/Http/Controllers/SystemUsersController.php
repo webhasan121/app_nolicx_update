@@ -160,6 +160,85 @@ class SystemUsersController extends Controller
         ]);
     }
 
+    public function printReact(Request $request)
+    {
+        $search = (string) $request->string('search');
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
+
+        $query = User::query()
+            ->withoutAdmin()
+            ->orderBy('id', 'desc')
+            ->with(['myRef', 'getReffOwner.owner', 'subscription.package', 'roles', 'permissions'])
+            ->withCount('myOrderAsUser');
+
+        if (!empty($search)) {
+            $query->where(function ($builder) use ($search) {
+                $builder
+                    ->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('reference', 'like', '%' . $search . '%')
+                    ->orWhere('id', 'like', '%' . $search . '%')
+                    ->orWhereHas('subscription.package', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('myRef', function ($q) use ($search) {
+                        $q->where('ref', 'like', '%' . $search . '%');
+                    });
+            });
+        } else {
+            $query->whereBetween('created_at', [$sd, Carbon::parse($ed)->endOfDay()]);
+        }
+
+        $users = $query->get()->values()->map(function ($user) {
+            $subscription = $user->subscription;
+            $vipStatus = [
+                'label' => 'NO',
+                'className' => 'px-1 rounded inline-flex bg-red-200 text-xs',
+            ];
+
+            if ($subscription) {
+                if ($subscription->valid_till > now() && $subscription->status) {
+                    $vipStatus = [
+                        'label' => $subscription?->package?->name ?? 'N/A',
+                        'className' => 'px-1 rounded inline-flex bg-green-200 text-xs',
+                    ];
+                } elseif ($subscription->valid_till < now() && $subscription->status) {
+                    $vipStatus = [
+                        'label' => 'Expired',
+                        'className' => 'px-1 rounded inline-flex bg-yellow-200 text-xs',
+                    ];
+                } elseif (!$subscription->status) {
+                    $vipStatus = [
+                        'label' => 'Pending',
+                        'className' => 'px-1 rounded inline-flex bg-blue-200 text-xs',
+                    ];
+                }
+            }
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name ?? 'N/A',
+                'email' => $user->email ?? 'N/A',
+                'ref' => $user->myRef?->ref ?? 'N/A',
+                'reference' => $user->reference ?? 'Not Found',
+                'reference_owner_name' => $user->getReffOwner?->owner?->name,
+                'roles' => $user->getRoleNames()->values()->all(),
+                'permissions_count' => $user->permissions?->count() ?? 0,
+                'vip_status' => $vipStatus,
+                'orders_count' => $user->my_order_as_user_count ?? 0,
+                'coin' => $user->coin ?? 0,
+                'created_at_formatted' => $user->created_at?->toFormattedDateString() ?? '',
+            ];
+        })->all();
+
+        return Inertia::render('Auth/system/users/PrintSummery', [
+            'sd' => $sd,
+            'ed' => $ed,
+            'users' => $users,
+        ]);
+    }
+
     public function admin_update(Request $request, $id)
     {
         // $user->update(request()->validate([

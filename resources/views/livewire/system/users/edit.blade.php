@@ -1,6 +1,6 @@
 <div>
     <x-dashboard.page-header>
-        User Update s
+        User Update
         <br />
         <x-nav-link href="{{route('system.users.view')}}"> <i class="fa-solid fa-up-right-from-square me-2"></i> Users </x-nav-link>
     </x-dashboard.page-header>
@@ -28,13 +28,13 @@
                 <x-hr/>
                     <x-input-file label="User Coin" error="coin" name="coin" >
                         <div class="rounded-lg">
-                            <x-text-input type="text"  class=" border-0 w-32" disabled wire:model.live="users.coin"/>
+                            <x-text-input type="text"  class="w-32 border-0 " disabled wire:model.live="users.coin"/>
 
                             {{-- click button to show a livewire modal  --}}
-                            <div class="p-2 bg-ref-900 rounded border inline-block">
+                            <div class="inline-block p-2 border rounded bg-ref-900">
                                 <div class="text-xs">Recharge</div>
                                 <form wire:submit.prevent="rechargeUser">
-                                    <x-text-input type="number" class="py-1 w-32" wire:model.live="rechargeAmount" />
+                                    <x-text-input type="number" class="w-32 py-1" wire:model.live="rechargeAmount" />
                                     <x-primary-button>
                                         Apply
                                     </x-primary-button>
