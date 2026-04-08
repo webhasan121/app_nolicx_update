@@ -10,7 +10,7 @@ import NavLink from "../../components/NavLink";
 
 export default function Dash() {
     const { props } = usePage();
-    const { vendorActive, resellerActive } = usePage().props;
+    const { vendorActive, resellerActive, widgets = [] } = usePage().props;
     const user = props.auth.user;
     const user_my_ref = props.user_my_ref;
     const hide_claim = props.hide_claim;
@@ -19,10 +19,26 @@ export default function Dash() {
     const [newRef, setNewRef] = useState("");
     const [copied, setCopied] = useState(false);
 
-    const copyRef = () => {
-        navigator.clipboard.writeText(user_my_ref || "");
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    const copyRef = async () => {
+        const value = user_my_ref || "";
+
+        try {
+            if (window.navigator?.clipboard?.writeText) {
+                await window.navigator.clipboard.writeText(value);
+            } else {
+                const input = document.createElement("input");
+                input.value = value;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand("copy");
+                document.body.removeChild(input);
+            }
+
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (error) {
+            console.error("Copy failed", error);
+        }
     };
 
     const checkRef = (e) => {
@@ -36,30 +52,78 @@ export default function Dash() {
     return (
         <UserDash>
             <Container>
-                {/* Welcome Section */}
-                <SectionSection>
-                    <div className="my-2 rounded">
-                        <div className="flex justify-between">
-                            <div>Welcome, back!</div>
+                <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div className="p-6 bg-white rounded-md shadow-md">
+                        <div className="flex items-center justify-between gap-6">
+                            <div className="relative">
+                                <h5 className="text-lg">Welcome, back!</h5>
+                                <h3 className="px-0">
+                                    <strong
+                                        className="text-green-900"
+                                        style={{ fontSize: "22px" }}
+                                    >
+                                        {user.name.toUpperCase()}
+                                    </strong>
+                                </h3>
+                            </div>
+                            <div className="relative">
+                                <p className="mb-2 text-xs text-right">Wallet Balance</p>
+                                <NavLink
+                                    href={route("user.wallet.index")}
+                                    className="px-3 py-1 text-indigo-900 border rounded-lg shadow ring-1"
+                                >
+                                    <span className="text-sm text-center">{(user.coin ?? 0) + " TK"}</span>
+                                </NavLink>
+                            </div>
                         </div>
-
-                        <div className="flex items-center justify-between">
-                            <b className="text-xl text-green-900">
-                                {user.name.toUpperCase()}
-                            </b>
-
-                            <NavLink
-                                href={route("user.wallet.index")}
-                                className="px-3 text-indigo-900 border rounded-lg shadow ring-1"
-                            >
-                                <div>Wallet</div>
-                                <div className="py-1 pl-3">
-                                    {user.coin ?? 0} TK
-                                </div>
-                            </NavLink>
-                        </div>
+                        <p className="mt-1 text-sm text-gray-600">
+                            We&apos;re glad to see you again. Check your dashboard for updates, tasks, and rewards waiting for you today.
+                        </p>
                     </div>
-                </SectionSection>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        {widgets.map((widget, index) => {
+                            const title = index === 0 ? "Current Level" : "Upcoming";
+
+                            return (
+                                <div
+                                    key={`${widget.name}-${index}`}
+                                    className="relative p-6 bg-white rounded-md shadow-md"
+                                >
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h6 className="text-sm font-semibold text-gray-600">{title}</h6>
+                                        <div className="inline-block px-4 py-1 text-sm text-center text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                            <span>{widget.name}</span>
+                                        </div>
+                                    </div>
+                                    {widget.data?.req_users !== undefined && widget.data?.vip_users !== undefined ? (
+                                        <>
+                                            {index === 0 ? (
+                                                <p className="mt-2 mb-1 text-sm font-semibold text-gray-600">
+                                                    Achievement
+                                                </p>
+                                            ) : null}
+                                            <p className="flex items-center justify-between text-xs">
+                                                <strong>Normal Users</strong>
+                                                <span>{widget.data?.req_users}</span>
+                                            </p>
+                                            <p className="flex items-center justify-between text-xs">
+                                                <strong>VIP Users</strong>
+                                                <span>{widget.data?.vip_users}</span>
+                                            </p>
+                                            {widget.rewards !== null && widget.rewards !== undefined ? (
+                                                <p className="flex flex-col mt-2 text-xs text-gray-600">
+                                                    <strong>Level-Up Rewards</strong>
+                                                    <span>{widget.rewards}</span>
+                                                </p>
+                                            ) : null}
+                                        </>
+                                    ) : null}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
 
                 {/* Refer & Claim Section */}
                 <div className="justify-between gap-4 my-2 lg:flex">

@@ -2,13 +2,26 @@
 
 use App\Http\Controllers\ProductComissionController;
 use App\Http\Controllers\System\CategoryController;
+use App\Http\Controllers\System\ComissionsController;
+use App\Http\Controllers\System\ConsignmentController;
+use App\Http\Controllers\System\DepositController;
+use App\Http\Controllers\System\GeolocationController;
 use App\Http\Controllers\System\NavigationController;
+use App\Http\Controllers\System\OrdersController;
+use App\Http\Controllers\System\PageSettingsController;
+use App\Http\Controllers\System\BranchController;
+use App\Http\Controllers\System\FooterBuilderController;
+use App\Http\Controllers\System\PartnershipController;
 use App\Http\Controllers\System\ProductController;
+use App\Http\Controllers\System\ReportController;
 use App\Http\Controllers\System\RiderController;
 use App\Http\Controllers\System\ResellerController;
+use App\Http\Controllers\System\SettingsController;
+use App\Http\Controllers\System\SliderController;
 use App\Http\Controllers\System\StoreController;
 use App\Http\Controllers\System\VipController;
 use App\Http\Controllers\System\VendorController;
+use App\Http\Controllers\System\WithdrawController;
 use App\Http\Middleware\AbleTo;
 use App\Models\User;
 use App\View\Components\dashboard\overview\system\VendorCount;
@@ -26,6 +39,7 @@ use App\Livewire\System\Consignment\Index as ConsignmentIndex;
 use App\Livewire\System\Deposit\Index as DepositIndex;
 use App\Livewire\System\Deposit\PrintSummery;
 use App\Livewire\System\EarnBySell\Index as EarnBySellIndex;
+use App\Livewire\System\Geolocation\Index as GeolocationIndex;
 use App\Livewire\System\Geolocation\Countries;
 use App\Livewire\System\Geolocation\States;
 use App\Livewire\System\Geolocation\Cities;
@@ -293,25 +307,55 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     /**
      * slider
      */
-    Route::get('/sliders', Slider::class)->name('slider.index')->middleware(AbleTo::class . ":slider_view");
-    Route::get('/sliders/slides', Slides::class)->name('slider.slides')->middleware(AbleTo::class . ":slider_edit");
+    Route::get('/sliders/old', Slider::class)->name('slider.index.old')->middleware(AbleTo::class . ":slider_view");
+    Route::get('/sliders', [SliderController::class, 'indexReact'])->name('slider.index')->middleware(AbleTo::class . ":slider_view");
+    Route::post('/sliders', [SliderController::class, 'store'])->name('slider.store')->middleware(AbleTo::class . ":slider_edit");
+    Route::post('/sliders/{slider}/status', [SliderController::class, 'updateStatus'])->name('slider.status')->middleware(AbleTo::class . ":slider_edit");
+    Route::delete('/sliders/{slider}', [SliderController::class, 'destroy'])->name('slider.destroy')->middleware(AbleTo::class . ":slider_edit");
+    Route::post('/sliders/{slider}', [SliderController::class, 'update'])->name('slider.update')->middleware(AbleTo::class . ":slider_edit");
+
+    Route::get('/sliders/slides/old', Slides::class)->name('slider.slides.old')->middleware(AbleTo::class . ":slider_edit");
+    Route::get('/sliders/slides', [SliderController::class, 'slidesReact'])->name('slider.slides')->middleware(AbleTo::class . ":slider_edit");
+    Route::post('/sliders/slides/{slider}/add', [SliderController::class, 'addSlide'])->name('slider.slides.add')->middleware(AbleTo::class . ":slider_edit");
+    Route::post('/sliders/slides/{slide}/update', [SliderController::class, 'updateSlide'])->name('slider.slides.update')->middleware(AbleTo::class . ":slider_edit");
+    Route::delete('/sliders/slides/{slide}', [SliderController::class, 'destroySlide'])->name('slider.slides.destroy')->middleware(AbleTo::class . ":slider_edit");
 
 
     /**
      * static slider
      */
-    Route::get('/static-slider', \App\Livewire\System\StaticSlider\Index::class)->name('static-slider.index');
-    Route::get('/static-slider/{id}', \App\Livewire\System\StaticSlider\Sliders::class)->name('static-slider.slides');
+    Route::get('/static-slider/old', \App\Livewire\System\StaticSlider\Index::class)->name('static-slider.index.old');
+    Route::get('/static-slider', [\App\Http\Controllers\System\StaticSliderController::class, 'indexReact'])->name('static-slider.index');
+    Route::post('/static-slider', [\App\Http\Controllers\System\StaticSliderController::class, 'store'])->name('static-slider.store');
+    Route::post('/static-slider/{slider}', [\App\Http\Controllers\System\StaticSliderController::class, 'update'])->name('static-slider.update');
+    Route::post('/static-slider/{slider}/status', [\App\Http\Controllers\System\StaticSliderController::class, 'updateStatus'])->name('static-slider.status');
+    Route::delete('/static-slider/{slider}', [\App\Http\Controllers\System\StaticSliderController::class, 'destroy'])->name('static-slider.destroy');
+    Route::get('/static-slider/{id}/old', \App\Livewire\System\StaticSlider\Sliders::class)->name('static-slider.slides.old');
+    Route::get('/static-slider/{id}', [\App\Http\Controllers\System\StaticSliderController::class, 'slidesReact'])->name('static-slider.slides');
+    Route::post('/static-slider/{slider}/slides', [\App\Http\Controllers\System\StaticSliderController::class, 'storeSlide'])->name('static-slider.slides.store');
+    Route::delete('/static-slider/slides/{slide}', [\App\Http\Controllers\System\StaticSliderController::class, 'destroySlide'])->name('static-slider.slides.destroy');
 
     /**deposit */
-    Route::get('/deposit', DepositIndex::class)->name('deposit.index')->middleware(AbleTo::class . ":deposit_view");
-    Route::get('/deposit/print', PrintSummery::class)->name('deposit.print-summery');
+    Route::get('/deposit/old', DepositIndex::class)->name('deposit.index.old')->middleware(AbleTo::class . ":deposit_view");
+    Route::get('/deposit', [DepositController::class, 'indexReact'])->name('deposit.index')->middleware(AbleTo::class . ":deposit_view");
+    Route::post('/deposit/{deposit}/confirm', [DepositController::class, 'confirm'])->name('deposit.confirm')->middleware(AbleTo::class . ":deposit_view");
+    Route::delete('/deposit/{deposit}', [DepositController::class, 'destroy'])->name('deposit.destroy')->middleware(AbleTo::class . ":deposit_view");
+    Route::get('/deposit/print/old', PrintSummery::class)->name('deposit.print-summery.old');
+    Route::get('/deposit/print', [DepositController::class, 'printReact'])->name('deposit.print-summery');
 
 
-    Route::get('/comissions', ComissionsIndex::class)->name('comissions.index')->middleware(AbleTo::class . ":comission_view");
-    Route::get('/comissions/take', Takes::class)->name('comissions.takes')->middleware(AbleTo::class . ":comission_view");
-    Route::get('/comissions/{id}', TakesDetails::class)->name('comissions.details')->middleware(AbleTo::class . ":comission_view");
-    Route::get('/comissions/takes/{id}', TakesDistributes::class)->name('comissions.distributes')->middleware(AbleTo::class . ":comission_confim");
+    Route::get('/comissions/old', ComissionsIndex::class)->name('comissions.index.old')->middleware(AbleTo::class . ":comission_view");
+    Route::get('/comissions', [ComissionsController::class, 'indexReact'])->name('comissions.index')->middleware(AbleTo::class . ":comission_view");
+
+
+    Route::get('/comissions/take/old', Takes::class)->name('comissions.takes.old')->middleware(AbleTo::class . ":comission_view");
+    Route::get('/comissions/take', [ComissionsController::class, 'takesReact'])->name('comissions.takes')->middleware(AbleTo::class . ":comission_view");
+
+    Route::get('/comissions/{id}/old', TakesDetails::class)->name('comissions.details.old')->middleware(AbleTo::class . ":comission_view");
+    Route::get('/comissions/{id}', [ComissionsController::class, 'detailsReact'])->name('comissions.details')->middleware(AbleTo::class . ":comission_view");
+
+    Route::get('/comissions/takes/{id}/old', TakesDistributes::class)->name('comissions.distributes.old')->middleware(AbleTo::class . ":comission_confim");
+    Route::get('/comissions/takes/{id}', [ComissionsController::class, 'distributesReact'])->name('comissions.distributes')->middleware(AbleTo::class . ":comission_confim");
 
     // Rotue::get()->name('comissions.');
 
@@ -386,52 +430,100 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
      */
     Route::prefix('orders')->name('orders.')->group(
         function () {
-            Route::get('/', SystemOrdersIndex::class)->name('index');
-            Route::get('/{id}', Details::class)->name('details');
+            Route::get('/old', SystemOrdersIndex::class)->name('index.old');
+            Route::get('/', [OrdersController::class, 'indexReact'])->name('index');
+            Route::delete('/{id}', [OrdersController::class, 'destroy'])->name('destroy');
+            Route::get('/{id}/old', Details::class)->name('details.old');
+            Route::get('/{id}', [OrdersController::class, 'detailsReact'])->name('details');
+            Route::post('/{id}/reseller-profit/confirm', [OrdersController::class, 'confirmResellerProfit'])->name('reseller-profit.confirm');
+            Route::post('/{id}/reseller-profit/refund', [OrdersController::class, 'refundResellerProfit'])->name('reseller-profit.refund');
         }
     )->middleware(AbleTo::class . ':order_view');
 
-    Route::get('/print-summery', OrdersPrintSummery::class)->name('orders.sprint');
+
+
+
+
+
+
+    Route::get('/print-summery/old', OrdersPrintSummery::class)->name('orders.sprint.old');
+    Route::get('/print-summery', [OrdersController::class, 'printReact'])->name('orders.sprint');
 
     /**
      * system withdraw
      */
     Route::prefix('withdraw')->group(
         function () {
-            Route::get('/', WithdrawIndex::class)->name('withdraw.index');
-            Route::get('/take{id}', WithdrawDetails::class)->name('withdraw.view');
-            Route::get('/print', Pdf::class)->name('withdraw.print');
+            Route::get('/old', WithdrawIndex::class)->name('withdraw.index.old');
+            Route::get('/', [WithdrawController::class, 'indexReact'])->name('withdraw.index');
+            Route::get('/take{id}/old', WithdrawDetails::class)->name('withdraw.view.old');
+            Route::get('/take{id}', [WithdrawController::class, 'viewReact'])->name('withdraw.view');
+            Route::post('/take{id}/confirm', [WithdrawController::class, 'confirmPayment'])->name('withdraw.confirm');
+            Route::post('/take{id}/reject', [WithdrawController::class, 'rejectPayment'])->name('withdraw.reject');
+            Route::get('/print/old', Pdf::class)->name('withdraw.print.old');
+            Route::get('/print', [WithdrawController::class, 'printReact'])->name('withdraw.print');
         }
     )->middleware(AbleTo::class . ":withdraw_view");
 
 
     // settings
-    Route::get('/settings', SettingsIndex::class)->name('settings.index');
-    Route::get('/pages', PagesIndex::class)->name('pages.index');
-    Route::get('/pages/add-new', PagesCreate::class)->name('pages.create');
+    Route::get('/settings/old', SettingsIndex::class)->name('settings.index.old');
+    Route::get('/settings', [SettingsController::class, 'indexReact'])->name('settings.index');
+    Route::post('/settings/queue/start', [SettingsController::class, 'startQueue'])->name('settings.queue.start');
+    Route::post('/settings/support-email', [SettingsController::class, 'updateEmail'])->name('settings.support-email.update');
+    Route::post('/settings/whatsapp', [SettingsController::class, 'updateWhatsapp'])->name('settings.whatsapp.update');
+    Route::post('/settings/dbid', [SettingsController::class, 'updateDBIDNo'])->name('settings.dbid.update');
+    Route::post('/settings/trade-license', [SettingsController::class, 'updateTradeLicense'])->name('settings.trade-license.update');
+    Route::post('/settings/playstore', [SettingsController::class, 'updatePlaystoreLink'])->name('settings.playstore.update');
+
+    Route::get('/pages/old', PagesIndex::class)->name('pages.index.old');
+    Route::get('/pages', [PageSettingsController::class, 'indexReact'])->name('pages.index');
+    Route::delete('/pages/{id}', [PageSettingsController::class, 'destroy'])->name('pages.destroy');
+    Route::get('/pages/add-new/old', PagesCreate::class)->name('pages.create.old');
+    Route::get('/pages/add-new', [PageSettingsController::class, 'createReact'])->name('pages.create');
+    Route::post('/pages/add-new', [PageSettingsController::class, 'save'])->name('pages.save');
     // Route::get('/pages/{slug}', Pages::class);
 
     // branches
     Route::prefix('branches')->name('branches.')->group( function () {
-        Route::get('/', BranchIndex::class)->name('index');
-        Route::get('/create', BranchCreate::class)->name('create');
-        Route::get('/edit/{branch}', BranchModify::class)->name('modify');
+        Route::get('/old', BranchIndex::class)->name('index.old');
+        Route::get('/', [BranchController::class, 'indexReact'])->name('index');
+        Route::delete('/{id}', [BranchController::class, 'destroy'])->name('destroy');
+        Route::get('/create/old', BranchCreate::class)->name('create.old');
+        Route::get('/create', [BranchController::class, 'createReact'])->name('create');
+        Route::post('/create', [BranchController::class, 'store'])->name('store');
+        Route::get('/edit/{branch}/old', BranchModify::class)->name('modify.old');
+        Route::get('/edit/{branch}', [BranchController::class, 'editReact'])->name('modify');
+        Route::post('/edit/{branch}', [BranchController::class, 'update'])->name('update');
     });
 
     // partnership
     Route::prefix('partnership')->name('partnership.')->group( function() {
         Route::get('/', PartnershipIndex::class)->name('index');
-        Route::get('/developer', PartnershipDeveloper::class)->name('developer');
-        Route::get('/management', PartnershipManagement::class)->name('management');
+        Route::get('/developer/old', PartnershipDeveloper::class)->name('developer.old');
+        Route::get('/developer', [PartnershipController::class, 'developerReact'])->name('developer');
+        Route::post('/developer/{id}/accept', [PartnershipController::class, 'acceptDeveloper'])->name('developer.accept');
+        Route::post('/developer/{id}/reject', [PartnershipController::class, 'rejectDeveloper'])->name('developer.reject');
+        Route::delete('/developer/{id}', [PartnershipController::class, 'destroyDeveloper'])->name('developer.destroy');
+        Route::get('/management/old', PartnershipManagement::class)->name('management.old');
+        Route::get('/management', [PartnershipController::class, 'managementReact'])->name('management');
+        Route::post('/management/{id}/accept', [PartnershipController::class, 'acceptManagement'])->name('management.accept');
+        Route::post('/management/{id}/reject', [PartnershipController::class, 'rejectManagement'])->name('management.reject');
+        Route::delete('/management/{id}', [PartnershipController::class, 'destroyManagement'])->name('management.destroy');
     });
 
 
     // earn and sell
     Route::get('/earn/index', EarnBySellIndex::class)->name('earn.index');
-    Route::get('/builder/footer', FooterBuilder::class)->name('footer.builder');
 
-    Route::get('/reports', ReportIndex::class)->name('report.index');
-    Route::get('/reports/generate', Report::class)->name('report.generate');
+    Route::get('/builder/footer/old', FooterBuilder::class)->name('footer.builder.old');
+    Route::get('/builder/footer', [FooterBuilderController::class, 'indexReact'])->name('footer.builder');
+    Route::post('/builder/footer', [FooterBuilderController::class, 'save'])->name('footer.builder.save');
+
+    Route::get('/reports/old', ReportIndex::class)->name('report.index.old');
+    Route::get('/reports', [ReportController::class, 'indexReact'])->name('report.index');
+    Route::get('/reports/generate/old', Report::class)->name('report.generate.old');
+    Route::get('/reports/generate', [ReportController::class, 'generateReact'])->name('report.generate');
 
     /**
      * API Docs
@@ -450,14 +542,29 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
 
     // geolocations
-    // Rotue::get('/geolocations', \App\Livewire\System\Geolocation\Index::class)->name('geolocations.index')->middleware(AbleTo::class . ":geolocation_view");
-    Route::get('/geolocations', \App\Livewire\System\Geolocation\Index::class)->name('geolocations.index');
-    Route::get('/geolocations/countries', Countries::class)->name('geolocations.countries');
-    Route::get('/geolocations/states', States::class)->name('geolocations.states');
-    Route::get('/geolocations/cities', Cities::class)->name('geolocations.cities');
-    Route::get('/geolocations/area', Area::class)->name('geolocations.area');
+    Route::get('/geolocations/old', GeolocationIndex::class)->name('geolocations.index.old');
+    Route::get('/geolocations', [GeolocationController::class, 'indexReact'])->name('geolocations.index');
+    Route::get('/geolocations/countries/old', Countries::class)->name('geolocations.countries.old');
+    Route::get('/geolocations/countries', [GeolocationController::class, 'countriesReact'])->name('geolocations.countries');
+    Route::post('/geolocations/countries', [GeolocationController::class, 'storeCountry'])->name('geolocations.countries.store');
+    Route::post('/geolocations/countries/{country}', [GeolocationController::class, 'updateCountry'])->name('geolocations.countries.update');
+    Route::delete('/geolocations/countries/{country}', [GeolocationController::class, 'destroyCountry'])->name('geolocations.countries.destroy');
+    Route::get('/geolocations/states/old', States::class)->name('geolocations.states.old');
+    Route::get('/geolocations/states', [GeolocationController::class, 'statesReact'])->name('geolocations.states');
+    Route::post('/geolocations/states', [GeolocationController::class, 'storeState'])->name('geolocations.states.store');
+    Route::post('/geolocations/states/{state}', [GeolocationController::class, 'updateState'])->name('geolocations.states.update');
+    Route::delete('/geolocations/states/{state}', [GeolocationController::class, 'destroyState'])->name('geolocations.states.destroy');
+    Route::get('/geolocations/cities/old', Cities::class)->name('geolocations.cities.old');
+    Route::get('/geolocations/cities', [GeolocationController::class, 'citiesReact'])->name('geolocations.cities');
+    Route::post('/geolocations/cities', [GeolocationController::class, 'storeCity'])->name('geolocations.cities.store');
+    Route::delete('/geolocations/cities/{city}', [GeolocationController::class, 'destroyCity'])->name('geolocations.cities.destroy');
+    Route::get('/geolocations/area/old', Area::class)->name('geolocations.area.old');
+    Route::get('/geolocations/area', [GeolocationController::class, 'areaReact'])->name('geolocations.area');
+    Route::post('/geolocations/area', [GeolocationController::class, 'storeArea'])->name('geolocations.area.store');
+    Route::delete('/geolocations/area/{area}', [GeolocationController::class, 'destroyArea'])->name('geolocations.area.destroy');
 
 
     // consignment
-    Route::get('/consignment', ConsignmentIndex::class)->name('consignment.index');
+    Route::get('/consignment/old', ConsignmentIndex::class)->name('consignment.index.old');
+    Route::get('/consignment', [ConsignmentController::class, 'indexReact'])->name('consignment.index');
 });

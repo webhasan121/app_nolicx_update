@@ -12,31 +12,31 @@
 
         <div class="space-y-6">
             @foreach($layout['sections'] as $sIndex => $section)
-                <div class="border p-4 bg-gray-50 rounded">
-                    <input type="text" wire:model="layout.sections.{{ $sIndex }}.title" 
-                        class="border px-2 py-1 w-full mb-2"
+                <div class="p-4 border rounded bg-gray-50">
+                    <input type="text" wire:model="layout.sections.{{ $sIndex }}.title"
+                        class="w-full px-2 py-1 mb-2 border"
                         placeholder="Section Title"/>
 
                     <div class="grid grid-cols-{{ count($section['columns']) }} gap-4">
                         @foreach($section['columns'] as $cIndex => $col)
-                            <div class="border p-2 bg-white rounded">
-                                <h4 class="font-semibold mb-2">Column {{ $cIndex+1 }}</h4>
+                            <div class="p-2 bg-white border rounded">
+                                <h4 class="mb-2 font-semibold">Column {{ $cIndex+1 }}</h4>
 
                                 @foreach($col['widgets'] as $wIndex => $widget)
-                                    <div class="border p-2 mb-2 rounded">
+                                    <div class="p-2 mb-2 border rounded">
                                         @if($widget['type'] === 'text')
-                                            <textarea wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.content" 
-                                                    class="w-full border px-2 py-1" placeholder="Text..."></textarea>
+                                            <textarea wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.content"
+                                                    class="w-full px-2 py-1 border" placeholder="Text..."></textarea>
                                         @elseif($widget['type'] === 'link')
-                                            <input wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.label" 
-                                                placeholder="Link Label" class="border w-full px-2 py-1 mb-1"/>
-                                            <input wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.url" 
-                                                placeholder="Link URL" class="border w-full px-2 py-1"/>
+                                            <input wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.label"
+                                                placeholder="Link Label" class="w-full px-2 py-1 mb-1 border"/>
+                                            <input wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.url"
+                                                placeholder="Link URL" class="w-full px-2 py-1 border"/>
                                         @elseif($widget['type'] === 'icon')
-                                            <input wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.icon" 
-                                                placeholder="Icon name (e.g., facebook)" class="border w-full px-2 py-1 mb-1"/>
-                                            <input wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.url" 
-                                                placeholder="Icon URL" class="border w-full px-2 py-1"/>
+                                            <input wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.icon"
+                                                placeholder="Icon name (e.g., facebook)" class="w-full px-2 py-1 mb-1 border"/>
+                                            <input wire:model="layout.sections.{{ $sIndex }}.columns.{{ $cIndex }}.widgets.{{ $wIndex }}.url"
+                                                placeholder="Icon URL" class="w-full px-2 py-1 border"/>
                                         @endif
                                     </div>
                                 @endforeach
@@ -55,10 +55,10 @@
             @endforeach
         </div>
 
-        <x-primary-button wire:click="save" class="bg-green-600 text-white px-4 py-2 rounded mt-4">Save Footer</x-primary-button>
+        <x-primary-button wire:click="save" class="px-4 py-2 mt-4 text-white bg-green-600 rounded">Save Footer</x-primary-button>
 
         @if(session()->has('success'))
-            <div class="text-green-600 mt-2">{{ session('success') }}</div>
+            <div class="mt-2 text-green-600">{{ session('success') }}</div>
         @endif
     </div>
 

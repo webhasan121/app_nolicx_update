@@ -1,6 +1,6 @@
 <div>
     <x-dashboard.page-header>
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
             Orders
 
             {{-- <x-secondary-button type="button" x-on:click="$dispatch('open-modal', 'filter-modal')">
@@ -8,7 +8,7 @@
             </x-secondary-button> --}}
             {{-- <x-dropdown>
                 <x-slot name="trigger">
-                    <div class="p-2 rounded-md px-3 w-36">
+                    <div class="p-2 px-3 rounded-md w-36">
                         Filter <i class="fas fa-caret-down ps-3"></i>
                     </div>
                 </x-slot>
@@ -74,9 +74,9 @@
             <x-dashboard.section.header>
                 <x-slot name="title">
 
-                    <div class="flex justify-between items-center">
+                    <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <select class="rounded border-0" wire:model.live="qf">
+                            <select class="border-0 rounded" wire:model.live="qf">
                                 <option value="id">Order</option>
                                 <option value="user_id">Buyer</option>
                                 <option value="belongs_to">Seller</option>
@@ -85,14 +85,14 @@
                             <x-text-input type="search" wire:model.live="search" placeholder="Search" />
                         </div>
 
-                        <select class="rounded border-0 " wire:model.live="type" id="">
+                        <select class="border-0 rounded " wire:model.live="type" id="">
                             <option value="">Both ({{$or->count() ?? 0}})</option>
                             <option value="user">U > R ({{$or->where('belongs_to_type', 'reseller')->count() ?? 0}} )
                             </option>
                             <option value="reseller">R > V ({{$or->where('belongs_to_type', 'vendor')->count() ?? 0}} )
                             </option>
                         </select>
-                        <select class="rounded border-0 " wire:model.live="status" id="">
+                        <select class="border-0 rounded " wire:model.live="status" id="">
                             <option value="">Any</option>
                             <option value="Pending">Pending</option>
                             <option value="Accept">Accept</option>
@@ -108,7 +108,7 @@
 
                         {{--
                         <x-text-input type="date" wire:model.live="date" id="datePic" /> --}}
-                        <select wire:model.live="date" id="" class="border-0 bg-transparent">
+                        <select wire:model.live="date" id="" class="bg-transparent border-0">
                             <option value="">Null</option>
                             <option selected value="today">Today</option>
                             <option value="yesterday">Yesterday</option>
@@ -182,7 +182,7 @@
 
                                         <span class="text-xs"></span>{{ $item->user_type }}
                                     </div>
-                                    <i class="fas fa-caret-right px-2"></i>
+                                    <i class="px-2 fas fa-caret-right"></i>
                                     {{ $item->belongs_to_type }}
                                 </div>
                             </td>
@@ -275,6 +275,6 @@
                 // console.log(e.detail[0].url);
                 window.open(e.detail[0].url, '_blank');
             });
-            
+
     </script>
 </div>

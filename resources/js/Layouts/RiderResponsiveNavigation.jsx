@@ -10,7 +10,7 @@ export default function RiderResponsiveNavigation() {
             >
                 <i className="w-6 pr-2 fas fa-person-biking"></i> My Rider
             </ResponsiveNavLink>
-            <Hr />
+            <hr />
 
             <ResponsiveNavLink
                 href={route("rider.consignment")}

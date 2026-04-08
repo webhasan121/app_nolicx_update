@@ -3,6 +3,7 @@
 use App\Events\ProductComissions;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryProductsController;
+use App\Http\Controllers\User\ProfileEditController;
 use App\Http\Controllers\ProductDetailsController;
 use App\Http\Controllers\ProductsIndexController;
 use App\Http\Controllers\ProductOrderController;
@@ -12,6 +13,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\WelcomeController;
 use App\Livewire\Page\Page;
+use App\Livewire\Profile\Modify as ProfileEdit;
+
 use App\Livewire\Welcome;
 use App\Livewire\Pages\Products as userProductsPage;
 use App\Livewire\Pages\Categories as userCategoriesPage;
@@ -84,9 +87,15 @@ Route::get('dashboard', function () {
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
+
+Route::middleware(['auth'])->prefix('profile')->group(function () {
+    Route::get('/old', ProfileEdit::class)->name('profile.old');
+    Route::get('/', [ProfileEditController::class, 'edit'])->name('profile');
+});
+
+// Route::view('profile', 'profile')
+//     ->middleware(['auth'])
+//     ->name('profile');
 
 Route::middleware('auth')->prefix('/u/')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -49,10 +49,10 @@ class NavigationController extends Controller
             return redirect()->route('system.navigations.index', [
                 'menu' => $menu->id,
                 'fresh' => 1,
-            ]);
+            ])->with('success', 'Menu created successfully.');
         }
 
-        return redirect()->route('system.navigations.index');
+        return redirect()->route('system.navigations.index')->with('error', 'Menu already exists.');
     }
 
     public function renameMenu(Request $request, Navigations $menu): RedirectResponse
@@ -67,7 +67,7 @@ class NavigationController extends Controller
 
         return redirect()->route('system.navigations.index', [
             'menu' => $menu->id,
-        ]);
+        ])->with('success', 'Menu renamed successfully.');
     }
 
     public function destroyMenu(Navigations $menu): RedirectResponse
@@ -76,7 +76,7 @@ class NavigationController extends Controller
         $menu->delete();
         Navigations_has_link::where(['navigations_id' => $menuId])->delete();
 
-        return redirect()->route('system.navigations.index');
+        return redirect()->route('system.navigations.index')->with('success', 'Menu deleted successfully.');
     }
 
     public function updateMenuItems(Request $request, Navigations $menu): RedirectResponse
@@ -97,7 +97,7 @@ class NavigationController extends Controller
 
         return redirect()->route('system.navigations.index', [
             'menu' => $menu->id,
-        ]);
+        ])->with('success', 'Menu items updated successfully.');
     }
 
     public function destroyMenuItem(Navigations_has_link $item): RedirectResponse
@@ -107,7 +107,7 @@ class NavigationController extends Controller
 
         return redirect()->route('system.navigations.index', [
             'menu' => $menuId,
-        ]);
+        ])->with('success', 'Menu item deleted successfully.');
     }
 
     private function serializeMenu(Navigations $menu): array

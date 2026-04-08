@@ -3,17 +3,18 @@
 namespace App\Livewire\User;
 
 use Livewire\Component;
+use App\Models\User;
+use App\Models\Level;
 use App\Models\user_has_refs;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\Layout;
 
 #[layout('layouts.user.dash.userDash')]
-class Dash extends Component
-{
-
+class Dash extends Component {
+    public $current, $upcoming, $widgets;
     public $newRef;
-    public function checkRef()
-    {
+    public function checkRef() {
         if (empty($this->newRef)) {
             $this->dispatch('info', 'Give a valid ref code');
         }
@@ -46,11 +47,56 @@ class Dash extends Component
         // }
     }
 
-    public function mount()
-    {
+    public function mount() {
+        $user = Auth::user();
+
         if (auth()->user()->reference_accepted_at || auth()->user()->created_at->diffInHours(\Carbon\Carbon::now()) > 72) {
             $this->newRef = auth()->user()->reference;
         }
+
+
+
+        $this->current = [
+            'name' => $user->currentLevel->name,
+            // 'req_users' => $user->myRef->count() ?? 0,
+            'req_users' => User::where('reference', $user->myRef->ref)->count() ?? 0,
+            'vip_users' => $user->getMyvipRef->count() ?? 0,
+            'rewards' => null
+        ];
+
+        $level = Level::where('id', ($user->current_level_id + 1))->first();
+
+        if ($level) {
+            $this->upcoming = [
+                'name'  => $level->name,
+                'req_users' => $level->req_users,
+                'vip_users' => $level->vip_users,
+                'rewards' => $level->rewards
+            ];
+        } else {
+            $this->upcoming = [
+                'name' => 'Max',
+                'req_users' => null,
+                'vip_users' => null,
+                'rewards' => null
+            ];
+        }
+
+
+        $this->widgets = [
+            [
+                'name' => $this->current['name'], 'data' => [
+                    'req_users' => $this->current['req_users'],
+                    'vip_users' => $this->current['vip_users'],
+                ], 'rewards' => $this->current['rewards'],
+            ],
+            [
+                'name' => $this->upcoming['name'], 'data' => [
+                    'req_users' => $this->upcoming['req_users'],
+                    'vip_users' => $this->upcoming['vip_users'],
+                ], 'rewards' => $this->upcoming['rewards'],
+            ],
+        ];
     }
 
 

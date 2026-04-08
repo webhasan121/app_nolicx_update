@@ -1,47 +1,65 @@
 <div>
 
-    {{--
-    <?php
-    use App\Models\vendor;
-    use function Livewire\Volt\{state};
-    state(['latestVndor' =>0, 'data' => vendor::latest()]);
-    ?> --}}
+  <x-dashboard.container>
 
-    <x-dashboard.container>
-        <x-dashboard.section>
-            <div class="my-2 rounded">
-                <div>
-                    <div class="flex justify-between align-center">
-                        <div>
-                            Welcome, back!
-                        </div>
-                        {{-- <div>
-                            {{auth()->user()->created_at->diffForHumans()}}
-                        </div> --}}
-                    </div>
-                    <div class="flex justify-between p-0 m-0 align-center">
-                        <div class="px-0">
-                            <b class="text-green-900" style="font-size: 20px">
-                                {{ Str::upper(auth()->user()->name)}}
-                            </b>
-                        </div>
-                        {{-- <div class="px-0 col-md-2 co"></div> --}}
-                        <x-nav-link href="{{route('user.wallet.index')}}"
-                            class="px-3 text-indigo-900 border rounded-lg shadow ring-1">
-                            <div>
-                                Wallet
-                            </div>
-                            <div class="py-1 pl-3 d-block ">
-                                {{auth()->user()->coin ?? "0"}} TK
-                            </div>
-                        </x-nav-link>
-                    </div>
+    <section class="grid grid-cols-1 gap-6 lg:grid-cols-2" >
+      <div class="p-6 bg-white rounded-md shadow-md" >
+        <div class="flex items-center justify-between gap-6" >
+          <div class="relative" >
+            <h5 class="text-lg" >{{ __('Welcome, back!') }}</h5>
+            <h3 class="px-0" >
+              <strong class="text-green-900" style="font-size: 22px" >{{ Str::upper(auth()->user()->name) }}</strong>
+            </h3>
+          </div>
+          <div class="relative" >
+            <p class="mb-2 text-xs text-right" >{{ __('Wallet Balance') }}</p>
+            <x-nav-link href="{{route('user.wallet.index')}}" class="px-3 py-1 text-indigo-900 border rounded-lg shadow ring-1" >
+              <span class="text-sm text-center" >{{ (auth()->user()->coin ?? "0") . __(' TK') }}</span>
+            </x-nav-link>
+          </div>
+        </div>
+        <p class="mt-1 text-sm text-gray-600">
+          {{ __('We’re glad to see you again. Check your dashboard for updates, tasks, and rewards waiting for you today.') }}
+        </p>
+      </div>
 
+      <div class="grid grid-cols-2 gap-6" >
+        @foreach ($widgets as $key => $widget)
+          @php
+            $title = $loop->first ? __('Current Level') : __('Upcoming');
+          @endphp
+          <div class="relative p-6 bg-white rounded-md shadow-md" >
+            <div class="flex items-center justify-between mb-2" >
+              <h6 class="text-sm font-semibold text-gray-600" >{{ $title }}</h6>
+                <div class="inline-block px-4 py-1 text-sm text-center text-white bg-blue-600 rounded-md hover:bg-blue-700" >
+                  <span>{{ $widget['name'] }}</span>
                 </div>
             </div>
-        </x-dashboard.section>
+            @if (isset($widget['data']['req_users'], $widget['data']['vip_users']))
+              @if($loop->first)
+                <p class="mt-2 mb-1 text-sm font-semibold text-gray-600" >{{ __('Achievement') }}</p>
+              @endif
+              <p class="flex items-center justify-between text-xs" >
+                <strong>{{ __('Normal Users') }}</strong>
+                <span>{{ $widget['data']['req_users'] }}</span>
+              </p>
+              <p class="flex items-center justify-between text-xs" >
+                <strong>{{ __('VIP Users') }}</strong>
+                <span>{{ $widget['data']['vip_users'] }}</span>
+              </p>
+              @if(isset($widget['rewards']))
+                <p class="flex flex-col mt-2 text-xs text-gray-600" >
+                  <strong>{{ __('Level-Up Rewards') }}</strong>
+                  <span>{{ $widget['rewards'] }}</span>
+                </p>
+              @endif
+            @endif
+          </div>
+        @endforeach
+      </div>
+    </section>
 
-        <div class="items-start justify-between m-0 my-2 lg:flex">
+    <div class="items-start justify-between m-0 my-2 lg:flex">
             <x-dashboard.section>
                 <div class="">
                     <x-dashboard.section.header>
@@ -55,7 +73,7 @@
                     <x-dashboard.section.inner>
 
                         <div class=" w-100">
-                            <input type="text" disabled readonly id="refID" class="rounded  form-control"
+                            <input type="text" disabled readonly id="refID" class="rounded form-control"
                                 value="{{auth()->user()->myRef->ref ?? ""}}">
                         </div>
 
@@ -71,8 +89,9 @@
                 </div>
             </x-dashboard.section>
 
+        @if(!auth()->user()->created_at->diffInHours(Carbon\Carbon::now()) > 72)
             <x-dashboard.section>
-                <div @class(['hidden'=> auth()->user()->created_at->diffInHours(Carbon\Carbon::now()) > 72])>
+                <div>
                     <x-dashboard.section.header>
                         <x-slot name="title">
                             Claim Your Reward
@@ -122,7 +141,9 @@
                     </x-dashboard.section.inner>
                 </div>
             </x-dashboard.section>
-        </div>
+        @endif
+
+    </div>
 
 
 

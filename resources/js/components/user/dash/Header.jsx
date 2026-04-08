@@ -1,21 +1,19 @@
 import { Link, usePage, router } from "@inertiajs/react";
-import { useState } from "react";
 import Container from "../../dashboard/Container";
 import ApplicationName from "../../ApplicationName";
 import Dropdown from "../../Dropdown";
 import DropdownLink from "../../DropdownLink";
 import ResponsiveNavLink from "../../ResponsiveNavLink";
 import Hr from "../../Hr";
-import NavLink from "../../NavLink";
+import VendorResponsiveNavigation from "../../../Layouts/VendorResponsiveNavigation";
+import ResellerResponsiveNavigation from "../../../Layouts/ResellerResponsiveNavigation";
+import RiderResponsiveNavigation from "../../../Layouts/RiderResponsiveNavigation";
 
 export default function Header() {
     const { auth, roles, active_nav } = usePage().props;
     const user = auth.user;
 
     const roleNames = user?.roles?.map((r) => r.name) ?? [];
-
-
-
 
     const logout = () => {
         router.get(route("logout"));
@@ -161,9 +159,34 @@ export default function Header() {
                                     </>
                                 )}
 
-                                {/* Profile */}
-                                <Hr />
+                                {roleNames.includes("vendor") &&
+                                    active_nav === "vendor" && (
+                                        <>
+                                           <hr />
+                                            <VendorResponsiveNavigation />
+                                          <hr />
+                                        </>
+                                    )}
 
+                                {roleNames.includes("reseller") &&
+                                    active_nav === "reseller" && (
+                                        <>
+                                            <hr />
+                                            <ResellerResponsiveNavigation />
+                                            <hr />
+                                        </>
+                                    )}
+
+                                {roleNames.includes("rider") &&
+                                    active_nav === "rider" && (
+                                        <>
+                                            <hr />
+                                            <RiderResponsiveNavigation />
+                                            <hr />
+                                        </>
+                                    )}
+
+                                {/* Profile */}
                                 <DropdownLink href={route("edit.profile")}>
                                     <i className="pr-2 fas fa-user"></i> Profile
                                 </DropdownLink>

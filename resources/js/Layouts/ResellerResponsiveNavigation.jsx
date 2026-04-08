@@ -14,7 +14,7 @@ export default function ResellerResponsiveNavigation() {
             >
                 <i className="w-6 pr-2 fas fa-shop"></i> My Shop
             </ResponsiveNavLink>
-            <Hr />
+            <hr />
 
             <ResponsiveNavLink
                 href={route("reseller.products.list")}
@@ -43,7 +43,7 @@ export default function ResellerResponsiveNavigation() {
             >
                 <i className="w-6 pr-2 fas fa-shop"></i> Vendor Shop
             </ResponsiveNavLink>
-            <Hr />
+            <hr />
 
             <ResponsiveNavLink
                 href={route("vendor.orders.index")}

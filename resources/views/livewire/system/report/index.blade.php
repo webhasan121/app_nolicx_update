@@ -3,8 +3,8 @@
     <x-dashboard.page-header>
         Generate Reports
     </x-dashboard.page-header>
-    <div class="flex justify-center items-center w-full">
-        <div style="width: 350px" class="border rounded-md p-4 bg-white">
+    <div class="flex items-center justify-center w-full">
+        <div style="width: 350px" class="p-4 bg-white border rounded-md">
             <x-dashboard.section.inner>
                 {{-- @if($nav == 'Deposit')
                 @livewire('system.report.deposit-report')

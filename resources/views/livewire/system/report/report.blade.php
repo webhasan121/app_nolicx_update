@@ -16,7 +16,7 @@
     <x-dashboard.container>
 
         {{-- <div>
-            <h1 class=" p-1 w-full text-center">
+            <h1 class="w-full p-1 text-center ">
                 <strong class="text-xl">
                     <x-application-name />
                 </strong>
