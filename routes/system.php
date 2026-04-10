@@ -483,6 +483,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
     Route::get('/pages/old', PagesIndex::class)->name('pages.index.old');
     Route::get('/pages', [PageSettingsController::class, 'indexReact'])->name('pages.index');
+    Route::get('/pages/print', [PageSettingsController::class, 'printReact'])->name('pages.print');
     Route::delete('/pages/{id}', [PageSettingsController::class, 'destroy'])->name('pages.destroy');
     Route::get('/pages/add-new/old', PagesCreate::class)->name('pages.create.old');
     Route::get('/pages/add-new', [PageSettingsController::class, 'createReact'])->name('pages.create');
@@ -493,6 +494,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::prefix('branches')->name('branches.')->group( function () {
         Route::get('/old', BranchIndex::class)->name('index.old');
         Route::get('/', [BranchController::class, 'indexReact'])->name('index');
+        Route::get('/print', [BranchController::class, 'printReact'])->name('print');
         Route::delete('/{id}', [BranchController::class, 'destroy'])->name('destroy');
         Route::get('/create/old', BranchCreate::class)->name('create.old');
         Route::get('/create', [BranchController::class, 'createReact'])->name('create');
@@ -507,11 +509,13 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
         Route::get('/', PartnershipIndex::class)->name('index');
         Route::get('/developer/old', PartnershipDeveloper::class)->name('developer.old');
         Route::get('/developer', [PartnershipController::class, 'developerReact'])->name('developer');
+        Route::get('/developer/print', [PartnershipController::class, 'printDeveloperReact'])->name('developer.print');
         Route::post('/developer/{id}/accept', [PartnershipController::class, 'acceptDeveloper'])->name('developer.accept');
         Route::post('/developer/{id}/reject', [PartnershipController::class, 'rejectDeveloper'])->name('developer.reject');
         Route::delete('/developer/{id}', [PartnershipController::class, 'destroyDeveloper'])->name('developer.destroy');
         Route::get('/management/old', PartnershipManagement::class)->name('management.old');
         Route::get('/management', [PartnershipController::class, 'managementReact'])->name('management');
+        Route::get('/management/print', [PartnershipController::class, 'printManagementReact'])->name('management.print');
         Route::post('/management/{id}/accept', [PartnershipController::class, 'acceptManagement'])->name('management.accept');
         Route::post('/management/{id}/reject', [PartnershipController::class, 'rejectManagement'])->name('management.reject');
         Route::delete('/management/{id}', [PartnershipController::class, 'destroyManagement'])->name('management.destroy');
@@ -551,20 +555,24 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::get('/geolocations', [GeolocationController::class, 'indexReact'])->name('geolocations.index');
     Route::get('/geolocations/countries/old', Countries::class)->name('geolocations.countries.old');
     Route::get('/geolocations/countries', [GeolocationController::class, 'countriesReact'])->name('geolocations.countries');
+    Route::get('/geolocations/countries/print', [GeolocationController::class, 'printCountriesReact'])->name('geolocations.countries.print');
     Route::post('/geolocations/countries', [GeolocationController::class, 'storeCountry'])->name('geolocations.countries.store');
     Route::post('/geolocations/countries/{country}', [GeolocationController::class, 'updateCountry'])->name('geolocations.countries.update');
     Route::delete('/geolocations/countries/{country}', [GeolocationController::class, 'destroyCountry'])->name('geolocations.countries.destroy');
     Route::get('/geolocations/states/old', States::class)->name('geolocations.states.old');
     Route::get('/geolocations/states', [GeolocationController::class, 'statesReact'])->name('geolocations.states');
+    Route::get('/geolocations/states/print', [GeolocationController::class, 'printStatesReact'])->name('geolocations.states.print');
     Route::post('/geolocations/states', [GeolocationController::class, 'storeState'])->name('geolocations.states.store');
     Route::post('/geolocations/states/{state}', [GeolocationController::class, 'updateState'])->name('geolocations.states.update');
     Route::delete('/geolocations/states/{state}', [GeolocationController::class, 'destroyState'])->name('geolocations.states.destroy');
     Route::get('/geolocations/cities/old', Cities::class)->name('geolocations.cities.old');
     Route::get('/geolocations/cities', [GeolocationController::class, 'citiesReact'])->name('geolocations.cities');
+    Route::get('/geolocations/cities/print', [GeolocationController::class, 'printCitiesReact'])->name('geolocations.cities.print');
     Route::post('/geolocations/cities', [GeolocationController::class, 'storeCity'])->name('geolocations.cities.store');
     Route::delete('/geolocations/cities/{city}', [GeolocationController::class, 'destroyCity'])->name('geolocations.cities.destroy');
     Route::get('/geolocations/area/old', Area::class)->name('geolocations.area.old');
     Route::get('/geolocations/area', [GeolocationController::class, 'areaReact'])->name('geolocations.area');
+    Route::get('/geolocations/area/print', [GeolocationController::class, 'printAreaReact'])->name('geolocations.area.print');
     Route::post('/geolocations/area', [GeolocationController::class, 'storeArea'])->name('geolocations.area.store');
     Route::delete('/geolocations/area/{area}', [GeolocationController::class, 'destroyArea'])->name('geolocations.area.destroy');
 

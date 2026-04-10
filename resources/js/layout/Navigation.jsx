@@ -15,6 +15,7 @@ export default function Navigation() {
     const { auth, roles = [] } = usePage().props;
     const user = auth?.user;
     const availableCoin = auth?.availableCoin ?? 0;
+    const formattedAvailableCoin = Number(availableCoin || 0).toFixed(2);
     const roleNames = roles.length
         ? roles
         : user?.roles?.map((role) => role.name) ?? [];
@@ -87,7 +88,7 @@ export default function Navigation() {
                             <div className="border-b border-gray-200 px-4 py-2">
                                 <div className="flex justify-between px-2 ">
                                     <div>Wallet</div>
-                                    <div>{availableCoin}</div>
+                                    <div>{formattedAvailableCoin}</div>
                                 </div>
 
                                 <div className="text-end w-full pt-1 uppercase font-bold">
@@ -227,7 +228,7 @@ export default function Navigation() {
                     <div className="pt-2 pb-3 space-y-1">
                         <div className="flex justify-between px-2 ">
                             <div>Wallet</div>
-                            <div>{availableCoin}</div>
+                            <div>{formattedAvailableCoin}</div>
                         </div>
 
                         <div className="text-end w-full pt-1 uppercase font-bold">

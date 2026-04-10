@@ -34,6 +34,7 @@ Route::prefix('/r/')->group(function () {
     // routes for products
     Route::get('products/list/old', productIndexPage::class)->name("reseller.products.list.old")->middleware(AbleTo::class . ":product_view");
     Route::get('products/list', [ProductsController::class, 'index'])->name("reseller.products.list")->middleware(AbleTo::class . ":product_view");
+    Route::get('products/print', [ProductsController::class, 'print'])->name("reseller.products.print")->middleware(AbleTo::class . ":product_view");
     // Route::get('products/create', productCreatePage::class)->name('reseller.products.create')->middleware(AbleTo::class . ":product_add");
     Route::get('products/{id}/old', productEditPge::class)
         ->name('reseller.products.edit.old')
@@ -93,8 +94,10 @@ Route::prefix('/r/')->group(function () {
     // sell
     Route::get('/sels/old', EarnBySellIndex::class)->name('reseller.sel.index.old');
     Route::get('/sels', [EarnBySellController::class, 'index'])->name('reseller.sel.index');
+    Route::get('/sels/print', [EarnBySellController::class, 'print'])->name('reseller.sel.print');
 
     // vendor shop for reseller
     Route::get('/shops/old', Shops::class)->name('shops.old');
     Route::get('/shops', [ReselShopsController::class, 'index'])->name('shops');
+    Route::get('/shops/print', [ReselShopsController::class, 'print'])->name('shops.print');
 })->middleware(AbleTo::class . ":access_reseller_dashboard");

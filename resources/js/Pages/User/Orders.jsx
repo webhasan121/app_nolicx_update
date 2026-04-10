@@ -93,45 +93,46 @@ export default function Orders() {
         <UserDash>
             <Container>
                 <SectionSection>
-                    <SectionHeader
-                        title="Your Orders"
-                        content={
-                            <div className="flex flex-wrap items-center justify-end gap-2">
-                                <TextInput
-                                    type="search"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key !== "Enter") {
-                                            return;
-                                        }
-
-                                        e.preventDefault();
-                                        router.get(
-                                            route("user.orders.view"),
-                                            { find: search.trim() },
-                                            {
-                                                preserveScroll: true,
-                                                preserveState: true,
-                                                replace: true,
-                                            }
-                                        );
-                                    }}
-                                    className="py-1"
-                                    placeholder="Search orders..."
-                                />
-                                <PrimaryButton
-                                    type="button"
-                                    onClick={() => window.open(printUrl, "_blank")}
-                                >
-                                    <i className="fas fa-print"></i>
-                                </PrimaryButton>
-                            </div>
-                        }
-                    />
+                    <SectionHeader title="Your Orders" />
                 </SectionSection>
                 <SectionSection>
                     <div>
+                        <SectionHeader
+                            title=""
+                            content={
+                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                    <TextInput
+                                        type="search"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") {
+                                                return;
+                                            }
+
+                                            e.preventDefault();
+                                            router.get(
+                                                route("user.orders.view"),
+                                                { find: search.trim() },
+                                                {
+                                                    preserveScroll: true,
+                                                    preserveState: true,
+                                                    replace: true,
+                                                }
+                                            );
+                                        }}
+                                        className="py-1"
+                                        placeholder="Search orders..."
+                                    />
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={() => window.open(printUrl, "_blank")}
+                                    >
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
+                                </div>
+                            }
+                        />
                         <Table data={rows}>
                             <thead>
                                 <tr>

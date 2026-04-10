@@ -1,5 +1,5 @@
 import { Head, router } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../Layouts/App";
 import Container from "../../../components/dashboard/Container";
 import PageHeader from "../../../components/dashboard/PageHeader";
@@ -14,7 +14,9 @@ import Dropdown from "../../../components/Dropdown";
 import Hr from "../../../components/Hr";
 import Modal from "../../../components/Modal";
 import NavLink from "../../../components/NavLink";
+import PrimaryButton from "../../../components/PrimaryButton";
 import SecondaryButton from "../../../components/SecondaryButton";
+import TextInput from "../../../components/TextInput";
 
 const navs = [
     "All",
@@ -53,29 +55,110 @@ function statusClass(status) {
     return classes[status] ?? "text-xs p-1 border rounded-md bg-gray-200 text-gray-900";
 }
 
-export default function Index({ filters = {}, summary = {}, list = {}, activeNav }) {
+export default function Index({ filters = {}, summary = {}, list = {}, activeNav, printUrl }) {
     const [filterOpen, setFilterOpen] = useState(false);
     const rows = list?.data ?? [];
     const isReseller = activeNav === "reseller";
+    const [search, setSearch] = useState(filters.find ?? "");
+    const [modalDelivery, setModalDelivery] = useState(filters.delivery ?? "all");
+    const [modalCreate, setModalCreate] = useState(filters.create ?? "all");
+    const [modalStartDate, setModalStartDate] = useState(filters.start_date ?? "");
+    const [modalEndDate, setModalEndDate] = useState(filters.end_date ?? "");
 
-    const updateFilters = (updates) => {
-        router.get(route("vendor.orders.index"), buildQuery(filters, { ...updates, page: 1 }), {
+    const updateFilters = (updates, resetPage = true) => {
+        router.get(route("vendor.orders.index"), buildQuery(filters, { ...updates, ...(resetPage ? { page: 1 } : {}) }), {
             preserveState: true,
             preserveScroll: true,
             replace: true,
         });
     };
 
-    const visitPage = (url) => {
+    useEffect(() => {
+        setSearch(filters.find ?? "");
+    }, [filters.find]);
+
+    useEffect(() => {
+        setModalDelivery(filters.delivery ?? "all");
+        setModalCreate(filters.create ?? "all");
+        setModalStartDate(filters.start_date ?? "");
+        setModalEndDate(filters.end_date ?? "");
+    }, [filters.delivery, filters.create, filters.start_date, filters.end_date]);
+
+    useEffect(() => {
+        const trimmedSearch = search.trim();
+        const currentSearch = (filters.find ?? "").trim();
+
+        if (trimmedSearch === currentSearch) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            updateFilters({ find: trimmedSearch });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search]);
+
+    const goToPage = (url) => {
         if (!url) {
             return;
         }
 
-        router.visit(url, {
+        const nextUrl = new URL(url);
+
+        router.get(route("vendor.orders.index"), buildQuery(filters, {
+            nav: nextUrl.searchParams.get("nav") ?? filters.nav,
+            delivery: nextUrl.searchParams.get("delivery") ?? filters.delivery,
+            create: nextUrl.searchParams.get("create") ?? filters.create,
+            start_date: nextUrl.searchParams.get("start_date") ?? filters.start_date,
+            end_date: nextUrl.searchParams.get("end_date") ?? filters.end_date,
+            area: nextUrl.searchParams.get("area") ?? filters.area,
+            find: nextUrl.searchParams.get("find") ?? search.trim(),
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        }), {
             preserveState: true,
             preserveScroll: true,
             replace: true,
         });
+    };
+
+    const pagination = useMemo(() => {
+        const links = list?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [list?.links]);
+
+    const resultSummary =
+        list?.total > 0
+            ? `Showing ${list?.from ?? 0}-${list?.to ?? 0} of ${list?.total ?? 0} orders`
+            : "No orders found";
+
+    const applyModalFilters = () => {
+        updateFilters({
+            delivery: modalDelivery,
+            create: modalCreate,
+            start_date: modalStartDate,
+            end_date: modalEndDate,
+        });
+        setFilterOpen(false);
+    };
+
+    const resetModalFilters = () => {
+        setModalDelivery("all");
+        setModalCreate("all");
+        setModalStartDate("");
+        setModalEndDate("");
+        updateFilters({
+            delivery: "all",
+            create: "all",
+            start_date: "",
+            end_date: "",
+        });
+        setFilterOpen(false);
     };
 
     return (
@@ -111,54 +194,77 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                     <SectionSection>
                         <SectionHeader
                             title={
-                                <div className="flex justify-start items-center space-x-2">
-                                    <SecondaryButton type="button" onClick={() => setFilterOpen(true)}>
-                                        <i className="fas fa-filter pr-2"></i> Filter
-                                    </SecondaryButton>
-                                    <Dropdown
-                                        trigger={
-                                            <SecondaryButton className="inline-flex items-center ">
-                                                Delivery <i className="fas fa-angle-down ps-2"></i>
-                                            </SecondaryButton>
-                                        }
-                                    >
-                                        <div className="flex items-center w-full p-2 text-sm">
-                                            <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "all"} onChange={() => updateFilters({ delivery: "all" })} /> Not Defined
-                                        </div>
-                                        <hr />
-                                        <div className="flex items-center w-full p-2 text-sm">
-                                            <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "cash"} onChange={() => updateFilters({ delivery: "cash" })} /> Home Delivery
-                                        </div>
-                                        <hr />
-                                        <div className="flex items-center w-full p-2 text-sm">
-                                            <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "courier"} onChange={() => updateFilters({ delivery: "courier" })} /> Courier Delivery
-                                        </div>
-                                        <hr />
-                                        <div className="flex items-center w-full p-2 text-sm">
-                                            <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "hand"} onChange={() => updateFilters({ delivery: "hand" })} /> Hand-to-Hand
-                                        </div>
-                                    </Dropdown>
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex justify-start items-center space-x-2">
+                                        <SecondaryButton type="button" onClick={() => setFilterOpen(true)}>
+                                            <i className="fas fa-filter pr-2"></i> Filter
+                                        </SecondaryButton>
+                                        <Dropdown
+                                            trigger={
+                                                <SecondaryButton className="inline-flex items-center ">
+                                                    Delivery <i className="fas fa-angle-down ps-2"></i>
+                                                </SecondaryButton>
+                                            }
+                                        >
+                                            <div className="flex items-center w-full p-2 text-sm">
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "all"} onChange={() => updateFilters({ delivery: "all" })} /> Not Defined
+                                            </div>
+                                            <hr />
+                                            <div className="flex items-center w-full p-2 text-sm">
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "cash"} onChange={() => updateFilters({ delivery: "cash" })} /> Home Delivery
+                                            </div>
+                                            <hr />
+                                            <div className="flex items-center w-full p-2 text-sm">
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "courier"} onChange={() => updateFilters({ delivery: "courier" })} /> Courier Delivery
+                                            </div>
+                                            <hr />
+                                            <div className="flex items-center w-full p-2 text-sm">
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "hand"} onChange={() => updateFilters({ delivery: "hand" })} /> Hand-to-Hand
+                                            </div>
+                                        </Dropdown>
 
-                                    <Dropdown
-                                        trigger={
-                                            <SecondaryButton>
-                                                Area <i className="fas fa-angle-down ps-2"></i>
-                                            </SecondaryButton>
-                                        }
-                                    >
-                                        <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
-                                            <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "all"} onChange={() => updateFilters({ area: "all" })} />
-                                            <label className="p-0 m-0"> Both </label>
-                                        </div>
-                                        <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
-                                            <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Dhaka"} onChange={() => updateFilters({ area: "Dhaka" })} />
-                                            <label className="p-0 m-0"> Inside Dhaka </label>
-                                        </div>
-                                        <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
-                                            <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Other"} onChange={() => updateFilters({ area: "Other" })} />
-                                            <label className="p-0 m-0"> Outside of Dhaka </label>
-                                        </div>
-                                    </Dropdown>
+                                        <Dropdown
+                                            trigger={
+                                                <SecondaryButton>
+                                                    Area <i className="fas fa-angle-down ps-2"></i>
+                                                </SecondaryButton>
+                                            }
+                                        >
+                                            <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                                <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "all"} onChange={() => updateFilters({ area: "all" })} />
+                                                <label className="p-0 m-0"> Both </label>
+                                            </div>
+                                            <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                                <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Dhaka"} onChange={() => updateFilters({ area: "Dhaka" })} />
+                                                <label className="p-0 m-0"> Inside Dhaka </label>
+                                            </div>
+                                            <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                                <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Other"} onChange={() => updateFilters({ area: "Other" })} />
+                                                <label className="p-0 m-0"> Outside of Dhaka </label>
+                                            </div>
+                                        </Dropdown>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                        <TextInput
+                                            type="search"
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key !== "Enter") {
+                                                    return;
+                                                }
+
+                                                e.preventDefault();
+                                                updateFilters({ find: search.trim() });
+                                            }}
+                                            className="py-1"
+                                            placeholder="Search orders..."
+                                        />
+                                        <PrimaryButton type="button" onClick={() => window.open(printUrl, "_blank")}>
+                                            <i className="fas fa-print"></i>
+                                        </PrimaryButton>
+                                    </div>
                                 </div>
                             }
                             content={
@@ -187,26 +293,6 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
 
                         <SectionInner>
                             <Foreach data={rows}>
-                                <div className="flex justify-between items-center mb-2">
-                                    <div className="flex items-center gap-1 flex-wrap">
-                                        {(list.links ?? []).map((link, idx) => (
-                                            <button
-                                                key={`${link.label}-${idx}`}
-                                                type="button"
-                                                disabled={!link.url}
-                                                onClick={() => visitPage(link.url)}
-                                                className={`px-3 py-1 border rounded text-sm ${
-                                                    link.active
-                                                        ? "bg-orange-500 text-white border-orange-500"
-                                                        : "bg-white text-gray-700 border-gray-300 disabled:opacity-50"
-                                                }`}
-                                            >
-                                                {link.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
                                 <Table data={rows}>
                                     <thead>
                                         <tr>
@@ -234,7 +320,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                     <tbody>
                                         {rows.map((item, index) => (
                                             <tr key={item.id}>
-                                                <td>{index + 1}</td>
+                                                <td>{(list?.from ?? 1) + index}</td>
                                                 <td>
                                                     <NavLink href={route("vendor.orders.view", { order: item.id })}>view</NavLink>
                                                     <NavLink href={route("vendor.orders.cprint", { order: item.id })}>Print</NavLink>
@@ -268,6 +354,51 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                         ))}
                                     </tbody>
                                 </Table>
+
+                                {pagination.pages.length ? (
+                                    <div className="w-full pt-4">
+                                        <div className="flex w-full items-center justify-between gap-3">
+                                            <div className="text-sm text-slate-700">
+                                                {resultSummary}
+                                            </div>
+                                            <div className="flex items-center md:justify-end">
+                                                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                                    <button
+                                                        type="button"
+                                                        disabled={!pagination.prev?.url}
+                                                        className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                        onClick={() => goToPage(pagination.prev?.url)}
+                                                    >
+                                                        Previous
+                                                    </button>
+                                                    {pagination.pages.map((link, idx) => (
+                                                        <button
+                                                            key={`${link.label}-${idx}`}
+                                                            type="button"
+                                                            disabled={!link.url}
+                                                            className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                                link.active
+                                                                    ? "bg-slate-100 text-blue-600"
+                                                                    : "bg-white text-slate-700 hover:bg-slate-50"
+                                                            } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                            onClick={() => goToPage(link.url)}
+                                                        >
+                                                            {link.label}
+                                                        </button>
+                                                    ))}
+                                                    <button
+                                                        type="button"
+                                                        disabled={!pagination.next?.url}
+                                                        className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                        onClick={() => goToPage(pagination.next?.url)}
+                                                    >
+                                                        Next
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : null}
                             </Foreach>
                         </SectionInner>
                     </SectionSection>
@@ -285,7 +416,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                     {[['all', 'Not Defined'], ['cash', 'Home Delivery'], ['courier', 'Courier Delivery'], ['hand', 'Hand-to-Hand']].map(([value, label]) => (
                                         <div key={value}>
                                             <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === value} onChange={() => updateFilters({ delivery: value })} /> {label}
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={modalDelivery === value} onChange={() => setModalDelivery(value)} /> {label}
                                             </div>
                                             <hr />
                                         </div>
@@ -300,7 +431,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                     {[['all', 'All Time'], ['day', 'From First Date'], ['between', 'Between in Range']].map(([value, label]) => (
                                         <div key={value}>
                                             <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.create === value} onChange={() => updateFilters({ create: value })} />{label}
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={modalCreate === value} onChange={() => setModalCreate(value)} />{label}
                                             </div>
                                             <hr />
                                         </div>
@@ -310,14 +441,23 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                 <div className="space-y-2 p-2 ">
                                     <div>
                                         First Date
-                                        <input className="rounded-md" type="date" value={filters.start_date ?? ""} onChange={(e) => updateFilters({ start_date: e.target.value })} />
+                                        <input className="rounded-md" type="date" value={modalStartDate} onChange={(e) => setModalStartDate(e.target.value)} />
                                     </div>
                                     <div>
                                         Last Date
-                                        <input className="rounded-md" type="date" value={filters.end_date ?? ""} onChange={(e) => updateFilters({ end_date: e.target.value })} />
+                                        <input className="rounded-md" type="date" value={modalEndDate} onChange={(e) => setModalEndDate(e.target.value)} />
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="flex items-end gap-2 mt-4 md:mt-0">
+                            <PrimaryButton type="button" onClick={resetModalFilters}>
+                                Reset
+                            </PrimaryButton>
+                            <PrimaryButton type="button" onClick={applyModalFilters}>
+                                Apply
+                            </PrimaryButton>
                         </div>
                     </div>
                 </div>

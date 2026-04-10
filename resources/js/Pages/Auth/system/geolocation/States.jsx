@@ -1,5 +1,5 @@
 import { Head, router, useForm } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import InputLabel from "../../../../components/InputLabel";
 import Modal from "../../../../components/Modal";
@@ -12,9 +12,10 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 
-export default function States({ states, countries = [] }) {
+export default function States({ states, countries = [], filters = {}, printUrl }) {
     const [showModal, setShowModal] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
+    const [search, setSearch] = useState(filters.find ?? "");
     const form = useForm({
         stateId: "",
         name: "",
@@ -23,6 +24,33 @@ export default function States({ states, countries = [] }) {
         iso2: "",
         iso3166_2: "",
     });
+
+    useEffect(() => {
+        setSearch(filters.find ?? "");
+    }, [filters.find]);
+
+    useEffect(() => {
+        const trimmedSearch = search.trim();
+        const currentSearch = (filters.find ?? "").trim();
+
+        if (trimmedSearch === currentSearch) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            router.get(
+                route("system.geolocations.states"),
+                { find: trimmedSearch },
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true,
+                }
+            );
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search]);
 
     const syncCountryCode = (countryId) => {
         const selectedCountry = countries.find((item) => String(item.id) === String(countryId));
@@ -94,6 +122,42 @@ export default function States({ states, countries = [] }) {
         });
     };
 
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        router.get(
+            route("system.geolocations.states"),
+            {
+                find: nextUrl.searchParams.get("find") ?? search,
+                page: nextUrl.searchParams.get("page") ?? undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        );
+    };
+
+    const pagination = useMemo(() => {
+        const links = states?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [states?.links]);
+
+    const resultSummary =
+        states?.total > 0
+            ? `Showing ${states?.from ?? 0}-${states?.to ?? 0} of ${states?.total ?? 0} states`
+            : "No states found";
+
     return (
         <AppLayout
             title="Geolocation - States"
@@ -116,10 +180,41 @@ export default function States({ states, countries = [] }) {
                         title={
                             <div className="flex justify-between items-center">
                                 <h2>States</h2>
-                                <PrimaryButton type="button" onClick={openCreate}>
-                                    <i className="fas fa-plus mr-2"></i>
-                                    <span>Add New</span>
-                                </PrimaryButton>
+                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                    <TextInput
+                                        type="search"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") {
+                                                return;
+                                            }
+
+                                            e.preventDefault();
+                                            router.get(
+                                                route("system.geolocations.states"),
+                                                { find: search.trim() },
+                                                {
+                                                    preserveState: true,
+                                                    preserveScroll: true,
+                                                    replace: true,
+                                                }
+                                            );
+                                        }}
+                                        className="py-1"
+                                        placeholder="Search states..."
+                                    />
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={() => window.open(printUrl, "_blank")}
+                                    >
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
+                                    <PrimaryButton type="button" onClick={openCreate}>
+                                        <i className="fas fa-plus mr-2"></i>
+                                        <span>Add New</span>
+                                    </PrimaryButton>
+                                </div>
                             </div>
                         }
                         content=""
@@ -194,32 +289,48 @@ export default function States({ states, countries = [] }) {
                             </table>
                         </div>
 
-                        {(states?.links ?? []).length ? (
-                            <div className="mt-4 flex flex-wrap items-center gap-2">
-                                {states.links.map((link, index) =>
-                                    link.url ? (
-                                        <button
-                                            key={`${link.label}-${index}`}
-                                            type="button"
-                                            className={`px-3 py-1 border rounded ${
-                                                link.active ? "bg-orange-500 text-white border-orange-500" : "bg-white"
-                                            }`}
-                                            onClick={() =>
-                                                router.visit(link.url, {
-                                                    preserveState: true,
-                                                    preserveScroll: true,
-                                                })
-                                            }
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ) : (
-                                        <span
-                                            key={`${link.label}-${index}`}
-                                            className="px-3 py-1 border rounded text-gray-400"
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    )
-                                )}
+                        {pagination.pages.length ? (
+                            <div className="w-full pt-4">
+                                <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="text-sm text-slate-700">
+                                        {resultSummary}
+                                    </div>
+                                    <div className="flex items-center md:justify-end">
+                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.prev?.url}
+                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.prev?.url)}
+                                            >
+                                                Previous
+                                            </button>
+                                            {pagination.pages.map((link, index) => (
+                                                <button
+                                                    key={`${link.label}-${index}`}
+                                                    type="button"
+                                                    disabled={!link.url}
+                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                        link.active
+                                                            ? "bg-slate-100 text-blue-600"
+                                                            : "bg-white text-slate-700 hover:bg-slate-50"
+                                                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                    onClick={() => goToPage(link.url)}
+                                                >
+                                                    {link.label}
+                                                </button>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.next?.url}
+                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.next?.url)}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         ) : null}
                     </SectionInner>

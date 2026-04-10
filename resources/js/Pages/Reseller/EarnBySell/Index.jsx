@@ -1,8 +1,8 @@
 import { Head, router } from "@inertiajs/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../Layouts/App";
-import Modal from "../../../components/Modal";
 import PrimaryButton from "../../../components/PrimaryButton";
+import TextInput from "../../../components/TextInput";
 import Container from "../../../components/dashboard/Container";
 import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
@@ -41,11 +41,12 @@ export default function Index({
     overview = {},
     products = { data: [], links: [] },
     counts = {},
+    printUrl,
 }) {
-    const [showFilterModal, setShowFilterModal] = useState(false);
     const [nav, setNav] = useState(filters.nav ?? "sold");
     const [fd, setFd] = useState(filters.fd ?? "");
     const [lastDate, setLastDate] = useState(filters.lastDate ?? "");
+    const [search, setSearch] = useState(filters.search ?? "");
 
     const cleanLabel = (label) =>
         String(label)
@@ -53,32 +54,65 @@ export default function Index({
             .replace(/&raquo;/g, "")
             .trim();
 
-    const changeNav = (value) => {
-        setNav(value);
+    const requestProducts = (overrides = {}, options = {}) => {
+        const nextNav = overrides.nav ?? nav;
+        const nextFd = overrides.fd ?? fd;
+        const nextLastDate = overrides.lastDate ?? lastDate;
+        const nextSearch = overrides.search ?? search.trim();
+
         router.get(
             route("reseller.sel.index"),
             {
-                nav: value,
-                fd: fd || undefined,
-                lastDate: lastDate || undefined,
+                nav: nextNav,
+                fd: nextFd || undefined,
+                lastDate: nextLastDate || undefined,
+                search: nextSearch || undefined,
+                page: overrides.page ?? undefined,
             },
-            { preserveState: true, preserveScroll: true, replace: true },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                ...options,
+            },
         );
     };
 
-    const submitFilter = (e) => {
-        e.preventDefault();
-        router.get(
-            route("reseller.sel.index"),
-            {
-                nav,
-                fd: fd || undefined,
-                lastDate: lastDate || undefined,
-            },
-            { preserveState: true, preserveScroll: true },
-        );
-        setShowFilterModal(false);
+    const changeNav = (value) => {
+        setNav(value);
+        requestProducts({ nav: value });
     };
+
+    const resetFilters = () => {
+        setFd("");
+        setLastDate("");
+        requestProducts({ fd: "", lastDate: "" });
+    };
+
+    useEffect(() => {
+        setSearch(filters.search ?? "");
+    }, [filters.search]);
+
+    useEffect(() => {
+        setNav(filters.nav ?? "sold");
+        setFd(filters.fd ?? "");
+        setLastDate(filters.lastDate ?? "");
+    }, [filters.nav, filters.fd, filters.lastDate]);
+
+    useEffect(() => {
+        const trimmedSearch = search.trim();
+        const currentSearch = (filters.search ?? "").trim();
+
+        if (trimmedSearch === currentSearch) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            requestProducts({ search: trimmedSearch });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search, nav, fd, lastDate, filters.search]);
 
     const formattedFd = useMemo(() => {
         if (!fd) return "";
@@ -97,6 +131,47 @@ export default function Index({
             year: "numeric",
         });
     }, [lastDate]);
+
+    const pagination = useMemo(() => {
+        const links = products?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [products?.links]);
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url, window.location.origin);
+
+        requestProducts({
+            nav: nextUrl.searchParams.get("nav") ?? nav,
+            fd: nextUrl.searchParams.get("fd") ?? fd,
+            lastDate: nextUrl.searchParams.get("lastDate") ?? lastDate,
+            search: nextUrl.searchParams.get("search") ?? search.trim(),
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        });
+    };
+
+    const resultSummary =
+        products?.total > 0
+            ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} items`
+            : "No items found";
+
+    const updateStartDate = (value) => {
+        setFd(value);
+        requestProducts({ fd: value, lastDate, page: undefined });
+    };
+
+    const updateLastDate = (value) => {
+        setLastDate(value);
+        requestProducts({ fd, lastDate: value, page: undefined });
+    };
 
     return (
         <AppLayout title="Sell and Profit">
@@ -127,7 +202,7 @@ export default function Index({
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between gap-3">
                                 <div className="flex space-x-2">
                                     <select
                                         value={nav}
@@ -143,20 +218,61 @@ export default function Index({
                                         </option>
                                     </select>
                                 </div>
-                                <PrimaryButton
-                                    type="button"
-                                    onClick={() => setShowFilterModal(true)}
-                                >
-                                    Filter <i className="fas fa-sort ms-2"></i>
-                                </PrimaryButton>
+                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                    <div>
+                                        <input
+                                            type="date"
+                                            value={fd}
+                                            onChange={(e) =>
+                                                updateStartDate(e.target.value)
+                                            }
+                                            className="rounded py-1 text-sm"
+                                            title={formattedFd}
+                                        />
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="date"
+                                            value={lastDate}
+                                            onChange={(e) =>
+                                                updateLastDate(e.target.value)
+                                            }
+                                            className="rounded py-1 text-sm"
+                                            title={formattedLastDate}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="rounded border px-3 py-1 text-sm text-slate-700"
+                                        onClick={resetFilters}
+                                    >
+                                        Reset
+                                    </button>
+                                    <TextInput
+                                        type="search"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") {
+                                                return;
+                                            }
+
+                                            e.preventDefault();
+                                            requestProducts({
+                                                search: search.trim(),
+                                            });
+                                        }}
+                                        className="py-1"
+                                        placeholder="Search products..."
+                                    />
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={() => window.open(printUrl, "_blank")}
+                                    >
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
+                                </div>
                             </div>
-                        }
-                        content={
-                            <p className="text-sm">
-                                {counts.items
-                                    ? `${counts.items} items found / Unique : ${counts.unique}`
-                                    : "No Data Found"}
-                            </p>
                         }
                     />
                     <hr />
@@ -177,7 +293,7 @@ export default function Index({
                             <tbody>
                                 {(products.data ?? []).map((item, idx) => (
                                     <tr key={item.id}>
-                                        <td>{idx + 1}</td>
+                                        <td>{(products?.from ?? 1) + idx}</td>
                                         <td>{item.id}</td>
                                         <td>
                                             <NavLink
@@ -263,84 +379,53 @@ export default function Index({
                                 ))}
                             </tbody>
                         </Table>
-                        <div className="mb-2 flex flex-wrap gap-2">
-                            {(products.links ?? []).map((link, idx) => (
-                                <button
-                                    key={idx}
-                                    type="button"
-                                    disabled={!link.url}
-                                    onClick={() =>
-                                        link.url &&
-                                        router.visit(link.url, {
-                                            preserveScroll: true,
-                                            preserveState: true,
-                                        })
-                                    }
-                                    className={`px-3 py-1 border rounded ${
-                                        link.active
-                                            ? "bg-gray-900 text-white"
-                                            : "bg-white"
-                                    }`}
-                                >
-                                    {cleanLabel(link.label)}
-                                </button>
-                            ))}
-                        </div>
-                    </SectionInner>
-                </Section>
-
-                <Modal
-                    show={showFilterModal}
-                    onClose={() => setShowFilterModal(false)}
-                >
-                    <div className="p-2 flex justify-between items-center">
-                        <div>Filter</div>
-                        <button
-                            type="button"
-                            onClick={() => setShowFilterModal(false)}
-                        >
-                            <i className="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <hr />
-                    <div className="p-3">
-                        <form onSubmit={submitFilter}>
-                            <div className="w-full flex items-bottom justify-betweeen space-x-2">
-                                <div>
-                                    <p className="text-xs">First Date</p>
-                                    <input
-                                        type="date"
-                                        value={fd}
-                                        onChange={(e) => setFd(e.target.value)}
-                                        className="py-1 rounded font-normal text-sm"
-                                    />
-                                    <div className="text-xs">{formattedFd}</div>
-                                </div>
-
-                                <div>
-                                    <p className="text-xs">Last Date</p>
-                                    <input
-                                        type="date"
-                                        value={lastDate}
-                                        onChange={(e) =>
-                                            setLastDate(e.target.value)
-                                        }
-                                        className="py-1 rounded font-normal text-sm"
-                                    />
-                                    <div className="text-xs">
-                                        {formattedLastDate}
+                        {pagination.pages.length ? (
+                            <div className="w-full pt-4">
+                                <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="text-sm text-slate-700">
+                                        {resultSummary}
+                                    </div>
+                                    <div className="flex items-center md:justify-end">
+                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.prev?.url}
+                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.prev?.url)}
+                                            >
+                                                Previous
+                                            </button>
+                                            {pagination.pages.map((link, idx) => (
+                                                <button
+                                                    key={`${link.label}-${idx}`}
+                                                    type="button"
+                                                    disabled={!link.url}
+                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                        link.active
+                                                            ? "bg-slate-100 text-blue-600"
+                                                            : "bg-white text-slate-700 hover:bg-slate-50"
+                                                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                    onClick={() => goToPage(link.url)}
+                                                >
+                                                    {cleanLabel(link.label)}
+                                                </button>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.next?.url}
+                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.next?.url)}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <button
-                                className="rounded bg-lime-400 px-4 mt-1 py-1 text-sm border"
-                                type="submit"
-                            >
-                                Check
-                            </button>
-                        </form>
-                    </div>
-                </Modal>
+                        ) : null}
+                    </SectionInner>
+                </Section>
+
             </Container>
         </AppLayout>
     );

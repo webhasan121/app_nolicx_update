@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Container from "../../../components/dashboard/Container";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Foreach from "../../../components/dashboard/Foreach";
@@ -14,6 +14,8 @@ import Hr from "../../../components/Hr";
 import Modal from "../../../components/Modal";
 import NavLink from "../../../components/NavLink";
 import SecondaryButton from "../../../components/SecondaryButton";
+import PrimaryButton from "../../../components/PrimaryButton";
+import TextInput from "../../../components/TextInput";
 
 const navs = [
     "All",
@@ -57,6 +59,26 @@ export default function Index({ orderIndex, activeNav }) {
     const list = orderIndex?.list ?? {};
     const rows = list?.data ?? [];
     const isReseller = activeNav === "reseller";
+    const [search, setSearch] = useState(filters.find ?? "");
+
+    useEffect(() => {
+        setSearch(filters.find ?? "");
+    }, [filters.find]);
+
+    useEffect(() => {
+        const trimmedSearch = search.trim();
+        const currentSearch = (filters.find ?? "").trim();
+
+        if (trimmedSearch === currentSearch) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            updateFilters({ find: trimmedSearch });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search]);
 
     const updateFilters = (updates) => {
         router.get(route("dashboard"), buildQuery(filters, { ...updates, page: 1 }), {
@@ -66,36 +88,62 @@ export default function Index({ orderIndex, activeNav }) {
         });
     };
 
-    const gotoPage = (page) => {
-        router.get(route("dashboard"), buildQuery(filters, { page }), {
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        router.get(route("dashboard"), buildQuery(filters, {
+            page: nextUrl.searchParams.get("page") ?? 1,
+            find: nextUrl.searchParams.get("find") ?? search.trim(),
+        }), {
             preserveState: true,
             preserveScroll: true,
             replace: true,
         });
     };
 
+    const pagination = useMemo(() => {
+        const links = list?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [list?.links]);
+
+    const resultSummary =
+        list?.total > 0
+            ? `Showing ${list?.from ?? 0}-${list?.to ?? 0} of ${list?.total ?? 0} orders`
+            : "No orders found";
+
     return (
         <div>
-            <PageHeader>
-                Orders
-                <br />
-                {isReseller ? (
-                    <div>
-                        <NavLink
-                            href={route("vendor.orders.index")}
-                            active={route().current("vendor.orders.*")}
-                        >
-                            User Orders
-                        </NavLink>
-                        <NavLink
-                            href={route("reseller.resel-order.index")}
-                            active={route().current("reseller.resel-order.*")}
-                        >
-                            My Resel Order
-                        </NavLink>
-                    </div>
-                ) : null}
-            </PageHeader>
+            <Container>
+                <PageHeader>
+                    Orders
+                    <br />
+                    {isReseller ? (
+                        <div>
+                            <NavLink
+                                href={route("vendor.orders.index")}
+                                active={route().current("vendor.orders.*")}
+                            >
+                                User Orders
+                            </NavLink>
+                            <NavLink
+                                href={route("reseller.resel-order.index")}
+                                active={route().current("reseller.resel-order.*")}
+                            >
+                                My Resel Order
+                            </NavLink>
+                        </div>
+                    ) : null}
+                </PageHeader>
+            </Container>
 
             <Container>
                 <Section>
@@ -109,61 +157,87 @@ export default function Index({ orderIndex, activeNav }) {
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex justify-start items-center space-x-2">
-                                <SecondaryButton
-                                    type="button"
-                                    onClick={() => setFilterOpen(true)}
-                                >
-                                    <i className="fas fa-filter pr-2"></i> Filter
-                                </SecondaryButton>
-                                <Dropdown
-                                    trigger={
-                                        <SecondaryButton className="inline-flex items-center ">
-                                            Delivery <i className="fas fa-angle-down ps-2"></i>
-                                        </SecondaryButton>
-                                    }
-                                >
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "all"} onChange={() => updateFilters({ delivery: "all" })} /> Not Defined
-                                    </div>
-                                    <hr />
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "cash"} onChange={() => updateFilters({ delivery: "cash" })} /> Home Delivery
-                                    </div>
-                                    <hr />
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "courier"} onChange={() => updateFilters({ delivery: "courier" })} /> Courier Delivery
-                                    </div>
-                                    <hr />
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "hand"} onChange={() => updateFilters({ delivery: "hand" })} /> Hand-to-Hand
-                                    </div>
-                                </Dropdown>
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center space-x-2">
+                                    <SecondaryButton
+                                        type="button"
+                                        onClick={() => setFilterOpen(true)}
+                                    >
+                                        <i className="fas fa-filter pr-2"></i> Filter
+                                    </SecondaryButton>
+                                    <Dropdown
+                                        trigger={
+                                            <SecondaryButton className="inline-flex items-center ">
+                                                Delivery <i className="fas fa-angle-down ps-2"></i>
+                                            </SecondaryButton>
+                                        }
+                                    >
+                                        <div className="flex items-center w-full p-2 text-sm">
+                                            <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "all"} onChange={() => updateFilters({ delivery: "all" })} /> Not Defined
+                                        </div>
+                                        <hr />
+                                        <div className="flex items-center w-full p-2 text-sm">
+                                            <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "cash"} onChange={() => updateFilters({ delivery: "cash" })} /> Home Delivery
+                                        </div>
+                                        <hr />
+                                        <div className="flex items-center w-full p-2 text-sm">
+                                            <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "courier"} onChange={() => updateFilters({ delivery: "courier" })} /> Courier Delivery
+                                        </div>
+                                        <hr />
+                                        <div className="flex items-center w-full p-2 text-sm">
+                                            <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "hand"} onChange={() => updateFilters({ delivery: "hand" })} /> Hand-to-Hand
+                                        </div>
+                                    </Dropdown>
 
-                                <Dropdown
-                                    trigger={
-                                        <SecondaryButton>
-                                            Area <i className="fas fa-angle-down ps-2"></i>
-                                        </SecondaryButton>
-                                    }
-                                >
-                                    <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
-                                        <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "all"} onChange={() => updateFilters({ area: "all" })} />
-                                        <label className="p-0 m-0"> Both </label>
-                                    </div>
-                                    <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
-                                        <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Dhaka"} onChange={() => updateFilters({ area: "Dhaka" })} />
-                                        <label className="p-0 m-0"> Inside Dhaka </label>
-                                    </div>
-                                    <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
-                                        <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Other"} onChange={() => updateFilters({ area: "Other" })} />
-                                        <label className="p-0 m-0"> Outside of Dhaka </label>
-                                    </div>
-                                </Dropdown>
+                                    <Dropdown
+                                        trigger={
+                                            <SecondaryButton>
+                                                Area <i className="fas fa-angle-down ps-2"></i>
+                                            </SecondaryButton>
+                                        }
+                                    >
+                                        <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                            <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "all"} onChange={() => updateFilters({ area: "all" })} />
+                                            <label className="p-0 m-0"> Both </label>
+                                        </div>
+                                        <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                            <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Dhaka"} onChange={() => updateFilters({ area: "Dhaka" })} />
+                                            <label className="p-0 m-0"> Inside Dhaka </label>
+                                        </div>
+                                        <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                            <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Other"} onChange={() => updateFilters({ area: "Other" })} />
+                                            <label className="p-0 m-0"> Outside of Dhaka </label>
+                                        </div>
+                                    </Dropdown>
+                                </div>
+
+                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                    <TextInput
+                                        type="search"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") {
+                                                return;
+                                            }
+
+                                            e.preventDefault();
+                                            updateFilters({ find: search.trim() });
+                                        }}
+                                        className="py-1"
+                                        placeholder="Search orders..."
+                                    />
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={() => window.open(orderIndex?.print_url, "_blank")}
+                                    >
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
+                                </div>
                             </div>
                         }
                         content={
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-3">
                                 <div>
                                     {navs.map((nav) => (
                                         <NavLink
@@ -188,20 +262,6 @@ export default function Index({ orderIndex, activeNav }) {
 
                     <SectionInner>
                         <Foreach data={rows}>
-                            <div className="flex justify-between items-center mb-2">
-                                <div className="text-sm text-gray-600">
-                                    Page {list.current_page ?? 1} of {list.last_page ?? 1}
-                                </div>
-                                <div className="space-x-2">
-                                    <SecondaryButton type="button" onClick={() => gotoPage((list.current_page ?? 1) - 1)} disabled={!list.prev_page_url}>
-                                        Prev
-                                    </SecondaryButton>
-                                    <SecondaryButton type="button" onClick={() => gotoPage((list.current_page ?? 1) + 1)} disabled={!list.next_page_url}>
-                                        Next
-                                    </SecondaryButton>
-                                </div>
-                            </div>
-
                             <Table data={rows}>
                                 <thead>
                                     <tr>
@@ -229,7 +289,7 @@ export default function Index({ orderIndex, activeNav }) {
                                 <tbody>
                                     {rows.map((item, index) => (
                                         <tr key={item.id}>
-                                            <td>{index + 1}</td>
+                                            <td>{(list?.from ?? 1) + index}</td>
                                             <td>
                                                 <NavLink href={route("vendor.orders.view", { order: item.id })}>view</NavLink>
                                                 <NavLink href={route("vendor.orders.cprint", { order: item.id })}>Pint</NavLink>
@@ -263,6 +323,51 @@ export default function Index({ orderIndex, activeNav }) {
                                     ))}
                                 </tbody>
                             </Table>
+
+                            {pagination.pages.length ? (
+                                <div className="w-full pt-4">
+                                    <div className="flex w-full items-center justify-between gap-3">
+                                        <div className="text-sm text-slate-700">
+                                            {resultSummary}
+                                        </div>
+                                        <div className="flex items-center md:justify-end">
+                                            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                                <button
+                                                    type="button"
+                                                    disabled={!pagination.prev?.url}
+                                                    className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    onClick={() => goToPage(pagination.prev?.url)}
+                                                >
+                                                    Previous
+                                                </button>
+                                                {pagination.pages.map((link, pageIndex) => (
+                                                    <button
+                                                        key={`${link.label}-${pageIndex}`}
+                                                        type="button"
+                                                        disabled={!link.url}
+                                                        className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                            link.active
+                                                                ? "bg-slate-100 text-blue-600"
+                                                                : "bg-white text-slate-700 hover:bg-slate-50"
+                                                        } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                        onClick={() => goToPage(link.url)}
+                                                    >
+                                                        {link.label}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    disabled={!pagination.next?.url}
+                                                    className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    onClick={() => goToPage(pagination.next?.url)}
+                                                >
+                                                    Next
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
                         </Foreach>
                     </SectionInner>
                 </SectionSection>

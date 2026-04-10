@@ -15,11 +15,77 @@ class PageSettingsController extends Controller
 {
     use HandleImageUpload;
 
-    public function indexReact(): Response
+    public function indexReact(Request $request): Response
     {
-        $pages = page_settings::all();
+        $find = trim((string) $request->query('find', ''));
+        $pages = page_settings::query()
+            ->when($find !== '', function ($query) use ($find) {
+                $query->where(function ($subQuery) use ($find) {
+                    $subQuery
+                        ->where('id', 'like', '%' . $find . '%')
+                        ->orWhere('name', 'like', '%' . $find . '%')
+                        ->orWhere('slug', 'like', '%' . $find . '%')
+                        ->orWhere('title', 'like', '%' . $find . '%')
+                        ->orWhere('content', 'like', '%' . $find . '%')
+                        ->orWhere('status', 'like', '%' . $find . '%');
+                });
+            })
+            ->latest('id')
+            ->paginate(config('app.paginate'))
+            ->withQueryString();
 
         return Inertia::render('Auth/system/settings/pages/index', [
+            'filters' => [
+                'find' => $find,
+            ],
+            'pages' => [
+                'data' => $pages->getCollection()->map(fn (page_settings $item) => [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'slug' => $item->slug,
+                    'title' => $item->title,
+                    'content' => Str::limit($item->content, 100, '...'),
+                    'status' => $item->status,
+                ])->values()->all(),
+                'links' => collect($pages->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $pages->firstItem(),
+                'to' => $pages->lastItem(),
+                'total' => $pages->total(),
+            ],
+            'printUrl' => route('system.pages.print', [
+                'find' => $find,
+            ]),
+        ]);
+    }
+
+    public function printReact(Request $request): Response
+    {
+        $find = trim((string) $request->query('find', ''));
+        $pages = page_settings::query()
+            ->when($find !== '', function ($query) use ($find) {
+                $query->where(function ($subQuery) use ($find) {
+                    $subQuery
+                        ->where('id', 'like', '%' . $find . '%')
+                        ->orWhere('name', 'like', '%' . $find . '%')
+                        ->orWhere('slug', 'like', '%' . $find . '%')
+                        ->orWhere('title', 'like', '%' . $find . '%')
+                        ->orWhere('content', 'like', '%' . $find . '%')
+                        ->orWhere('status', 'like', '%' . $find . '%');
+                });
+            })
+            ->latest('id')
+            ->get();
+
+        return Inertia::render('Auth/system/settings/pages/Print', [
+            'filters' => [
+                'find' => $find,
+            ],
             'pages' => $pages->map(fn (page_settings $item) => [
                 'id' => $item->id,
                 'name' => $item->name,

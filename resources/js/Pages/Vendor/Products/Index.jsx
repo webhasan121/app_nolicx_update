@@ -1,5 +1,5 @@
 import { Head, router } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../Layouts/App";
 import Modal from "../../../components/Modal";
 import NavLink from "../../../components/NavLink";
@@ -22,10 +22,14 @@ function buildQuery(filters, updates = {}) {
     );
 }
 
-export default function Index({ filters = {}, products = { data: [], links: [] }, isReseller = false }) {
+export default function Index({ filters = {}, products = { data: [], links: [] }, isReseller = false, printUrl }) {
     const [filterOpen, setFilterOpen] = useState(false);
     const [selectedModel, setSelectedModel] = useState([]);
     const [searchTerm, setSearchTerm] = useState(filters.search ?? "");
+    const [modalCreated, setModalCreated] = useState(filters.created ?? "");
+    const [modalStatus, setModalStatus] = useState(
+        filters.take === "trash" ? "trash" : (filters.nav ?? "Active")
+    );
 
     const rows = products?.data ?? [];
     const isTrash = filters.take === "trash";
@@ -58,6 +62,11 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
     }, [filters.search]);
 
     useEffect(() => {
+        setModalCreated(filters.created ?? "");
+        setModalStatus(filters.take === "trash" ? "trash" : (filters.nav ?? "Active"));
+    }, [filters.created, filters.nav, filters.take]);
+
+    useEffect(() => {
         const timeoutId = window.setTimeout(() => {
             if ((searchTerm ?? "") === (filters.search ?? "")) {
                 return;
@@ -67,6 +76,54 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
 
         return () => window.clearTimeout(timeoutId);
     }, [searchTerm, filters.search]);
+
+    const pagination = useMemo(() => {
+        const links = products?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [products?.links]);
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        updateFilters({
+            nav: nextUrl.searchParams.get("nav") ?? filters.nav ?? "Active",
+            take: nextUrl.searchParams.get("take") ?? filters.take ?? "",
+            search: nextUrl.searchParams.get("search") ?? filters.search ?? "",
+            created: nextUrl.searchParams.get("created") ?? filters.created ?? "",
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        }, false);
+    };
+
+    const resultSummary =
+        products?.total > 0
+            ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} products`
+            : "No products found";
+
+    const applyModalFilters = () => {
+        if (modalStatus === "trash") {
+            updateFilters({ take: "trash", nav: "", created: modalCreated });
+        } else {
+            updateFilters({ take: "", nav: modalStatus, created: modalCreated });
+        }
+
+        setFilterOpen(false);
+    };
+
+    const resetModalFilters = () => {
+        setModalCreated("");
+        setModalStatus("Active");
+        updateFilters({ take: "", nav: "Active", created: "" });
+        setFilterOpen(false);
+    };
 
     return (
         <AppLayout
@@ -138,6 +195,9 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                         placeholder="Search by name"
                                         className="mx-2 hidden lg:block py-1"
                                     />
+                                    <PrimaryButton type="button" className="mr-2" onClick={() => window.open(printUrl, "_blank")}>
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
                                     <PrimaryButton type="button" onClick={() => setFilterOpen(true)}>
                                         Filter
                                     </PrimaryButton>
@@ -199,33 +259,50 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                 </tbody>
                             </Table>
 
-                            <div>
-                                {(products.links ?? []).map((link) =>
-                                    link.url ? (
-                                        <button
-                                            type="button"
-                                            key={`${link.label}-${link.url}`}
-                                            className={`px-2 py-1 mx-1 border rounded ${link.active ? "bg-orange-500 text-white" : ""}`}
-                                            onClick={() => {
-                                                const url = new URL(link.url);
-                                                updateFilters({
-                                                    nav: url.searchParams.get("nav") ?? filters.nav ?? "Active",
-                                                    take: url.searchParams.get("take") ?? filters.take ?? "",
-                                                    search: url.searchParams.get("search") ?? filters.search ?? "",
-                                                    page: url.searchParams.get("page") ?? undefined,
-                                                }, false);
-                                            }}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ) : (
-                                        <span
-                                            key={`${link.label}-disabled`}
-                                            className="px-2 py-1 mx-1 text-gray-400 border rounded"
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    )
-                                )}
-                            </div>
+                            {pagination.pages.length ? (
+                                <div className="w-full pt-4">
+                                    <div className="flex w-full items-center justify-between gap-3">
+                                        <div className="text-sm text-slate-700">
+                                            {resultSummary}
+                                        </div>
+                                        <div className="flex items-center md:justify-end">
+                                            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                                <button
+                                                    type="button"
+                                                    disabled={!pagination.prev?.url}
+                                                    className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    onClick={() => goToPage(pagination.prev?.url)}
+                                                >
+                                                    Previous
+                                                </button>
+                                                {pagination.pages.map((link, index) => (
+                                                    <button
+                                                        key={`${link.label}-${index}`}
+                                                        type="button"
+                                                        disabled={!link.url}
+                                                        className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                            link.active
+                                                                ? "bg-slate-100 text-blue-600"
+                                                                : "bg-white text-slate-700 hover:bg-slate-50"
+                                                        } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                        onClick={() => goToPage(link.url)}
+                                                    >
+                                                        {link.label}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    disabled={!pagination.next?.url}
+                                                    className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    onClick={() => goToPage(pagination.next?.url)}
+                                                >
+                                                    Next
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
                         </Foreach>
                     </SectionInner>
                 </Section>
@@ -235,13 +312,18 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                 <div className="p-3">
                     <SectionHeader title="Filter Your Own" content="" />
                     <SectionInner>
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-start gap-6">
                             <div>
                                 <h3>Filter by Create date</h3>
                                 <ul className="ms-4 mt-2">
                                     <li>
                                         <div className="flex items-center mb-2">
-                                            <input className="p-0 m-0 mr-3" type="radio" />
+                                            <input
+                                                className="p-0 m-0 mr-3"
+                                                type="radio"
+                                                checked={modalCreated === "today"}
+                                                onChange={() => setModalCreated("today")}
+                                            />
                                             <label className="p-0 m-0">Today</label>
                                         </div>
                                     </li>
@@ -252,21 +334,43 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                 <ul className="ms-4 mt-2">
                                     <li>
                                         <div className="flex items-center mb-2">
-                                            <input className="p-0 m-0 mr-3" type="radio" />
+                                            <input
+                                                className="p-0 m-0 mr-3"
+                                                type="radio"
+                                                checked={modalStatus === "Active"}
+                                                onChange={() => setModalStatus("Active")}
+                                            />
                                             <label className="p-0 m-0">Active</label>
                                         </div>
                                         <div className="flex items-center mb-2">
-                                            <input className="p-0 m-0 mr-3" type="radio" />
+                                            <input
+                                                className="p-0 m-0 mr-3"
+                                                type="radio"
+                                                checked={modalStatus === "In Active"}
+                                                onChange={() => setModalStatus("In Active")}
+                                            />
                                             <label className="p-0 m-0">Disable</label>
                                         </div>
                                         <div className="flex items-center mb-2">
-                                            <input className="p-0 m-0 mr-3" type="radio" />
+                                            <input
+                                                className="p-0 m-0 mr-3"
+                                                type="radio"
+                                                checked={modalStatus === "trash"}
+                                                onChange={() => setModalStatus("trash")}
+                                            />
                                             <label className="p-0 m-0">Trash</label>
                                         </div>
                                     </li>
                                 </ul>
                             </div>
-                            <div></div>
+                            <div className="flex items-end gap-2 pt-7">
+                                <PrimaryButton type="button" onClick={resetModalFilters}>
+                                    Reset
+                                </PrimaryButton>
+                                <PrimaryButton type="button" onClick={applyModalFilters}>
+                                    Apply
+                                </PrimaryButton>
+                            </div>
                         </div>
                     </SectionInner>
                 </div>

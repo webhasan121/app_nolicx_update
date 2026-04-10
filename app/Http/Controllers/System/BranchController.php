@@ -12,11 +12,79 @@ use Inertia\Response;
 
 class BranchController extends Controller
 {
-    public function indexReact(): Response
+    public function indexReact(Request $request): Response
     {
-        $branches = Branch::latest('id')->get();
+        $find = trim((string) $request->query('find', ''));
+        $branches = Branch::query()
+            ->when($find !== '', function ($query) use ($find) {
+                $query->where(function ($subQuery) use ($find) {
+                    $subQuery
+                        ->where('id', 'like', '%' . $find . '%')
+                        ->orWhere('name', 'like', '%' . $find . '%')
+                        ->orWhere('email', 'like', '%' . $find . '%')
+                        ->orWhere('phone', 'like', '%' . $find . '%')
+                        ->orWhere('slug', 'like', '%' . $find . '%')
+                        ->orWhere('type', 'like', '%' . $find . '%');
+                });
+            })
+            ->latest('id')
+            ->paginate(config('app.paginate'))
+            ->withQueryString();
 
         return Inertia::render('Auth/system/settings/branch/index', [
+            'filters' => [
+                'find' => $find,
+            ],
+            'branches' => [
+                'data' => $branches->getCollection()->values()->map(function (Branch $branch, int $index) use ($branches) {
+                    return [
+                        'sl' => (($branches->currentPage() - 1) * $branches->perPage()) + $index + 1,
+                        'id' => $branch->id,
+                        'name' => $branch->name,
+                        'email' => $branch->email,
+                        'type' => $branch->type,
+                        'created_at' => (string) $branch->created_at,
+                    ];
+                })->all(),
+                'links' => collect($branches->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $branches->firstItem(),
+                'to' => $branches->lastItem(),
+                'total' => $branches->total(),
+            ],
+            'printUrl' => route('system.branches.print', [
+                'find' => $find,
+            ]),
+        ]);
+    }
+
+    public function printReact(Request $request): Response
+    {
+        $find = trim((string) $request->query('find', ''));
+        $branches = Branch::query()
+            ->when($find !== '', function ($query) use ($find) {
+                $query->where(function ($subQuery) use ($find) {
+                    $subQuery
+                        ->where('id', 'like', '%' . $find . '%')
+                        ->orWhere('name', 'like', '%' . $find . '%')
+                        ->orWhere('email', 'like', '%' . $find . '%')
+                        ->orWhere('phone', 'like', '%' . $find . '%')
+                        ->orWhere('slug', 'like', '%' . $find . '%')
+                        ->orWhere('type', 'like', '%' . $find . '%');
+                });
+            })
+            ->latest('id')
+            ->get();
+
+        return Inertia::render('Auth/system/settings/branch/Print', [
+            'filters' => [
+                'find' => $find,
+            ],
             'branches' => $branches->values()->map(function (Branch $branch, int $index) {
                 return [
                     'sl' => $index + 1,

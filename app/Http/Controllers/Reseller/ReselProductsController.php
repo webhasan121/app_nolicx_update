@@ -20,6 +20,7 @@ class ReselProductsController extends Controller
     public function index(Request $request): Response
     {
         $cat = $request->query('cat');
+        $search = trim((string) $request->query('search', ''));
         $categoryIds = [];
 
         if ($cat) {
@@ -38,7 +39,18 @@ class ReselProductsController extends Controller
             $productsQuery->whereIn('category_id', $categoryIds);
         }
 
-        $products = $productsQuery->paginate(50)->withQueryString();
+        if ($search !== '') {
+            $productsQuery->where(function ($query) use ($search) {
+                $query
+                    ->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('title', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                        $categoryQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $products = $productsQuery->paginate(config('app.paginate'))->withQueryString();
 
         $shop = auth()->user()?->resellerShop();
         $totalReselProducts = Reseller_resel_product::where(['user_id' => Auth::id()])->count();
@@ -51,6 +63,7 @@ class ReselProductsController extends Controller
         return Inertia::render('Reseller/Resel/Products/Index', [
             'filters' => [
                 'cat' => $cat,
+                'search' => $search,
             ],
             'shop' => $shop ? [
                 'max_resell_product' => $shop->max_resell_product,
@@ -87,6 +100,8 @@ class ReselProductsController extends Controller
                 'links' => $products->linkCollection()->toArray(),
                 'prev_page_url' => $products->previousPageUrl(),
                 'next_page_url' => $products->nextPageUrl(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
                 'total' => $products->total(),
             ],
         ]);
