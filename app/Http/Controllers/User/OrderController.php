@@ -7,29 +7,132 @@ use Carbon\Carbon;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
     public function index(Request $request)
     {
         $nav = $request->query('nav', 'Pending');
+        $find = trim((string) $request->query('find', ''));
 
-        $orders = Order::with('cartOrders')
+        $query = Order::with('cartOrders')
             ->where([
                 'user_id' => $request->user()->id,
                 'user_type' => 'user',
             ])
-            ->latest('id')
-            ->get();
+            ->latest('id');
 
-        $orders->each(function ($order) {
-            $order->shop = $order->shop()->first();
-        });
+        if ($find !== '') {
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('status', 'like', '%' . $find . '%')
+                    ->orWhere('total', 'like', '%' . $find . '%')
+                    ->orWhere('number', 'like', '%' . $find . '%')
+                    ->orWhereHas('cartOrders.product', function ($productQuery) use ($find) {
+                        $productQuery
+                            ->where('name', 'like', '%' . $find . '%')
+                            ->orWhere('slug', 'like', '%' . $find . '%');
+                    });
+            });
+        }
+
+        $orders = $query->paginate(config('app.paginate'))->withQueryString();
 
         return Inertia::render('User/Orders', [
-            'orders' => $orders,
+            'filters' => [
+                'nav' => $nav,
+                'find' => $find,
+            ],
+            'orders' => [
+                'data' => $orders->getCollection()->map(function ($order) {
+                    $shop = $order->shop()->first();
+
+                    return [
+                        'id' => $order->id,
+                        'status' => $order->status,
+                        'quantity' => $order->quantity,
+                        'total' => $order->total,
+                        'cart_orders_count' => $order->cartOrders?->count() ?? 0,
+                        'shop' => [
+                            'shop_name_en' => $shop?->shop_name_en,
+                            'shop_name_bn' => $shop?->shop_name_bn,
+                            'village' => $shop?->village ?? 'n/a',
+                            'upozila' => $shop?->upozila ?? 'n/a',
+                            'district' => $shop?->district ?? 'n/a',
+                        ],
+                    ];
+                })->values()->all(),
+                'links' => collect($orders->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $orders->firstItem(),
+                'to' => $orders->lastItem(),
+                'total' => $orders->total(),
+            ],
             'nav' => $nav,
+            'printUrl' => route('user.orders.print', [
+                'find' => $find,
+            ]),
             // 'roleNames' => auth()->user()->getRoleNames(),
+        ]);
+    }
+
+    public function print(Request $request)
+    {
+        $find = trim((string) $request->query('find', ''));
+
+        $query = Order::with('cartOrders')
+            ->where([
+                'user_id' => $request->user()->id,
+                'user_type' => 'user',
+            ])
+            ->latest('id');
+
+        if ($find !== '') {
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('status', 'like', '%' . $find . '%')
+                    ->orWhere('total', 'like', '%' . $find . '%')
+                    ->orWhere('number', 'like', '%' . $find . '%')
+                    ->orWhereHas('cartOrders.product', function ($productQuery) use ($find) {
+                        $productQuery
+                            ->where('name', 'like', '%' . $find . '%')
+                            ->orWhere('slug', 'like', '%' . $find . '%');
+                    });
+            });
+        }
+
+        $orders = $query->get()->map(function ($order) {
+            $shop = $order->shop()->first();
+
+            return [
+                'id' => $order->id,
+                'status' => $order->status,
+                'quantity' => $order->quantity,
+                'total' => $order->total,
+                'cart_orders_count' => $order->cartOrders?->count() ?? 0,
+                'shop' => [
+                    'shop_name_en' => $shop?->shop_name_en,
+                    'shop_name_bn' => $shop?->shop_name_bn,
+                    'village' => $shop?->village ?? 'n/a',
+                    'upozila' => $shop?->upozila ?? 'n/a',
+                    'district' => $shop?->district ?? 'n/a',
+                ],
+            ];
+        })->values()->all();
+
+        return Inertia::render('User/Orders/Print', [
+            'filters' => [
+                'find' => $find,
+            ],
+            'orders' => $orders,
         ]);
     }
 

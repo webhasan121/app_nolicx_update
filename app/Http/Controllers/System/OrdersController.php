@@ -17,10 +17,10 @@ class OrdersController extends Controller
 {
     public function indexReact(Request $request): Response
     {
-        $date = $request->query('date', 'today');
+        $date = $request->query('date', '');
         $search = $request->query('search', '');
-        $sd = $request->query('sd', now()->format('Y-m-d'));
-        $ed = $request->query('ed', now()->format('Y-m-d'));
+        $sd = $request->query('sd');
+        $ed = $request->query('ed');
         $qf = $request->query('qf', 'id');
         $type = $request->query('type');
         $status = $request->query('status');
@@ -99,7 +99,16 @@ class OrdersController extends Controller
             ],
             'orders' => [
                 'data' => $items,
-                'links' => $orders->linkCollection()->toArray(),
+                'links' => collect($orders->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $orders->firstItem(),
+                'to' => $orders->lastItem(),
+                'total' => $orders->total(),
                 'sum_total' => $orders->sum('total'),
                 'sum_comission' => $totalCom,
                 'count' => count($items),
@@ -118,8 +127,8 @@ class OrdersController extends Controller
     {
         $date = $request->query('date');
         $search = $request->query('search', '');
-        $sd = $request->query('sd', now()->format('Y-m-d'));
-        $ed = $request->query('ed', now()->format('Y-m-d'));
+        $sd = $request->query('sd');
+        $ed = $request->query('ed');
         $qf = $request->query('qf', 'id');
         $type = $request->query('type');
         $status = $request->query('status');
@@ -161,8 +170,8 @@ class OrdersController extends Controller
 
         return Inertia::render('Auth/system/orders/PrintSummery', [
             'filters' => [
-                'sd_formatted' => Carbon::parse($sd)->format('d/m/Y'),
-                'ed_formatted' => Carbon::parse($ed)->format('d/m/Y'),
+                'sd_formatted' => $sd ? Carbon::parse($sd)->format('d/m/Y') : '',
+                'ed_formatted' => $ed ? Carbon::parse($ed)->format('d/m/Y') : '',
             ],
             'orders' => $orders->map(function (Order $item) use (&$totalCom) {
                 $comission = $item->comissionsInfo()->sum('take_comission');

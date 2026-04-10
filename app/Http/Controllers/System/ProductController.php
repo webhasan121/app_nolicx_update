@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\product_has_attribute;
 use App\Models\product_has_image;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -21,37 +22,20 @@ class ProductController extends Controller
         $filter = $request->input('filter', 'Active');
         $from = $request->input('from', 'all');
         $find = $request->input('find');
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
         $isIncludeResel = filter_var($request->input('isIncludeResel', true), FILTER_VALIDATE_BOOL);
 
         $query = Product::query()
             ->with(['owner'])
-            ->withCount(['isResel', 'resel']);
+            ->withCount(['isResel', 'resel'])
+            ->orderBy('id', 'desc');
 
-        if ($from && $from !== 'all' && $from !== 'id') {
-            $query->where(['belongs_to_type' => $from]);
-        }
+        $this->applyProductFilters($query, $filter, $from, $find, $sd, $ed, $isIncludeResel);
 
-        if ($find && $from !== 'id') {
-            $query->where(['user_id' => $find]);
-        }
-
-        if ($filter !== 'both') {
-            $query->where(['status' => $filter]);
-        }
-
-        if ($find && (empty($from) || $from === 'all')) {
-            $products = Product::query()
-                ->with(['owner'])
-                ->withCount(['isResel', 'resel'])
-                ->where(['id' => $find])
-                ->paginate(2)
-                ->withQueryString();
-        } else {
-            $products = $query
-                ->orderBy('id', 'desc')
-                ->paginate(50)
-                ->withQueryString();
-        }
+        $products = $query
+            ->paginate(config('app.paginate'))
+            ->withQueryString();
 
         $products->through(function ($item) {
             $ownerName = match ($item->belongs_to_type) {
@@ -90,16 +74,91 @@ class ProductController extends Controller
                 'filter' => $filter,
                 'from' => $from,
                 'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
                 'isIncludeResel' => $isIncludeResel,
             ],
             'products' => [
                 'data' => $products->items(),
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'per_page' => $products->perPage(),
-                'prev_page_url' => $products->previousPageUrl(),
-                'next_page_url' => $products->nextPageUrl(),
+                'links' => collect($products->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
                 'total' => $products->total(),
+            ],
+            'printUrl' => route('system.products.print-summery', [
+                'filter' => $filter,
+                'from' => $from,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
+                'isIncludeResel' => $isIncludeResel,
+            ]),
+        ]);
+    }
+
+    public function printReact(Request $request)
+    {
+        $filter = $request->input('filter', 'Active');
+        $from = $request->input('from', 'all');
+        $find = $request->input('find');
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
+        $isIncludeResel = filter_var($request->input('isIncludeResel', true), FILTER_VALIDATE_BOOL);
+
+        $query = Product::query()
+            ->with(['owner'])
+            ->withCount(['isResel', 'resel'])
+            ->orderBy('id', 'desc');
+
+        $this->applyProductFilters($query, $filter, $from, $find, $sd, $ed, $isIncludeResel);
+
+        $products = $query->get()->map(function ($item) {
+            $ownerName = match ($item->belongs_to_type) {
+                'reseller' => $item->owner?->resellerShop()?->shop_name_en ?? $item->owner?->name,
+                'vendor' => $item->owner?->vendorShop()?->shop_name_en ?? $item->owner?->name,
+                default => $item->owner?->name ?? 'Deleted Owner',
+            };
+
+            $discountMeta = null;
+
+            if ($item->offer_type && $item->price) {
+                $discountMeta = [
+                    'discount' => $item->discount,
+                    'off_percent' => round((100 * ($item->price - $item->discount)) / $item->price, 0),
+                ];
+            }
+
+            return [
+                'id' => $item->id,
+                'name' => $item->name ?? 'N/A',
+                'slug' => $item->slug ?? '',
+                'thumbnail' => $item->thumbnail ? asset('storage/' . $item->thumbnail) : null,
+                'status' => $item->status ?? 'N/A',
+                'owner_name' => $ownerName,
+                'belongs_to_type' => $item->belongs_to_type,
+                'is_resel_count' => $item->is_resel_count ?? 0,
+                'resel_count' => $item->resel_count ?? 0,
+                'price' => $item->price ?? 0,
+                'discount_meta' => $discountMeta,
+                'created_at_formatted' => $item->created_at?->toFormattedDateString(),
+            ];
+        })->values()->all();
+
+        return Inertia::render('Auth/system/products/PrintSummery', [
+            'products' => $products,
+            'filters' => [
+                'filter' => $filter,
+                'from' => $from,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
+                'isIncludeResel' => $isIncludeResel,
             ],
         ]);
     }
@@ -269,5 +328,73 @@ class ProductController extends Controller
         }
 
         return redirect()->back()->with('success', 'Image Deletd !');
+    }
+
+    private function applyProductFilters($query, string $filter, string $from, ?string $find, ?string $sd, ?string $ed, bool $isIncludeResel): void
+    {
+        if ($from && $from !== 'all' && $from !== 'id') {
+            $query->where(['belongs_to_type' => $from]);
+        }
+
+        if (!$isIncludeResel) {
+            $query->whereDoesntHave('isResel');
+        }
+
+        if ($filter !== 'both') {
+            $query->where(['status' => $filter]);
+        }
+
+        if (!empty($find)) {
+            $query->where(function ($subQuery) use ($find, $from) {
+                if (($from === 'vendor' || $from === 'reseller') && is_numeric($find)) {
+                    $subQuery->orWhere('user_id', $find);
+                }
+
+                $subQuery
+                    ->orWhere('id', 'like', '%' . $find . '%')
+                    ->orWhere('name', 'like', '%' . $find . '%')
+                    ->orWhere('slug', 'like', '%' . $find . '%')
+                    ->orWhereHas('owner', function ($ownerQuery) use ($find) {
+                        $ownerQuery
+                            ->where('name', 'like', '%' . $find . '%')
+                            ->orWhere('email', 'like', '%' . $find . '%')
+                            ->orWhere('phone', 'like', '%' . $find . '%');
+                    });
+            });
+        }
+
+        $this->applyDateFilter($query, $sd, $ed);
+    }
+
+    private function applyDateFilter($query, ?string $sd, ?string $ed): void
+    {
+        if (!empty($sd) && !empty($ed)) {
+            $start = Carbon::parse($sd)->startOfDay();
+            $end = Carbon::parse($ed)->endOfDay();
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            $query->whereBetween('created_at', [$start, $end]);
+
+            return;
+        }
+
+        if (!empty($sd)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($sd)->startOfDay(),
+                Carbon::parse($sd)->endOfDay(),
+            ]);
+
+            return;
+        }
+
+        if (!empty($ed)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($ed)->startOfDay(),
+                Carbon::parse($ed)->endOfDay(),
+            ]);
+        }
     }
 }

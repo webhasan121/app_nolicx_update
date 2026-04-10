@@ -18,19 +18,49 @@ class SliderController extends Controller
     public function indexReact(Request $request): Response
     {
         $nav = $request->query('nav', 'web');
-        $slider = Slider::where(['placement' => $nav])->with('slides')->orderBy('id', 'desc')->get();
+        $find = trim((string) $request->query('find', ''));
+        $query = Slider::query()
+            ->withCount('slides')
+            ->where(['placement' => $nav])
+            ->orderBy('id', 'desc');
+
+        if ($find !== '') {
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('name', 'like', '%' . $find . '%')
+                    ->orWhere('placement', 'like', '%' . $find . '%');
+            });
+        }
+
+        $slider = $query->paginate(config('app.paginate'))->withQueryString();
         $editId = $request->integer('edit');
         $updateable = $editId ? Slider::find($editId) : null;
 
         return Inertia::render('Auth/system/slider/index', [
             'nav' => $nav,
-            'slider' => $slider->map(fn (Slider $item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'placement' => $item->placement,
-                'status' => (bool) $item->status,
-                'slides_count' => $item->slides->count(),
-            ])->values()->all(),
+            'filters' => [
+                'find' => $find,
+            ],
+            'slider' => [
+                'data' => $slider->getCollection()->values()->map(fn (Slider $item) => [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'placement' => $item->placement,
+                    'status' => (bool) $item->status,
+                    'slides_count' => $item->slides_count ?? 0,
+                ])->all(),
+                'links' => collect($slider->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $slider->firstItem(),
+                'to' => $slider->lastItem(),
+                'total' => $slider->total(),
+            ],
             'updateable' => $updateable ? [
                 'id' => $updateable->id,
                 'name' => $updateable->name,

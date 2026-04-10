@@ -121,14 +121,23 @@ export default function ResponsiveNavigation() {
                 <>
                     <ResponsiveNavLink
                         href={route("system.vip.index")}
-                        active={route().current("system.vip.*")}
+                        active={
+                            route().current("system.vip.index") ||
+                            route().current("system.vip.crate") ||
+                            route().current("system.package.edit") ||
+                            route().current("system.package.update")
+                        }
                     >
                         <i className="w-6 pr-2 fas fa-box-open"></i> ViP Package
                     </ResponsiveNavLink>
 
                     <ResponsiveNavLink
                         href={route("system.vip.users")}
-                        active={route().current("system.vip.users")}
+                        active={
+                            route().current("system.vip.users") ||
+                            route().current("system.vip.edit") ||
+                            route().current("system.vip.print-summery")
+                        }
                     >
                         <i className="w-6 pr-2 fas fa-user-tie"></i> ViP Users
                     </ResponsiveNavLink>

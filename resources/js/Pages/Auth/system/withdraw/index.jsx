@@ -1,5 +1,5 @@
 import { Head, router } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "../../../../components/Modal";
 import Hr from "../../../../components/Hr";
 import NavLink from "../../../../components/NavLink";
@@ -18,6 +18,9 @@ import AppLayout from "../../../../Layouts/App";
 export default function Index({ filters, stats, withdraw }) {
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [queryValue, setQueryValue] = useState(filters?.q ?? "");
+    const [modalWhere, setModalWhere] = useState(filters?.where ?? "find");
+    const [modalSdate, setModalSdate] = useState(filters?.sdate ?? "");
+    const [modalEdate, setModalEdate] = useState(filters?.edate ?? "");
 
     const apply = (next = {}) => {
         router.get(
@@ -25,7 +28,7 @@ export default function Index({ filters, stats, withdraw }) {
             {
                 where: next.where ?? filters?.where ?? "",
                 q: next.q ?? filters?.q ?? "",
-                fst: next.fst ?? filters?.fst ?? "Pending",
+                fst: next.fst ?? filters?.fst ?? "All",
                 sdate: next.sdate ?? filters?.sdate ?? "",
                 edate: next.edate ?? filters?.edate ?? "",
                 page: next.page ?? undefined,
@@ -37,6 +40,12 @@ export default function Index({ filters, stats, withdraw }) {
     useEffect(() => {
         setQueryValue(filters?.q ?? "");
     }, [filters?.q]);
+
+    useEffect(() => {
+        setModalWhere(filters?.where ?? "find");
+        setModalSdate(filters?.sdate ?? "");
+        setModalEdate(filters?.edate ?? "");
+    }, [filters?.where, filters?.sdate, filters?.edate]);
 
     useEffect(() => {
         const timer = window.setTimeout(() => {
@@ -60,34 +69,37 @@ export default function Index({ filters, stats, withdraw }) {
         );
     };
 
-    const renderPagination = () =>
-        (withdraw?.links ?? []).map((link) =>
-            link.url ? (
-                <button
-                    type="button"
-                    key={`${link.label}-${link.url}`}
-                    className={`px-2 py-1 mx-1 border rounded ${link.active ? "bg-orange-500 text-white" : ""}`}
-                    onClick={() => {
-                        const url = new URL(link.url);
-                        apply({
-                            where: url.searchParams.get("where") ?? filters?.where,
-                            q: url.searchParams.get("q") ?? filters?.q,
-                            fst: url.searchParams.get("fst") ?? filters?.fst,
-                            sdate: url.searchParams.get("sdate") ?? filters?.sdate,
-                            edate: url.searchParams.get("edate") ?? filters?.edate,
-                            page: url.searchParams.get("page") ?? undefined,
-                        });
-                    }}
-                    dangerouslySetInnerHTML={{ __html: link.label }}
-                />
-            ) : (
-                <span
-                    key={`${link.label}-disabled`}
-                    className="px-2 py-1 mx-1 text-gray-400 border rounded"
-                    dangerouslySetInnerHTML={{ __html: link.label }}
-                />
-            )
-        );
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        apply({
+            where: nextUrl.searchParams.get("where") ?? filters?.where,
+            q: nextUrl.searchParams.get("q") ?? filters?.q,
+            fst: nextUrl.searchParams.get("fst") ?? filters?.fst,
+            sdate: nextUrl.searchParams.get("sdate") ?? filters?.sdate,
+            edate: nextUrl.searchParams.get("edate") ?? filters?.edate,
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        });
+    };
+
+    const pagination = useMemo(() => {
+        const links = withdraw?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [withdraw?.links]);
+
+    const resultSummary =
+        withdraw?.total > 0
+            ? `Showing ${withdraw?.from ?? 0}-${withdraw?.to ?? 0} of ${withdraw?.total ?? 0} withdraws`
+            : "No withdraws found";
 
     return (
         <AppLayout title="Withdraws" header={<PageHeader>Withdraws</PageHeader>}>
@@ -107,7 +119,8 @@ export default function Index({ filters, stats, withdraw }) {
                         content={
                             <div className="flex items-center justify-between overflow-x-scroll" style={{ scrollBehavior: "smooth" }}>
                                 <div>
-                                    <select value={filters?.fst ?? "Pending"} onChange={(e) => apply({ fst: e.target.value })} className="py-1 mb-2 border rounded" id="filter_status">
+                                    <select value={filters?.fst ?? "All"} onChange={(e) => apply({ fst: e.target.value })} className="py-1 mb-2 border rounded" id="filter_status">
+                                        <option value="All">All {stats?.total ?? 0}</option>
                                         <option value="Pending">Pending {stats?.pending ?? 0}</option>
                                         <option value="Accept">Accepted {stats?.paid ?? 0}</option>
                                         <option value="Reject">Rejected {stats?.reject ?? 0}</option>
@@ -144,7 +157,7 @@ export default function Index({ filters, stats, withdraw }) {
                         <tbody>
                             {(withdraw?.data ?? []).map((item, index) => (
                                 <tr key={item.id} className={!item.seen_by_admin ? "bg-gray-200 font-bold" : ""}>
-                                    <td>{index + 1}</td>
+                                    <td>{(withdraw?.from ?? 1) + index}</td>
                                     <td>{item.id}</td>
                                     <td>
                                         <div>
@@ -188,7 +201,50 @@ export default function Index({ filters, stats, withdraw }) {
                             </tr>
                         </tfoot>
                     </Table>
-                    <div>{renderPagination()}</div>
+                    {pagination.pages.length ? (
+                        <div className="w-full pt-4">
+                            <div className="flex w-full items-center justify-between gap-3">
+                                <div className="text-sm text-slate-700">
+                                    {resultSummary}
+                                </div>
+                                <div className="flex items-center md:justify-end">
+                                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                        <button
+                                            type="button"
+                                            disabled={!pagination.prev?.url}
+                                            className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                            onClick={() => goToPage(pagination.prev?.url)}
+                                        >
+                                            Previous
+                                        </button>
+                                        {pagination.pages.map((link, index) => (
+                                            <button
+                                                key={`${link.label}-${index}`}
+                                                type="button"
+                                                disabled={!link.url}
+                                                className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                    link.active
+                                                        ? "bg-slate-100 text-blue-600"
+                                                        : "bg-white text-slate-700 hover:bg-slate-50"
+                                                } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                onClick={() => goToPage(link.url)}
+                                            >
+                                                {link.label}
+                                            </button>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            disabled={!pagination.next?.url}
+                                            className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                            onClick={() => goToPage(pagination.next?.url)}
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : null}
 
                 </Section>
             </Container>
@@ -203,7 +259,7 @@ export default function Index({ filters, stats, withdraw }) {
                         <p>
                             Search Criteria
                         </p>
-                        <select value={filters?.where ?? ""} onChange={(e) => apply({ where: e.target.value })} id="search_where" className="py-1 border-0 rounded-md shadow-none">
+                        <select value={modalWhere} onChange={(e) => setModalWhere(e.target.value)} id="search_where" className="py-1 border-0 rounded-md shadow-none">
                             <option value="find"> ID </option>
                             <option value="query"> User </option>
                         </select>
@@ -212,8 +268,8 @@ export default function Index({ filters, stats, withdraw }) {
                     </div>
                     <Hr className="my-2" />
                     <div className="flex items-center justify-between">
-                        <TextInput type="date" value={filters?.sdate ?? ""} onChange={(e) => apply({ sdate: e.target.value })} placeholder="From Date" />
-                        <TextInput type="date" value={filters?.edate ?? ""} onChange={(e) => apply({ edate: e.target.value })} placeholder="To Date" />
+                        <TextInput type="date" value={modalSdate} onChange={(e) => setModalSdate(e.target.value)} placeholder="From Date" />
+                        <TextInput type="date" value={modalEdate} onChange={(e) => setModalEdate(e.target.value)} placeholder="To Date" />
                     </div>
                 </div>
                 <Hr className="my-2" />
@@ -221,7 +277,19 @@ export default function Index({ filters, stats, withdraw }) {
                     <SecondaryButton className="mr-1" onClick={() => setShowFilterModal(false)}>
                         Close
                     </SecondaryButton>
-                    <PrimaryButton type="button" onClick={() => apply({ q: queryValue })}>
+                    <PrimaryButton
+                        type="button"
+                        onClick={() => {
+                            setShowFilterModal(false);
+                            apply({
+                                where: modalWhere,
+                                q: queryValue,
+                                sdate: modalSdate,
+                                edate: modalEdate,
+                                page: undefined,
+                            });
+                        }}
+                    >
                         Filter
                     </PrimaryButton>
                 </div>

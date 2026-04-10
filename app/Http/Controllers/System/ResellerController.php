@@ -17,32 +17,35 @@ class ResellerController extends Controller
     {
         $filter = $request->input('filter', 'Active');
         $find = $request->input('find');
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
 
         $query = reseller::query()->with('user')->latest('id');
 
-        if (!empty($find) && $filter === '*') {
+        if (!empty($find)) {
             $query->where(function ($subQuery) use ($find) {
                 $subQuery
-                    ->where('shop_name_en', 'like', '%' . $find . '%')
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('shop_name_en', 'like', '%' . $find . '%')
+                    ->orWhere('shop_name_bn', 'like', '%' . $find . '%')
+                    ->orWhere('email', 'like', '%' . $find . '%')
+                    ->orWhere('phone', 'like', '%' . $find . '%')
                     ->orWhereHas('user', function ($userQuery) use ($find) {
-                        $userQuery->where('name', 'like', '%' . $find . '%');
+                        $userQuery
+                            ->where('name', 'like', '%' . $find . '%')
+                            ->orWhere('email', 'like', '%' . $find . '%')
+                            ->orWhere('phone', 'like', '%' . $find . '%');
                     });
             });
-        } else {
-            $query->where(function ($subQuery) use ($find) {
-                $subQuery
-                    ->where('shop_name_en', 'like', '%' . $find . '%')
-                    ->orWhereHas('user', function ($userQuery) use ($find) {
-                        $userQuery->where('name', 'like', '%' . $find . '%');
-                    });
-            });
-
-            if ($filter !== '*') {
-                $query->where(['status' => $filter]);
-            }
         }
 
-        $resellers = $query->paginate(200)->withQueryString();
+        if ($filter !== '*') {
+            $query->where(['status' => $filter]);
+        }
+
+        $this->applyDateFilter($query, $sd, $ed);
+
+        $resellers = $query->paginate(config('app.paginate'))->withQueryString();
 
         $resellers->through(function ($item) {
             return [
@@ -59,8 +62,12 @@ class ResellerController extends Controller
         });
 
         return Inertia::render('Auth/system/reseller/index', [
-            'filter' => $filter,
-            'find' => $find,
+            'filters' => [
+                'filter' => $filter,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
+            ],
             'widgets' => [
                 ['title' => 'Resellers', 'content' => reseller::query()->count()],
                 ['title' => 'Active', 'content' => reseller::query()->active()->count()],
@@ -70,11 +77,79 @@ class ResellerController extends Controller
             ],
             'resellers' => [
                 'data' => $resellers->items(),
-                'current_page' => $resellers->currentPage(),
-                'last_page' => $resellers->lastPage(),
-                'prev_page_url' => $resellers->previousPageUrl(),
-                'next_page_url' => $resellers->nextPageUrl(),
+                'links' => collect($resellers->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $resellers->firstItem(),
+                'to' => $resellers->lastItem(),
                 'total' => $resellers->total(),
+            ],
+            'printUrl' => route('system.reseller.print-summery', [
+                'filter' => $filter,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
+            ]),
+        ]);
+    }
+
+    public function printReact(Request $request)
+    {
+        $filter = $request->input('filter', 'Active');
+        $find = $request->input('find');
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
+
+        $query = reseller::query()->with('user')->latest('id');
+
+        if (!empty($find)) {
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('shop_name_en', 'like', '%' . $find . '%')
+                    ->orWhere('shop_name_bn', 'like', '%' . $find . '%')
+                    ->orWhere('email', 'like', '%' . $find . '%')
+                    ->orWhere('phone', 'like', '%' . $find . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($find) {
+                        $userQuery
+                            ->where('name', 'like', '%' . $find . '%')
+                            ->orWhere('email', 'like', '%' . $find . '%')
+                            ->orWhere('phone', 'like', '%' . $find . '%');
+                    });
+            });
+        }
+
+        if ($filter !== '*') {
+            $query->where(['status' => $filter]);
+        }
+
+        $this->applyDateFilter($query, $sd, $ed);
+
+        $resellers = $query->get()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'user_name' => $item->user?->name ?? 'N/A',
+                'shop_name_bn' => $item->shop_name_bn ?? 'N/A',
+                'status' => $item->status ?? 'N/A',
+                'system_get_comission' => $item->system_get_comission ?? 'N/A',
+                'categories_count' => 0,
+                'products_count' => 0,
+                'created_at_human' => $item->created_at?->diffForHumans(),
+                'created_at_formatted' => $item->created_at?->toFormattedDateString(),
+            ];
+        })->values()->all();
+
+        return Inertia::render('Auth/system/reseller/PrintSummery', [
+            'resellers' => $resellers,
+            'filters' => [
+                'filter' => $filter,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
             ],
         ]);
     }
@@ -197,5 +272,37 @@ class ResellerController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Updated');
+    }
+
+    private function applyDateFilter($query, ?string $sd, ?string $ed): void
+    {
+        if (!empty($sd) && !empty($ed)) {
+            $start = Carbon::parse($sd)->startOfDay();
+            $end = Carbon::parse($ed)->endOfDay();
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            $query->whereBetween('created_at', [$start, $end]);
+
+            return;
+        }
+
+        if (!empty($sd)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($sd)->startOfDay(),
+                Carbon::parse($sd)->endOfDay(),
+            ]);
+
+            return;
+        }
+
+        if (!empty($ed)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($ed)->startOfDay(),
+                Carbon::parse($ed)->endOfDay(),
+            ]);
+        }
     }
 }

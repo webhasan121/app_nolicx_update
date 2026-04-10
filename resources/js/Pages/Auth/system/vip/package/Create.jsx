@@ -75,10 +75,20 @@ export default function Create() {
                     VIP
                     <br />
                     <div>
-                        <NavLink href={route("system.vip.index")} active={route().current("system.vip.*")}>
+                        <NavLink
+                            href={route("system.vip.index")}
+                            active={
+                                route().current("system.vip.index") ||
+                                route().current("system.vip.crate") ||
+                                route().current("system.package.edit")
+                            }
+                        >
                             Package
                         </NavLink>
-                        <NavLink href={route("system.vip.users")} active={route().current("system.vip.")}>
+                        <NavLink
+                            href={route("system.vip.users")}
+                            active={route().current("system.vip.users")}
+                        >
                             User
                         </NavLink>
                     </div>

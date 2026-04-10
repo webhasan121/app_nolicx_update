@@ -5,6 +5,7 @@ namespace App\Http\Controllers\System;
 use App\Http\Controllers\Controller;
 use App\Models\rider;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
@@ -15,6 +16,10 @@ class RiderController extends Controller
     public function indexReact(Request $request)
     {
         $condition = $request->input('condition', 'Active');
+        $find = $request->input('find');
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
+
         $query = rider::query()
             ->with('user')
             ->orderBy('created_at', 'desc');
@@ -23,10 +28,33 @@ class RiderController extends Controller
             $query->where(['status' => $condition]);
         }
 
-        $riders = $query->paginate(200)->withQueryString();
+        if (!empty($find)) {
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('phone', 'like', '%' . $find . '%')
+                    ->orWhere('email', 'like', '%' . $find . '%')
+                    ->orWhere('nid', 'like', '%' . $find . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($find) {
+                        $userQuery
+                            ->where('name', 'like', '%' . $find . '%')
+                            ->orWhere('email', 'like', '%' . $find . '%')
+                            ->orWhere('phone', 'like', '%' . $find . '%');
+                    });
+            });
+        }
+
+        $this->applyDateFilter($query, $sd, $ed);
+
+        $riders = $query->paginate(config('app.paginate'))->withQueryString();
 
         return Inertia::render('Auth/system/rider/index', [
-            'condition' => $condition,
+            'filters' => [
+                'condition' => $condition,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
+            ],
             'widgets' => [
                 ['title' => 'Total Rider', 'content' => rider::query()->count()],
                 ['title' => 'Active Rider', 'content' => rider::query()->active()->count()],
@@ -45,7 +73,78 @@ class RiderController extends Controller
                         'created_at_human' => $item->created_at?->diffForHumans(),
                     ];
                 })->all(),
+                'links' => collect($riders->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $riders->firstItem(),
+                'to' => $riders->lastItem(),
+                'total' => $riders->total(),
                 'count' => $riders->count(),
+            ],
+            'printUrl' => route('system.rider.print-summery', [
+                'condition' => $condition,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
+            ]),
+        ]);
+    }
+
+    public function printReact(Request $request)
+    {
+        $condition = $request->input('condition', 'Active');
+        $find = $request->input('find');
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
+
+        $query = rider::query()
+            ->with('user')
+            ->orderBy('created_at', 'desc');
+
+        if ($condition !== 'all') {
+            $query->where(['status' => $condition]);
+        }
+
+        if (!empty($find)) {
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('phone', 'like', '%' . $find . '%')
+                    ->orWhere('email', 'like', '%' . $find . '%')
+                    ->orWhere('nid', 'like', '%' . $find . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($find) {
+                        $userQuery
+                            ->where('name', 'like', '%' . $find . '%')
+                            ->orWhere('email', 'like', '%' . $find . '%')
+                            ->orWhere('phone', 'like', '%' . $find . '%');
+                    });
+            });
+        }
+
+        $this->applyDateFilter($query, $sd, $ed);
+
+        $riders = $query->get()->values()->map(function ($item, $index) {
+            return [
+                'sl' => $index + 1,
+                'id' => $item->id,
+                'user_name' => $item->user?->name ?? 'N/A',
+                'status' => $item->status ?? 'N/A',
+                'created_at_formatted' => $item->created_at?->toFormattedDateString(),
+                'created_at_human' => $item->created_at?->diffForHumans(),
+            ];
+        })->all();
+
+        return Inertia::render('Auth/system/rider/PrintSummery', [
+            'riders' => $riders,
+            'filters' => [
+                'condition' => $condition,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
             ],
         ]);
     }
@@ -109,5 +208,37 @@ class RiderController extends Controller
         $rider->save();
 
         return redirect()->back()->with('success', 'Status Updated !');
+    }
+
+    private function applyDateFilter($query, ?string $sd, ?string $ed): void
+    {
+        if (!empty($sd) && !empty($ed)) {
+            $start = Carbon::parse($sd)->startOfDay();
+            $end = Carbon::parse($ed)->endOfDay();
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            $query->whereBetween('created_at', [$start, $end]);
+
+            return;
+        }
+
+        if (!empty($sd)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($sd)->startOfDay(),
+                Carbon::parse($sd)->endOfDay(),
+            ]);
+
+            return;
+        }
+
+        if (!empty($ed)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($ed)->startOfDay(),
+                Carbon::parse($ed)->endOfDay(),
+            ]);
+        }
     }
 }

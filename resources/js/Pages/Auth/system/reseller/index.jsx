@@ -1,10 +1,8 @@
 import { router, usePage } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
-import Modal from "../../../../components/Modal";
 import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
-import SecondaryButton from "../../../../components/SecondaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import Foreach from "../../../../components/dashboard/Foreach";
@@ -16,56 +14,95 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 
-const FILTERS = ["Active", "Pending", "Disabled", "Suspended"];
+const FILTERS = ["*", "Active", "Pending", "Disabled", "Suspended"];
 
 export default function Index() {
-    const {
-        widgets = [],
-        resellers = {},
-        filter = "Active",
-        find = "",
-    } = usePage().props;
-    const [search, setSearch] = useState(find ?? "");
-    const [showFilterModal, setShowFilterModal] = useState(false);
+    const { widgets = [], resellers = {}, filters = {}, printUrl } = usePage().props;
+    const [search, setSearch] = useState(filters.find ?? "");
+    const [sd, setSd] = useState(filters.sd ?? "");
+    const [ed, setEd] = useState(filters.ed ?? "");
     const rows = resellers.data ?? [];
 
-    const visitWithQuery = (params) => {
-        router.get(route("system.reseller.index"), params, {
-            preserveState: true,
-            preserveScroll: true,
-        });
-    };
-
-    const runSearch = () => {
-        visitWithQuery({
-            filter,
-            find: search,
-        });
-    };
-
-    const gotoPage = (page) => {
-        visitWithQuery({
-            filter,
-            find: search,
-            page,
-        });
+    const requestResellers = ({
+        nextSearch = search,
+        nextFilter = filters.filter ?? "Active",
+        nextSd = sd,
+        nextEd = ed,
+        page = undefined,
+    } = {}) => {
+        router.get(
+            route("system.reseller.index"),
+            {
+                filter: nextFilter,
+                find: nextSearch.trim(),
+                sd: nextSd,
+                ed: nextEd,
+                page,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        );
     };
 
     useEffect(() => {
-        if ((find ?? "") === search) {
+        setSearch(filters.find ?? "");
+        setSd(filters.sd ?? "");
+        setEd(filters.ed ?? "");
+    }, [filters.ed, filters.find, filters.sd]);
+
+    useEffect(() => {
+        const trimmedSearch = search.trim();
+        const currentSearch = (filters.find ?? "").trim();
+
+        if (trimmedSearch === currentSearch) {
             return;
         }
 
         const timeout = setTimeout(() => {
-            visitWithQuery({
-                filter,
-                find: search,
-                page: 1,
+            requestResellers({
+                nextSearch: trimmedSearch,
+                nextFilter: filters.filter ?? "Active",
+                nextSd: sd,
+                nextEd: ed,
             });
         }, 400);
 
         return () => clearTimeout(timeout);
-    }, [search, filter]);
+    }, [search]);
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        requestResellers({
+            nextSearch: nextUrl.searchParams.get("find") ?? search,
+            nextFilter: nextUrl.searchParams.get("filter") ?? filters.filter ?? "Active",
+            nextSd: nextUrl.searchParams.get("sd") ?? sd,
+            nextEd: nextUrl.searchParams.get("ed") ?? ed,
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        });
+    };
+
+    const pagination = useMemo(() => {
+        const links = resellers?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [resellers?.links]);
+
+    const resultSummary =
+        resellers?.total > 0
+            ? `Showing ${resellers?.from ?? 0}-${resellers?.to ?? 0} of ${resellers?.total ?? 0} resellers`
+            : "No resellers found";
 
     return (
         <AppLayout title="Resellers" header={<PageHeader>Resellers</PageHeader>}>
@@ -86,33 +123,81 @@ export default function Index() {
                     <SectionSection>
                         <SectionHeader
                             title={
-                                <div className="flex justify-between items-start">
+                                <div className="flex justify-between items-start gap-4">
                                     <div>
-                                        {FILTERS.map((item) => (
-                                            <NavLink
-                                                key={item}
-                                                href={`${route("system.reseller.index")}?filter=${encodeURIComponent(item)}`}
-                                                className="px-2 mb-2"
-                                                active={filter === item}
-                                            >
-                                                {item}
-                                            </NavLink>
-                                        ))}
+                                        <select
+                                            value={filters.filter ?? "Active"}
+                                            onChange={(e) =>
+                                                requestResellers({
+                                                    nextSearch: search,
+                                                    nextFilter: e.target.value,
+                                                    nextSd: sd,
+                                                    nextEd: ed,
+                                                })
+                                            }
+                                            className="rounded-md border-gray-300 shadow-sm"
+                                        >
+                                            {FILTERS.map((item) => (
+                                                <option key={item} value={item}>
+                                                    {item === "*" ? "All" : item}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
 
-                                    <div>
+                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                        <TextInput
+                                            type="date"
+                                            className="my-1 py-1"
+                                            value={sd}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+
+                                                setSd(value);
+                                                requestResellers({
+                                                    nextSearch: search,
+                                                    nextFilter: filters.filter ?? "Active",
+                                                    nextSd: value,
+                                                    nextEd: ed,
+                                                });
+                                            }}
+                                        />
+                                        <TextInput
+                                            type="date"
+                                            className="my-1 py-1"
+                                            value={ed}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+
+                                                setEd(value);
+                                                requestResellers({
+                                                    nextSearch: search,
+                                                    nextFilter: filters.filter ?? "Active",
+                                                    nextSd: sd,
+                                                    nextEd: value,
+                                                });
+                                            }}
+                                        />
                                         <TextInput
                                             type="search"
-                                            placeholder="Search Vendor"
+                                            placeholder="Search resellers..."
                                             className="my-1 py-1"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key !== "Enter") {
+                                                    return;
+                                                }
+
+                                                e.preventDefault();
+                                                requestResellers();
+                                            }}
                                         />
                                         <PrimaryButton
                                             type="button"
-                                            onClick={() => setShowFilterModal(true)}
+                                            onClick={() => window.open(printUrl, "_blank")}
                                         >
-                                            Filter
+                                            <i className="fas fa-print"></i>
                                         </PrimaryButton>
                                     </div>
                                 </div>
@@ -138,7 +223,7 @@ export default function Index() {
                                         <tbody>
                                             {rows.map((item, index) => (
                                                 <tr key={item.id}>
-                                                    <td>{index + 1}</td>
+                                                    <td>{(resellers?.from ?? 1) + index}</td>
                                                     <td>
                                                         {item.user_name}
                                                         <br />
@@ -161,7 +246,7 @@ export default function Index() {
                                                         <NavLink
                                                             href={route("system.reseller.edit", {
                                                                 id: item.id,
-                                                                filter,
+                                                                filter: filters.filter ?? "Active",
                                                             })}
                                                         >
                                                             edit
@@ -171,30 +256,56 @@ export default function Index() {
                                             ))}
                                         </tbody>
                                     </Table>
+
+                                    {pagination.pages.length ? (
+                                        <div className="w-full pt-4">
+                                            <div className="flex w-full items-center justify-between gap-3">
+                                                <div className="text-sm text-slate-700">
+                                                    {resultSummary}
+                                                </div>
+                                                <div className="flex items-center md:justify-end">
+                                                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                                        <button
+                                                            type="button"
+                                                            disabled={!pagination.prev?.url}
+                                                            className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                            onClick={() => goToPage(pagination.prev?.url)}
+                                                        >
+                                                            Previous
+                                                        </button>
+                                                        {pagination.pages.map((link, index) => (
+                                                            <button
+                                                                key={`${link.label}-${index}`}
+                                                                type="button"
+                                                                disabled={!link.url}
+                                                                className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                                    link.active
+                                                                        ? "bg-slate-100 text-blue-600"
+                                                                        : "bg-white text-slate-700 hover:bg-slate-50"
+                                                                } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                                onClick={() => goToPage(link.url)}
+                                                            >
+                                                                {link.label}
+                                                            </button>
+                                                        ))}
+                                                        <button
+                                                            type="button"
+                                                            disabled={!pagination.next?.url}
+                                                            className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                            onClick={() => goToPage(pagination.next?.url)}
+                                                        >
+                                                            Next
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : null}
                                 </div>
                             </Foreach>
                         </SectionInner>
                     </SectionSection>
                 </Container>
-
-                <Modal
-                    show={showFilterModal}
-                    onClose={() => setShowFilterModal(false)}
-                    maxWidth="2xl"
-                >
-                    <SectionSection className="h-screen overflow-y-scroll">
-                        <SectionHeader title="Filter Reseller" content="" />
-                        <SectionInner className="overflow-y-scroll"></SectionInner>
-                        <div className="mt-4">
-                            <SecondaryButton
-                                type="button"
-                                onClick={() => setShowFilterModal(false)}
-                            >
-                                Close
-                            </SecondaryButton>
-                        </div>
-                    </SectionSection>
-                </Modal>
             </div>
         </AppLayout>
     );

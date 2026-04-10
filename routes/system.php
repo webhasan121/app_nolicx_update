@@ -143,6 +143,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
          */
         Route::get('/old', vendorIndexPage::class)->name('vendor.index.old')->middleware(AbleTo::class . ":vendors_view");
         Route::get('/', [VendorController::class, 'indexReact'])->name('vendor.index')->middleware(AbleTo::class . ":vendors_view");
+        Route::get('/print-summery', [VendorController::class, 'printReact'])->name('vendor.print-summery')->middleware(AbleTo::class . ":vendors_view");
         // Route::view('/', vendorIndexPage::class)->name('vendor.index');
 
 
@@ -174,6 +175,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::prefix('reseller')->group(function () {
         Route::get('/old', systemResellerIndexPage::class)->name('reseller.index.old')->middleware(AbleTo::class . ":resellers_view");
         Route::get('/', [ResellerController::class, 'indexReact'])->name('reseller.index')->middleware(AbleTo::class . ":resellers_view");
+        Route::get('/print-summery', [ResellerController::class, 'printReact'])->name('reseller.print-summery')->middleware(AbleTo::class . ":resellers_view");
         Route::get('/{id}/edit/old', systemResellerEditPage::class)->name('reseller.edit.old')->middleware(AbleTo::class . ":resellers_edit");
         Route::get('/{id}/edit', [ResellerController::class, 'editReact'])->name('reseller.edit')->middleware(AbleTo::class . ":resellers_edit");
         Route::post('/{id}/status', [ResellerController::class, 'updateStatus'])->name('reseller.status.update')->middleware(AbleTo::class . ":resellers_edit");
@@ -231,6 +233,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::prefix('rider')->group(function () {
         Route::get('/old', systemRiderIndexPage::class)->name("rider.index.old")->middleware(AbleTo::class . ":riders_view");
         Route::get('/', [RiderController::class, 'indexReact'])->name("rider.index")->middleware(AbleTo::class . ":riders_view");
+        Route::get('/print-summery', [RiderController::class, 'printReact'])->name("rider.print-summery")->middleware(AbleTo::class . ":riders_view");
         Route::get('/{id}/edit/old', systemRiderEditPage::class)->name('rider.edit.old')->middleware(AbleTo::class . ":riders_edit");
         Route::get('/{id}/edit', [RiderController::class, 'editReact'])->name('rider.edit')->middleware(AbleTo::class . ":riders_edit");
         Route::post('/{id}/status', [RiderController::class, 'updateStatus'])->name('rider.status.update')->middleware(AbleTo::class . ":riders_edit");
@@ -242,6 +245,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
      */
     Route::get('/packages/old', systemVipIndexPage::class)->name('vip.index.old')->middleware(AbleTo::class . ":vip_view");
     Route::get('/packages', [VipController::class, 'indexReact'])->name('vip.index')->middleware(AbleTo::class . ":vip_view");
+    Route::get('/packages/print-summery', [VipController::class, 'printPackageReact'])->name('vip.package.print-summery')->middleware(AbleTo::class . ":vip_view");
     Route::get('/package/create/old', systemVipCreatePage::class)->name('vip.crate.old')->middleware(AbleTo::class . ":vip_add");
     Route::get('/package/create', [VipController::class, 'createReact'])->name('vip.crate')->middleware(AbleTo::class . ":vip_add");
     Route::post('/package/store', [VipController::class, 'store'])->name('vip.store')->middleware(AbleTo::class . ":vip_add");
@@ -272,6 +276,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::prefix('products')->group(function () {
         Route::get('/index/old', systemGlobalProductsIndexPage::class)->name('products.index.old');
         Route::get('/index', [ProductController::class, 'indexReact'])->name('products.index');
+        Route::get('/print-summery', [ProductController::class, 'printReact'])->name('products.print-summery');
         Route::get('/{product}/edit/old', systemGlobalProductsEditPage::class)->name('products.edit.old');
         Route::get('/{product}/edit', [ProductController::class, 'editReact'])->name('products.edit');
         Route::post('/{product}/update', [ProductController::class, 'updateReact'])->name('products.update')->middleware(AbleTo::class . ":product_update");
@@ -567,4 +572,5 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     // consignment
     Route::get('/consignment/old', ConsignmentIndex::class)->name('consignment.index.old');
     Route::get('/consignment', [ConsignmentController::class, 'indexReact'])->name('consignment.index');
+    Route::get('/consignment/print-summery', [ConsignmentController::class, 'printReact'])->name('consignment.print-summery');
 });
