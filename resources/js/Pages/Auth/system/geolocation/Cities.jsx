@@ -1,5 +1,5 @@
 import { Head, router, useForm } from "@inertiajs/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import AppLayout from "../../../../Layouts/App";
 import InputLabel from "../../../../components/InputLabel";
 import Modal from "../../../../components/Modal";
@@ -14,11 +14,12 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import { useState } from "react";
 
-export default function Cities({ filters, countries = [], states = [], cities }) {
+export default function Cities({ filters, countries = [], states = [], cities, printUrl }) {
     const [showModal, setShowModal] = useState(false);
     const filterForm = useForm({
         country: filters?.country ?? "",
         state_id: filters?.state_id ?? "",
+        find: filters?.find ?? "",
     });
     const cityForm = useForm({
         country: filters?.country ?? "",
@@ -46,6 +47,7 @@ export default function Cities({ filters, countries = [], states = [], cities })
         const next = {
             country: value,
             state_id: "",
+            find: filterForm.data.find,
         };
 
         filterForm.setData(next);
@@ -56,6 +58,7 @@ export default function Cities({ filters, countries = [], states = [], cities })
         const next = {
             country: filterForm.data.country,
             state_id: value,
+            find: filterForm.data.find,
         };
 
         filterForm.setData(next);
@@ -90,6 +93,36 @@ export default function Cities({ filters, countries = [], states = [], cities })
             preserveScroll: true,
         });
     };
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        applyFilters({
+            country: nextUrl.searchParams.get("country") ?? filterForm.data.country,
+            state_id: nextUrl.searchParams.get("state_id") ?? filterForm.data.state_id,
+            find: nextUrl.searchParams.get("find") ?? filterForm.data.find,
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        });
+    };
+
+    const pagination = useMemo(() => {
+        const links = cities?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [cities?.links]);
+
+    const resultSummary =
+        cities?.total > 0
+            ? `Showing ${cities?.from ?? 0}-${cities?.to ?? 0} of ${cities?.total ?? 0} cities`
+            : "No cities found";
 
     return (
         <AppLayout
@@ -144,11 +177,38 @@ export default function Cities({ filters, countries = [], states = [], cities })
                                             ))}
                                         </select>
                                     </div>
+                                    <div>
+                                        <InputLabel>Search</InputLabel>
+                                        <TextInput
+                                            type="search"
+                                            value={filterForm.data.find}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+
+                                                filterForm.setData("find", value);
+                                                applyFilters({
+                                                    country: filterForm.data.country,
+                                                    state_id: filterForm.data.state_id,
+                                                    find: value,
+                                                });
+                                            }}
+                                            className="py-1"
+                                            placeholder="Search cities..."
+                                        />
+                                    </div>
                                 </div>
 
-                                <PrimaryButton type="button" onClick={() => setShowModal(true)}>
-                                    <i className="fas fa-plus mr-2"></i> City
-                                </PrimaryButton>
+                                <div className="flex items-center gap-2">
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={() => window.open(printUrl, "_blank")}
+                                    >
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
+                                    <PrimaryButton type="button" onClick={() => setShowModal(true)}>
+                                        <i className="fas fa-plus mr-2"></i> City
+                                    </PrimaryButton>
+                                </div>
                             </div>
                         }
                         content=""
@@ -179,32 +239,48 @@ export default function Cities({ filters, countries = [], states = [], cities })
                             </div>
                         ))}
 
-                        {(cities?.links ?? []).length ? (
-                            <div className="mt-4 flex flex-wrap items-center gap-2">
-                                {cities.links.map((link, index) =>
-                                    link.url ? (
-                                        <button
-                                            key={`${link.label}-${index}`}
-                                            type="button"
-                                            className={`px-3 py-1 border rounded ${
-                                                link.active ? "bg-orange-500 text-white border-orange-500" : "bg-white"
-                                            }`}
-                                            onClick={() =>
-                                                router.visit(link.url, {
-                                                    preserveState: true,
-                                                    preserveScroll: true,
-                                                })
-                                            }
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ) : (
-                                        <span
-                                            key={`${link.label}-${index}`}
-                                            className="px-3 py-1 border rounded text-gray-400"
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    )
-                                )}
+                        {pagination.pages.length ? (
+                            <div className="w-full pt-4">
+                                <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="text-sm text-slate-700">
+                                        {resultSummary}
+                                    </div>
+                                    <div className="flex items-center md:justify-end">
+                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.prev?.url}
+                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.prev?.url)}
+                                            >
+                                                Previous
+                                            </button>
+                                            {pagination.pages.map((link, index) => (
+                                                <button
+                                                    key={`${link.label}-${index}`}
+                                                    type="button"
+                                                    disabled={!link.url}
+                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                        link.active
+                                                            ? "bg-slate-100 text-blue-600"
+                                                            : "bg-white text-slate-700 hover:bg-slate-50"
+                                                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                    onClick={() => goToPage(link.url)}
+                                                >
+                                                    {link.label}
+                                                </button>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.next?.url}
+                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.next?.url)}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         ) : null}
                     </SectionInner>

@@ -1,15 +1,16 @@
 import { Head, router, useForm, usePage } from "@inertiajs/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Modal from "../../../../components/Modal";
 import Hr from "../../../../components/Hr";
 import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import SecondaryButton from "../../../../components/SecondaryButton";
+import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 
-function CategoryTree({ categories = [], activeCat }) {
+function CategoryTree({ categories = [], activeCat, search = "" }) {
     return categories
         .filter((item) => item.slug !== "default-category")
         .map((item) => (
@@ -22,6 +23,7 @@ function CategoryTree({ categories = [], activeCat }) {
                         active={String(activeCat) === String(item.id)}
                         href={route("reseller.resel-product.index", {
                             cat: item.id,
+                            search: search || undefined,
                         })}
                     >
                         {item.name}
@@ -39,7 +41,10 @@ function CategoryTree({ categories = [], activeCat }) {
                                             }
                                             href={route(
                                                 "reseller.resel-product.index",
-                                                { cat: child.id }
+                                                {
+                                                    cat: child.id,
+                                                    search: search || undefined,
+                                                }
                                             )}
                                         >
                                             {child.name}
@@ -56,7 +61,10 @@ function CategoryTree({ categories = [], activeCat }) {
                                                         }
                                                         href={route(
                                                             "reseller.resel-product.index",
-                                                            { cat: sc.id }
+                                                            {
+                                                                cat: sc.id,
+                                                                search: search || undefined,
+                                                            }
                                                         )}
                                                     >
                                                         {sc.name}
@@ -159,6 +167,7 @@ export default function Index({
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [showOrderModal, setShowOrderModal] = useState(false);
     const [activeProduct, setActiveProduct] = useState(null);
+    const [search, setSearch] = useState(filters.search ?? "");
 
     const orderForm = useForm({
         name: "",
@@ -201,10 +210,40 @@ export default function Index({
         );
     };
 
-    const paginationLinks = products?.links?.filter(
-        (link) =>
-            link.label !== "&laquo; Previous" && link.label !== "Next &raquo;"
-    );
+    const cleanLabel = (label) =>
+        String(label)
+            .replace(/&laquo;/g, "")
+            .replace(/&raquo;/g, "")
+            .trim();
+
+    const requestProducts = (overrides = {}, options = {}) => {
+        const nextSearch = overrides.search ?? search.trim();
+
+        router.get(
+            route("reseller.resel-product.index"),
+            {
+                cat: overrides.cat ?? filters.cat ?? undefined,
+                search: nextSearch || undefined,
+                page: overrides.page ?? undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                ...options,
+            }
+        );
+    };
+
+    const pagination = useMemo(() => {
+        const links = products?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [products?.links]);
 
     const quantityOptions = useMemo(() => {
         if (!activeProduct?.unit || Number(activeProduct.unit) < 1) {
@@ -222,6 +261,44 @@ export default function Index({
     const totalPrice =
         (Number(orderForm.data.quantity || 0) || 0) *
         Number(activeProduct?.total_price || 0);
+
+    useEffect(() => {
+        setSearch(filters.search ?? "");
+    }, [filters.search]);
+
+    useEffect(() => {
+        const trimmedSearch = search.trim();
+        const currentSearch = (filters.search ?? "").trim();
+
+        if (trimmedSearch === currentSearch) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            requestProducts({ search: trimmedSearch });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search, filters.search]);
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url, window.location.origin);
+
+        requestProducts({
+            cat: nextUrl.searchParams.get("cat") ?? filters.cat,
+            search: nextUrl.searchParams.get("search") ?? search.trim(),
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        });
+    };
+
+    const resultSummary =
+        products?.total > 0
+            ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} products`
+            : "No products found";
 
     return (
         <AppLayout
@@ -276,81 +353,32 @@ export default function Index({
                 ) : null}
 
                 <div>
-                    <div className="block">
-                        <div
-                            onClick={() => setShowCategoryModal(true)}
-                            className="flex justify-between items-center px-3 py-1 mb-2 border rounded-md hover:bg-white"
-                        >
-                            <div>Categories</div>
-                            <div>
-                                <i className="fas fa-angle-right"></i>
-                            </div>
-                        </div>
-                    </div>
-
                     <div>
-                        {products?.links?.length ? (
-                            <div className="flex flex-wrap items-center gap-2 py-2">
-                                {products?.prev_page_url && (
-                                    <button
-                                        type="button"
-                                        className="px-3 py-1 bg-white border rounded"
-                                        onClick={() =>
-                                            router.visit(
-                                                products.prev_page_url,
-                                                {
-                                                    preserveScroll: true,
-                                                    preserveState: true,
-                                                }
-                                            )
-                                        }
-                                    >
-                                        Previous
-                                    </button>
-                                )}
+                        <div className="flex flex-wrap items-center justify-between gap-2 py-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowCategoryModal(true)}
+                                className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm hover:bg-white"
+                            >
+                                <span>Categories</span>
+                                <i className="fas fa-angle-right"></i>
+                            </button>
+                            <TextInput
+                                type="search"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key !== "Enter") {
+                                        return;
+                                    }
 
-                                {paginationLinks?.map((link, index) => (
-                                    <button
-                                        key={index}
-                                        type="button"
-                                        disabled={!link.url}
-                                        className={`px-3 py-1 border rounded ${
-                                            link.active
-                                                ? "bg-gray-900 text-white"
-                                                : "bg-white"
-                                        }`}
-                                        onClick={() =>
-                                            link.url &&
-                                            router.visit(link.url, {
-                                                preserveScroll: true,
-                                                preserveState: true,
-                                            })
-                                        }
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-                                ))}
-
-                                {products?.next_page_url && (
-                                    <button
-                                        type="button"
-                                        className="px-3 py-1 bg-white border rounded"
-                                        onClick={() =>
-                                            router.visit(
-                                                products.next_page_url,
-                                                {
-                                                    preserveScroll: true,
-                                                    preserveState: true,
-                                                }
-                                            )
-                                        }
-                                    >
-                                        Next
-                                    </button>
-                                )}
-                            </div>
-                        ) : null}
+                                    e.preventDefault();
+                                    requestProducts({ search: search.trim() });
+                                }}
+                                className="py-1"
+                                placeholder="Search products..."
+                            />
+                        </div>
 
                         <div
                             style={{
@@ -374,6 +402,51 @@ export default function Index({
                     {(products?.data ?? []).length < 1 ? (
                         <div className="p-2 bg-gray-200 h-auto">
                             No Products Found !
+                        </div>
+                    ) : null}
+
+                    {pagination.pages.length ? (
+                        <div className="w-full pt-4">
+                            <div className="flex w-full items-center justify-between gap-3">
+                                <div className="text-sm text-slate-700">
+                                    {resultSummary}
+                                </div>
+                                <div className="flex items-center md:justify-end">
+                                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                        <button
+                                            type="button"
+                                            disabled={!pagination.prev?.url}
+                                            className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                            onClick={() => goToPage(pagination.prev?.url)}
+                                        >
+                                            Previous
+                                        </button>
+                                        {pagination.pages.map((link, index) => (
+                                            <button
+                                                key={`${link.label}-${index}`}
+                                                type="button"
+                                                disabled={!link.url}
+                                                className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                    link.active
+                                                        ? "bg-slate-100 text-blue-600"
+                                                        : "bg-white text-slate-700 hover:bg-slate-50"
+                                                } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                onClick={() => goToPage(link.url)}
+                                            >
+                                                {cleanLabel(link.label)}
+                                            </button>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            disabled={!pagination.next?.url}
+                                            className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                            onClick={() => goToPage(pagination.next?.url)}
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     ) : null}
                 </div>
@@ -404,6 +477,7 @@ export default function Index({
                             <CategoryTree
                                 categories={categories}
                                 activeCat={filters?.cat}
+                                search={search.trim()}
                     />
                 </div>
                 <hr />

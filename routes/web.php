@@ -39,7 +39,6 @@ use App\Support\SystemDashboardOverview;
 use App\Support\VendorDashboardOverview;
 use App\Support\VendorOrdersIndexData;
 use Illuminate\Contracts\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Inertia\Inertia;
 
@@ -77,6 +76,7 @@ Route::get('dashboard', function () {
                 'start_date',
                 'end_date',
                 'area',
+                'find',
                 'page',
             ])),
         ]);

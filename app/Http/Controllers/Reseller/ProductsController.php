@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\HandleImageUpload;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductsController extends Controller
 {
@@ -23,29 +25,10 @@ class ProductsController extends Controller
     {
         $nav = $request->query('nav', 'own');
         $pd = $request->query('pd', 'Active');
-        $search = $request->query('search');
-
-        if ($nav === 'own' && $pd !== 'Trash') {
-            $query = auth()->user()->myProducts()->where(['status' => $pd])->latest('id');
-        } else {
-            $query = auth()->user()->myProducts()->onlyTrashed()->latest('id');
-        }
-
-        if ($nav === 'resel') {
-            $rl = Reseller_resel_product::where(['user_id' => Auth::id()])->pluck('product_id');
-            $query = Product::whereIn('id', $rl)->latest('id');
-        }
-
-        if ($search) {
-            $query = auth()->user()
-                ->myProducts()
-                ->where('title', 'like', '%' . $search . "%")
-                ->orWhere('name', 'like', '%' . $search . "%")
-                ->latest('id');
-        }
-
-        $perPage = $search ? 20 : 50;
-        $data = $query->paginate($perPage)->withQueryString();
+        $search = trim((string) $request->query('search', ''));
+        $data = $this->buildIndexQuery($nav, $pd, $search)
+            ->paginate(config('app.paginate'))
+            ->withQueryString();
 
         $products = $data->getCollection()->load(['orders' => function ($query) {
             $query->select('id', 'product_id', 'status')->orderBy('id');
@@ -82,9 +65,82 @@ class ProductsController extends Controller
                         'created_at_human' => $product->created_at?->diffForHumans() ?? 'N/A',
                     ];
                 })->values()->all(),
-                'links' => $data->linkCollection()->toArray(),
+                'links' => $data->linkCollection()->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => $link['label'],
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $data->firstItem(),
+                'to' => $data->lastItem(),
+                'total' => $data->total(),
             ],
+            'printUrl' => route('reseller.products.print', [
+                'nav' => $nav,
+                'pd' => $pd,
+                'search' => $search,
+            ]),
         ]);
+    }
+
+    public function print(Request $request): Response
+    {
+        $nav = $request->query('nav', 'own');
+        $pd = $request->query('pd', 'Active');
+        $search = trim((string) $request->query('search', ''));
+
+        $products = $this->buildIndexQuery($nav, $pd, $search)
+            ->get()
+            ->load(['orders' => function ($query) {
+                $query->select('id', 'product_id', 'status')->orderBy('id');
+            }]);
+
+        return Inertia::render('Reseller/Products/Print', [
+            'filters' => [
+                'nav' => $nav,
+                'pd' => $pd,
+                'search' => $search,
+            ],
+            'products' => $products->values()->map(function (Product $product, int $index) {
+                $orders = $product->orders ?? collect();
+
+                return [
+                    'sl' => $index + 1,
+                    'id' => $product->id,
+                    'name' => $product->name ?? 'N/A',
+                    'status_label' => $product->status ? 'Active' : 'In Active',
+                    'orders_count' => $orders->count(),
+                    'buying_price' => $product->buying_price,
+                    'price' => $product->price,
+                    'sell_price' => $product->offer_type ? $product->discount : $product->price,
+                    'unit' => $product->unit,
+                    'created_at_human' => $product->created_at?->diffForHumans() ?? 'N/A',
+                ];
+            })->all(),
+        ]);
+    }
+
+    private function buildIndexQuery(string $nav, string $pd, string $search): Builder|HasMany
+    {
+        if ($nav === 'resel') {
+            $ids = Reseller_resel_product::where(['user_id' => Auth::id()])->pluck('product_id');
+            $query = Product::query()->whereIn('id', $ids)->latest('id');
+        } elseif ($pd === 'Trash') {
+            $query = auth()->user()->myProducts()->onlyTrashed()->latest('id');
+        } else {
+            $query = auth()->user()->myProducts()->where(['status' => $pd])->latest('id');
+        }
+
+        if ($search !== '') {
+            $query->where(function ($productQuery) use ($search) {
+                $productQuery
+                    ->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        return $query;
     }
 
     public function edit(string $id): Response

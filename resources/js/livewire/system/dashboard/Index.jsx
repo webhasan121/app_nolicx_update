@@ -45,7 +45,19 @@ function OverviewDiv({ title, children }) {
     );
 }
 
-export default function Index({ userName, adm, vd, avd, rs, ars, ri, ari, userCount, vp, cat }) {
+export default function Index({
+    userName,
+    adm,
+    vd,
+    avd,
+    rs,
+    ars,
+    ri,
+    ari,
+    userCount,
+    vp,
+    cat,
+}) {
     return (
         <div>
             <Container>

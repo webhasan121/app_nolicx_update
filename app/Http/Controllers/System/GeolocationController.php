@@ -22,13 +22,26 @@ class GeolocationController extends Controller
 
     public function countriesReact(Request $request): Response
     {
+        $find = trim((string) $request->query('find', ''));
         $countries = country::query()
+            ->when($find !== '', function ($query) use ($find) {
+                $query->where(function ($subQuery) use ($find) {
+                    $subQuery
+                        ->where('id', 'like', '%' . $find . '%')
+                        ->orWhere('name', 'like', '%' . $find . '%')
+                        ->orWhere('iso2', 'like', '%' . $find . '%')
+                        ->orWhere('iso3', 'like', '%' . $find . '%');
+                });
+            })
             ->withCount('states')
             ->latest('id')
-            ->paginate(20)
+            ->paginate(config('app.paginate'))
             ->withQueryString();
 
         return Inertia::render('Auth/system/geolocation/Countries', [
+            'filters' => [
+                'find' => $find,
+            ],
             'countries' => [
                 'data' => $countries->getCollection()->map(function (country $item, int $index) use ($countries) {
                     return [
@@ -40,8 +53,54 @@ class GeolocationController extends Controller
                         'iso3' => $item->iso3,
                     ];
                 })->values()->all(),
-                'links' => $countries->linkCollection()->toArray(),
+                'links' => collect($countries->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $countries->firstItem(),
+                'to' => $countries->lastItem(),
+                'total' => $countries->total(),
             ],
+            'printUrl' => route('system.geolocations.countries.print', [
+                'find' => $find,
+            ]),
+        ]);
+    }
+
+    public function printCountriesReact(Request $request): Response
+    {
+        $find = trim((string) $request->query('find', ''));
+        $countries = country::query()
+            ->when($find !== '', function ($query) use ($find) {
+                $query->where(function ($subQuery) use ($find) {
+                    $subQuery
+                        ->where('id', 'like', '%' . $find . '%')
+                        ->orWhere('name', 'like', '%' . $find . '%')
+                        ->orWhere('iso2', 'like', '%' . $find . '%')
+                        ->orWhere('iso3', 'like', '%' . $find . '%');
+                });
+            })
+            ->withCount('states')
+            ->latest('id')
+            ->get();
+
+        return Inertia::render('Auth/system/geolocation/CountriesPrint', [
+            'filters' => [
+                'find' => $find,
+            ],
+            'countries' => $countries->values()->map(function (country $item, int $index) {
+                return [
+                    'sl' => $index + 1,
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'states_count' => $item->states_count,
+                    'iso2' => $item->iso2,
+                    'iso3' => $item->iso3,
+                ];
+            })->all(),
         ]);
     }
 
@@ -88,13 +147,32 @@ class GeolocationController extends Controller
 
     public function statesReact(Request $request): Response
     {
+        $find = trim((string) $request->query('find', ''));
         $states = state::query()
             ->with('country')
+            ->when($find !== '', function ($query) use ($find) {
+                $query->where(function ($subQuery) use ($find) {
+                    $subQuery
+                        ->where('id', 'like', '%' . $find . '%')
+                        ->orWhere('name', 'like', '%' . $find . '%')
+                        ->orWhere('country_code', 'like', '%' . $find . '%')
+                        ->orWhere('iso2', 'like', '%' . $find . '%')
+                        ->orWhere('iso3166_2', 'like', '%' . $find . '%')
+                        ->orWhereHas('country', function ($countryQuery) use ($find) {
+                            $countryQuery
+                                ->where('name', 'like', '%' . $find . '%')
+                                ->orWhere('iso2', 'like', '%' . $find . '%');
+                        });
+                });
+            })
             ->latest('id')
-            ->paginate(20)
+            ->paginate(config('app.paginate'))
             ->withQueryString();
 
         return Inertia::render('Auth/system/geolocation/States', [
+            'filters' => [
+                'find' => $find,
+            ],
             'states' => [
                 'data' => $states->getCollection()->map(function (state $item, int $index) use ($states) {
                     return [
@@ -108,7 +186,16 @@ class GeolocationController extends Controller
                         'iso3166_2' => $item->iso3166_2,
                     ];
                 })->values()->all(),
-                'links' => $states->linkCollection()->toArray(),
+                'links' => collect($states->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $states->firstItem(),
+                'to' => $states->lastItem(),
+                'total' => $states->total(),
             ],
             'countries' => country::query()
                 ->orderBy('name')
@@ -120,6 +207,51 @@ class GeolocationController extends Controller
                         'iso2' => $item->iso2,
                     ];
                 })->values()->all(),
+            'printUrl' => route('system.geolocations.states.print', [
+                'find' => $find,
+            ]),
+        ]);
+    }
+
+    public function printStatesReact(Request $request): Response
+    {
+        $find = trim((string) $request->query('find', ''));
+        $states = state::query()
+            ->with('country')
+            ->when($find !== '', function ($query) use ($find) {
+                $query->where(function ($subQuery) use ($find) {
+                    $subQuery
+                        ->where('id', 'like', '%' . $find . '%')
+                        ->orWhere('name', 'like', '%' . $find . '%')
+                        ->orWhere('country_code', 'like', '%' . $find . '%')
+                        ->orWhere('iso2', 'like', '%' . $find . '%')
+                        ->orWhere('iso3166_2', 'like', '%' . $find . '%')
+                        ->orWhereHas('country', function ($countryQuery) use ($find) {
+                            $countryQuery
+                                ->where('name', 'like', '%' . $find . '%')
+                                ->orWhere('iso2', 'like', '%' . $find . '%');
+                        });
+                });
+            })
+            ->latest('id')
+            ->get();
+
+        return Inertia::render('Auth/system/geolocation/StatesPrint', [
+            'filters' => [
+                'find' => $find,
+            ],
+            'states' => $states->values()->map(function (state $item, int $index) {
+                return [
+                    'sl' => $index + 1,
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'country_id' => $item->country_id,
+                    'country_name' => $item->country?->name ?? 'N/A',
+                    'country_code' => $item->country_code,
+                    'iso2' => $item->iso2,
+                    'iso3166_2' => $item->iso3166_2,
+                ];
+            })->all(),
         ]);
     }
 
@@ -191,6 +323,7 @@ class GeolocationController extends Controller
         }
 
         $selectedState = $request->query('state_id');
+        $find = trim((string) $request->query('find', ''));
 
         $states = state::query()
             ->where('country_id', $selectedCountry)
@@ -204,14 +337,16 @@ class GeolocationController extends Controller
 
         $cities = city::query()
             ->when($selectedState, fn ($query) => $query->where('state_id', $selectedState))
+            ->when($find !== '', fn ($query) => $query->where('name', 'like', '%' . $find . '%'))
             ->latest('id')
-            ->paginate(20)
+            ->paginate(config('app.paginate'))
             ->withQueryString();
 
         return Inertia::render('Auth/system/geolocation/Cities', [
             'filters' => [
                 'country' => $selectedCountry ? (string) $selectedCountry : '',
                 'state_id' => $selectedState ? (string) $selectedState : '',
+                'find' => $find,
             ],
             'countries' => $countries,
             'states' => $states,
@@ -222,8 +357,50 @@ class GeolocationController extends Controller
                         'name' => $item->name,
                     ];
                 })->values()->all(),
-                'links' => $cities->linkCollection()->toArray(),
+                'links' => collect($cities->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $cities->firstItem(),
+                'to' => $cities->lastItem(),
+                'total' => $cities->total(),
             ],
+            'printUrl' => route('system.geolocations.cities.print', [
+                'country' => $selectedCountry,
+                'state_id' => $selectedState,
+                'find' => $find,
+            ]),
+        ]);
+    }
+
+    public function printCitiesReact(Request $request): Response
+    {
+        $selectedCountry = $request->query('country');
+        $selectedState = $request->query('state_id');
+        $find = trim((string) $request->query('find', ''));
+
+        $cities = city::query()
+            ->when($selectedState, fn ($query) => $query->where('state_id', $selectedState))
+            ->when($find !== '', fn ($query) => $query->where('name', 'like', '%' . $find . '%'))
+            ->latest('id')
+            ->get();
+
+        return Inertia::render('Auth/system/geolocation/CitiesPrint', [
+            'filters' => [
+                'country' => $selectedCountry ? (string) $selectedCountry : '',
+                'state_id' => $selectedState ? (string) $selectedState : '',
+                'find' => $find,
+            ],
+            'cities' => $cities->values()->map(function (city $item, int $index) {
+                return [
+                    'sl' => $index + 1,
+                    'id' => $item->id,
+                    'name' => $item->name,
+                ];
+            })->all(),
         ]);
     }
 
@@ -262,6 +439,7 @@ class GeolocationController extends Controller
         $selectedCountry = $request->query('country');
         $selectedState = $request->query('state_id');
         $selectedCity = $request->query('city_id');
+        $find = trim((string) $request->query('find', ''));
 
         $countries = country::query()
             ->orderBy('name')
@@ -295,8 +473,9 @@ class GeolocationController extends Controller
 
         $areas = ta::query()
             ->when($selectedCity, fn ($query) => $query->where('city_id', $selectedCity))
+            ->when($find !== '', fn ($query) => $query->where('name', 'like', '%' . $find . '%'))
             ->latest()
-            ->paginate(20)
+            ->paginate(config('app.paginate'))
             ->withQueryString();
 
         return Inertia::render('Auth/system/geolocation/Area', [
@@ -304,6 +483,7 @@ class GeolocationController extends Controller
                 'country' => $selectedCountry ? (string) $selectedCountry : '',
                 'state_id' => $selectedState ? (string) $selectedState : '',
                 'city_id' => $selectedCity ? (string) $selectedCity : '',
+                'find' => $find,
             ],
             'countries' => $countries,
             'states' => $states,
@@ -313,8 +493,53 @@ class GeolocationController extends Controller
                     'id' => $item->id,
                     'name' => $item->name,
                 ])->values()->all(),
-                'links' => $areas->linkCollection()->toArray(),
+                'links' => collect($areas->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $areas->firstItem(),
+                'to' => $areas->lastItem(),
+                'total' => $areas->total(),
             ],
+            'printUrl' => route('system.geolocations.area.print', [
+                'country' => $selectedCountry,
+                'state_id' => $selectedState,
+                'city_id' => $selectedCity,
+                'find' => $find,
+            ]),
+        ]);
+    }
+
+    public function printAreaReact(Request $request): Response
+    {
+        $selectedCountry = $request->query('country');
+        $selectedState = $request->query('state_id');
+        $selectedCity = $request->query('city_id');
+        $find = trim((string) $request->query('find', ''));
+
+        $areas = ta::query()
+            ->when($selectedCity, fn ($query) => $query->where('city_id', $selectedCity))
+            ->when($find !== '', fn ($query) => $query->where('name', 'like', '%' . $find . '%'))
+            ->latest()
+            ->get();
+
+        return Inertia::render('Auth/system/geolocation/AreaPrint', [
+            'filters' => [
+                'country' => $selectedCountry ? (string) $selectedCountry : '',
+                'state_id' => $selectedState ? (string) $selectedState : '',
+                'city_id' => $selectedCity ? (string) $selectedCity : '',
+                'find' => $find,
+            ],
+            'areas' => $areas->values()->map(function (ta $item, int $index) {
+                return [
+                    'sl' => $index + 1,
+                    'id' => $item->id,
+                    'name' => $item->name,
+                ];
+            })->all(),
         ]);
     }
 

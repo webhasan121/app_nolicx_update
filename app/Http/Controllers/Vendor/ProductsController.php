@@ -11,6 +11,7 @@ use App\Models\product_has_image;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -27,29 +28,44 @@ class ProductsController extends Controller
             'nav' => $request->query('nav', 'Active'),
             'take' => $request->query('take', ''),
             'search' => $request->query('search', ''),
+            'created' => $request->query('created', ''),
         ];
 
-        $query = auth()->user()->myProducts();
+        $query = auth()->user()->myProducts()->latest('id');
 
         if ($filters['take'] === 'trash') {
-            $query->onlyTrashed()->latest('id');
-            $products = $query->paginate(20)->withQueryString();
+            $query->onlyTrashed();
         } else {
-            $query->where('status', $filters['nav'])->latest('id');
-            $products = $query->paginate(200)->withQueryString();
+            if (($filters['nav'] ?? 'Active') === 'Active') {
+                $query->where(function ($q) {
+                    $q->where('status', 'Active')
+                        ->orWhere('status', 1)
+                        ->orWhere('status', true);
+                });
+            } elseif (($filters['nav'] ?? '') === 'In Active') {
+                $query->where(function ($q) {
+                    $q->where('status', 'In Active')
+                        ->orWhere('status', 'Disable')
+                        ->orWhere('status', 'Disabled')
+                        ->orWhere('status', 'Drafted')
+                        ->orWhere('status', 0)
+                        ->orWhere('status', false);
+                });
+            }
         }
 
-        if ($filters['search']) {
-            $products = auth()->user()
-                ->myProducts()
-                ->where(function ($q) use ($filters) {
-                    $q->where('title', 'like', '%' . $filters['search'] . '%')
-                        ->orWhere('name', 'like', '%' . $filters['search'] . '%');
-                })
-                ->latest('id')
-                ->paginate(20)
-                ->withQueryString();
+        if (!empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('title', 'like', '%' . $filters['search'] . '%')
+                    ->orWhere('name', 'like', '%' . $filters['search'] . '%');
+            });
         }
+
+        if ($filters['created'] === 'today') {
+            $query->whereDate('created_at', Carbon::today());
+        }
+
+        $products = $query->paginate(config('app.paginate'))->withQueryString();
 
         return Inertia::render('Vendor/Products/Index', [
             'filters' => $filters,
@@ -69,10 +85,88 @@ class ProductsController extends Controller
                         'encrypted_id' => encrypt($product->id),
                     ];
                 })->values()->all(),
-                'links' => $products->linkCollection()->toArray(),
+                'links' => $products->linkCollection()->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => $link['label'],
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+                'total' => $products->total(),
             ],
+            'printUrl' => route('vendor.products.print', [
+                'nav' => $filters['nav'],
+                'take' => $filters['take'],
+                'search' => $filters['search'],
+                'created' => $filters['created'],
+            ]),
             'selectedCount' => 0,
             'isReseller' => auth()->user()->hasRole('reseller'),
+        ]);
+    }
+
+    public function print(Request $request): Response
+    {
+        $filters = [
+            'nav' => $request->query('nav', 'Active'),
+            'take' => $request->query('take', ''),
+            'search' => $request->query('search', ''),
+            'created' => $request->query('created', ''),
+        ];
+
+        $query = auth()->user()->myProducts()->latest('id');
+
+        if ($filters['take'] === 'trash') {
+            $query->onlyTrashed();
+        } else {
+            if (($filters['nav'] ?? 'Active') === 'Active') {
+                $query->where(function ($q) {
+                    $q->where('status', 'Active')
+                        ->orWhere('status', 1)
+                        ->orWhere('status', true);
+                });
+            } elseif (($filters['nav'] ?? '') === 'In Active') {
+                $query->where(function ($q) {
+                    $q->where('status', 'In Active')
+                        ->orWhere('status', 'Disable')
+                        ->orWhere('status', 'Disabled')
+                        ->orWhere('status', 'Drafted')
+                        ->orWhere('status', 0)
+                        ->orWhere('status', false);
+                });
+            }
+        }
+
+        if (!empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('title', 'like', '%' . $filters['search'] . '%')
+                    ->orWhere('name', 'like', '%' . $filters['search'] . '%');
+            });
+        }
+
+        if ($filters['created'] === 'today') {
+            $query->whereDate('created_at', Carbon::today());
+        }
+
+        $products = $query->get();
+
+        return Inertia::render('Vendor/Products/Print', [
+            'filters' => $filters,
+            'products' => $products->values()->map(function (Product $product, int $index) {
+                return [
+                    'sl' => $index + 1,
+                    'id' => $product->id,
+                    'name' => $product->name ?? 'N/A',
+                    'unit' => $product->unit,
+                    'buying_price' => $product->buying_price,
+                    'price' => $product->price,
+                    'discount' => $product->discount ?? 0,
+                    'status' => $product->status ? 'Active' : 'In Active',
+                    'created_at_human' => $product->created_at?->diffForHumans() ?? 'N/A',
+                ];
+            })->all(),
         ]);
     }
 

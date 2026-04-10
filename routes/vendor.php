@@ -33,6 +33,7 @@ use App\Livewire\Vendor\Orders\Cprint as vendorOrderCPrintPage;
 
 Route::get('products/view/old', vendorProductsIndexPage::class)->name("vendor.products.view.old")->middleware(AbleTo::class . ":product_view");
 Route::get('products/view', [ProductsController::class, 'index'])->name("vendor.products.view")->middleware(AbleTo::class . ":product_view");
+Route::get('products/view/print', [ProductsController::class, 'print'])->name("vendor.products.print")->middleware(AbleTo::class . ":product_view");
 Route::post('products/view/trash', [ProductsController::class, 'bulkTrash'])->name("vendor.products.bulk-trash")->middleware(AbleTo::class . ":product_view");
 Route::post('products/view/restore', [ProductsController::class, 'bulkRestore'])->name("vendor.products.bulk-restore")->middleware(AbleTo::class . ":product_view");
 Route::get('products/create/old', vendorProductsCreatePage::class)->name("vendor.products.create.old")->middleware(AbleTo::class . ":product_add");
@@ -63,6 +64,7 @@ Route::prefix('/order')->group(function () {
     Route::get('/print/client/{order}', [OrdersController::class, 'cprint'])->name('vendor.orders.cprint');
     Route::get('/print/{order}/old', vendorOrderVPrintPage::class)->name('vendor.orders.print.old');
     Route::get('/print/{order}', [OrdersController::class, 'vprint'])->name('vendor.orders.print');
+    Route::get('/print-summary', [OrdersController::class, 'summaryPrint'])->name('vendor.orders.summary.print');
 });
 
 

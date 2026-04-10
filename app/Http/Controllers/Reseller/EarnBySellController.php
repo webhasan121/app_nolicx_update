@@ -15,20 +15,41 @@ class EarnBySellController extends Controller
     {
         $nav = $request->query('nav', 'sold');
         $fd = $request->query('fd');
-        $lastDate = $request->query('lastDate', now()->toDateString());
+        $lastDate = $request->query('lastDate', '');
+        $search = trim((string) $request->query('search', ''));
         $account = auth()->user()->account_type();
 
-        $startDate = $fd ? Carbon::parse($fd)->startOfDay() : Carbon::create(1970, 1, 1)->startOfDay();
-        $endDate = Carbon::parse($lastDate)->endOfDay();
-
         $baseQuery = CartOrder::query()
-            ->where('belongs_to_type', $account)
-            ->whereBetween('created_at', [$startDate, $endDate]);
+            ->where('belongs_to_type', $account);
 
         if ($nav === 'sold') {
             $baseQuery->where('status', 'Confirm');
         } elseif ($nav === 'selling') {
             $baseQuery->whereIn('status', ['Pending', 'Picked', 'Delivery', 'Delivered']);
+        }
+
+        if (!empty($fd) && !empty($lastDate)) {
+            $startDate = Carbon::parse($fd)->startOfDay();
+            $endDate = Carbon::parse($lastDate)->endOfDay();
+            $baseQuery->whereBetween('created_at', [$startDate, $endDate]);
+        } elseif (!empty($fd)) {
+            $baseQuery->whereDate('created_at', Carbon::parse($fd)->toDateString());
+        } elseif (!empty($lastDate)) {
+            $baseQuery->whereDate('created_at', Carbon::parse($lastDate)->toDateString());
+        }
+
+        if ($search !== '') {
+            $baseQuery->where(function ($query) use ($search) {
+                $query
+                    ->whereHas('product', function ($productQuery) use ($search) {
+                        $productQuery
+                            ->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('title', 'like', '%' . $search . '%');
+                    })
+                    ->orWhere('status', 'like', '%' . $search . '%')
+                    ->orWhere('user_type', 'like', '%' . $search . '%')
+                    ->orWhere('belongs_to_type', 'like', '%' . $search . '%');
+            });
         }
 
         $totalSell = (clone $baseQuery)->sum('price');
@@ -38,7 +59,6 @@ class EarnBySellController extends Controller
 
         $productsQuery = CartOrder::query()
             ->where('belongs_to_type', $account)
-            ->whereBetween('created_at', [$startDate, $endDate])
             ->with([
                 'product' => function ($query) {
                     $query->with(['owner', 'isResel', 'resel']);
@@ -51,13 +71,38 @@ class EarnBySellController extends Controller
             $productsQuery->whereIn('status', ['Pending', 'Picked', 'Delivery', 'Delivered']);
         }
 
-        $products = $productsQuery->orderByDesc('id')->paginate(20)->withQueryString();
+        if (!empty($fd) && !empty($lastDate)) {
+            $startDate = Carbon::parse($fd)->startOfDay();
+            $endDate = Carbon::parse($lastDate)->endOfDay();
+            $productsQuery->whereBetween('created_at', [$startDate, $endDate]);
+        } elseif (!empty($fd)) {
+            $productsQuery->whereDate('created_at', Carbon::parse($fd)->toDateString());
+        } elseif (!empty($lastDate)) {
+            $productsQuery->whereDate('created_at', Carbon::parse($lastDate)->toDateString());
+        }
+
+        if ($search !== '') {
+            $productsQuery->where(function ($query) use ($search) {
+                $query
+                    ->whereHas('product', function ($productQuery) use ($search) {
+                        $productQuery
+                            ->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('title', 'like', '%' . $search . '%');
+                    })
+                    ->orWhere('status', 'like', '%' . $search . '%')
+                    ->orWhere('user_type', 'like', '%' . $search . '%')
+                    ->orWhere('belongs_to_type', 'like', '%' . $search . '%');
+            });
+        }
+
+        $products = $productsQuery->orderByDesc('id')->paginate(config('app.paginate'))->withQueryString();
 
         return Inertia::render('Reseller/EarnBySell/Index', [
             'filters' => [
                 'nav' => $nav,
                 'fd' => $fd,
                 'lastDate' => $lastDate,
+                'search' => $search,
             ],
             'overview' => [
                 'totalSell' => $totalSell,
@@ -99,12 +144,108 @@ class EarnBySellController extends Controller
                         'status' => $item->status,
                     ];
                 })->values()->all(),
-                'links' => $products->linkCollection()->toArray(),
+                'links' => $products->linkCollection()->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => $link['label'],
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+                'total' => $products->total(),
             ],
             'counts' => [
                 'items' => $products->count(),
                 'unique' => $products->getCollection()->groupBy('product_id')->count(),
             ],
+            'printUrl' => route('reseller.sel.print', [
+                'nav' => $nav,
+                'fd' => $fd,
+                'lastDate' => $lastDate,
+                'search' => $search,
+            ]),
+        ]);
+    }
+
+    public function print(Request $request): Response
+    {
+        $nav = $request->query('nav', 'sold');
+        $fd = $request->query('fd');
+        $lastDate = $request->query('lastDate', '');
+        $search = trim((string) $request->query('search', ''));
+        $account = auth()->user()->account_type();
+
+        $productsQuery = CartOrder::query()
+            ->where('belongs_to_type', $account)
+            ->with([
+                'product' => function ($query) {
+                    $query->with(['owner', 'isResel', 'resel']);
+                },
+            ]);
+
+        if ($nav === 'sold') {
+            $productsQuery->where('status', 'Confirm');
+        } elseif ($nav === 'selling') {
+            $productsQuery->whereIn('status', ['Pending', 'Picked', 'Delivery', 'Delivered']);
+        }
+
+        if (!empty($fd) && !empty($lastDate)) {
+            $startDate = Carbon::parse($fd)->startOfDay();
+            $endDate = Carbon::parse($lastDate)->endOfDay();
+            $productsQuery->whereBetween('created_at', [$startDate, $endDate]);
+        } elseif (!empty($fd)) {
+            $productsQuery->whereDate('created_at', Carbon::parse($fd)->toDateString());
+        } elseif (!empty($lastDate)) {
+            $productsQuery->whereDate('created_at', Carbon::parse($lastDate)->toDateString());
+        }
+
+        if ($search !== '') {
+            $productsQuery->where(function ($query) use ($search) {
+                $query
+                    ->whereHas('product', function ($productQuery) use ($search) {
+                        $productQuery
+                            ->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('title', 'like', '%' . $search . '%');
+                    })
+                    ->orWhere('status', 'like', '%' . $search . '%')
+                    ->orWhere('user_type', 'like', '%' . $search . '%')
+                    ->orWhere('belongs_to_type', 'like', '%' . $search . '%');
+            });
+        }
+
+        $products = $productsQuery->orderByDesc('id')->get();
+
+        return Inertia::render('Reseller/EarnBySell/Print', [
+            'filters' => [
+                'nav' => $nav,
+                'fd' => $fd,
+                'lastDate' => $lastDate,
+                'search' => $search,
+            ],
+            'products' => $products->values()->map(function (CartOrder $item, int $index) {
+                $product = $item->product;
+                $owner = $product?->owner;
+                $ownerName = $owner?->name;
+
+                if ($product?->belongs_to_type === 'reseller') {
+                    $ownerName = $owner?->resellerShop()?->shop_name_en ?? $owner?->name;
+                } elseif ($product?->belongs_to_type === 'vendor') {
+                    $ownerName = $owner?->vendorShop()?->shop_name_en ?? $owner?->name;
+                }
+
+                return [
+                    'sl' => $index + 1,
+                    'id' => $item->id,
+                    'product_name' => $product?->name ?? 'N/A',
+                    'owner_name' => $ownerName,
+                    'product_price' => $product?->price ?? 0,
+                    'product_created_at' => $product?->created_at?->toFormattedDateString(),
+                    'status' => $item->status,
+                    'user_type' => $item->user_type,
+                    'belongs_to_type' => $item->belongs_to_type,
+                ];
+            })->all(),
         ]);
     }
 }

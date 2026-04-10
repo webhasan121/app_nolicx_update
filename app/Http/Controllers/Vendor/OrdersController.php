@@ -20,10 +20,11 @@ class OrdersController extends Controller
         $filters = [
             'nav' => $request->query('nav', 'Pending'),
             'delivery' => $request->query('delivery', 'all'),
-            'create' => $request->query('create', 'day'),
-            'start_date' => $request->query('start_date', now()->toDateString()),
+            'create' => $request->query('create', 'all'),
+            'start_date' => $request->query('start_date', ''),
             'end_date' => $request->query('end_date', ''),
             'area' => $request->query('area', 'all'),
+            'find' => trim((string) $request->query('find', '')),
         ];
 
         $account = auth()->user()->account_type();
@@ -39,9 +40,9 @@ class OrdersController extends Controller
             $query->where('delevery', $filters['delivery']);
         }
 
-        if ($filters['create'] === 'day') {
+        if ($filters['create'] === 'day' && !empty($filters['start_date'])) {
             $query->whereDate('created_at', Carbon::parse($filters['start_date'])->toDateString());
-        } elseif ($filters['create'] === 'between' && $filters['end_date']) {
+        } elseif ($filters['create'] === 'between' && !empty($filters['start_date']) && !empty($filters['end_date'])) {
             $query->whereBetween('created_at', [
                 Carbon::parse($filters['start_date'])->startOfDay(),
                 Carbon::parse($filters['end_date'])->endOfDay(),
@@ -52,11 +53,31 @@ class OrdersController extends Controller
             $query->where('area_condition', $filters['area']);
         }
 
+        if ($filters['find'] !== '') {
+            $query->where(function ($builder) use ($filters) {
+                $builder
+                    ->where('id', 'like', '%' . $filters['find'] . '%')
+                    ->orWhere('number', 'like', '%' . $filters['find'] . '%')
+                    ->orWhere('location', 'like', '%' . $filters['find'] . '%')
+                    ->orWhere('status', 'like', '%' . $filters['find'] . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($filters) {
+                        $userQuery
+                            ->where('name', 'like', '%' . $filters['find'] . '%')
+                            ->orWhere('email', 'like', '%' . $filters['find'] . '%');
+                    })
+                    ->orWhereHas('cartOrders.product', function ($productQuery) use ($filters) {
+                        $productQuery
+                            ->where('title', 'like', '%' . $filters['find'] . '%')
+                            ->orWhere('name', 'like', '%' . $filters['find'] . '%');
+                    });
+            });
+        }
+
         $data = $query
             ->with(['user:id,name', 'comissionsInfo'])
             ->withCount('cartOrders')
             ->latest('id')
-            ->paginate(20)
+            ->paginate(config('app.paginate'))
             ->withQueryString();
 
         $summaryQuery = auth()->user()->orderToMe()->where(['belongs_to_type' => $account]);
@@ -90,18 +111,30 @@ class OrdersController extends Controller
                     ];
                 })->values()->all(),
                 'sum_total' => $data->getCollection()->sum('total'),
+                'from' => $data->firstItem(),
+                'to' => $data->lastItem(),
+                'total' => $data->total(),
                 'current_page' => $data->currentPage(),
                 'last_page' => $data->lastPage(),
                 'prev_page_url' => $data->previousPageUrl(),
                 'next_page_url' => $data->nextPageUrl(),
-                'links' => collect($data->toArray()['links'] ?? [])->map(function ($link) {
+                'links' => $data->linkCollection()->map(function ($link) {
                     return [
-                        'url' => $link['url'] ?? null,
-                        'label' => strip_tags((string) ($link['label'] ?? '')),
-                        'active' => (bool) ($link['active'] ?? false),
+                        'url' => $link['url'],
+                        'label' => strip_tags((string) $link['label']),
+                        'active' => (bool) $link['active'],
                     ];
                 })->values()->all(),
             ],
+            'printUrl' => route('vendor.orders.summary.print', [
+                'nav' => $filters['nav'],
+                'delivery' => $filters['delivery'],
+                'create' => $filters['create'],
+                'start_date' => $filters['start_date'],
+                'end_date' => $filters['end_date'],
+                'area' => $filters['area'],
+                'find' => $filters['find'],
+            ]),
         ]);
     }
 
@@ -372,6 +405,93 @@ class OrdersController extends Controller
                     ];
                 })->values()->all(),
             ],
+        ]);
+    }
+
+    public function summaryPrint(Request $request): Response
+    {
+        $filters = [
+            'nav' => $request->query('nav', 'Pending'),
+            'delivery' => $request->query('delivery', 'all'),
+            'create' => $request->query('create', 'all'),
+            'start_date' => $request->query('start_date', ''),
+            'end_date' => $request->query('end_date', ''),
+            'area' => $request->query('area', 'all'),
+            'find' => trim((string) $request->query('find', '')),
+        ];
+
+        $account = auth()->user()->account_type();
+        $query = auth()->user()->orderToMe()->where(['belongs_to_type' => $account]);
+
+        if (in_array($filters['nav'], ['Trash', 'Trashed'], true)) {
+            $query->onlyTrashed();
+        } elseif ($filters['nav'] !== 'All') {
+            $query->where('status', $filters['nav']);
+        }
+
+        if ($filters['delivery'] !== 'all') {
+            $query->where('delevery', $filters['delivery']);
+        }
+
+        if ($filters['create'] === 'day' && !empty($filters['start_date'])) {
+            $query->whereDate('created_at', Carbon::parse($filters['start_date'])->toDateString());
+        } elseif ($filters['create'] === 'between' && !empty($filters['start_date']) && !empty($filters['end_date'])) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($filters['start_date'])->startOfDay(),
+                Carbon::parse($filters['end_date'])->endOfDay(),
+            ]);
+        }
+
+        if ($filters['area'] !== 'all') {
+            $query->where('area_condition', $filters['area']);
+        }
+
+        if ($filters['find'] !== '') {
+            $query->where(function ($builder) use ($filters) {
+                $builder
+                    ->where('id', 'like', '%' . $filters['find'] . '%')
+                    ->orWhere('number', 'like', '%' . $filters['find'] . '%')
+                    ->orWhere('location', 'like', '%' . $filters['find'] . '%')
+                    ->orWhere('status', 'like', '%' . $filters['find'] . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($filters) {
+                        $userQuery
+                            ->where('name', 'like', '%' . $filters['find'] . '%')
+                            ->orWhere('email', 'like', '%' . $filters['find'] . '%');
+                    })
+                    ->orWhereHas('cartOrders.product', function ($productQuery) use ($filters) {
+                        $productQuery
+                            ->where('title', 'like', '%' . $filters['find'] . '%')
+                            ->orWhere('name', 'like', '%' . $filters['find'] . '%');
+                    });
+            });
+        }
+
+        $orders = $query
+            ->with(['user:id,name', 'comissionsInfo'])
+            ->withCount('cartOrders')
+            ->latest('id')
+            ->get();
+
+        return Inertia::render('Vendor/Orders/PrintSummery', [
+            'filters' => $filters,
+            'orders' => $orders->values()->map(function ($item, int $index) {
+                return [
+                    'sl' => $index + 1,
+                    'id' => $item->id,
+                    'cart_orders_count' => $item->cart_orders_count ?? 0,
+                    'quantity' => $item->quantity,
+                    'total' => $item->total,
+                    'shipping' => $item->shipping,
+                    'status' => $item->status,
+                    'created_at_human' => $item->created_at?->diffForHumans(),
+                    'created_at_formatted' => $item->created_at?->toFormattedDateString(),
+                    'delevery' => $item->delevery,
+                    'location' => $item->location,
+                    'user_name' => $item->user?->name,
+                    'number' => $item->number,
+                    'comission' => $item->comissionsInfo?->sum('take_comission') ?? 0,
+                ];
+            })->all(),
         ]);
     }
 }

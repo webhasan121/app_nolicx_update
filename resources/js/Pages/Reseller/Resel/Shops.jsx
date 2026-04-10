@@ -1,5 +1,5 @@
 import { Head, router, usePage } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../Layouts/App";
 import Modal from "../../../components/Modal";
 import Hr from "../../../components/Hr";
@@ -16,6 +16,7 @@ export default function Shops({
     shops = { data: [], links: [] },
     selectedShop = null,
     products = null,
+    printUrl,
 }) {
     const { auth } = usePage().props;
     const [q, setQ] = useState(filters.q ?? "");
@@ -87,6 +88,37 @@ export default function Shops({
             .replace(/&raquo;/g, "")
             .trim();
 
+    const pagination = useMemo(() => {
+        const links = shops?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [shops?.links]);
+
+    const productPagination = useMemo(() => {
+        const links = products?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [products?.links]);
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        router.visit(url, {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    };
+
     return (
         <AppLayout title="Vendor Shops" header={<PageHeader>Vendor Shops</PageHeader>}>
             <Head title="Vendor Shops" />
@@ -111,6 +143,13 @@ export default function Shops({
                             className="py-1 rounded-md"
                             placeholder="search shops by name"
                         />
+                        <PrimaryButton
+                            type="button"
+                            className="ms-1"
+                            onClick={() => window.open(printUrl, "_blank")}
+                        >
+                            <i className="fas fa-print"></i>
+                        </PrimaryButton>
                         <div>
                             {auth?.user ? (
                                 <button
@@ -241,34 +280,52 @@ export default function Shops({
                                                 />
                                             ))}
                                         </div>
-                                        <div className="mt-2 flex flex-wrap gap-2">
-                                            {(products.links ?? []).map(
-                                                (link, idx) => (
-                                                    <button
-                                                        key={idx}
-                                                        type="button"
-                                                        disabled={!link.url}
-                                                        onClick={() =>
-                                                            link.url &&
-                                                            router.visit(
-                                                                link.url,
-                                                                {
-                                                                    preserveScroll: true,
-                                                                    preserveState: true,
-                                                                }
-                                                            )
-                                                        }
-                                                        className={`px-3 py-1 border rounded ${
-                                                            link.active
-                                                                ? "bg-gray-900 text-white"
-                                                                : "bg-white"
-                                                        }`}
-                                                    >
-                                                        {cleanLabel(link.label)}
-                                                    </button>
-                                                )
-                                            )}
-                                        </div>
+                                        {productPagination.pages.length ? (
+                                            <div className="w-full pt-4">
+                                                <div className="flex w-full items-center justify-between gap-3">
+                                                    <div className="text-sm text-slate-700">
+                                                        {products?.total > 0
+                                                            ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} products`
+                                                            : "No products found"}
+                                                    </div>
+                                                    <div className="flex items-center md:justify-end">
+                                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                                            <button
+                                                                type="button"
+                                                                disabled={!productPagination.prev?.url}
+                                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                                onClick={() => goToPage(productPagination.prev?.url)}
+                                                            >
+                                                                Previous
+                                                            </button>
+                                                            {productPagination.pages.map((link, idx) => (
+                                                                <button
+                                                                    key={`${link.label}-${idx}`}
+                                                                    type="button"
+                                                                    disabled={!link.url}
+                                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                                        link.active
+                                                                            ? "bg-slate-100 text-blue-600"
+                                                                            : "bg-white text-slate-700 hover:bg-slate-50"
+                                                                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                                    onClick={() => goToPage(link.url)}
+                                                                >
+                                                                    {cleanLabel(link.label)}
+                                                                </button>
+                                                            ))}
+                                                            <button
+                                                                type="button"
+                                                                disabled={!productPagination.next?.url}
+                                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                                onClick={() => goToPage(productPagination.next?.url)}
+                                                            >
+                                                                Next
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : null}
                                     </>
                                 ) : null}
                             </div>
@@ -276,30 +333,6 @@ export default function Shops({
                     </div>
                 ) : (
                     <>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                            {(shops.links ?? []).map((link, idx) => (
-                                <button
-                                    key={idx}
-                                    type="button"
-                                    disabled={!link.url}
-                                    onClick={() =>
-                                        link.url &&
-                                        router.visit(link.url, {
-                                            preserveScroll: true,
-                                            preserveState: true,
-                                        })
-                                    }
-                                    className={`px-3 py-1 border rounded ${
-                                        link.active
-                                            ? "bg-gray-900 text-white"
-                                            : "bg-white"
-                                    }`}
-                                >
-                                    {cleanLabel(link.label)}
-                                </button>
-                            ))}
-                        </div>
-
                         <div
                             style={{
                                 display: "grid",
@@ -374,6 +407,52 @@ export default function Shops({
                                 <p>No Shops Found !</p>
                             )}
                         </div>
+                        {pagination.pages.length ? (
+                            <div className="w-full pt-4">
+                                <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="text-sm text-slate-700">
+                                        {shops?.total > 0
+                                            ? `Showing ${shops?.from ?? 0}-${shops?.to ?? 0} of ${shops?.total ?? 0} shops`
+                                            : "No shops found"}
+                                    </div>
+                                    <div className="flex items-center md:justify-end">
+                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.prev?.url}
+                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.prev?.url)}
+                                            >
+                                                Previous
+                                            </button>
+                                            {pagination.pages.map((link, idx) => (
+                                                <button
+                                                    key={`${link.label}-${idx}`}
+                                                    type="button"
+                                                    disabled={!link.url}
+                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                        link.active
+                                                            ? "bg-slate-100 text-blue-600"
+                                                            : "bg-white text-slate-700 hover:bg-slate-50"
+                                                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                    onClick={() => goToPage(link.url)}
+                                                >
+                                                    {cleanLabel(link.label)}
+                                                </button>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.next?.url}
+                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.next?.url)}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
                     </>
                 )}
 
