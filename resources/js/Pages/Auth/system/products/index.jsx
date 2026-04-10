@@ -1,9 +1,8 @@
 import { router, usePage } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import NavLink from "../../../../components/NavLink";
-import NavLinkBtn from "../../../../components/NavLinkBtn";
-import SecondaryButton from "../../../../components/SecondaryButton";
+import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import SectionSection from "../../../../components/dashboard/section/Section";
@@ -11,56 +10,115 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 
-function buildQuery(filters, updates = {}) {
-    return Object.fromEntries(
-        Object.entries({ ...filters, ...updates }).filter(
-            ([, value]) => value !== "" && value !== null && value !== undefined
-        )
-    );
-}
-
 export default function Index() {
     const {
         filters = {
             filter: "Active",
             from: "all",
             find: "",
+            sd: "",
+            ed: "",
             isIncludeResel: true,
         },
         products = {},
+        printUrl,
     } = usePage().props;
 
     const [from, setFrom] = useState(filters.from ?? "all");
     const [find, setFind] = useState(filters.find ?? "");
+    const [sd, setSd] = useState(filters.sd ?? "");
+    const [ed, setEd] = useState(filters.ed ?? "");
     const rows = products.data ?? [];
 
-    const visit = (updates = {}) => {
-        router.get(route("system.products.index"), buildQuery(filters, updates), {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    };
-
-    const gotoPage = (page) => {
-        visit({ page });
+    const requestProducts = ({
+        nextFilter = filters.filter ?? "Active",
+        nextFrom = from,
+        nextFind = find,
+        nextSd = sd,
+        nextEd = ed,
+        nextIsIncludeResel = filters.isIncludeResel ?? true,
+        page = undefined,
+    } = {}) => {
+        router.get(
+            route("system.products.index"),
+            {
+                filter: nextFilter,
+                from: nextFrom,
+                find: nextFind.trim(),
+                sd: nextSd,
+                ed: nextEd,
+                isIncludeResel: nextIsIncludeResel,
+                page,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        );
     };
 
     useEffect(() => {
-        if ((filters.find ?? "") === find) {
+        setFrom(filters.from ?? "all");
+        setFind(filters.find ?? "");
+        setSd(filters.sd ?? "");
+        setEd(filters.ed ?? "");
+    }, [filters.ed, filters.find, filters.from, filters.sd]);
+
+    useEffect(() => {
+        const trimmedFind = find.trim();
+        const currentFind = (filters.find ?? "").trim();
+
+        if (trimmedFind === currentFind) {
             return;
         }
 
         const timeout = setTimeout(() => {
-            visit({
-                from,
-                find,
-                page: 1,
+            requestProducts({
+                nextFilter: filters.filter ?? "Active",
+                nextFrom: from,
+                nextFind: trimmedFind,
+                nextSd: sd,
+                nextEd: ed,
+                nextIsIncludeResel: filters.isIncludeResel ?? true,
             });
         }, 400);
 
         return () => clearTimeout(timeout);
-    }, [find, from]);
+    }, [find]);
+
+    const pagination = useMemo(() => {
+        const links = products?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [products?.links]);
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        requestProducts({
+            nextFilter: nextUrl.searchParams.get("filter") ?? filters.filter ?? "Active",
+            nextFrom: nextUrl.searchParams.get("from") ?? from,
+            nextFind: nextUrl.searchParams.get("find") ?? find,
+            nextSd: nextUrl.searchParams.get("sd") ?? sd,
+            nextEd: nextUrl.searchParams.get("ed") ?? ed,
+            nextIsIncludeResel: (nextUrl.searchParams.get("isIncludeResel") ?? String(filters.isIncludeResel ?? true)) === "true",
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        });
+    };
+
+    const resultSummary =
+        products?.total > 0
+            ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} products`
+            : "No products found";
 
     return (
         <AppLayout
@@ -75,10 +133,6 @@ export default function Index() {
                                 Browse
                             </NavLink>
                         </div>
-
-                        <NavLinkBtn href="#">
-                            <i className="fas fa-filter pr-2"></i> Filter
-                        </NavLinkBtn>
                     </div>
                 </PageHeader>
             }
@@ -87,280 +141,131 @@ export default function Index() {
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center">
+                            <div className="flex justify-between items-start gap-4">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <select
+                                        value={filters.filter ?? "Active"}
+                                        onChange={(e) =>
+                                            requestProducts({
+                                                nextFilter: e.target.value,
+                                                nextFrom: from,
+                                                nextFind: find,
+                                                nextSd: sd,
+                                                nextEd: ed,
+                                                nextIsIncludeResel: filters.isIncludeResel ?? true,
+                                            })
+                                        }
+                                        className="rounded-md border-gray-300 shadow-sm"
+                                    >
+                                        <option value="Active">Active</option>
+                                        <option value="Disable">Disable</option>
+                                        <option value="both">Both</option>
+                                    </select>
                                     <select
                                         value={from}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             setFrom(value);
-                                            visit({
-                                                from: value,
-                                                page: 1,
+                                            requestProducts({
+                                                nextFilter: filters.filter ?? "Active",
+                                                nextFrom: value,
+                                                nextFind: find,
+                                                nextSd: sd,
+                                                nextEd: ed,
+                                                nextIsIncludeResel: filters.isIncludeResel ?? true,
                                             });
                                         }}
-                                        id=""
+                                        className="rounded-md border-gray-300 shadow-sm"
                                     >
                                         <option value="all">All</option>
                                         <option value="vendor">Vendor</option>
                                         <option value="reseller">Reseller</option>
                                     </select>
-                                    <TextInput
-                                        type="search"
-                                        placeholder="ID"
-                                        value={find}
-                                        onChange={(e) => setFind(e.target.value)}
-                                    />
+                                    {from === "reseller" ? (
+                                        <label className="flex items-center gap-2 text-sm text-slate-700">
+                                            <input
+                                                type="checkbox"
+                                                checked={filters.isIncludeResel ?? true}
+                                                onChange={(e) =>
+                                                    requestProducts({
+                                                        nextFilter: filters.filter ?? "Active",
+                                                        nextFrom: from,
+                                                        nextFind: find,
+                                                        nextSd: sd,
+                                                        nextEd: ed,
+                                                        nextIsIncludeResel: e.target.checked,
+                                                    })
+                                                }
+                                            />
+                                            Include Resel
+                                        </label>
+                                    ) : null}
                                 </div>
 
-                                <div></div>
+                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                    <TextInput
+                                        type="date"
+                                        className="py-1"
+                                        value={sd}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setSd(value);
+                                            requestProducts({
+                                                nextFilter: filters.filter ?? "Active",
+                                                nextFrom: from,
+                                                nextFind: find,
+                                                nextSd: value,
+                                                nextEd: ed,
+                                                nextIsIncludeResel: filters.isIncludeResel ?? true,
+                                            });
+                                        }}
+                                    />
+                                    <TextInput
+                                        type="date"
+                                        className="py-1"
+                                        value={ed}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setEd(value);
+                                            requestProducts({
+                                                nextFilter: filters.filter ?? "Active",
+                                                nextFrom: from,
+                                                nextFind: find,
+                                                nextSd: sd,
+                                                nextEd: value,
+                                                nextIsIncludeResel: filters.isIncludeResel ?? true,
+                                            });
+                                        }}
+                                    />
+                                    <TextInput
+                                        type="search"
+                                        placeholder="Search products..."
+                                        className="py-1"
+                                        value={find}
+                                        onChange={(e) => setFind(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") {
+                                                return;
+                                            }
+
+                                            e.preventDefault();
+                                            requestProducts();
+                                        }}
+                                    />
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={() => window.open(printUrl, "_blank")}
+                                    >
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
+                                </div>
                             </div>
                         }
                         content=""
                     />
 
                     <SectionInner>
-                        <div className="md:flex ">
-                            <div className=" block md:hidden">
-                                <div className="flex">
-                                    <input
-                                        type="radio"
-                                        value="Active"
-                                        id="active"
-                                        style={{ width: "20px", height: "20px" }}
-                                        className="mr-3"
-                                        checked={filters.filter === "Active"}
-                                        onChange={() =>
-                                            visit({ filter: "Active", page: 1 })
-                                        }
-                                    />
-                                    <div> Active </div>
-                                </div>
-                                <div className="flex mt-2">
-                                    <input
-                                        type="radio"
-                                        value="Disable"
-                                        id="disable"
-                                        style={{ width: "20px", height: "20px" }}
-                                        className="mr-3"
-                                        checked={filters.filter === "Disable"}
-                                        onChange={() =>
-                                            visit({ filter: "Disable", page: 1 })
-                                        }
-                                    />
-                                    <div> Disable </div>
-                                </div>
-                            </div>
-                            <div
-                                className="hidden md:block text-start"
-                                style={{ width: "160px", textAling: "left" }}
-                            >
-                                <div
-                                    style={{
-                                        display: "grid",
-                                        justifyContent: "center",
-                                        gridTemplateColumns:
-                                            "repeat(auto-fill, 150px))",
-                                        gridGap: "10px",
-                                    }}
-                                >
-                                    <div>
-                                        <div className="text-xs">status</div>
-                                        <div className="flex">
-                                            <input
-                                                type="radio"
-                                                value="Active"
-                                                id="lactive"
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                }}
-                                                className="mr-3"
-                                                checked={
-                                                    filters.filter === "Active"
-                                                }
-                                                onChange={() =>
-                                                    visit({
-                                                        filter: "Active",
-                                                        page: 1,
-                                                    })
-                                                }
-                                            />
-                                            <div> Active </div>
-                                        </div>
-                                        <div className="flex mt-2">
-                                            <input
-                                                type="radio"
-                                                value="Disable"
-                                                id="ldisable"
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                }}
-                                                className="mr-3"
-                                                checked={
-                                                    filters.filter ===
-                                                    "Disable"
-                                                }
-                                                onChange={() =>
-                                                    visit({
-                                                        filter: "Disable",
-                                                        page: 1,
-                                                    })
-                                                }
-                                            />
-                                            <div> Disable </div>
-                                        </div>
-                                        <div className="flex mt-2">
-                                            <input
-                                                type="radio"
-                                                value="both"
-                                                id="ldisable"
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                }}
-                                                className="mr-3"
-                                                checked={
-                                                    filters.filter === "both"
-                                                }
-                                                onChange={() =>
-                                                    visit({
-                                                        filter: "both",
-                                                        page: 1,
-                                                    })
-                                                }
-                                            />
-                                            <div> Both </div>
-                                        </div>
-                                    </div>
-                                    {from === "reseller" ? (
-                                        <div>
-                                            <hr />
-                                            <div className="text-xs">
-                                                reseller
-                                            </div>
-                                            <div className="flex">
-                                                <input
-                                                    type="checkbox"
-                                                    value="true"
-                                                    id="isResel"
-                                                    style={{
-                                                        width: "20px",
-                                                        height: "20px",
-                                                    }}
-                                                    className="mr-3"
-                                                    checked={
-                                                        filters.isIncludeResel
-                                                    }
-                                                    onChange={(e) =>
-                                                        visit({
-                                                            isIncludeResel:
-                                                                e.target.checked,
-                                                            page: 1,
-                                                        })
-                                                    }
-                                                />
-                                                <div> Include Resel </div>
-                                            </div>
-
-                                            <hr />
-                                        </div>
-                                    ) : null}
-                                    <div>
-                                        <div className="text-xs">
-                                            order status
-                                        </div>
-                                        <div className="flex">
-                                            <input
-                                                type="checkbox"
-                                                value="Active"
-                                                id="accept"
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                }}
-                                                className="mr-3"
-                                            />
-                                            <div> Accept </div>
-                                        </div>
-                                        <div className="flex mt-2">
-                                            <input
-                                                type="checkbox"
-                                                value="Disable"
-                                                id="pending"
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                }}
-                                                className="mr-3"
-                                            />
-                                            <div> Pending </div>
-                                        </div>
-                                        <div className="flex mt-2">
-                                            <input
-                                                type="checkbox"
-                                                value="Disable"
-                                                id="cancel"
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                }}
-                                                className="mr-3"
-                                            />
-                                            <div> Cancel </div>
-                                        </div>
-                                        <div className="flex mt-2">
-                                            <input
-                                                type="checkbox"
-                                                value="Disable"
-                                                id="reject"
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                }}
-                                                className="mr-3"
-                                            />
-                                            <div> Reject </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="w-full">
-                                <div className="flex justify-between items-center mb-2">
-                                    <div className="text-sm text-gray-600">
-                                        Page {products.current_page ?? 1} of{" "}
-                                        {products.last_page ?? 1}
-                                    </div>
-                                    <div className="space-x-2">
-                                        <SecondaryButton
-                                            type="button"
-                                            onClick={() =>
-                                                gotoPage(
-                                                    (products.current_page ??
-                                                        1) - 1
-                                                )
-                                            }
-                                            disabled={!products.prev_page_url}
-                                        >
-                                            Prev
-                                        </SecondaryButton>
-                                        <SecondaryButton
-                                            type="button"
-                                            onClick={() =>
-                                                gotoPage(
-                                                    (products.current_page ??
-                                                        1) + 1
-                                                )
-                                            }
-                                            disabled={!products.next_page_url}
-                                        >
-                                            Next
-                                        </SecondaryButton>
-                                    </div>
-                                </div>
-                                <Table data={rows}>
+                        <Table data={rows}>
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -376,7 +281,7 @@ export default function Index() {
                                     <tbody>
                                         {rows.map((item, index) => (
                                             <tr key={item.id}>
-                                                <td>{index + 1}</td>
+                                                <td>{(products?.from ?? 1) + index}</td>
                                                 <td>{item.id}</td>
 
                                                 <td>
@@ -484,8 +389,51 @@ export default function Index() {
                                         ))}
                                     </tbody>
                                 </Table>
+
+                        {pagination.pages.length ? (
+                            <div className="w-full pt-4">
+                                <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="text-sm text-slate-700">
+                                        {resultSummary}
+                                    </div>
+                                    <div className="flex items-center md:justify-end">
+                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.prev?.url}
+                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.prev?.url)}
+                                            >
+                                                Previous
+                                            </button>
+                                            {pagination.pages.map((link, index) => (
+                                                <button
+                                                    key={`${link.label}-${index}`}
+                                                    type="button"
+                                                    disabled={!link.url}
+                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                        link.active
+                                                            ? "bg-slate-100 text-blue-600"
+                                                            : "bg-white text-slate-700 hover:bg-slate-50"
+                                                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                    onClick={() => goToPage(link.url)}
+                                                >
+                                                    {link.label}
+                                                </button>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.next?.url}
+                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.next?.url)}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        ) : null}
                     </SectionInner>
                 </SectionSection>
             </div>

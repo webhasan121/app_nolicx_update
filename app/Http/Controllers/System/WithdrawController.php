@@ -17,9 +17,9 @@ class WithdrawController extends Controller
     {
         $where = $request->query('where');
         $q = $request->query('q');
-        $fst = $request->query('fst', 'Pending');
-        $sdate = $request->query('sdate', now()->subDay(30)->format('Y-m-d'));
-        $edate = $request->query('edate', now()->format('Y-m-d'));
+        $fst = $request->query('fst', 'All');
+        $sdate = $request->query('sdate');
+        $edate = $request->query('edate');
 
         $statsQuery = Withdraw::query();
 
@@ -29,7 +29,7 @@ class WithdrawController extends Controller
             $qry->rejected();
         }
 
-        if ($fst !== 'Reject') {
+        if ($fst !== 'Reject' && $fst !== 'All') {
             $sts = $fst === 'Accept' ? 1 : 0;
             $qry->where(['status' => $sts]);
         }
@@ -42,8 +42,9 @@ class WithdrawController extends Controller
             $qry->where('id', $q);
         }
 
+        $this->applyDateFilter($qry, $sdate, $edate);
+
         $withdraw = $qry
-            ->whereBetween('created_at', [$sdate, \Illuminate\Support\Carbon::parse($edate)->endOfDay()])
             ->orderBy('id', 'desc')
             ->paginate(config('app.pagination'))
             ->withQueryString();
@@ -74,7 +75,16 @@ class WithdrawController extends Controller
                         'subscription' => (bool) $item->user?->subscription,
                     ],
                 ])->values()->all(),
-                'links' => $withdraw->linkCollection()->toArray(),
+                'links' => collect($withdraw->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $withdraw->firstItem(),
+                'to' => $withdraw->lastItem(),
+                'total' => $withdraw->total(),
                 'sum_amount' => $withdraw->sum('amount'),
             ],
         ]);
@@ -120,9 +130,9 @@ class WithdrawController extends Controller
 
     public function printReact(Request $request): Response
     {
-        $sdate = $request->query('sdate', now()->subDay(30)->format('Y-m-d'));
-        $edate = $request->query('edate', now()->format('Y-m-d'));
-        $fst = $request->query('fst', 'Accept');
+        $sdate = $request->query('sdate');
+        $edate = $request->query('edate');
+        $fst = $request->query('fst', 'All');
         $q = $request->query('q');
         $where = $request->query('where');
 
@@ -132,7 +142,7 @@ class WithdrawController extends Controller
             $qry->rejected();
         }
 
-        if ($fst !== 'Reject') {
+        if ($fst !== 'Reject' && $fst !== 'All') {
             $sts = $fst === 'Accept' ? 1 : 0;
             $qry->where(['status' => $sts]);
         }
@@ -145,15 +155,16 @@ class WithdrawController extends Controller
             $qry->where('id', $q);
         }
 
+        $this->applyDateFilter($qry, $sdate, $edate);
+
         $withdraws = $qry
-            ->whereBetween('created_at', [$sdate, Carbon::parse($edate)->endOfDay()])
             ->orderBy('id', 'desc')
             ->paginate(config('app.pagination'));
 
         return Inertia::render('Auth/system/withdraw/Print', [
             'filters' => [
-                'sdate_formatted' => Carbon::parse($sdate)->format('d/m/Y'),
-                'edate_formatted' => Carbon::parse($edate)->format('d/m/Y'),
+                'sdate_formatted' => $sdate ? Carbon::parse($sdate)->format('d/m/Y') : '',
+                'edate_formatted' => $edate ? Carbon::parse($edate)->format('d/m/Y') : '',
             ],
             'withdraws' => $withdraws->getCollection()->map(fn (Withdraw $item) => [
                 'id' => $item->id,
@@ -225,5 +236,37 @@ class WithdrawController extends Controller
         }
 
         return redirect()->back()->with('error', 'Withdraw Request Already Accept !');
+    }
+
+    private function applyDateFilter($query, ?string $sdate, ?string $edate): void
+    {
+        if (!empty($sdate) && !empty($edate)) {
+            $start = Carbon::parse($sdate)->startOfDay();
+            $end = Carbon::parse($edate)->endOfDay();
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            $query->whereBetween('created_at', [$start, $end]);
+
+            return;
+        }
+
+        if (!empty($sdate)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($sdate)->startOfDay(),
+                Carbon::parse($sdate)->endOfDay(),
+            ]);
+
+            return;
+        }
+
+        if (!empty($edate)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($edate)->startOfDay(),
+                Carbon::parse($edate)->endOfDay(),
+            ]);
+        }
     }
 }

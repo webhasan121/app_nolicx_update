@@ -1,5 +1,5 @@
 import { Head, router, useForm } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import DangerButton from "../../../../components/DangerButton";
 import InputLabel from "../../../../components/InputLabel";
@@ -15,9 +15,11 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 
-export default function Index({ nav = "web", slider = [], updateable = null }) {
+export default function Index({ nav = "web", slider = {}, filters = {}, updateable = null }) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(Boolean(updateable));
+    const [search, setSearch] = useState(filters.find ?? "");
+    const rows = slider.data ?? [];
 
     const createForm = useForm({
         sliderName: "",
@@ -45,8 +47,35 @@ export default function Index({ nav = "web", slider = [], updateable = null }) {
         });
     }, [updateable, nav]);
 
+    useEffect(() => {
+        setSearch(filters.find ?? "");
+    }, [filters.find]);
+
+    useEffect(() => {
+        const trimmedSearch = search.trim();
+        const currentSearch = (filters.find ?? "").trim();
+
+        if (trimmedSearch === currentSearch) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            router.get(
+                route("system.slider.index"),
+                { nav, find: trimmedSearch },
+                { preserveScroll: true, preserveState: true, replace: true }
+            );
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search, nav]);
+
     const changeNav = (target) => {
-        router.get(route("system.slider.index"), { nav: target }, { preserveScroll: true });
+        router.get(
+            route("system.slider.index"),
+            { nav: target, find: search.trim() },
+            { preserveScroll: true }
+        );
     };
 
     const submitCreate = (e) => {
@@ -96,6 +125,40 @@ export default function Index({ nav = "web", slider = [], updateable = null }) {
         );
     };
 
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        router.get(
+            route("system.slider.index"),
+            {
+                nav: nextUrl.searchParams.get("nav") ?? nav,
+                find: nextUrl.searchParams.get("find") ?? search,
+                page: nextUrl.searchParams.get("page") ?? undefined,
+                edit: nextUrl.searchParams.get("edit") ?? undefined,
+            },
+            { preserveScroll: true, preserveState: true, replace: true }
+        );
+    };
+
+    const pagination = useMemo(() => {
+        const links = slider?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [slider?.links]);
+
+    const resultSummary =
+        slider?.total > 0
+            ? `Showing ${slider?.from ?? 0}-${slider?.to ?? 0} of ${slider?.total ?? 0} sliders`
+            : "No sliders found";
+
     return (
         <AppLayout title="Slider">
             <Head title="Slider" />
@@ -140,60 +203,132 @@ export default function Index({ nav = "web", slider = [], updateable = null }) {
                                     </NavLink>
                                 </div>
 
-                                <SecondaryButton onClick={() => setShowCreateModal(true)}>
-                                    <i className="fas fa-plus pr-2"></i> Add
-                                </SecondaryButton>
+                                <div className="flex items-center gap-2">
+                                    <TextInput
+                                        type="search"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") {
+                                                return;
+                                            }
+
+                                            e.preventDefault();
+                                            router.get(
+                                                route("system.slider.index"),
+                                                { nav, find: search.trim() },
+                                                {
+                                                    preserveScroll: true,
+                                                    preserveState: true,
+                                                    replace: true,
+                                                }
+                                            );
+                                        }}
+                                        className="py-1"
+                                        placeholder="Search sliders..."
+                                    />
+                                    <SecondaryButton onClick={() => setShowCreateModal(true)}>
+                                        <i className="fas fa-plus pr-2"></i> Add
+                                    </SecondaryButton>
+                                </div>
                             </div>
                         }
                         content=""
                     />
 
                     <SectionInner>
-                        <Table data={slider}>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Placement</th>
-                                    <th>Slides</th>
-                                    <th></th>
-                                    <th>A/C</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {slider.map((item, index) => (
-                                    <tr key={item.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{item.name}</td>
-                                        <td>{item.placement}</td>
-                                        <td>{item.slides_count ?? 0} Slides</td>
-                                        <td>
-                                            <input
-                                                type="checkbox"
-                                                checked={Boolean(item.status)}
-                                                onChange={(e) => updateStatus(item, e.target.checked)}
-                                                style={{ width: 20, height: 20 }}
-                                            />{" "}
-                                            {item.status ? "Active" : "Deactive"}
-                                        </td>
-                                        <td>
-                                            <div className="flex space-x-2">
-                                                <DangerButton onClick={() => destroySlider(item)}>
-                                                    <i className="fas fa-trash"></i>
-                                                </DangerButton>
-
-                                                <PrimaryButton onClick={() => openUpdateModal(item)}>
-                                                    <i className="fas fa-edit"></i>
-                                                </PrimaryButton>
-                                                <NavLink href={route("system.slider.slides", { id: item.id })}>
-                                                    slides
-                                                </NavLink>
-                                            </div>
-                                        </td>
+                        <div>
+                            <Table data={rows}>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Placement</th>
+                                        <th>Slides</th>
+                                        <th></th>
+                                        <th>A/C</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </Table>
+                                </thead>
+                                <tbody>
+                                    {rows.map((item, index) => (
+                                        <tr key={item.id}>
+                                            <td>{(slider?.from ?? 1) + index}</td>
+                                            <td>{item.name}</td>
+                                            <td>{item.placement}</td>
+                                            <td>{item.slides_count ?? 0} Slides</td>
+                                            <td>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={Boolean(item.status)}
+                                                    onChange={(e) => updateStatus(item, e.target.checked)}
+                                                    style={{ width: 20, height: 20 }}
+                                                />{" "}
+                                                {item.status ? "Active" : "Deactive"}
+                                            </td>
+                                            <td>
+                                                <div className="flex space-x-2">
+                                                    <DangerButton onClick={() => destroySlider(item)}>
+                                                        <i className="fas fa-trash"></i>
+                                                    </DangerButton>
+
+                                                    <PrimaryButton onClick={() => openUpdateModal(item)}>
+                                                        <i className="fas fa-edit"></i>
+                                                    </PrimaryButton>
+                                                    <NavLink href={route("system.slider.slides", { id: item.id })}>
+                                                        slides
+                                                    </NavLink>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+
+                            {pagination.pages.length ? (
+                                <div className="w-full pt-4">
+                                    <div className="flex w-full items-center justify-between gap-3">
+                                        <div className="text-sm text-slate-700">
+                                            {resultSummary}
+                                        </div>
+                                        <div className="flex items-center md:justify-end">
+                                            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                                <button
+                                                    type="button"
+                                                    disabled={!pagination.prev?.url}
+                                                    className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    onClick={() => goToPage(pagination.prev?.url)}
+                                                >
+                                                    Previous
+                                                </button>
+                                                {pagination.pages.map((link, index) => (
+                                                    <button
+                                                        key={`${link.label}-${index}`}
+                                                        type="button"
+                                                        disabled={!link.url}
+                                                        className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                            link.active
+                                                                ? "bg-slate-100 text-blue-600"
+                                                                : "bg-white text-slate-700 hover:bg-slate-50"
+                                                        } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                        onClick={() => goToPage(link.url)}
+                                                    >
+                                                        {link.label}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    disabled={!pagination.next?.url}
+                                                    className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    onClick={() => goToPage(pagination.next?.url)}
+                                                >
+                                                    Next
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
+                        </div>
                     </SectionInner>
                 </Section>
             </Container>
@@ -259,7 +394,7 @@ export default function Index({ nav = "web", slider = [], updateable = null }) {
                 show={showEditModal}
                 onClose={() => {
                     setShowEditModal(false);
-                    router.get(route("system.slider.index"), { nav }, { preserveScroll: true });
+                    router.get(route("system.slider.index"), { nav, find: search.trim() }, { preserveScroll: true });
                 }}
                 maxWidth="sm"
             >
@@ -318,7 +453,7 @@ export default function Index({ nav = "web", slider = [], updateable = null }) {
                                 className="mt-2"
                                 onClick={() => {
                                     setShowEditModal(false);
-                                    router.get(route("system.slider.index"), { nav }, { preserveScroll: true });
+                                    router.get(route("system.slider.index"), { nav, find: search.trim() }, { preserveScroll: true });
                                 }}
                             >
                                 Cancel

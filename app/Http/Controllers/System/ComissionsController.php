@@ -13,15 +13,15 @@ class ComissionsController extends Controller
 {
     public function indexReact(Request $request): Response
     {
-        $confirm = $request->query('confirm');
-        $where = $request->query('where');
-        $wid = $request->query('wid');
-        $from = $request->query('from', now()->format('Y-m-d'));
-        $to = $request->query('to', now()->format('Y-m-d'));
+        $confirm = $request->query('confirm', 'All');
+        $where = $request->query('where', '');
+        $wid = trim((string) $request->query('wid', ''));
+        $from = $request->query('from');
+        $to = $request->query('to');
 
         $comissions = $this->queryResult($confirm, $where, $wid, $from, $to)
             ->latest('id')
-            ->paginate(20)
+            ->paginate((int) config('app.paginate'))
             ->withQueryString();
 
         return Inertia::render('Auth/system/comissions/index', [
@@ -48,7 +48,16 @@ class ComissionsController extends Controller
                     'return' => $item->return ?? 0,
                     'confirmed' => (bool) $item->confirmed,
                 ])->values()->all(),
-                'links' => $comissions->linkCollection()->toArray(),
+                'links' => collect($comissions->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $comissions->firstItem(),
+                'to' => $comissions->lastItem(),
+                'total' => $comissions->total(),
                 'summary' => [
                     'profit' => $comissions->getCollection()->sum('profit'),
                     'take_comission' => $comissions->getCollection()->sum('take_comission'),
@@ -64,11 +73,11 @@ class ComissionsController extends Controller
 
     public function takesReact(Request $request): Response
     {
-        $confirm = $request->query('confirm');
-        $where = $request->query('where');
-        $wid = $request->query('wid');
-        $from = $request->query('from', now()->format('Y-m-d'));
-        $to = $request->query('to', now()->format('Y-m-d'));
+        $confirm = $request->query('confirm', 'All');
+        $where = $request->query('where', '');
+        $wid = trim((string) $request->query('wid', ''));
+        $from = $request->query('from');
+        $to = $request->query('to');
 
         $comissions = $this->queryResult($confirm, $where, $wid, $from, $to)
             ->get();
@@ -168,23 +177,62 @@ class ComissionsController extends Controller
             $q->where(['confirmed' => $confirm == 'true' ? 1 : 0]);
         }
 
-        return $q->when($where == 'user_id', function ($query) use ($wid) {
+        $q->when($where == 'user_id' && $wid !== '', function ($query) use ($wid) {
             return $query->where('user_id', $wid);
         })
-            ->when($where == 'product_id', function ($query) use ($wid) {
+            ->when($where == 'product_id' && $wid !== '', function ($query) use ($wid) {
                 return $query->where('product_id', $wid);
             })
-            ->when($where == 'order_id', function ($query) use ($wid) {
+            ->when($where == 'order_id' && $wid !== '', function ($query) use ($wid) {
                 return $query->where('order_id', $wid);
             })
-            ->when($from, function ($query) use ($from) {
-                return $query->whereDate('created_at', '>=', $from);
-            })
-            ->when($to, function ($query) use ($to) {
-                return $query->whereDate('created_at', '<=', $to);
-            })
-            ->when($wid && $where == '', function ($query) use ($wid) {
-                return $query->where('id', $wid);
+            ->when($wid !== '' && $where == '', function ($query) use ($wid) {
+                return $query->where(function ($subQuery) use ($wid) {
+                    $subQuery
+                        ->where('id', 'like', '%' . $wid . '%')
+                        ->orWhere('user_id', 'like', '%' . $wid . '%')
+                        ->orWhere('product_id', 'like', '%' . $wid . '%')
+                        ->orWhere('order_id', 'like', '%' . $wid . '%')
+                        ->orWhere('buying_price', 'like', '%' . $wid . '%')
+                        ->orWhere('selling_price', 'like', '%' . $wid . '%')
+                        ->orWhere('profit', 'like', '%' . $wid . '%');
+                });
             });
+
+        $this->applyDateFilter($q, $from, $to);
+
+        return $q;
+    }
+
+    private function applyDateFilter($query, ?string $from, ?string $to): void
+    {
+        if (!empty($from) && !empty($to)) {
+            $start = Carbon::parse($from)->startOfDay();
+            $end = Carbon::parse($to)->endOfDay();
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            $query->whereBetween('created_at', [$start, $end]);
+
+            return;
+        }
+
+        if (!empty($from)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($from)->startOfDay(),
+                Carbon::parse($from)->endOfDay(),
+            ]);
+
+            return;
+        }
+
+        if (!empty($to)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($to)->startOfDay(),
+                Carbon::parse($to)->endOfDay(),
+            ]);
+        }
     }
 }

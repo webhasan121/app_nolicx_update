@@ -17,30 +17,117 @@ class VipController extends Controller
     public function indexReact(Request $request)
     {
         $nav = $request->input('nav', 'Active');
-        $packages = Packages::query()->with('user')->get();
+        $find = trim((string) $request->input('find', ''));
+        $query = Packages::query()->withCount('user')->latest('id');
 
         if ($nav === 'Trash') {
-            $packages = Packages::onlyTrashed()->with('user')->get();
+            $query->onlyTrashed();
         }
+
+        if ($find !== '') {
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('name', 'like', '%' . $find . '%')
+                    ->orWhere('slug', 'like', '%' . $find . '%')
+                    ->orWhere('price', 'like', '%' . $find . '%')
+                    ->orWhere('coin', 'like', '%' . $find . '%')
+                    ->orWhere('m_coin', 'like', '%' . $find . '%')
+                    ->orWhere('countdown', 'like', '%' . $find . '%');
+            });
+        }
+
+        $packages = $query->paginate(config('app.paginate'))->withQueryString();
 
         return Inertia::render('Auth/system/vip/package/index', [
             'nav' => $nav,
-            'packages' => $packages->values()->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'price' => $item->price,
-                    'countdown' => $item->countdown,
-                    'coin' => $item->coin,
-                    'm_coin' => $item->m_coin ?? '0',
-                    'ref_owner_get_coin' => $item->ref_owner_get_coin,
-                    'users_count' => $item->user->count() ?? 0,
-                    'earn' => $item->price * $item->user->count(),
-                    'created_at_human' => $item->created_at?->diffForHumans(),
-                    'created_at_formatted' => $item->created_at?->toFormattedDateString(),
-                    'trashed' => method_exists($item, 'trashed') ? $item->trashed() : false,
-                ];
-            })->all(),
+            'filters' => [
+                'nav' => $nav,
+                'find' => $find,
+            ],
+            'packages' => [
+                'data' => $packages->getCollection()->values()->map(function ($item) use ($packages) {
+                    $usersCount = $item->user_count ?? 0;
+
+                    return [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'price' => $item->price,
+                        'countdown' => $item->countdown,
+                        'coin' => $item->coin,
+                        'm_coin' => $item->m_coin ?? '0',
+                        'ref_owner_get_coin' => $item->ref_owner_get_coin,
+                        'users_count' => $usersCount,
+                        'earn' => $item->price * $usersCount,
+                        'created_at_human' => $item->created_at?->diffForHumans(),
+                        'created_at_formatted' => $item->created_at?->toFormattedDateString(),
+                        'trashed' => method_exists($item, 'trashed') ? $item->trashed() : false,
+                    ];
+                })->all(),
+                'links' => collect($packages->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $packages->firstItem(),
+                'to' => $packages->lastItem(),
+                'total' => $packages->total(),
+            ],
+            'printUrl' => route('system.vip.package.print-summery', [
+                'nav' => $nav,
+                'find' => $find,
+            ]),
+        ]);
+    }
+
+    public function printPackageReact(Request $request)
+    {
+        $nav = $request->input('nav', 'Active');
+        $find = trim((string) $request->input('find', ''));
+        $query = Packages::query()->withCount('user')->latest('id');
+
+        if ($nav === 'Trash') {
+            $query->onlyTrashed();
+        }
+
+        if ($find !== '') {
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('name', 'like', '%' . $find . '%')
+                    ->orWhere('slug', 'like', '%' . $find . '%')
+                    ->orWhere('price', 'like', '%' . $find . '%')
+                    ->orWhere('coin', 'like', '%' . $find . '%')
+                    ->orWhere('m_coin', 'like', '%' . $find . '%')
+                    ->orWhere('countdown', 'like', '%' . $find . '%');
+            });
+        }
+
+        $packages = $query->get()->map(function ($item) {
+            $usersCount = $item->user_count ?? 0;
+
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'price' => $item->price,
+                'countdown' => $item->countdown,
+                'coin' => $item->coin,
+                'm_coin' => $item->m_coin ?? '0',
+                'ref_owner_get_coin' => $item->ref_owner_get_coin,
+                'users_count' => $usersCount,
+                'earn' => $item->price * $usersCount,
+                'created_at_formatted' => $item->created_at?->toFormattedDateString(),
+            ];
+        })->values()->all();
+
+        return Inertia::render('Auth/system/vip/package/PrintSummery', [
+            'packages' => $packages,
+            'filters' => [
+                'nav' => $nav,
+                'find' => $find,
+            ],
         ]);
     }
 
@@ -55,22 +142,21 @@ class VipController extends Controller
 
     public function usersReact(Request $request)
     {
-        $nav = $request->input('nav', 'Pending');
+        $nav = $request->input('nav', 'All');
         $search = (string) $request->string('search');
-        $sdate = $request->input('sdate', now()->subDay(30)->format('Y-m-d'));
-        $edate = $request->input('edate', now()->format('Y-m-d'));
+        $sdate = $request->input('sdate');
+        $edate = $request->input('edate');
         $type = $request->input('type', 'All');
         $validity = $request->input('validity', 'All');
-
-        $st = $nav !== 'Pending';
         $query = vip::query()
-            ->with(['user', 'package'])
-            ->whereBetween('created_at', [$sdate, Carbon::parse($edate)->endOfDay()]);
+            ->with(['user', 'package']);
 
         if ($nav === 'Trash') {
             $query->onlyTrashed();
-        } elseif ($nav !== 'Trash') {
-            $query->where(['status' => $st]);
+        } elseif ($nav === 'Pending') {
+            $query->where(['status' => false]);
+        } elseif ($nav === 'Confirmed' || $nav === 'Active') {
+            $query->where(['status' => true]);
         }
 
         if ($type !== 'All') {
@@ -85,12 +171,36 @@ class VipController extends Controller
             );
         }
 
+        $this->applyDateFilter($query, $sdate, $edate);
+
         if (!empty($search)) {
             $query = vip::query()
                 ->with(['user', 'package'])
                 ->where('name', 'like', '%' . $search . '%')
                 ->orWhere('phone', 'like', '%' . $search . '%')
                 ->latest('id');
+
+            if ($nav === 'Trash') {
+                $query->onlyTrashed();
+            } elseif ($nav === 'Pending') {
+                $query->where(['status' => false]);
+            } elseif ($nav === 'Confirmed' || $nav === 'Active') {
+                $query->where(['status' => true]);
+            }
+
+            if ($type !== 'All') {
+                $query->where(['task_type' => $type]);
+            }
+
+            if ($validity !== 'All') {
+                $query->whereDate(
+                    'valid_till',
+                    $validity === 'valid' ? '>' : '<',
+                    now()->format('Y-m-d')
+                );
+            }
+
+            $this->applyDateFilter($query, $sdate, $edate);
         }
 
         $vipUsers = $query->paginate(config('app.paginate'))->withQueryString();
@@ -137,34 +247,38 @@ class VipController extends Controller
                         'valid_till_human' => $item->valid_till ? Carbon::parse($item->valid_till)->diffForHumans() : '',
                     ];
                 })->all(),
+                'links' => collect($vipUsers->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $vipUsers->firstItem(),
+                'to' => $vipUsers->lastItem(),
+                'total' => $vipUsers->total(),
             ],
         ]);
     }
 
     public function printReact(Request $request)
     {
-        $nav = $request->input('nav', 'Pending');
+        $nav = $request->input('nav', 'All');
         $search = (string) $request->string('search');
         $sdate = $request->input('sdate');
         $edate = $request->input('edate');
         $type = $request->input('type');
         $validity = $request->input('validity');
 
-        $st = false;
         $query = vip::query()
-            ->with(['user', 'package'])
-            ->whereBetween('created_at', [$sdate, Carbon::parse($edate)->endOfDay()]);
-
-        if ($nav !== 'Pending') {
-            $st = true;
-        }
+            ->with(['user', 'package']);
 
         if ($nav == 'Trash') {
             $query->onlyTrashed();
-        } elseif ($nav != 'Trash') {
-            $query->where(function ($q) use ($st) {
-                $q->where(['status' => $st]);
-            });
+        } elseif ($nav === 'Pending') {
+            $query->where(['status' => false]);
+        } elseif ($nav === 'Confirmed' || $nav === 'Active') {
+            $query->where(['status' => true]);
         }
 
         if ($type != 'All') {
@@ -175,11 +289,31 @@ class VipController extends Controller
             $query->whereDate('valid_till', $validity == 'valid' ? '>' : '<', now()->format('Y-m-d'));
         }
 
+        $this->applyDateFilter($query, $sdate, $edate);
+
         if (isset($search) && !empty($search)) {
             $query = vip::query()
                 ->with(['user', 'package'])
                 ->where('name', 'like', '%' . $search . '%')
                 ->orWhere('phone', 'like', '%' . $search . '%');
+
+            if ($nav == 'Trash') {
+                $query->onlyTrashed();
+            } elseif ($nav === 'Pending') {
+                $query->where(['status' => false]);
+            } elseif ($nav === 'Confirmed' || $nav === 'Active') {
+                $query->where(['status' => true]);
+            }
+
+            if ($type != 'All') {
+                $query->where(['task_type' => $type]);
+            }
+
+            if ($validity != 'All') {
+                $query->whereDate('valid_till', $validity == 'valid' ? '>' : '<', now()->format('Y-m-d'));
+            }
+
+            $this->applyDateFilter($query, $sdate, $edate);
         }
 
         $vipUsers = $query->paginate(config('app.paginate'));
@@ -339,5 +473,37 @@ class VipController extends Controller
         Packages::onlyTrashed()->findOrFail($id)->restore();
 
         return redirect()->back()->with('success', 'Packages restored');
+    }
+
+    private function applyDateFilter($query, ?string $sdate, ?string $edate): void
+    {
+        if (!empty($sdate) && !empty($edate)) {
+            $start = Carbon::parse($sdate)->startOfDay();
+            $end = Carbon::parse($edate)->endOfDay();
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            $query->whereBetween('created_at', [$start, $end]);
+
+            return;
+        }
+
+        if (!empty($sdate)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($sdate)->startOfDay(),
+                Carbon::parse($sdate)->endOfDay(),
+            ]);
+
+            return;
+        }
+
+        if (!empty($edate)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($edate)->startOfDay(),
+                Carbon::parse($edate)->endOfDay(),
+            ]);
+        }
     }
 }

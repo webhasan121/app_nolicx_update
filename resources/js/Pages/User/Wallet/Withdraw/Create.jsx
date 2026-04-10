@@ -66,8 +66,11 @@ export default function WithdrawCreate() {
 
                         <SectionInner>
                             <form onSubmit={submit}>
-                                <div className="mb-3">
-                                    <div className="mb-2 col-md-8">
+                                <div className="mb-3 grid gap-4 md:grid-cols-2">
+                                    <div className="md:col-span-2">
+                                        <label className="block mb-1 text-sm font-medium text-gray-700">
+                                            Payment Method
+                                        </label>
                                         <select
                                             name="pay_by"
                                             id="bank_name"
@@ -94,51 +97,55 @@ export default function WithdrawCreate() {
                                         )}
                                     </div>
 
-                                    <div className="space-y-3">
-                                        <div>
-                                            <input
-                                                type="number"
-                                                name="amount"
-                                                value={data.amount}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "amount",
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                placeholder="Amount"
-                                                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            />
-                                            {amountError && (
-                                                <div className="block text-xs text-red-900">
-                                                    {amountError}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <input
-                                                type="number"
-                                                name="pay_to"
-                                                id="account"
-                                                value={data.pay_to}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "pay_to",
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                placeholder="Enter Payment Number"
-                                                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            />
-                                            {payToError && (
-                                                <div className="block text-xs text-red-900">
-                                                    {payToError}
-                                                </div>
-                                            )}
-                                        </div>
+                                    <div>
+                                        <label className="block mb-1 text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="amount"
+                                            value={data.amount}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "amount",
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="Amount"
+                                            className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        {amountError && (
+                                            <div className="block text-xs text-red-900">
+                                                {amountError}
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <hr className="my-2" />
+                                    <div>
+                                        <label className="block mb-1 text-sm font-medium text-gray-700">
+                                            Payment Number
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="pay_to"
+                                            id="account"
+                                            value={data.pay_to}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "pay_to",
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="Enter Payment Number"
+                                            className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        {payToError && (
+                                            <div className="block text-xs text-red-900">
+                                                {payToError}
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <div>
                                         <label className="block mb-1 text-sm font-medium text-gray-700">
                                             Contact Number

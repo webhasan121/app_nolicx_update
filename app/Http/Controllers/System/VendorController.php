@@ -163,6 +163,8 @@ class VendorController extends Controller
     {
         $filter = $request->input('filter', 'Active');
         $find = $request->input('find');
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
 
         $query = vendor::query()
             ->with('user')
@@ -175,12 +177,113 @@ class VendorController extends Controller
         if (!empty($find)) {
             $query->where(function ($subQuery) use ($find) {
                 $subQuery
-                    ->where('shop_name_en', 'like', '%' . $find . '%')
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('shop_name_en', 'like', '%' . $find . '%')
+                    ->orWhere('shop_name_bn', 'like', '%' . $find . '%')
+                    ->orWhere('email', 'like', '%' . $find . '%')
+                    ->orWhere('phone', 'like', '%' . $find . '%')
                     ->orWhereHas('user', function ($userQuery) use ($find) {
-                        $userQuery->where('name', 'like', '%' . $find . '%');
+                        $userQuery
+                            ->where('name', 'like', '%' . $find . '%')
+                            ->orWhere('email', 'like', '%' . $find . '%')
+                            ->orWhere('phone', 'like', '%' . $find . '%');
                     });
             });
         }
+
+        $this->applyDateFilter($query, $sd, $ed);
+
+        $vendors = $query->paginate(config('app.paginate'))->withQueryString();
+
+        return Inertia::render('Auth/system/vendors/index', [
+            'filters' => [
+                'filter' => $filter,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
+            ],
+            'widgets' => [
+                ['title' => 'Total Vendor', 'content' => vendor::query()->count()],
+                ['title' => 'Pending', 'content' => vendor::query()->pending()->count()],
+                ['title' => 'Active', 'content' => vendor::query()->active()->count()],
+                ['title' => 'Disabled', 'content' => vendor::query()->disabled()->count()],
+                ['title' => 'Suspended', 'content' => vendor::query()->suspended()->count()],
+            ],
+            'vendors' => [
+                'data' => $vendors->getCollection()->map(function ($vendor) {
+                    return [
+                        'id' => $vendor->id,
+                        'user_name' => $vendor->user?->name ?? 'N/A',
+                        'shop_name_en' => $vendor->shop_name_en ?? 'N/A',
+                        'email' => $vendor->user?->email ?? 'N/A',
+                        'phone' => $vendor->user?->phone ?? 'N/A',
+                        'location' => collect([
+                            $vendor->user?->upazila ?? 'N/A',
+                            $vendor->user?->district ?? 'N/A',
+                            $vendor->user?->country ?? 'N/A',
+                        ])->join(', '),
+                        'status' => $vendor->status ?? 'N/A',
+                        'system_get_comission' => $vendor->system_get_comission ?? 'N/A',
+                        'products_count' => Product::query()
+                            ->vendor()
+                            ->where('user_id', $vendor->user_id)
+                            ->count(),
+                        'created_at_formatted' => $vendor->created_at?->toFormattedDateString(),
+                    ];
+                })->values()->all(),
+                'links' => collect($vendors->linkCollection())->map(function ($link) {
+                    return [
+                        'url' => $link['url'],
+                        'label' => strip_tags($link['label']),
+                        'active' => $link['active'],
+                    ];
+                })->values()->all(),
+                'from' => $vendors->firstItem(),
+                'to' => $vendors->lastItem(),
+                'total' => $vendors->total(),
+            ],
+            'printUrl' => route('system.vendor.print-summery', [
+                'filter' => $filter,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
+            ]),
+        ]);
+    }
+
+    public function printReact(Request $request)
+    {
+        $filter = $request->input('filter', 'Active');
+        $find = $request->input('find');
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
+
+        $query = vendor::query()
+            ->with('user')
+            ->orderBy('id', 'desc');
+
+        if ($filter !== '*') {
+            $query->where('status', $filter);
+        }
+
+        if (!empty($find)) {
+            $query->where(function ($subQuery) use ($find) {
+                $subQuery
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('shop_name_en', 'like', '%' . $find . '%')
+                    ->orWhere('shop_name_bn', 'like', '%' . $find . '%')
+                    ->orWhere('email', 'like', '%' . $find . '%')
+                    ->orWhere('phone', 'like', '%' . $find . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($find) {
+                        $userQuery
+                            ->where('name', 'like', '%' . $find . '%')
+                            ->orWhere('email', 'like', '%' . $find . '%')
+                            ->orWhere('phone', 'like', '%' . $find . '%');
+                    });
+            });
+        }
+
+        $this->applyDateFilter($query, $sd, $ed);
 
         $vendors = $query->get()->map(function ($vendor) {
             return [
@@ -204,17 +307,14 @@ class VendorController extends Controller
             ];
         })->values()->all();
 
-        return Inertia::render('Auth/system/vendors/index', [
-            'filter' => $filter,
-            'find' => $find,
-            'widgets' => [
-                ['title' => 'Total Vendor', 'content' => vendor::query()->count()],
-                ['title' => 'Pending', 'content' => vendor::query()->pending()->count()],
-                ['title' => 'Active', 'content' => vendor::query()->active()->count()],
-                ['title' => 'Disabled', 'content' => vendor::query()->disabled()->count()],
-                ['title' => 'Suspended', 'content' => vendor::query()->suspended()->count()],
-            ],
+        return Inertia::render('Auth/system/vendors/PrintSummery', [
             'vendors' => $vendors,
+            'filters' => [
+                'filter' => $filter,
+                'find' => $find,
+                'sd' => $sd,
+                'ed' => $ed,
+            ],
         ]);
     }
 
@@ -384,5 +484,37 @@ class VendorController extends Controller
         }
 
         return redirect()->back()->with('success', 'Vendor Data Updated!');
+    }
+
+    private function applyDateFilter($query, ?string $sd, ?string $ed): void
+    {
+        if (!empty($sd) && !empty($ed)) {
+            $start = Carbon::parse($sd)->startOfDay();
+            $end = Carbon::parse($ed)->endOfDay();
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            $query->whereBetween('created_at', [$start, $end]);
+
+            return;
+        }
+
+        if (!empty($sd)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($sd)->startOfDay(),
+                Carbon::parse($sd)->endOfDay(),
+            ]);
+
+            return;
+        }
+
+        if (!empty($ed)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($ed)->startOfDay(),
+                Carbon::parse($ed)->endOfDay(),
+            ]);
+        }
     }
 }

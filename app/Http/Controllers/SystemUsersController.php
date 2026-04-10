@@ -58,8 +58,8 @@ class SystemUsersController extends Controller
     public function indexReact(Request $request)
     {
         $search = (string) $request->string('search');
-        $sd = $request->input('sd', now()->subDays(30)->format('Y-m-d'));
-        $ed = $request->input('ed', now()->format('Y-m-d'));
+        $sd = $request->input('sd');
+        $ed = $request->input('ed');
 
         $query = User::query()
             ->withoutAdmin()
@@ -81,9 +81,9 @@ class SystemUsersController extends Controller
                         $q->where('ref', 'like', '%' . $search . '%');
                     });
             });
-        } else {
-            $query->whereBetween('created_at', [$sd, Carbon::parse($ed)->endOfDay()]);
         }
+
+        $this->applyDateFilter($query, $sd, $ed);
 
         $users = $query->paginate(config('app.paginate'))->withQueryString();
         $allUsers = User::get();
@@ -186,9 +186,9 @@ class SystemUsersController extends Controller
                         $q->where('ref', 'like', '%' . $search . '%');
                     });
             });
-        } else {
-            $query->whereBetween('created_at', [$sd, Carbon::parse($ed)->endOfDay()]);
         }
+
+        $this->applyDateFilter($query, $sd, $ed);
 
         $users = $query->get()->values()->map(function ($user) {
             $subscription = $user->subscription;
@@ -296,5 +296,37 @@ class SystemUsersController extends Controller
         $user->syncPermissions($request->input('permissions', []));
 
         return redirect()->back()->with('success', 'Permission Synced !');
+    }
+
+    private function applyDateFilter($query, ?string $sd, ?string $ed): void
+    {
+        if (!empty($sd) && !empty($ed)) {
+            $start = Carbon::parse($sd)->startOfDay();
+            $end = Carbon::parse($ed)->endOfDay();
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            $query->whereBetween('created_at', [$start, $end]);
+
+            return;
+        }
+
+        if (!empty($sd)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($sd)->startOfDay(),
+                Carbon::parse($sd)->endOfDay(),
+            ]);
+
+            return;
+        }
+
+        if (!empty($ed)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($ed)->startOfDay(),
+                Carbon::parse($ed)->endOfDay(),
+            ]);
+        }
     }
 }

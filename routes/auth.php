@@ -193,6 +193,8 @@ Route::middleware('auth')->group(function () {
         Route::get('orders/old', Orders::class)->name('user.orders.view');
         Route::get('orders', [OrderController::class, 'index'])
             ->name('user.orders.view');
+        Route::get('orders/print', [OrderController::class, 'print'])
+            ->name('user.orders.print');
         Route::delete('orders/{order}', [OrderController::class, 'destroy'])
             ->name('user.orders.delete');
         Route::patch('orders/{order}/cancel', [OrderController::class, 'cancel'])
@@ -239,6 +241,7 @@ Route::middleware('auth')->group(function () {
         // user wallet
         Route::get('/wallet/old', WalletIndex::class)->name('user.wallet.index.old');
         Route::get('/wallet', [WalletController::class, 'index'])->name('user.wallet.index');
+        Route::get('/wallet/print', [WalletController::class, 'print'])->name('user.wallet.print');
 
         Route::get('/wallet/comissions/earn/old', EarnComissions::class)->name('user.wallet.earn-comissions.old');
         Route::get('/wallet/comissions/earn', [WalletComissionController::class, 'index'])->name('user.wallet.earn-comissions');

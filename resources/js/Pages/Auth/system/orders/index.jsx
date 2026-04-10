@@ -1,5 +1,5 @@
 import { Head, router } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import DangerButton from "../../../../components/DangerButton";
 import NavLink from "../../../../components/NavLink";
@@ -73,36 +73,39 @@ export default function Index({ filters, stats, orders }) {
         router.delete(route("system.orders.destroy", { id }));
     };
 
-    const renderPagination = (keySuffix = "") =>
-        (orders?.links ?? []).map((link) =>
-            link.url ? (
-                <button
-                    type="button"
-                    key={`${link.label}-${link.url}-${keySuffix}`}
-                    className={`px-2 py-1 mx-1 border rounded ${link.active ? "bg-orange-500 text-white" : ""}`}
-                    onClick={() => {
-                        const url = new URL(link.url);
-                        apply({
-                            date: url.searchParams.get("date") ?? filters?.date,
-                            search: url.searchParams.get("search") ?? filters?.search,
-                            sd: url.searchParams.get("sd") ?? filters?.sd,
-                            ed: url.searchParams.get("ed") ?? filters?.ed,
-                            qf: url.searchParams.get("qf") ?? filters?.qf,
-                            type: url.searchParams.get("type") ?? filters?.type,
-                            status: url.searchParams.get("status") ?? filters?.status,
-                            page: url.searchParams.get("page") ?? undefined,
-                        });
-                    }}
-                    dangerouslySetInnerHTML={{ __html: link.label }}
-                />
-            ) : (
-                <span
-                    key={`${link.label}-disabled-${keySuffix}`}
-                    className="px-2 py-1 mx-1 text-gray-400 border rounded"
-                    dangerouslySetInnerHTML={{ __html: link.label }}
-                />
-            )
-        );
+    const pagination = useMemo(() => {
+        const links = orders?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [orders?.links]);
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        apply({
+            date: nextUrl.searchParams.get("date") ?? filters?.date,
+            search: nextUrl.searchParams.get("search") ?? filters?.search,
+            sd: nextUrl.searchParams.get("sd") ?? filters?.sd,
+            ed: nextUrl.searchParams.get("ed") ?? filters?.ed,
+            qf: nextUrl.searchParams.get("qf") ?? filters?.qf,
+            type: nextUrl.searchParams.get("type") ?? filters?.type,
+            status: nextUrl.searchParams.get("status") ?? filters?.status,
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        });
+    };
+
+    const resultSummary =
+        orders?.total > 0
+            ? `Showing ${orders?.from ?? 0}-${orders?.to ?? 0} of ${orders?.total ?? 0} orders`
+            : "No orders found";
 
     return (
         <AppLayout
@@ -126,9 +129,9 @@ export default function Index({ filters, stats, orders }) {
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <select className="border-0 rounded" value={filters?.qf ?? "id"} onChange={(e) => apply({ qf: e.target.value })}>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex items-center gap-2">
+                                    <select className="rounded-md border border-gray-300 shadow-sm" value={filters?.qf ?? "id"} onChange={(e) => apply({ qf: e.target.value })}>
                                         <option value="id">Order</option>
                                         <option value="user_id">Buyer</option>
                                         <option value="belongs_to">Seller</option>
@@ -136,12 +139,12 @@ export default function Index({ filters, stats, orders }) {
                                     <TextInput type="search" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} placeholder="Search" />
                                 </div>
 
-                                <select className="border-0 rounded " value={filters?.type ?? ""} onChange={(e) => apply({ type: e.target.value })}>
+                                <select className="rounded-md border border-gray-300 shadow-sm" value={filters?.type ?? ""} onChange={(e) => apply({ type: e.target.value })}>
                                     <option value="">Both ({stats?.orders ?? 0})</option>
                                     <option value="user">U &gt; R ({stats?.user_to_reseller ?? 0})</option>
                                     <option value="reseller">R &gt; V ({stats?.reseller_to_vendor ?? 0})</option>
                                 </select>
-                                <select className="border-0 rounded " value={filters?.status ?? ""} onChange={(e) => apply({ status: e.target.value })}>
+                                <select className="rounded-md border border-gray-300 shadow-sm" value={filters?.status ?? ""} onChange={(e) => apply({ status: e.target.value })}>
                                     <option value="">Any</option>
                                     <option value="Pending">Pending</option>
                                     <option value="Accept">Accept</option>
@@ -155,7 +158,7 @@ export default function Index({ filters, stats, orders }) {
                                     <option value="None">None</option>
                                 </select>
 
-                                <select value={filters?.date ?? "today"} className="bg-transparent border-0" onChange={(e) => apply({ date: e.target.value })}>
+                                <select value={filters?.date ?? ""} className="rounded-md border border-gray-300 bg-white shadow-sm" onChange={(e) => apply({ date: e.target.value })}>
                                     <option value="">Null</option>
                                     <option value="today">Today</option>
                                     <option value="yesterday">Yesterday</option>
@@ -167,15 +170,24 @@ export default function Index({ filters, stats, orders }) {
                             </div>
                         }
                         content={
-                            <>
-                                {filters?.date === "between" ? (
-                                    <div className="flex">
-                                        <TextInput type="date" value={filters?.sd ?? ""} onChange={(e) => apply({ sd: e.target.value })} id="sd" />
-                                        <TextInput type="date" value={filters?.ed ?? ""} onChange={(e) => apply({ ed: e.target.value })} id="ed" />
-                                    </div>
-                                ) : null}
-                                {/* <div>{renderPagination("header")}</div> */}
-                            </>
+                            filters?.date === "between" ? (
+                                <div className="flex items-center gap-2 pt-2">
+                                    <TextInput
+                                        type="date"
+                                        className="py-1"
+                                        value={filters?.sd ?? ""}
+                                        onChange={(e) => apply({ sd: e.target.value })}
+                                        id="sd"
+                                    />
+                                    <TextInput
+                                        type="date"
+                                        className="py-1"
+                                        value={filters?.ed ?? ""}
+                                        onChange={(e) => apply({ ed: e.target.value })}
+                                        id="ed"
+                                    />
+                                </div>
+                            ) : null
                         }
                     />
 
@@ -255,7 +267,50 @@ export default function Index({ filters, stats, orders }) {
                                 </tr>
                             </tfoot>
                         </Table>
-                        <div>{renderPagination("inner")}</div>
+                        {pagination.pages.length ? (
+                            <div className="w-full pt-4">
+                                <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="text-sm text-slate-700">
+                                        {resultSummary}
+                                    </div>
+                                    <div className="flex items-center md:justify-end">
+                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.prev?.url}
+                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.prev?.url)}
+                                            >
+                                                Previous
+                                            </button>
+                                            {pagination.pages.map((link, index) => (
+                                                <button
+                                                    key={`${link.label}-${index}`}
+                                                    type="button"
+                                                    disabled={!link.url}
+                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                        link.active
+                                                            ? "bg-slate-100 text-blue-600"
+                                                            : "bg-white text-slate-700 hover:bg-slate-50"
+                                                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                    onClick={() => goToPage(link.url)}
+                                                >
+                                                    {link.label}
+                                                </button>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.next?.url}
+                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.next?.url)}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
 
                     </SectionInner>
                 </Section>

@@ -107,7 +107,7 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
                         </div>
                     </div>
 
-                    <div className="w-full">
+                    <div className="w-full overflow-x-hidden">
                         {header && (
                             <header className="">
                                 <div className="w-full px-2 px-4 py-6 mx-auto sm:px-6 lg:px-8">
