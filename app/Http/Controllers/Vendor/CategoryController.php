@@ -15,6 +15,25 @@ class CategoryController extends Controller
 {
     use HandleImageUpload;
 
+    public function edit(int $cat): Response
+    {
+        $item = auth()->user()->myCategory()->findOrFail($cat);
+
+        return Inertia::render('Vendor/Categories/Edit', [
+            'category' => [
+                'id' => $item->id,
+                'name' => $item->name ?? '',
+                'image' => $item->image,
+                'image_url' => $item->image ? asset('storage/' . $item->image) : null,
+            ],
+        ]);
+    }
+
+    public function create(): Response
+    {
+        return Inertia::render('Vendor/Categories/Create');
+    }
+
     public function index(): Response
     {
         $categories = auth()->user()
@@ -67,6 +86,24 @@ class CategoryController extends Controller
         $item->delete();
 
         return redirect()->back()->with('success', 'Category deleted !');
+    }
+
+    public function update(Request $request, int $cat): RedirectResponse
+    {
+        $item = auth()->user()->myCategory()->findOrFail($cat);
+
+        $payload = $request->validate([
+            'name' => ['required', 'max:50'],
+            'image' => ['nullable', 'image', 'mimes:jpg,png,jpeg', 'max:1024'],
+        ]);
+
+        $item->update([
+            'name' => $payload['name'],
+            'slug' => Str::slug($payload['name']),
+            'image' => $this->handleImageUpload($request->file('image'), 'categories', $item->image),
+        ]);
+
+        return redirect()->route('vendor.category.view')->with('success', 'Category updated');
     }
 }
 

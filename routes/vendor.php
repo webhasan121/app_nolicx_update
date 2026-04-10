@@ -71,6 +71,9 @@ Route::prefix('category')->group(function () {
     Route::get('/', [CategoryController::class, 'index'])->name('vendor.category.view')->middleware(AbleTo::class . ":category_view");
     Route::post('/', [CategoryController::class, 'store'])->name('vendor.category.store')->middleware(AbleTo::class . ":category_create");
     Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('vendor.category.destroy')->middleware(AbleTo::class . ":category_edit");
-    Route::get('/create', vendorCategoryCreatePage::class)->name('vendor.category.create')->middleware(AbleTo::class . ":category_create");
-    Route::get('/edit/{cat}', vendorCategoryEditPage::class)->name('vendor.category.edit')->middleware(AbleTo::class . ":category_edit");
+    Route::get('/create/old', vendorCategoryCreatePage::class)->name('vendor.category.create.old')->middleware(AbleTo::class . ":category_create");
+    Route::get('/create', [CategoryController::class, 'create'])->name('vendor.category.create')->middleware(AbleTo::class . ":category_create");
+    Route::get('/edit/{cat}/old', vendorCategoryEditPage::class)->name('vendor.category.edit.old')->middleware(AbleTo::class . ":category_edit");
+    Route::get('/edit/{cat}', [CategoryController::class, 'edit'])->name('vendor.category.edit')->middleware(AbleTo::class . ":category_edit");
+    Route::post('/edit/{cat}', [CategoryController::class, 'update'])->name('vendor.category.update')->middleware(AbleTo::class . ":category_edit");
 });

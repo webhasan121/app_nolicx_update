@@ -17,6 +17,7 @@ class ResellerShopController extends Controller
         $account = auth()->user()->active_nav;
         $shop = null;
 
+
         if ($account === 'reseller') {
             $shop = auth()->user()->resellerShop();
         }
@@ -81,7 +82,6 @@ class ResellerShopController extends Controller
         // exit();
         // address
         auth()->user()->resellerShop()->update($shopArray);
-
-        return redirect()->back()->with('success', 'updated');
+        return redirect()->back()->with('success', 'Shop updated successfully');
     }
 }
