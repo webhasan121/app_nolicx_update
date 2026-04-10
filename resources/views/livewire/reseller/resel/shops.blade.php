@@ -13,11 +13,11 @@
                     <i class="fas fa-home pe-2"></i>
                 </x-nav-link>
                 {{-- <i class="fas fa-slash-back px-2 py-0 m-0"></i> --}}
-                <x-nav-link href="{{route('shops')}}">
+                <x-nav-link href="{{route('shops.old')}}">
                     <x-application-name /> <div class="px-2">Shops</div>
                 </x-nav-link>
             </div>
-        
+
             <div class="flex items-center">
                 <input type="search" wire:model.live="q" class="py-1 rounded-md" placeholder="search shops by name" id="">
                 <div>
@@ -25,7 +25,7 @@
                         <div @click="$dispatch('open-modal', 'shop-location-modal')" class="py-2 px-3 text-xs ms-1 border rounded bg-white">
                             {{ !empty($location) ? $location : auth()->user()->city ?? 'ANY'}} <i class="ps-2 fas fa-chevron-down"></i>
                         </div>
-                    @else 
+                    @else
                         <div @click="$dispatch('open-modal', 'shop-location-modal')" class="px-2">
                             <i class="fas fa-location"></i>
                         </div>
@@ -64,18 +64,18 @@
                                         </div>
                                     </div>
                                     <div class="mt-2 flex justify-between items-center space-x-2 space-y-2">
-                    
+
                                         <div class="px-2 bg-sky-900 text-white rounded-lg inline-block text-xs">
                                             reseller
                                         </div>
-                                        
+
                                         {{-- <div class="px-2 bg-gray-900 text-white rounded-lg inline-block text-xs">
                                             Eruhi Choise
                                         </div> --}}
                                     </div>
 
                                 </div>
-                                
+
                                 <div class="w-48 m-1 border p-2 rounded-lg">
                                     <p>Owner</p>
                                     <div class="text-md">
@@ -91,7 +91,7 @@
                                     <p class="text-xs">
                                         {{$getShops->user?->village}}, {{$getShops->user?->upozila}}, {{$getShops->user?->district}}
                                     </p>
-                                
+
 
                                 </div>
                             </div>
@@ -101,7 +101,7 @@
                                 <div>
                                     <i class="fas fa-heart"></i>
                                 </div>
-                                <x-nav-link href="{{route('shops', ['get' => $getShops->id, 'name'=> Str::slug($getShops->shop_name_en) ?? 'not_found'])}}">
+                                <x-nav-link href="{{route('shops.old', ['get' => $getShops->id, 'name'=> Str::slug($getShops->shop_name_en) ?? 'not_found'])}}">
                                     Visit Shops <i class="fas fa-angle px-2"></i>
                                 </x-nav-link>
                             </div>
@@ -110,28 +110,28 @@
                     </x-dashboard.container>
                 </div>
             </div>
-                      
+
 
             <x-dashboard.section class="my-[100]">
                 <div x-loading.disabled x-transition>
-                    
-                    <div class="product_section w-full md:w-3/4" > 
-                        
+
+                    <div class="product_section w-full md:w-3/4" >
+
                         <div class="text-sm py-2">Products</div>
-                        @if ($products)     
+                        @if ($products)
                             <div class="" style="display: grid; justify-content:start; grid-template-columns: repeat(auto-fill, 160px); grid-gap:10px">
-                                    
+
                                 @foreach ($products as $pd)
                                         @includeIf('components.dashboard.reseller.resel-product-cart')
                                 @endforeach
-                                            
+
                             </div>
                             {{$products->links()}}
                         @endif
                     </div>
                 </div>
             </x-dashboard.section>
-        @else 
+        @else
 
             @if ($q || $location)
             @endif
@@ -168,7 +168,7 @@
                                         <div class="px-2 bg-sky-900 text-white rounded-lg inline-block text-xs">
                                             vendor
                                         </div>
-                                        
+
                                         {{-- <div class="px-2 bg-gray-900 text-white rounded-lg inline-block text-xs">
                                             Eruhi Choise
                                         </div> --}}
@@ -178,7 +178,7 @@
                                         <div>
                                             <i class="fas fa-heart"></i>
                                         </div>
-                                        <x-nav-link href="{{route('shops', ['get' => $shop->id, 'slug'=> Str::slug($shop->shop_name_en) ?? 'not_found'])}}">
+                                        <x-nav-link href="{{route('shops.old', ['get' => $shop->id, 'slug'=> Str::slug($shop->shop_name_en) ?? 'not_found'])}}">
                                             Visit Shops <i class="fas fa-angle px-2"></i>
                                         </x-nav-link>
                                     </div>
@@ -194,7 +194,7 @@
             </div>
 
         @endif
-   
+
         <x-modal name="shop-location-modal" maxWidth="sm">
             <div class="p-3" x-data="{tab : me}">
                 <p class="text-xs ">
@@ -202,8 +202,8 @@
                 </p>
                 <br>
                 <div class="text-center space-y-3">
-                    @auth    
-                        <x-primary-button wire:click="getShopByMyLocation" class="p-3 flex justify-center items-center bg-indigo-300 text-white w-full rounded"> 
+                    @auth
+                        <x-primary-button wire:click="getShopByMyLocation" class="p-3 flex justify-center items-center bg-indigo-300 text-white w-full rounded">
                             My Location ({{auth()->user()->city}}) <i class="px-2 fas fa-location"></i>
                         </x-primary-button>
                     @endauth

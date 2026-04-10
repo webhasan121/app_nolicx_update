@@ -294,7 +294,7 @@
             </div>
         </x-dashboard.section>
 
-       
+
         <x-dashboard.overview.section>
             <x-dashboard.overview.div>
                 <x-slot name="title">

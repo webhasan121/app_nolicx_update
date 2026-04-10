@@ -16,7 +16,7 @@
     :active="request()->routeIs('reseller.resel-product.*')">
     <i class="fas fa-sync pr-2 w-6"></i> Resel Product
 </x-responsive-nav-link>
-<x-responsive-nav-link href="{{route('shops')}}" :active="request()->routeIs('shops')">
+<x-responsive-nav-link href="{{route('shops.old')}}" :active="request()->routeIs('shops.old')">
     <i class="fas fa-shop pr-2 w-6"></i> Vendor Shop
 </x-responsive-nav-link>
 <hr />

@@ -307,7 +307,7 @@
                     <div class="relative">
                         {{-- <x-text-input type="file" wire:model.live="newImage" id="multi_prod_img"
                             class="absolute hidden border p-1" multiple /> --}}
-                            <input 
+                            <input
         type="file"
         wire:model="newImage"
         id="multi_prod_img"
@@ -484,7 +484,7 @@
     @script
     <script>
         document.querySelector("trix-editor").addEventListener('trix-change', ()=> {
-            @this.set('products.description', document.querySelector("#my_input").value);            
+            @this.set('products.description', document.querySelector("#my_input").value);
         })
     </script>
     @endscript

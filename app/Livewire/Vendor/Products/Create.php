@@ -8,6 +8,7 @@ use App\HandleImageUpload;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\product_has_attribute;
+use App\Models\product_has_image;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Validate;
 use Livewire\WithFileUploads;
@@ -45,7 +46,7 @@ class Create extends Component
          * if any category not fount
          * throw an warning,
          * as every product must belongs to a category
-         *  
+         *
          * */
 
         $this->products['description'] = 'This is description';

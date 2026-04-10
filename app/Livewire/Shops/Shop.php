@@ -41,6 +41,7 @@ class Shop extends Component
             $this->shopArray['banner'] = $this->handleImageUpload($this->newBanner, 'shop-banner', $this->shopArray['banner']);;
         }
 
+
         auth()->user()->resellerShop()->update($this->shopArray);
         $this->dispatch('success', 'updated');
     }

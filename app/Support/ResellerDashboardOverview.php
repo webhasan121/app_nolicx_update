@@ -34,6 +34,22 @@ class ResellerDashboardOverview
                     'thumbnail' => $product->thumbnail,
                 ];
             })->values()->all(),
+            'categories' => Category::getAll()
+                ->map(fn (Category $category) => self::mapCategory($category))
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private static function mapCategory(Category $category): array
+    {
+        return [
+            'id' => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'children' => $category->children
+                ? $category->children->map(fn (Category $child) => self::mapCategory($child))->values()->all()
+                : [],
         ];
     }
 }

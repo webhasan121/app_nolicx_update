@@ -9,34 +9,34 @@
         <br>
         {{$shopArray['shop_name_en']}}
         <br>
-        <div class="px-2 py-1 rounded-xl bg-white text-xs inline-block">
+        <div class="inline-block px-2 py-1 text-xs bg-white rounded-xl">
             {{$shopArray['status']}}
         </div>
     </x-dashboard.page-header> --}}
 
     <x-dashboard.container>
         <div class="relative">
-            <div class="rounded-full  absolute left-0 top-0 bg-white m-2">
+            <div class="absolute top-0 left-0 m-2 bg-white rounded-full">
                 @if ($newLogo)
                 <img class="rounded-full" style="height: 80px; width:80px" src="{{$newLogo->temporaryUrl()}}" alt="">
                 @else
                 <img class="rounded-full" style="height: 80px; width:80px"
-                    src="{{asset('storage/'.$shopArray['logo'])}}" alt="">
+                    src="{{asset('storage/'.($shopArray['logo'] ?? ''))}}" alt="">
                 @endif
                 <input type="file" wire:model.live="newLogo" id="logo" class="absolute hidden">
                 <label for="logo"
-                    class="absolute bottom-0 right-0 rounded-full bg-white border w-6 h-6 p-1 flex items-center justify-center">
+                    class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 p-1 bg-white border rounded-full">
                     <i class="fas fa-upload"></i>
                 </label>
             </div>
             @if ($newBanner)
-            <img class="w-full bg-indigo-900 h-48 rounded" src="{{ $newBanner->temporaryUrl()}}" alt="">
+            <img class="w-full h-48 bg-indigo-900 rounded" src="{{ $newBanner->temporaryUrl()}}" alt="">
             @else
-            <img class="w-full bg-indigo-900 h-48 rounded" src="{{asset('storage/'. $shopArray['banner'])}}" alt="">
+            <img class="w-full h-48 bg-indigo-900 rounded" src="{{asset('storage/'.($shopArray['banner'] ?? ''))}}" alt="">
             @endif
             <input type="file" wire:model.live="newBanner" id="banner" class="absolute hidden">
             <label for="banner"
-                class="absolute bottom-0 right-0 rounded-full bg-white border w-6 h-6 p-1 flex items-center justify-center">
+                class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 p-1 bg-white border rounded-full">
                 <i class="fas fa-upload"></i>
             </label>
         </div>
@@ -45,71 +45,71 @@
             <trix-toolbar id="my_toolbar"></trix-toolbar>
             <div class="more-stuff-inbetween"></div>
             <input type="hidden" name="content" id="my_input" wire:model.live="shopArray.description"
-                value="{{$shopArray['description']}}">
+                value="{{$shopArray['description'] ?? ''}}">
             <trix-editor toolbar="my_toolbar" input="my_input"></trix-editor>
         </main>
 
         <div>
-            <div class="md:flex w-full flex-1 gap-10">
-                <div class="bg-white rounded-md shadow-sm w-full">
+            <div class="flex-1 w-full gap-10 md:flex">
+                <div class="w-full bg-white rounded-md shadow-sm">
                     <hr>
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Shop ID: </div>
                         <div> {{$shopArray['id'] ?? "N/A"}} </div>
                         {{-- <input type="text" class="w-full rounded-md ring-0" wire:model.live="shopArray.id">
                         --}}
                     </div>
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Shop Owner Name: </div>
                         <div> {{auth()->user()->name ?? "N/A"}} </div>
                     </div>
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Shop Owner Email: </div>
                         <div> {{ auth()->user()->email ?? "N/A"}} </div>
                     </div>
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Shop Owner Phone: </div>
                         <div> {{auth()->user()?->phone ?? "N/A"}} </div>
                     </div>
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Shop Comission (%) : </div>
                         <div> {{$shopArray["system_get_comission"] ?? "N/A"}} </div>
                     </div>
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Product Upload Capability : </div>
                         <div> {{$shopArray["max_product_upload"] ?? "N/A"}} </div>
                     </div>
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Product Resel Capability : </div>
                         <div> {{$shopArray["max_resell_product"] ?? "N/A"}} </div>
                     </div>
                 </div>
 
-                <div class="p-3 bg-white rounded-md shadow-sm w-full">
+                <div class="w-full p-3 bg-white rounded-md shadow-sm">
                     <hr>
 
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Shop: </div>
                         {{-- <div> {{$shopArray['email'] ?? "N/A"}} </div> --}}
                         <input type="text" class="w-full rounded-md ring-0" wire:model="shopArray.shop_name_en">
                     </div>
 
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Shop Email: </div>
                         {{-- <div> {{$shopArray['email'] ?? "N/A"}} </div> --}}
                         <input type="text" class="w-full rounded-md ring-0" wire:model="shopArray.email">
                     </div>
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Shop Phone: </div>
                         {{-- <div> {{$shopArray['phone'] ?? "N/A"}} </div> --}}
                         <input type="text" class="w-full rounded-md ring-0" wire:model="shopArray.phone">
                     </div>
-                    <div class="text-md border-b w-full p-3">
+                    <div class="w-full p-3 border-b text-md">
                         <div class="font-bold">Shop Address: </div>
                         {{-- <div> {{$shopArray['address'] ?? "N/A"}} </div> --}}
-                        <input type="text" class="w-full rounded-md ring-0" wire:model="shopArray.address">
+                        <input type="text" class="w-full rounded-md ring-0" wire:model.live="shopArray.address">
                     </div>
-                    <div class="text-md border-b w-full p-3 space-y-2">
+                    <div class="w-full p-3 space-y-2 border-b text-md">
                         <div class="font-bold">Shop Location: </div>
                         <div class="my-1">
 
@@ -155,7 +155,7 @@
         </div>
         <br>
 
-        <x-primary-button class="w-full text-center flex justify-center" wire:click="updateInfo">
+        <x-primary-button class="flex justify-center w-full text-center" wire:click="updateInfo">
             update
         </x-primary-button>
     </x-dashboard.container>
@@ -165,7 +165,7 @@
     @script
     <script>
         document.querySelector("trix-editor").addEventListener('trix-change', ()=> {
-            @this.set('shopArray.description', document.querySelector("#my_input").value);            
+            @this.set('shopArray.description', document.querySelector("#my_input").value);
         })
     </script>
     @endscript

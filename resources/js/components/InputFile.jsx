@@ -1,13 +1,22 @@
 import InputLabel from "./InputLabel";
 
-export default function InputFile({ label, error, children, name, errors }) {
+export default function InputFile({
+    label,
+    error,
+    children,
+    name,
+    errors,
+    className = "",
+    labelWidth = "250px",
+    inputClass = "w-full",
+}) {
 
     return (
         <div>
-            <div className="my-3 form-group">
-                <div className="justify-start md:flex ">
+            <div className={`my-3 form-group ${className}`}>
+                <div className="justify-start md:flex">
 
-                    <div style={{ width: "250px" }}>
+                    <div style={{ width: labelWidth }}>
 
                         <InputLabel
                             htmlFor={name ?? label}
@@ -24,7 +33,7 @@ export default function InputFile({ label, error, children, name, errors }) {
 
                     </div>
 
-                    <div style={{ width: "100%" }} className="flex-1">
+                    <div style={{ width: "100%" }} className={`flex-1 ${inputClass}`}>
                         {children}
                     </div>
 

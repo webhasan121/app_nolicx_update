@@ -9,6 +9,31 @@ import SectionInner from "../../components/dashboard/section/Inner";
 import SectionSection from "../../components/dashboard/section/Section";
 import VendorOrdersIndex from "../vendor/orders/Index";
 
+function CategoryItem({ item, depth = 0 }) {
+    if (!item || item.slug === "default-category") {
+        return null;
+    }
+
+    return (
+        <div className={`${depth === 0 ? "p-2 border-b border-gray-200 hover:bg-gray-50" : "py-1"} cursor-pointer`}>
+            <a
+                href={route("reseller.resel-product.index", { cat: item.id })}
+                className="text-sm"
+            >
+                {item.name}
+            </a>
+
+            {Array.isArray(item.children) && item.children.length > 0 ? (
+                <div className={`${depth === 0 ? "px-2 py-1 border-l" : "ps-2"}`}>
+                    {item.children.map((child) => (
+                        <CategoryItem key={child.id} item={child} depth={depth + 1} />
+                    ))}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
 function OverviewDiv({ title, children }) {
     return (
         <div
@@ -118,6 +143,7 @@ export default function Dashboard({
     tp,
     vendor,
     category,
+    categories = [],
     products = [],
     vendorOrdersIndex,
     activeNav,
@@ -200,7 +226,17 @@ export default function Dashboard({
                 <Modal show={open} onClose={() => setOpen(false)}>
                     <div className="p-3 border-b">Explore Category</div>
                     <div className="p-3 text-sm text-gray-600">
-                        The old Blade view rendered @livewire('reseller.resel.categories', key('resel_101')) here.
+                        <div className="mb-2">
+                            <a
+                                href={route("reseller.resel-product.index")}
+                                className="text-sm"
+                            >
+                                View All Products
+                            </a>
+                        </div>
+                        {(categories ?? []).map((item) => (
+                            <CategoryItem key={item.id} item={item} />
+                        ))}
                     </div>
                     <hr className="my-1" />
                     <div className="flex justify-end items-center p-3">

@@ -304,9 +304,11 @@ Route::middleware('auth')->group(function () {
         include __DIR__ . '/rider.php'; // include all route for rider
 
         // role and permission manage
-        Route::get('roles', [RoleController::class, 'admin_list'])->name('system.role.list')->middleware(AbleTo::class . ':role_list');
+        Route::get('roles/old', [RoleController::class, 'admin_list'])->name('system.role.list.old')->middleware(AbleTo::class . ':role_list');
+        Route::get('roles', [RoleController::class, 'admin_list_react'])->name('system.role.list')->middleware(AbleTo::class . ':role_list');
         // Route::get('roles', roleIndexPage::class)->name('system.role.list')->middleware(AbleTo::class . ':role_list');
-        Route::get('roles/edit', [RoleController::class, 'admin_edit'])->name('system.role.edit')->middleware(AbleTo::class . ":role_edit");
+        Route::get('roles/edit/old', [RoleController::class, 'admin_edit'])->name('system.role.edit.old')->middleware(AbleTo::class . ":role_edit");
+        Route::get('roles/edit', [RoleController::class, 'admin_edit_react'])->name('system.role.edit')->middleware(AbleTo::class . ":role_edit");
         Route::post('role-to-users', [RoleController::class, 'multiple_user_to_single_role'])->name('system.role.to-user')->middleware(AbleTo::class . ':sync_role_to_user'); // single role to multiple users
 
         /**

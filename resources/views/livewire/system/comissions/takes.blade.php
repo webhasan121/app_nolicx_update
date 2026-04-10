@@ -146,9 +146,9 @@
         setTimeout(() => window.print(), 500);
         // if (window.location.search.includes('autoPrint=1')) {
         // }
-        
+
         // close the window, while close window.print()
-        
-        
+
+
     </script>
 </div>

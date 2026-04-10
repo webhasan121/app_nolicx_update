@@ -9,7 +9,6 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 // use App\Http\Controllers\Controller;
 
 use Illuminate\Routing\Controller;
@@ -43,24 +42,6 @@ class RoleController extends Controller
         return view('auth.system.role.index', compact('perm', 'role'));
     }
 
-    public function admin_list_react(Request $request)
-    {
-        $roles = Role::query()
-            ->withCount(['users', 'permissions'])
-            ->orderBy('id')
-            ->get();
-
-        return Inertia::render('Auth/system/role/index', [
-            'roles' => $roles->map(fn (Role $role) => [
-                'id' => $role->id,
-                'name' => $role->name,
-                'users_count' => $role->users_count ?? 0,
-                'permissions_count' => $role->permissions_count ?? 0,
-                'encrypted_id' => encrypt($role->id),
-            ])->values()->all(),
-        ]);
-    }
-
 
 
     /**
@@ -74,26 +55,6 @@ class RoleController extends Controller
         $users = User::withoutRole('system')->withoutRole($role->name)->orderBy('id', 'desc')->get();
         $permissions = Permission::all();
         return view('auth.system.role.edit', compact('role', 'users', 'permissions'));
-    }
-
-    public function admin_edit_react(Request $request)
-    {
-        $role = Role::findOrFail(decrypt($request->role));
-        $permissions = Permission::orderBy('id')->get();
-        $userPermissions = $role->getPermissionNames();
-
-        return Inertia::render('Auth/system/role/Edit', [
-            'role' => [
-                'id' => $role->id,
-                'name' => $role->name,
-                'permissions_count' => $role->permissions?->count() ?? 0,
-            ],
-            'permissions' => $permissions->map(fn (Permission $permission) => [
-                'id' => $permission->id,
-                'name' => $permission->name,
-            ])->values()->all(),
-            'userPermissions' => $userPermissions->values()->all(),
-        ]);
     }
 
 

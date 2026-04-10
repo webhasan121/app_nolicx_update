@@ -56,7 +56,7 @@ class ResellerController extends Controller
                     $rr->parent_id = $target_product['id'];
                     $rr->save();
                 }
-                return redirect()->route('vendor.products.edit', ['product' => $rr->id])->with('success', "Cloned to your product List.");
+                return redirect()->route('vendor.products.edit', ['product' => encrypt($rr->id)])->with('success', "Cloned to your product List.");
             } else {
                 return redirect()->back()->with('error', "Can't clone Product now");
             }
