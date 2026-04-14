@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductsIndexController;
 use App\Http\Controllers\ProductOrderController;
 use App\Http\Controllers\ProductComissionController;
 use App\Http\Controllers\CategoryIndexController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LocationController;
@@ -127,11 +128,13 @@ Route::get('product/order/location/cities/{state}', [ProductOrderController::cla
 /**shops */
 Route::get('/shops/old', All::class)->name('shops.reseller.old');
 Route::get('/shops', [ShopsController::class, 'index'])->name('shops.reseller');
-Route::get('/shops/{id}/{name}', Shop::class)->name('shops.visit');
+Route::get('/shops/{id}/{name}/old', Shop::class)->name('shops.visit.old');
+Route::get('/shops/{id}/{name}', [ShopsController::class, 'show'])->name('shops.visit');
 
 
 /** search */
-Route::get('/search', Search::class)->name('search');
+Route::get('/search/old', Search::class)->name('search.old');
+Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 
 // other page route for user

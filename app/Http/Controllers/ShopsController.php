@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\reseller;
+use App\Models\Category;
+use App\Models\Product;
 use App\Models\Slider as SliderModel;
 use App\Models\Slider_has_slide;
 use Illuminate\Http\Request;
@@ -67,6 +69,42 @@ class ShopsController extends Controller
                 'state' => $state,
             ],
             'showFiltered' => $q !== '' || $location !== '',
+        ]);
+    }
+
+    public function show($id, $name): Response
+    {
+        $shop = reseller::query()
+            ->with('user')
+            ->findOrFail($id);
+
+        $products = Product::query()
+            ->active()
+            ->reseller()
+            ->where('user_id', $shop?->user?->id)
+            ->get([
+                'id',
+                'name',
+                'title',
+                'slug',
+                'thumbnail',
+                'offer_type',
+                'discount',
+                'price',
+                'unit',
+            ]);
+
+        $categories = Category::query()
+            ->where([
+                'belongs_to' => 'reseller',
+                'user_id' => $shop?->user?->id,
+            ])
+            ->get();
+
+        return Inertia::render('Shops/Show', [
+            'shop' => $shop,
+            'products' => $products,
+            'categories' => $categories,
         ]);
     }
 
