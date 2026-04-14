@@ -1,5 +1,6 @@
 import Container from "../../../components/dashboard/Container";
 import Hr from "../../../components/Hr";
+import NavLink from "../../../components/NavLink";
 
 function OverviewDiv({ title, children }) {
     return (
@@ -103,9 +104,9 @@ export default function Index({
                         title={
                             <div className="flex">
                                 Products
-                                <a href="" className="ms-2">
+                                <NavLink href={route("system.products.index")} className="ms-2">
                                     view
-                                </a>
+                                </NavLink>
                             </div>
                         }
                     >

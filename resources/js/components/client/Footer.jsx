@@ -1,3 +1,5 @@
+import NavLink from "../NavLink";
+
 export default function Footer({ layout }) {
     if (!layout?.sections?.length) return null;
 
@@ -23,23 +25,28 @@ export default function Footer({ layout }) {
                                         if (widget.type === "link") {
                                             return (
                                                 <li key={widgetIndex}>
-                                                    <a href={widget.url} className="hover:underline">
+                                                    <NavLink
+                                                        href={widget.url}
+                                                        unstyled
+                                                        className="hover:underline"
+                                                    >
                                                         {widget.label}
-                                                    </a>
+                                                    </NavLink>
                                                 </li>
                                             );
                                         }
                                         if (widget.type === "icon") {
                                             return (
-                                                <a
+                                                <NavLink
                                                     key={widgetIndex}
                                                     href={widget.url}
                                                     target="_blank"
                                                     rel="noreferrer"
+                                                    unstyled
                                                     className="inline-block mr-2"
                                                 >
                                                     <i className={`fab fa-${widget.icon}`}></i>
-                                                </a>
+                                                </NavLink>
                                             );
                                         }
                                         return null;
@@ -53,4 +60,3 @@ export default function Footer({ layout }) {
         </footer>
     );
 }
-

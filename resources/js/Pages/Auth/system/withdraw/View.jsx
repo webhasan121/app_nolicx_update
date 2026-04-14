@@ -188,8 +188,15 @@ export default function View({ withdraw }) {
                     />
                     <Hr />
                     <form onSubmit={rejectPayment}>
-                        <InputLabel value="Rejection Message" />
-                        <textarea value={rejectForm.data.rMessage} onChange={(e) => rejectForm.setData("rMessage", e.target.value)} className="w-full rounded-lg" placeholder="Write Your Rejection Message .......... " rows="4"></textarea>
+                        <InputLabel htmlFor="withdraw-reject-message">Rejection Message</InputLabel>
+                        <textarea
+                            id="withdraw-reject-message"
+                            value={rejectForm.data.rMessage}
+                            onChange={(e) => rejectForm.setData("rMessage", e.target.value)}
+                            className="w-full rounded-lg"
+                            placeholder="Write Your Rejection Message .......... "
+                            rows="4"
+                        ></textarea>
                         {rejectForm.errors.rMessage ? (
                             <div className="text-red-900">
                                 {rejectForm.errors.rMessage}

@@ -269,6 +269,10 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
      */
     Route::get('/coins/old', Index::class)->name('store.index.old')->middleware(AbleTo::class . ":store_view");
     Route::get('/coins', [StoreController::class, 'indexReact'])->name('store.index')->middleware(AbleTo::class . ":store_view");
+    Route::post('/coins/distribute', [StoreController::class, 'distribute'])->name('store.distribute')->middleware(AbleTo::class . ":store_view");
+    Route::post('/coins/withdraw/coin', [StoreController::class, 'withdrawCoin'])->name('store.withdraw.coin')->middleware(AbleTo::class . ":store_view");
+    Route::post('/coins/withdraw/coast', [StoreController::class, 'withdrawCoast'])->name('store.withdraw.coast')->middleware(AbleTo::class . ":store_view");
+    Route::post('/coins/withdraw/donation', [StoreController::class, 'withdrawDonation'])->name('store.withdraw.donation')->middleware(AbleTo::class . ":store_view");
 
 
     /**

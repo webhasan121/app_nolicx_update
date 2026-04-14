@@ -1,6 +1,7 @@
 import { usePage } from "@inertiajs/react";
 import React from "react";
 import ApplicationName from "../ApplicationName";
+import NavLink from "../NavLink";
 
 export default function Footer() {
     const email = "support@example.com"; // config('app.support_mail')
@@ -17,7 +18,7 @@ export default function Footer() {
                 { title: "About Us", route: "/page/about-us" },
                 { title: "Contact Us", route: "/page/about-us" },
                 { title: "Products", route: "/products" },
-                { title: "Categories", route: "/categories" },
+                { title: "Categories", route: "/category" },
             ],
         },
         {
@@ -69,7 +70,7 @@ export default function Footer() {
                 <div className="flex flex-col gap-8 lg:flex-row lg:gap-16">
                     {/* Logo + Playstore */}
                     <div className="flex flex-row lg:flex-col items-center lg:items-start md:w-[25%]">
-                        <a href="/" className="flex items-center w-full">
+                        <NavLink href="/" unstyled className="flex items-center w-full">
                             <img
                                 height="50"
                                 width="60"
@@ -79,16 +80,17 @@ export default function Footer() {
                             <div className="text-4xl font-bold ps-2">
                                 <ApplicationName />
                             </div>
-                        </a>
+                        </NavLink>
 
-                        <a
+                        <NavLink
                             href="https://play.google.com"
                             className="w-[150px] md:w-[225px] lg:w-full"
                             target="_blank"
                             rel="noreferrer"
+                            unstyled
                         >
                             <img src="/playstore.png" alt="playstore" />
-                        </a>
+                        </NavLink>
                     </div>
 
                     {/* Widgets */}
@@ -104,25 +106,27 @@ export default function Footer() {
                                 <ul className="mb-4">
                                     {widget.menu.map((link, i) => (
                                         <li key={i}>
-                                            <a
+                                            <NavLink
                                                 href={link.route}
                                                 className="block py-1 mb-1"
+                                                unstyled
                                             >
                                                 {link.title}
-                                            </a>
+                                            </NavLink>
                                         </li>
                                     ))}
                                 </ul>
 
                                 {index === widgets.length - 1 && (
-                                    <a
+                                    <NavLink
                                         href="/"
                                         onClick={openMail}
                                         className="p-2 px-4 rounded-md btn_outline_secondary bold"
+                                        unstyled
                                     >
                                         <i className="mr-2 fa-solid fa-paper-plane"></i>
                                         <span>Mail Us</span>
-                                    </a>
+                                    </NavLink>
                                 )}
                             </div>
                         ))}

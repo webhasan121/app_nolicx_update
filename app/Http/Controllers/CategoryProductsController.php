@@ -6,11 +6,12 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Slider as sliderModel;
 use App\Models\Slider_has_slide;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class CategoryProductsController extends Controller
 {
-    public function index($cat)
+    public function index(Request $request, $cat)
     {
         $category = Category::query()
             ->with('children.children.children')
@@ -26,8 +27,7 @@ class CategoryProductsController extends Controller
                 'belongs_to_type' => 'reseller',
                 'status' => 'Active',
             ])
-            ->limit(20)
-            ->get([
+            ->paginate(20, [
                 'id',
                 'name',
                 'title',
@@ -37,7 +37,7 @@ class CategoryProductsController extends Controller
                 'discount',
                 'price',
                 'unit',
-            ]);
+            ])->withQueryString();
 
         $slider = sliderModel::query()
             ->where(['status' => true])
@@ -65,6 +65,7 @@ class CategoryProductsController extends Controller
             'products' => $products,
             'categories' => Category::getAll(),
             'slides' => $slides,
+            'filters' => $request->only('page'),
         ]);
     }
 

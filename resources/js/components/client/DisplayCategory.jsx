@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import NavLink from "../NavLink";
 
 export default function DisplayCategory({ categories = [] }) {
   const catDivRef = useRef(null);
@@ -32,9 +33,10 @@ export default function DisplayCategory({ categories = [] }) {
                   height: "100px",
                 }}
               >
-                <a
-                  href={`/category/${item.slug}/products`}
+                <NavLink
+                  href={route("category.products", { cat: item.slug })}
                   className="flex flex-col items-center w-full h-full"
+                  unstyled
                   style={{
                     width: "100px",
                     height: "100px",
@@ -61,7 +63,7 @@ export default function DisplayCategory({ categories = [] }) {
                       ? item.name.substring(0, 9) + "..."
                       : item.name}
                   </div>
-                </a>
+                </NavLink>
               </div>
             ))}
         </div>

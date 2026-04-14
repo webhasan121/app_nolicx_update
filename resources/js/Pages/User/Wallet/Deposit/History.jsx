@@ -132,8 +132,9 @@ export default function DepositHistory() {
 
                         <form onSubmit={submit}>
                             <div className="mb-4">
-                                <InputLabel value="Amount" />
+                                <InputLabel htmlFor="deposit-amount">Amount</InputLabel>
                                 <TextInput
+                                    id="deposit-amount"
                                     type="number"
                                     value={data.amount}
                                     onChange={(e) =>
@@ -150,8 +151,9 @@ export default function DepositHistory() {
                             </div>
 
                             <div className="mb-4">
-                                <InputLabel value="Payment Method" />
+                                <InputLabel htmlFor="deposit-paymentMethod">Payment Method</InputLabel>
                                 <select
+                                    id="deposit-paymentMethod"
                                     className="w-full rounded"
                                     value={data.paymentMethod}
                                     onChange={(e) =>
@@ -177,8 +179,9 @@ export default function DepositHistory() {
                             </div>
 
                             <div className="mb-4">
-                                <InputLabel value="Receiver Account Number" />
+                                <InputLabel htmlFor="deposit-receiverAccountNumber">Receiver Account Number</InputLabel>
                                 <TextInput
+                                    id="deposit-receiverAccountNumber"
                                     type="text"
                                     value={data.receiverAccountNumber}
                                     onChange={(e) =>
@@ -205,8 +208,9 @@ export default function DepositHistory() {
                             <Hr />
                             <div className="text-xs">Sender Info</div>
                             <div className="mb-4">
-                                <InputLabel value="Sender Account Number" />
+                                <InputLabel htmlFor="deposit-senderAccountNumber">Sender Account Number</InputLabel>
                                 <TextInput
+                                    id="deposit-senderAccountNumber"
                                     type="text"
                                     value={data.senderAccountNumber}
                                     onChange={(e) =>
@@ -226,8 +230,9 @@ export default function DepositHistory() {
                             </div>
 
                             <div className="mb-4">
-                                <InputLabel value="Sender Name" />
+                                <InputLabel htmlFor="deposit-senderName">Sender Name</InputLabel>
                                 <TextInput
+                                    id="deposit-senderName"
                                     type="text"
                                     value={data.senderName}
                                     onChange={(e) =>
@@ -244,8 +249,9 @@ export default function DepositHistory() {
                             </div>
 
                             <div className="mb-4">
-                                <InputLabel value="Transaction ID" />
+                                <InputLabel htmlFor="deposit-transactionId">Transaction ID</InputLabel>
                                 <TextInput
+                                    id="deposit-transactionId"
                                     type="text"
                                     value={data.transactionId}
                                     onChange={(e) =>
@@ -276,4 +282,3 @@ export default function DepositHistory() {
         </UserDash>
     );
 }
-

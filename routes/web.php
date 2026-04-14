@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductDetailsController;
 use App\Http\Controllers\ProductsIndexController;
 use App\Http\Controllers\ProductOrderController;
 use App\Http\Controllers\ProductComissionController;
+use App\Http\Controllers\CategoryIndexController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LocationController;
@@ -107,9 +108,11 @@ Route::middleware('auth')->prefix('/u/')->group(function () {
 
 Route::get('products/old', userProductsPage::class)->name('products.index.old');
 Route::get('products', [ProductsIndexController::class, 'index'])->name('products.index');
-Route::get('category/{cat}/products', userProductsForCategoryPage::class)->name('category.products');
+Route::get('category/{cat}/products/old', userProductsForCategoryPage::class)->name('category.products.old');
+Route::get('category/{cat}/products', [CategoryProductsController::class, 'index'])->name('category.products');
 
-Route::get('category', userCategoriesPage::class)->name('category.index');
+Route::get('category/old', userCategoriesPage::class)->name('category.index.old');
+Route::get('category', [CategoryIndexController::class, 'index'])->name('category.index');
 
 Route::get('product/{id}/{slug}/old', userProductsDetailsPage::class)->name('products.details.old')->middleware('products.view.add');
 Route::get('product/{id}/{slug}', [ProductDetailsController::class, 'show'])->name('products.details')->middleware('products.view.add');

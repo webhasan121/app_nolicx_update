@@ -2,6 +2,7 @@ import { useState } from "react";
 import Modal from "../../components/Modal";
 import DangerButton from "../../components/DangerButton";
 import Hr from "../../components/Hr";
+import NavLink from "../../components/NavLink";
 import PrimaryButton from "../../components/PrimaryButton";
 import ResponsiveNavLink from "../../components/ResponsiveNavLink";
 import SectionHeader from "../../components/dashboard/section/Header";
@@ -16,12 +17,13 @@ function CategoryItem({ item, depth = 0 }) {
 
     return (
         <div className={`${depth === 0 ? "p-2 border-b border-gray-200 hover:bg-gray-50" : "py-1"} cursor-pointer`}>
-            <a
+            <NavLink
                 href={route("reseller.resel-product.index", { cat: item.id })}
                 className="text-sm"
+                unstyled
             >
                 {item.name}
-            </a>
+            </NavLink>
 
             {Array.isArray(item.children) && item.children.length > 0 ? (
                 <div className={`${depth === 0 ? "px-2 py-1 border-l" : "ps-2"}`}>
@@ -106,9 +108,12 @@ function ProductCard({ product }) {
             </div>
 
             <div className="p-2 bg-white h-34 flex flex-col justify-between">
-                <a href={route("reseller.resel-product.veiw", { pd: product?.id })}>
-                    <div className="text-sm">{product?.name ?? "N/A"}</div>
-                </a>
+                <NavLink
+                    href={route("reseller.resel-product.veiw", { pd: product?.id })}
+                    unstyled
+                >
+                    <div className="text-sm text-start">{product?.name ?? "N/A"}</div>
+                </NavLink>
 
                 <div>
                     <div className="text-md mb-3">
@@ -227,12 +232,13 @@ export default function Dashboard({
                     <div className="p-3 border-b">Explore Category</div>
                     <div className="p-3 text-sm text-gray-600">
                         <div className="mb-2">
-                            <a
+                            <NavLink
                                 href={route("reseller.resel-product.index")}
                                 className="text-sm"
+                                unstyled
                             >
                                 View All Products
-                            </a>
+                            </NavLink>
                         </div>
                         {(categories ?? []).map((item) => (
                             <CategoryItem key={item.id} item={item} />

@@ -1,34 +1,51 @@
-import { Link } from "@inertiajs/react";
-import { useState } from "react";
-import ApplicationName from "../../components/ApplicationName";
+import { Link, router } from "@inertiajs/react";
+import { useMemo, useState } from "react";
+import CommonHeading from "../../components/client/CommonHeading";
 import Container from "../../components/dashboard/Container";
 import ProductCard from "../../components/home/ProductCard";
 import CatLoop from "../../components/client/CatLoop";
 import HeroSlider from "../../components/home/HeroSlider";
 import UserLayout from "../../Layouts/User/App";
 
-function Heading() {
-    return (
-        <div className="container">
-            <div className="w-full mb-3 text-3xl text-center heading_center">
-                <h2 className="flex justify-center gap-3">
-                    <ApplicationName />
-                    <span className="font-bold text-green-900">
-                        Marketplace
-                    </span>
-                </h2>
-            </div>
-        </div>
-    );
-}
-
 export default function CategoryIndex({
     cat,
     products = [],
     categories = [],
     slides = [],
+    filters = {},
 }) {
     const [open, setOpen] = useState(false);
+    const rows = products?.data ?? [];
+
+    const pagination = useMemo(() => {
+        const links = products?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [products?.links]);
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url, window.location.origin);
+
+        router.get(
+            route("category.products", { cat }),
+            {
+                page: nextUrl.searchParams.get("page") ?? filters?.page ?? undefined,
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            }
+        );
+    };
 
     return (
         <UserLayout title={cat}>
@@ -36,7 +53,7 @@ export default function CategoryIndex({
 
             <Container>
                 <div className="container">
-                    <Heading />
+                    <CommonHeading />
 
                     <div className="flex items-center justify-start py-3 mb-3 border-y">
                         <i className="fas fa-home pe-2"></i>
@@ -127,7 +144,7 @@ export default function CategoryIndex({
                                         gridGap: "10px",
                                     }}
                                 >
-                                    {products.map((product) => (
+                                    {rows.map((product) => (
                                         <ProductCard
                                             key={product.id}
                                             product={product}
@@ -135,9 +152,49 @@ export default function CategoryIndex({
                                     ))}
                                 </div>
 
-                                {!products.length ? (
+                                {!rows.length ? (
                                     <div className="alert alert-info">
                                         No Product Found !
+                                    </div>
+                                ) : null}
+
+                                {pagination.pages.length ? (
+                                    <div className="w-full pt-4">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.prev?.url}
+                                                className="px-3 py-1 bg-white border rounded disabled:opacity-50"
+                                                onClick={() => goToPage(pagination.prev?.url)}
+                                            >
+                                                Previous
+                                            </button>
+
+                                            {pagination.pages.map((link, index) => (
+                                                <button
+                                                    key={`${link.label}-${index}`}
+                                                    type="button"
+                                                    disabled={!link.url}
+                                                    className={`px-3 py-1 border rounded ${
+                                                        link.active
+                                                            ? "bg-gray-900 text-white"
+                                                            : "bg-white"
+                                                    }`}
+                                                    onClick={() => goToPage(link.url)}
+                                                >
+                                                    {link.label}
+                                                </button>
+                                            ))}
+
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.next?.url}
+                                                className="px-3 py-1 bg-white border rounded disabled:opacity-50"
+                                                onClick={() => goToPage(pagination.next?.url)}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : null}
                             </div>

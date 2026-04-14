@@ -3,11 +3,14 @@ import { Link } from "@inertiajs/react";
 export default function NavLink({
     href,
     active = false,
+    unstyled = false,
     children,
     className = "",
     ...props
 }) {
-    const classes = active
+    const classes = unstyled
+        ? ""
+        : active
         ? `inline-flex items-center px-1 pt-1 border-b-2 border-orange-400
        text-sm font-medium leading-5 text-gray-900
        focus:outline-none focus:border-orange-700
