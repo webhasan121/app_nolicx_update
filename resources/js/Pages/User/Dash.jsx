@@ -6,6 +6,7 @@ import SectionSection from "../../components/dashboard/section/Section";
 import SectionHeader from "../../components/dashboard/section/Header";
 import SectionInner from "../../components/dashboard/section/Inner";
 import UserDash from "../../components/user/dash/UserDash";
+import MembershipActivateBox from "../../components/client/MembershipActivateBox";
 import NavLink from "../../components/NavLink";
 
 export default function Dash() {
@@ -126,7 +127,7 @@ export default function Dash() {
                 </section>
 
                 {/* Refer & Claim Section */}
-                <div className="justify-between gap-4 my-2 lg:flex">
+                <div className="items-start justify-between m-0 my-2 lg:flex">
                     {/* Refer Box */}
                     <SectionSection>
                         <SectionHeader
@@ -139,15 +140,21 @@ export default function Dash() {
                                 type="text"
                                 readOnly
                                 value={user_my_ref || ""}
-                                className="w-full border rounded"
+                                id="refID"
+                                disabled
+                                className="rounded form-control w-full"
                             />
 
                             <div className="flex items-center mt-2">
-                                <PrimaryButton onClick={copyRef}>
-                                    {copied ? "Copied!" : "Copy"}
+                                <PrimaryButton
+                                    onClick={copyRef}
+                                    className="my-1 text-right btn btn-success btn-sm PX-3"
+                                >
+                                    <i className="mr-1 fas fa-copy"></i>
+                                    {copied ? "copied" : "copy"}
                                 </PrimaryButton>
 
-                                <NavLink href={route("user.ref.view")}>
+                                <NavLink href={route("user.ref.view")} className="text-xs">
                                     View Your Referred User
                                 </NavLink>
                             </div>
@@ -177,7 +184,6 @@ export default function Dash() {
 
                                     <div className="flex items-center justify-between mt-2">
                                         <PrimaryButton>Apply</PrimaryButton>
-
                                         <div className="text-xs">{joined}</div>
                                     </div>
                                 </form>
@@ -188,58 +194,11 @@ export default function Dash() {
 
                 {/* Upgrade Cards */}
                 <SectionSection>
-                    <div>
                         {/* membership-activate-box */}
-                        {vendorActive && (
-                            <div className="px-4 py-3 mb-3 text-green-700 bg-green-100 border border-green-400 rounded">
-                                <h6 className="mb-2 font-semibold">Hello,</h6>
-
-                                <p>
-                                    Your request for vendor, name of
-                                    <strong className="px-3 py-1 mx-1 text-white bg-gray-800 rounded-lg shadow-sm">
-                                        {vendorActive.shop_name_bn ?? "N/A"} /
-                                        {vendorActive.shop_name_en ?? "N/A"}
-                                    </strong>
-                                    with
-                                    <strong className="px-3 py-1 text-white bg-gray-800 rounded-lg shadow-sm">
-                                        {vendorActive.system_get_comission ??
-                                            "0"}
-                                        %
-                                    </strong>
-                                    commission share, is active now.
-                                </p>
-
-                                <NavLink
-                                    href={route("dashboard")}
-                                    className="inline-block mt-2"
-                                >
-                                    Go To Dashboard
-                                </NavLink>
-                            </div>
-                        )}
-
-                        {/* Reseller Active */}
-                        {resellerActive && (
-                            <div className="px-4 py-3 text-green-700 bg-green-100 border border-green-400 rounded">
-                                <h6 className="mb-2 font-semibold">Hello,</h6>
-
-                                <p>
-                                    Your request for reseller, name of
-                                    <strong className="px-3 py-1 mx-1 text-white bg-gray-800 rounded-lg shadow-sm">
-                                        {resellerActive.shop_name_bn ?? "N/A"} /
-                                        {resellerActive.shop_name_en ?? "N/A"}
-                                    </strong>
-                                    with
-                                    <strong className="px-3 py-1 text-white bg-gray-800 rounded-lg shadow-sm">
-                                        {resellerActive.system_get_comission ??
-                                            "0"}
-                                        %
-                                    </strong>
-                                    commission share, is active now.
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                        <MembershipActivateBox
+                            vendorActive={vendorActive}
+                            resellerActive={resellerActive}
+                        />
 
                     <style
                         dangerouslySetInnerHTML={{

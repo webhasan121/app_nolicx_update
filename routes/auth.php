@@ -153,7 +153,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/edit/password', [ProfileEditController::class, 'updatePassword'])->name('edit.profile.password');
     Route::post('/users/edit/verification', [ProfileEditController::class, 'sendVerification'])->name('edit.profile.verification');
 
-    Route::get('/user/old', userPanel::class)->name('user.dash');
+    Route::get('/user/old', userPanel::class)->name('user.dash.old');
     Route::get('/user', [\App\Http\Controllers\User\DashController::class, 'index'])->name('user.dash');
     Route::post('/user/check-ref', [\App\Http\Controllers\User\DashController::class, 'checkRef'])->name('user.check.ref');
 

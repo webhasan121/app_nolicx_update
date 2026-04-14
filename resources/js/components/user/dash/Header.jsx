@@ -10,10 +10,13 @@ import ResellerResponsiveNavigation from "../../../Layouts/ResellerResponsiveNav
 import RiderResponsiveNavigation from "../../../Layouts/RiderResponsiveNavigation";
 
 export default function Header() {
-    const { auth, roles, active_nav } = usePage().props;
+    const { auth, roles, active_nav, permissions = [] } = usePage().props;
     const user = auth.user;
 
     const roleNames = user?.roles?.map((r) => r.name) ?? [];
+    const permissionNames = Array.isArray(permissions)
+        ? permissions
+        : permissions?.map?.((p) => p.name) ?? [];
 
     const logout = () => {
         router.get(route("logout"));
@@ -147,15 +150,147 @@ export default function Header() {
                                 {(roles?.includes("system") ||
                                     roles?.includes("admin")) && (
                                     <>
-                                        <Hr />
-                                        <ResponsiveNavLink
-                                            href={route("system.users.view")}
-                                            active={route().current(
-                                                "system.users.*",
+                                        <hr />
+                                        <div className="py-2">
+                                            {permissionNames.includes("users_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.users.view")}
+                                                    active={route().current("system.users.*")}
+                                                >
+                                                    Users Manage
+                                                </ResponsiveNavLink>
                                             )}
-                                        >
-                                            Users Manage
-                                        </ResponsiveNavLink>
+
+                                            {permissionNames.includes("admin_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.admin")}
+                                                    active={route().current("system.admin")}
+                                                >
+                                                    Admin Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("vendors_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.vendor.index")}
+                                                    active={route().current("system.vendor.*")}
+                                                >
+                                                    Vendor Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("resellers_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.reseller.index")}
+                                                    active={route().current("system.reseller.*")}
+                                                >
+                                                    Reseller Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("riders_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.rider.index")}
+                                                    active={route().current("system.rider.*")}
+                                                >
+                                                    Rider Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("role_list") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.role.list")}
+                                                    active={route().current("system.role.*")}
+                                                >
+                                                    Role Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            <Hr />
+
+                                            {permissionNames.includes("product_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.products.index")}
+                                                    active={route().current("system.products.*")}
+                                                >
+                                                    Products Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("category_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.categories.index")}
+                                                    active={route().current("system.categories.*")}
+                                                >
+                                                    Categories Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("vip_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.vip.users")}
+                                                    active={route().current("system.vip.*")}
+                                                >
+                                                    ViP Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("slider_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.slider.index")}
+                                                    active={route().current("system.slider.*")}
+                                                >
+                                                    Slider Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("store_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.store.index")}
+                                                    active={route().current("system.store.*")}
+                                                >
+                                                    StoreManage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            <Hr />
+
+                                            {permissionNames.includes("deposit_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.deposit.index")}
+                                                    active={route().current("system.deposit.*")}
+                                                >
+                                                    Deposit Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("comission_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.comissions.index")}
+                                                    active={route().current("system.comissions.*")}
+                                                >
+                                                    Comission Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("order_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.orders.index")}
+                                                    active={route().current("system.orders.*")}
+                                                >
+                                                    Orders Manage
+                                                </ResponsiveNavLink>
+                                            )}
+
+                                            {permissionNames.includes("withdraw_view") && (
+                                                <ResponsiveNavLink
+                                                    href={route("system.withdraw.index")}
+                                                    active={route().current("*.withdraw.*")}
+                                                >
+                                                    Withdraw Manage
+                                                </ResponsiveNavLink>
+                                            )}
+                                        </div>
                                     </>
                                 )}
 
