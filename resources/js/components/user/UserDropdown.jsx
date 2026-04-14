@@ -1,4 +1,4 @@
-import { Link } from "@inertiajs/react";
+import NavLink from "../NavLink";
 import { useState } from "react";
 
 export default function UserDropdown({ user }) {
@@ -12,12 +12,10 @@ export default function UserDropdown({ user }) {
 
             {open && (
                 <div className="absolute right-0 w-48 bg-white shadow-md">
-                    <Link href="/user">User Panel</Link>
-                    <Link href="/user/orders">Orders</Link>
-                    <Link href="/profile">Profile</Link>
-                    <Link href={route("logout")}>
-                        Logout
-                    </Link>
+                    <NavLink href="/user">User Panel</NavLink>
+                    <NavLink href="/user/orders">Orders</NavLink>
+                    <NavLink href="/profile">Profile</NavLink>
+                    <NavLink href={route("logout")}>Logout</NavLink>
                 </div>
             )}
         </div>

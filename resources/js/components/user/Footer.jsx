@@ -70,7 +70,10 @@ export default function Footer() {
                 <div className="flex flex-col gap-8 lg:flex-row lg:gap-16">
                     {/* Logo + Playstore */}
                     <div className="flex flex-row lg:flex-col items-center lg:items-start md:w-[25%]">
-                        <NavLink href="/" unstyled className="flex items-center w-full">
+                        <NavLink
+                            href="/"
+                            className="flex items-center w-full border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                        >
                             <img
                                 height="50"
                                 width="60"
@@ -84,10 +87,9 @@ export default function Footer() {
 
                         <NavLink
                             href="https://play.google.com"
-                            className="w-[150px] md:w-[225px] lg:w-full"
+                            className="w-[150px] md:w-[225px] lg:w-full border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                             target="_blank"
                             rel="noreferrer"
-                            unstyled
                         >
                             <img src="/playstore.png" alt="playstore" />
                         </NavLink>
@@ -108,8 +110,7 @@ export default function Footer() {
                                         <li key={i}>
                                             <NavLink
                                                 href={link.route}
-                                                className="block py-1 mb-1"
-                                                unstyled
+                                                className="block py-1 mb-1 border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                                             >
                                                 {link.title}
                                             </NavLink>
@@ -121,8 +122,7 @@ export default function Footer() {
                                     <NavLink
                                         href="/"
                                         onClick={openMail}
-                                        className="p-2 px-4 rounded-md btn_outline_secondary bold"
-                                        unstyled
+                                        className="p-2 px-4 rounded-md btn_outline_secondary bold border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                                     >
                                         <i className="mr-2 fa-solid fa-paper-plane"></i>
                                         <span>Mail Us</span>

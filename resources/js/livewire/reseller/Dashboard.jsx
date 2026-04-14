@@ -19,8 +19,7 @@ function CategoryItem({ item, depth = 0 }) {
         <div className={`${depth === 0 ? "p-2 border-b border-gray-200 hover:bg-gray-50" : "py-1"} cursor-pointer`}>
             <NavLink
                 href={route("reseller.resel-product.index", { cat: item.id })}
-                className="text-sm"
-                unstyled
+                className="text-sm border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
             >
                 {item.name}
             </NavLink>
@@ -110,7 +109,7 @@ function ProductCard({ product }) {
             <div className="p-2 bg-white h-34 flex flex-col justify-between">
                 <NavLink
                     href={route("reseller.resel-product.veiw", { pd: product?.id })}
-                    unstyled
+                    className="border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                 >
                     <div className="text-sm text-start">{product?.name ?? "N/A"}</div>
                 </NavLink>
@@ -234,8 +233,7 @@ export default function Dashboard({
                         <div className="mb-2">
                             <NavLink
                                 href={route("reseller.resel-product.index")}
-                                className="text-sm"
-                                unstyled
+                                className="text-sm border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                             >
                                 View All Products
                             </NavLink>

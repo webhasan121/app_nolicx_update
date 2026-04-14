@@ -127,6 +127,7 @@ new class extends Component{
                                     <i class="pr-2 fas fa-home"></i> Go To Dashboard
                                 </x-dropdown-link>
                                 @else
+
                                 @if (empty(auth()->user()->active_nav))
 
                                 <x-hr />

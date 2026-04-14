@@ -27,8 +27,7 @@ export default function Footer({ layout }) {
                                                 <li key={widgetIndex}>
                                                     <NavLink
                                                         href={widget.url}
-                                                        unstyled
-                                                        className="hover:underline"
+                                                        className="border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent hover:underline"
                                                     >
                                                         {widget.label}
                                                     </NavLink>
@@ -37,14 +36,13 @@ export default function Footer({ layout }) {
                                         }
                                         if (widget.type === "icon") {
                                             return (
-                                                <NavLink
-                                                    key={widgetIndex}
-                                                    href={widget.url}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    unstyled
-                                                    className="inline-block mr-2"
-                                                >
+                                                    <NavLink
+                                                        key={widgetIndex}
+                                                        href={widget.url}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="inline-block mr-2 border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                                                    >
                                                     <i className={`fab fa-${widget.icon}`}></i>
                                                 </NavLink>
                                             );

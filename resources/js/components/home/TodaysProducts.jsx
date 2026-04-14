@@ -1,4 +1,4 @@
-import { Link } from "@inertiajs/react";
+import NavLink from "../NavLink";
 import ProductsLoop from "../client/ProductsLoop";
 
 export default function TodaysProducts({ products = [] }) {
@@ -10,12 +10,12 @@ export default function TodaysProducts({ products = [] }) {
             <div className="flex items-center justify-between px-2 py-4">
                 <h2 className="text-xl font-bold">Today's</h2>
 
-                <Link
-                    href="/products?tag=today"
-                    className="px-3 py-2 rounded hover:text-indigo-600"
+                <NavLink
+                    href={`${route("products.index")}?tag=today`}
+                    className="border-b-0 px-3 py-2 rounded text-inherit hover:text-indigo-600 hover:border-transparent"
                 >
                     View All
-                </Link>
+                </NavLink>
             </div>
 
             <div className="pb-4 transition-all duration-300 product_section">

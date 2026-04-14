@@ -1,5 +1,6 @@
-import { Link, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import axios from "axios";
+import NavLink from "../NavLink";
 
 export default function ProductCard({ product }) {
     const hasOffer = product.offer_type && product.discount;
@@ -50,22 +51,22 @@ export default function ProductCard({ product }) {
                             To Cart
                         </button>
 
-                        <Link
-                            href={`/product/${product.id}/${product.slug}`}
-                            className="text-xs"
+                        <NavLink
+                            href={route("products.details", { id: product.id, slug: product.slug })}
+                            className="border-b-0 p-0 text-xs text-inherit hover:text-inherit hover:border-transparent"
                         >
                             View Details
                             <i className="mx-2 fas fa-arrow-right"></i>
-                        </Link>
+                        </NavLink>
                     </div>
 
-                    <Link
-                        href={`/product/order/${product.id}/${product.slug}`}
-                        className="flex items-center justify-center w-full py-2 font-bold text-center bg-white text_primary"
+                    <NavLink
+                        href={route("product.makeOrder", { id: product.id, slug: product.slug })}
+                        className="flex items-center justify-center w-full border-b-0 py-2 font-bold text-center bg-white text_primary hover:bg-white hover:border-transparent"
                     >
                         Order Now
                         <i className="mx-2 fas fa-arrow-right"></i>
-                    </Link>
+                    </NavLink>
                 </div>
             </div>
 
@@ -82,14 +83,14 @@ export default function ProductCard({ product }) {
             <div className="flex flex-col justify-between p-2 h-28">
                 {/* Title + Unit */}
                 <div className="flex items-start justify-between space-x-1 text-white">
-                    <Link
-                        href={`/product/${product.id}/${product.slug}`}
-                        className="block w-full p-1 text-xs text-white truncate bg_primary"
+                    <NavLink
+                        href={route("products.details", { id: product.id, slug: product.slug })}
+                        className="block w-full border-b-0 p-1 text-xs text-white truncate bg_primary hover:text-white hover:border-transparent"
                     >
                         {product.title.length > 15
                             ? product.title.substring(0, 15) + "..."
                             : product.title}
-                    </Link>
+                    </NavLink>
 
                     <div className="p-1 text-xs bg_primary">
                         {product.unit ?? 0}
@@ -114,13 +115,13 @@ export default function ProductCard({ product }) {
                 </div>
 
                 {/* Order Button */}
-                <Link
-                    href={`/product/order/${product.id}/${product.slug}`}
-                    className="flex items-center justify-center block text-sm font-bold text-center transition bg-white text_primary hover:bg_primary hover:text-white"
+                <NavLink
+                    href={route("product.makeOrder", { id: product.id, slug: product.slug })}
+                    className="flex items-center justify-center block border-b-0 text-sm font-bold text-center transition bg-white text_primary hover:bg_primary hover:text-white hover:border-transparent"
                 >
                     <i className="mr-2 fas fa-cart-plus"></i>
                     Order Now
-                </Link>
+                </NavLink>
             </div>
 
             {/* Sold Out Overlay */}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@inertiajs/react";
+import NavLink from "../NavLink";
 
 export default function HeroSlider({ slides = [] }) {
 
@@ -40,15 +40,15 @@ export default function HeroSlider({ slides = [] }) {
                                 index === current ? "m_active" : ""
                             }`}
                         >
-                            <Link
+                            <NavLink
                                 href={item.action_url ?? "/products"}
-                                className="m_slide-link"
+                                className="m_slide-link border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                             >
                                 <img
                                     src={`/storage/${item.image}`}
                                     alt=""
                                 />
-                            </Link>
+                            </NavLink>
 
                             {item.main_title && (
                                 <div
@@ -75,12 +75,12 @@ export default function HeroSlider({ slides = [] }) {
                                         </p>
                                     </div>
 
-                                    <Link
+                                    <NavLink
                                         href={item.action_url ?? "/products"}
-                                        className="inline-flex items-center px-4 py-2 text-xs font-semibold uppercase transition bg-white border border-indigo-900 rounded-md shadow-sm hover:bg-indigo-900 hover:text-white"
+                                        className="inline-flex items-center px-4 py-2 text-xs font-semibold uppercase transition bg-white border border-indigo-900 rounded-md shadow-sm hover:bg-indigo-900 hover:text-white hover:border-indigo-900"
                                     >
                                         {item.action_text ?? "Shop Now"}
-                                    </Link>
+                                    </NavLink>
                                 </div>
                             )}
                         </div>

@@ -1,4 +1,4 @@
-import { Link } from "@inertiajs/react";
+import NavLink from "../NavLink";
 import { useEffect, useState } from "react";
 
 export default function StaticSlider({ sliders = [] }) {
@@ -33,7 +33,7 @@ export default function StaticSlider({ sliders = [] }) {
                             className={`slide ${index === current ? "active" : ""}`}
                         >
 
-                            <Link
+                            <NavLink
                                 href={item.action_url ?? "/products"}
                                 className="w-full slide-link"
                             >
@@ -42,7 +42,7 @@ export default function StaticSlider({ sliders = [] }) {
                                     className="w-full"
                                     alt=""
                                 />
-                            </Link>
+                            </NavLink>
 
                         </div>
 

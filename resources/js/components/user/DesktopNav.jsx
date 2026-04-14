@@ -1,5 +1,6 @@
-import { Link, usePage } from "@inertiajs/react";
+import { usePage } from "@inertiajs/react";
 import { useState } from "react";
+import NavLink from "../NavLink";
 import UserDropdown from "./UserDropdown";
 
 export default function DesktopNav() {
@@ -16,10 +17,13 @@ export default function DesktopNav() {
                         <i className="fas fa-align-justify"></i>
                     </button>
 
-                    <Link href="/" className="flex items-center">
+                    <NavLink
+                        href="/"
+                        className="flex items-center border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                    >
                         <img src="/icon.png" width="50" />
                         <div className="pl-2 font-bold">Nolicx</div>
-                    </Link>
+                    </NavLink>
                 </div>
 
                 {/* Search */}
@@ -38,15 +42,23 @@ export default function DesktopNav() {
                 <div className="flex items-center gap-4">
                     {auth.user ? (
                         <>
-                            <Link href="/carts/view">
+                            <NavLink
+                                href={route("carts.view")}
+                                className="border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                            >
                                 <i className="fas fa-cart-plus"></i>
                                 <span>{auth.cartCount}</span>
-                            </Link>
+                            </NavLink>
 
                             <UserDropdown user={auth.user} />
                         </>
                     ) : (
-                        <Link href="/login">Login</Link>
+                        <NavLink
+                            href={route("login")}
+                            className="border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                        >
+                            Login
+                        </NavLink>
                     )}
                 </div>
             </div>

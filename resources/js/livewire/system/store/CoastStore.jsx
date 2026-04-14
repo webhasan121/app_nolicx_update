@@ -39,8 +39,7 @@ export default function CoastStore({ store = 0 }) {
                         <div className="fs-5 fw-bold text-sm text-start">
                             <NavLink
                                 href="#"
-                                className="flex items-center"
-                                unstyled
+                                className="flex items-center border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                                 onClick={(e) => e.preventDefault()}
                             >
                                 <i className="fas fa-store text-md pe-2"></i>

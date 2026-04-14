@@ -1,8 +1,9 @@
-import { Link, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { useRef, useState } from "react";
 import axios from "axios";
 import SecondaryButton from "../SecondaryButton";
 import Hr from "../Hr";
+import NavLink from "../NavLink";
 import ProductsLoop from "./ProductsLoop";
 import Swal from "sweetalert2";
 
@@ -208,18 +209,18 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
 
                     <div className="flex flex-wrap items-center w-full gap-3 text-sm text-green-900">
                         {product?.owner?.shop?.id ? (
-                            <Link
+                            <NavLink
                                 href={route("shops.visit", {
                                     id: product.owner.shop.id,
                                     name: product.owner.shop.shop_name_en,
                                 })}
-                                className="px-2 rounded-xl bg-gray-50"
+                                className="border-b-0 px-2 pt-0 rounded-xl bg-gray-50 text-inherit hover:text-inherit hover:border-transparent"
                             >
                                 <strong>
                                     {product?.owner?.shop?.shop_name_en ??
                                         "N/A"}
                                 </strong>
-                            </Link>
+                            </NavLink>
                         ) : null}
 
                         {whatsappPhone ? (
@@ -275,13 +276,14 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
 
                     <div className="flex items-center text-sm">
                         <div className="rounded text_primary bold">
-                            <Link
+                            <NavLink
                                 href={route("category.products", {
                                     cat: product?.category?.slug,
                                 })}
+                                className="border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                             >
                                 {product?.category?.name ?? "Undefined"}
-                            </Link>
+                            </NavLink>
                         </div>
                     </div>
 
@@ -347,12 +349,12 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
 
                     <Hr />
                     <div className="flex items-center justify-start w-full space-x-2 purchase-info">
-                        <Link
+                        <NavLink
                             href={route("product.makeOrder", { id: product.id, slug: product.slug })}
-                            className="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase bg-orange-500 border border-transparent rounded-md"
+                            className="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase bg-orange-500 border border-transparent rounded-md hover:text-white hover:border-transparent"
                         >
                             Buy Now <i className="fas fa-arrow-right ms-2"></i>
-                        </Link>
+                        </NavLink>
                         <SecondaryButton type="button" onClick={addToCart} className="py-2 space-x-2">
                             <i className="fas fa-cart-plus"></i>
                             <span className="hidden md:block">Add to Cart</span>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, usePage, router } from "@inertiajs/react";
+import { usePage, router, Link } from "@inertiajs/react";
 import Modal from "./Modal";
+import NavLink from "./NavLink";
 
 export default function StickyNav({ open, setOpen }) {
     const { auth } = usePage().props;
@@ -19,13 +20,13 @@ export default function StickyNav({ open, setOpen }) {
     const user = auth?.user;
     const cartCount = auth?.cartCount ?? 0;
 
-      const [show, setShow] = useState(false);
+    const [show, setShow] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [search, setSearch] = useState("");
 
-    const handleSubmit  = (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        router.get("/search", { q: search });
+        router.get(route("search"), { q: search });
         setShow(false);
     };
 
@@ -72,14 +73,17 @@ export default function StickyNav({ open, setOpen }) {
                             {user ? (
                                 <>
                                     {/* CART */}
-                                    <Link href="/cart" className="mr-3">
+                                    <NavLink
+                                        href={route("carts.view")}
+                                        className="p-0 mr-3 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
+                                    >
                                         <button className="flex items-center btn">
                                             <i className="fas fa-cart-plus"></i>
                                             <span className="pb-3 text-green">
                                                 {cartCount}
                                             </span>
                                         </button>
-                                    </Link>
+                                    </NavLink>
 
                                     {/* DROPDOWN */}
                                     <div className="relative flex sm:items-center sm:ms-6">
@@ -113,52 +117,58 @@ export default function StickyNav({ open, setOpen }) {
 
                                         {dropdownOpen && (
                                             <div className="absolute right-0 z-50 w-48 mt-2 bg-white border rounded-md shadow-lg">
-                                                <Link
-                                                    href="/user"
-                                                    className="block px-4 py-2 hover:bg-gray-100"
+                                                <NavLink
+                                                    href={route("user.index")}
+                                                    className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
                                                 >
                                                     User Panel
-                                                </Link>
+                                                </NavLink>
 
-                                                <Link
-                                                    href="/upgrade/vendor"
-                                                    className="block px-4 py-2 hover:bg-gray-100"
+                                                <NavLink
+                                                    href={route(
+                                                        "upgrade.vendor.create",
+                                                        { upgrade: "vendor" },
+                                                    )}
+                                                    className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
                                                 >
                                                     Request Vendor
-                                                </Link>
+                                                </NavLink>
 
-                                                <Link
-                                                    href="/upgrade/reseller"
-                                                    className="block px-4 py-2 hover:bg-gray-100"
+                                                <NavLink
+                                                    href={route(
+                                                        "upgrade.vendor.create",
+                                                        { upgrade: "reseller" },
+                                                    )}
+                                                    className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
                                                 >
                                                     Request Reseller
-                                                </Link>
+                                                </NavLink>
 
-                                                <Link
-                                                    href="/dashboard"
-                                                    className="block px-4 py-2 hover:bg-gray-100"
+                                                <NavLink
+                                                    href={route("dashboard")}
+                                                    className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
                                                 >
                                                     Dashboard
-                                                </Link>
+                                                </NavLink>
 
-                                                <Link
+                                                <NavLink
                                                     href={route("logout")}
-                                                    className="block w-full px-4 py-2 text-left text-red-500 hover:bg-gray-100"
+                                                    className="block w-full px-4 py-2 pt-2 text-left text-red-500 border-b-0 hover:bg-gray-100 hover:text-red-500 hover:border-transparent"
                                                 >
                                                     Log Out
-                                                </Link>
+                                                </NavLink>
                                             </div>
                                         )}
                                     </div>
                                 </>
                             ) : (
-                                <Link
-                                    href="/login"
-                                    className="px-3 uppercase text-md"
+                                <NavLink
+                                    href={route("login")}
+                                    className="px-3 pt-0 uppercase border-b-0 text-md text-inherit hover:text-inherit hover:border-transparent"
                                 >
                                     <i className="pr-2 fas fa-sign-in"></i>
                                     Login
-                                </Link>
+                                </NavLink>
                             )}
                         </div>
                     </div>

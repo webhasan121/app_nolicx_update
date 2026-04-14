@@ -5,6 +5,7 @@ import CatLoop from "../client/CatLoop";
 import StickyNav from "../StickyNav";
 import Dropdown from "../Dropdown";
 import DropdownLink from "../DropdownLink";
+import NavLink from "../NavLink";
 
 export default function Header() {
     const { auth, global, roles, activeNav, categories } = usePage().props; // this global() load in AppServiceProvider
@@ -26,7 +27,7 @@ export default function Header() {
     const handleSearch = (e) => {
         e.preventDefault();
         const q = e.target.q.value;
-        router.get("/search", { q });
+        router.get(route("search"), { q });
     };
 
     return (
@@ -61,7 +62,10 @@ export default function Header() {
                             className="items-center justify-between flex-1 hidden w-full px-4 md:flex"
                             id="search_content"
                         >
-                            <Link href="/shops" className="block px-2">
+                            <Link
+                                href={route("shops.reseller")}
+                                className="block px-2"
+                            >
                                 Shops
                             </Link>
 
@@ -84,7 +88,11 @@ export default function Header() {
                             {auth?.user ? (
                                 <div className="flex items-center">
                                     {/* CART */}
-                                    <Link href="/user/carts" className="mr-3">
+                                    <NavLink
+                                        href={route("carts.view")}
+                                        className="mr-3"
+                                        unstyled
+                                    >
                                         <button
                                             type="button"
                                             className="flex items-center btn"
@@ -97,7 +105,7 @@ export default function Header() {
                                                 {auth.cartCount ?? 0}
                                             </span>
                                         </button>
-                                    </Link>
+                                    </NavLink>
 
                                     {/* DROPDOWN */}
                                     <div className="flex">
@@ -247,13 +255,13 @@ export default function Header() {
                                     </div>
                                 </div>
                             ) : (
-                                <Link
-                                    href="/login"
+                                <NavLink
+                                    href={route("login")}
                                     className="px-3 uppercase text-md"
                                 >
                                     <i className="pr-2 fas fa-sign-in"></i>
                                     Login
-                                </Link>
+                                </NavLink>
                             )}
                         </div>
                     </div>
@@ -289,7 +297,7 @@ export default function Header() {
 
                     {/* Shops */}
                     <Link
-                        href="/shops"
+                        href={route("shops.reseller")}
                         className="flex items-center justify-between w-full p-3 py-4 mb-4 bg-indigo-200 border rounded"
                     >
                         <span>Shops</span>
