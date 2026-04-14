@@ -53,11 +53,12 @@ class User extends Authenticatable
         'language',
         'site_language',
         'kyc_status', // backend_logic
-        'is_active', // backend_logic
+        'is_active', // backend_logic 
         'metadata', // backend_logic
 
         'dob', // date of birth
-        'bio', // about
+        'bio', // about 
+        'current_level_id'
     ];
 
 
@@ -71,7 +72,7 @@ class User extends Authenticatable
         'line2',
 
         'dob', // date of birth
-        'bio', // about
+        'bio', // about 
     ];
 
     /**
@@ -98,6 +99,14 @@ class User extends Authenticatable
             'password' => 'hashed',
             'metadata' => 'array',
         ];
+    }
+
+    protected static function booted() {
+        static::creating(function ($user) {
+            if (!$user->current_level_id) {
+                $user->current_level_id = 1;
+            }
+        });
     }
 
     //  protected function name(): Attribute
@@ -130,7 +139,7 @@ class User extends Authenticatable
     }
 
     /**
-     * give user default 'user' role
+     * give user default 'user' role 
      * when model is created
      */
     protected static function boot(): void
@@ -166,7 +175,7 @@ class User extends Authenticatable
                     ]
                 );
             }
-
+            // $user->reference = date('ym') . $ref;
             $user->save();
 
 
@@ -180,7 +189,7 @@ class User extends Authenticatable
     }
 
     /**
-     * scope method
+     * scope method 
      */
     public function scopeWithAdmin($query)
     {
@@ -230,7 +239,7 @@ class User extends Authenticatable
         } else {
             return $this->coin - 500;
         }
-    }
+    } 
 
     /**
      * @return Array
@@ -252,13 +261,13 @@ class User extends Authenticatable
     }
 
 
-    ////////////////
+    //////////////// 
     // Relations //
     ///////////////
 
     /**
      * user address
-     *
+     * 
      * @return User_has_address
      */
     public function address()
@@ -301,6 +310,15 @@ class User extends Authenticatable
     public function referred()
     {
         return User::where(['reference' => $this->referene]);
+    }
+
+    public function referredUsers() {
+        return $this->hasMany(user_has_refs::class, 'ref', 'reference');
+    }
+
+    public function referrals()
+    {
+        return $this->hasMany(User::class, 'reference', 'ref');
     }
 
 
@@ -445,7 +463,7 @@ class User extends Authenticatable
 
     /**
      * vip package
-     * @return vip
+     * @return vip 
      */
     public function subscription()
     {
@@ -468,7 +486,6 @@ class User extends Authenticatable
     {
         return $this->hasMany(cod::class);
     }
-
 
     public function developerAccess() {
         return $this->hasOne(DeveloperAccess::class, 'applied_id', 'id');

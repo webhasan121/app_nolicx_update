@@ -61,12 +61,6 @@ class vip extends Model
                 'id' => 0,
                 'name' => 'Deleted Package',
                 'email' => 'not found',
-
-                //new
-                //  'id' => 0,
-                // 'name' => 'Deleted Package',
-                // 'coin' => 0,
-                // 'countdown' => 0,
             ]
         );
     }

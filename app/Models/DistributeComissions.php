@@ -9,7 +9,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class DistributeComissions extends Model
 {
     // use SoftDeletes;
-    //
+    protected $fillable = [
+        'user_id',
+        'store_id',
+        'product_id ',
+        'order_id',
+        'parent_id',
+        'confirmed',
+    ];
 
     protected static function booted(): void
     {
@@ -89,5 +96,9 @@ class DistributeComissions extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function storeInfo() {
+        return $this->belongsTo(Store::class, 'store_id', 'id');
     }
 }

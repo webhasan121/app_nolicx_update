@@ -28,7 +28,7 @@ class Product extends Model
         'thumbnail',
         'offer_type',
         'unit',
-        'status', //
+        'status', // 
         'display_at_home',
 
         'vc',
@@ -66,7 +66,7 @@ class Product extends Model
         ];
     }
 
-    // attributes
+    // attributes 
     protected function title(): Attributes
     {
         // make the title Str::title()
@@ -77,7 +77,7 @@ class Product extends Model
 
 
     /**
-     * give user default 'user' role
+     * give user default 'user' role 
      * when model is created
      */
     protected static function boot(): void
@@ -127,7 +127,7 @@ class Product extends Model
         ]);
     }
 
-    ////////////////
+    //////////////// 
     // SCOPE //
     ///////////////
     public function scopeActive($query)
@@ -162,22 +162,6 @@ class Product extends Model
     public function scopeHome($query)
     {
         return $query->whereNotNull('display_at_home');
-    }
-
-    public function scopeRecommended($query)
-    {
-        return $query->reseller()->active()->home()->orderBy('vc');
-    }
-
-    public function scopeTopSales($query)
-    {
-        return $query
-            ->reseller()
-            ->active()
-            ->whereIn(
-                'id',
-                productSalesIndex::query()->orderBy('total_sales', 'desc')->pluck('product_id')
-            );
     }
 
     public function attr()
@@ -234,7 +218,7 @@ class Product extends Model
     }
 
     /**
-     * fined by whon product is being resell
+     * fined by whon product is being resell    
      */
     public function resel()
     {

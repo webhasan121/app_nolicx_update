@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class DeveloperAccess extends Model {
-    protected $fillable = [ 'applied_id', 'message', 'status', 'response_by' ];
+    protected $fillable = [ 'applied_id', 'commission', 'message', 'status', 'response_by' ];
 
     public function user() {
         return $this->belongsTo(User::class, 'applied_id', 'id');

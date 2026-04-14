@@ -202,6 +202,6 @@ class rider extends Model
     }
 
     public function targetedArea() {
-        return $this->belongsTo(City::class, 'targeted_area', 'id');
+        return $this->belongsTo(city::class, 'targeted_area', 'id');
     }
 }

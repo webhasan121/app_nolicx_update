@@ -68,7 +68,7 @@ class Order extends Model
     }
 
 
-    ////////////////
+    //////////////// 
     // Attributes //
     ///////////////
     protected function location(): Attribute

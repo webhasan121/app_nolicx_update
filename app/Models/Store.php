@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Store extends Model
 {
-    protected $fillable = ['name', 'coin'];
+    protected $fillable = ['year', 'month', 'total_balance', 'current_balance', 'distribute_balance', 'generate' ];
 
+    protected $casts = [
+        'generate' => 'boolean',
+    ];
 
     /**
      * function return the donation name of coin store

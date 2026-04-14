@@ -47,17 +47,17 @@ class TakeComissions extends Model
             $give = TakeComissions::where(['confirmed' => true])->sum('distribute_comission');
 
             // update comission store 
-            if (store::where(['name' => 'comission_store'])->exists()) {
-                store::where(['name' => 'comission_store'])->update(['coin' => $store]);
-            }
+            // if (store::where(['name' => 'comission_store'])->exists()) {
+            //     store::where(['name' => 'comission_store'])->update(['coin' => $store]);
+            // }
 
-            if (store::where(['name' => 'comission_take'])->exists()) {
-                store::where(['name' => 'comission_take'])->update(['coin' => $take]);
-            }
+            // if (store::where(['name' => 'comission_take'])->exists()) {
+            //     store::where(['name' => 'comission_take'])->update(['coin' => $take]);
+            // }
 
-            if (store::where(['name' => 'comission_give'])->exists()) {
-                store::where(['name' => 'comission_give'])->update(['coin' => $give]);
-            }
+            // if (store::where(['name' => 'comission_give'])->exists()) {
+            //     store::where(['name' => 'comission_give'])->update(['coin' => $give]);
+            // }
         });
     }
     /**
