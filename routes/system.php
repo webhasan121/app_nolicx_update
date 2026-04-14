@@ -5,6 +5,7 @@ use App\Http\Controllers\System\CategoryController;
 use App\Http\Controllers\System\ComissionsController;
 use App\Http\Controllers\System\ConsignmentController;
 use App\Http\Controllers\System\DepositController;
+use App\Http\Controllers\System\EarnBySellController;
 use App\Http\Controllers\System\GeolocationController;
 use App\Http\Controllers\System\NavigationController;
 use App\Http\Controllers\System\OrdersController;
@@ -523,7 +524,8 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
 
     // earn and sell
-    Route::get('/earn/index', EarnBySellIndex::class)->name('earn.index');
+    Route::get('/earn/index/old', EarnBySellIndex::class)->name('earn.index.old');
+    Route::get('/earn/index', [EarnBySellController::class, 'indexReact'])->name('earn.index');
 
     Route::get('/builder/footer/old', FooterBuilder::class)->name('footer.builder.old');
     Route::get('/builder/footer', [FooterBuilderController::class, 'indexReact'])->name('footer.builder');

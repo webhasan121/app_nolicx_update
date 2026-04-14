@@ -105,11 +105,19 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthenticatedSessionController::class, 'login_user']);
 
 
-    Volt::route('forgot-password', 'pages.auth.forgot-password')
+    Volt::route('forgot-password/old', 'pages.auth.forgot-password')
+        ->name('password.request.old');
+    Route::get('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'createReact'])
         ->name('password.request');
+    Route::post('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'store'])
+        ->name('password.email');
 
-    Volt::route('reset-password/{token}', 'pages.auth.reset-password')
+    Volt::route('reset-password/{token}/old', 'pages.auth.reset-password')
+        ->name('password.reset.old');
+    Route::get('reset-password/{token}', [\App\Http\Controllers\Auth\NewPasswordController::class, 'createReact'])
         ->name('password.reset');
+    Route::post('reset-password', [\App\Http\Controllers\Auth\NewPasswordController::class, 'store'])
+        ->name('password.update');
 });
 
 Route::middleware('auth')->group(function () {

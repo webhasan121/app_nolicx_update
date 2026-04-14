@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Inertia\Inertia;
+use Inertia\Response;
 use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
@@ -16,6 +18,13 @@ class PasswordResetLinkController extends Controller
     public function create(): View
     {
         return view('auth.forgot-password');
+    }
+
+    public function createReact(): Response
+    {
+        return Inertia::render('Auth/ForgotPassword', [
+            'status' => session('status'),
+        ]);
     }
 
     /**
