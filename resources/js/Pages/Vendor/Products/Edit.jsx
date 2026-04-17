@@ -221,7 +221,7 @@ export default function Edit() {
                                             type="button"
                                             onClick={restoreFromTrash}
                                         >
-                                            <i className="fa-solid fa-sync mr-2"></i>{" "}
+                                            <i className="mr-2 fa-solid fa-sync"></i>{" "}
                                             Restore
                                         </SecondaryButton>
                                     ) : (
@@ -229,7 +229,7 @@ export default function Edit() {
                                             type="button"
                                             onClick={moveToTrash}
                                         >
-                                            <i className="fa-solid fa-trash mr-2"></i>{" "}
+                                            <i className="mr-2 fa-solid fa-trash"></i>{" "}
                                             Trash
                                         </SecondaryButton>
                                     )}
@@ -257,11 +257,11 @@ export default function Edit() {
                                     <div className="text-sm">
                                         Type :
                                         {productData.is_resel ? (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">
+                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">
                                                 Resel
                                             </span>
                                         ) : (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">
+                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">
                                                 Owner
                                             </span>
                                         )}
@@ -289,7 +289,7 @@ export default function Edit() {
                                     }
                                 />
                                 <InputFile
-                                    labelWidth=""
+                                    labelWidth="250px"
                                     error="title"
                                     label="Products title"
                                     name="title"
@@ -308,7 +308,7 @@ export default function Edit() {
 
                                 <Hr />
                                 <InputFile
-                                    labelWidth=""
+                                    labelWidth="250px"
                                     label="Products Category"
                                     error="category_id"
                                     errors={errors}
@@ -345,7 +345,7 @@ export default function Edit() {
                             <SectionInner>
                                 <div>
                                     <InputField
-                                        className=" mx-1"
+                                        className="mx-1 "
                                         labelWidth="100px"
                                         label="Product Buying Price"
                                         name="buying_price"
@@ -359,7 +359,7 @@ export default function Edit() {
                                         }
                                     />
                                     <InputField
-                                        className=" mx-1"
+                                        className="mx-1 "
                                         labelWidth="100px"
                                         label="Product Sell Price"
                                         name="price"
@@ -457,7 +457,7 @@ export default function Edit() {
                             content="Define your product delevery option and charge from here."
                         />
                         <SectionInner>
-                            <div className="md:flex justify-between  ">
+                            <div className="justify-between md:flex ">
                                 <div>
                                     <InputFile
                                         error="cod"
@@ -628,7 +628,7 @@ export default function Edit() {
                                 errors={errors}
                             >
                                 <textarea
-                                    className="rounded-md p-2 shadow w-full"
+                                    className="w-full p-2 rounded-md shadow"
                                     rows="4"
                                     placeholder="Meta Description ...."
                                     value={form.data.meta_description}
@@ -679,7 +679,7 @@ export default function Edit() {
                                         }
                                     />
                                     <label htmlFor="newseothumb">
-                                        <i className="fas fa-upload px-2"></i>
+                                        <i className="px-2 fas fa-upload"></i>
                                     </label>
                                 </div>
                             </InputFile>
@@ -720,7 +720,7 @@ export default function Edit() {
                     </SectionSection>
 
                     <SectionSection>
-                        <div className="md:flex flex-rowreverse justify-between">
+                        <div className="justify-between md:flex flex-rowreverse">
                             <SectionHeader
                                 title="Image Thumbnail"
                                 content={
@@ -734,7 +734,7 @@ export default function Edit() {
                                             <input
                                                 id="prod_thumb"
                                                 type="file"
-                                                className="absolute hidden border p-1"
+                                                className="absolute hidden p-1 border"
                                                 onChange={(e) =>
                                                     form.setData(
                                                         "thumb",
@@ -744,7 +744,7 @@ export default function Edit() {
                                             />
                                             <label
                                                 htmlFor="prod_thumb"
-                                                className="p-2 rounded border"
+                                                className="p-2 border rounded"
                                             >
                                                 <i className="fas fa-upload"></i>
                                             </label>
@@ -829,7 +829,7 @@ export default function Edit() {
                                 <input
                                     type="file"
                                     id="multi_prod_img"
-                                    className="absolute hidden border p-1"
+                                    className="absolute hidden p-1 border"
                                     multiple
                                     onChange={(e) =>
                                         form.setData(
@@ -860,7 +860,7 @@ export default function Edit() {
                         <SectionInner>
                             <InputFile
                                 label="Description"
-                                labelWidth=""
+                                labelWidth="250px"
                                 error="description"
                                 errors={errors}
                             >
@@ -884,7 +884,7 @@ export default function Edit() {
                                         ></trix-editor>
                                     ) : (
                                         <textarea
-                                            className="w-full rounded border-gray-300"
+                                            className="w-full border-gray-300 rounded"
                                             id="editor"
                                             rows="10"
                                             value={form.data.description}

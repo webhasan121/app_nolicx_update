@@ -13,6 +13,11 @@ use Inertia\Response;
 
 class PartnershipController extends Controller
 {
+    public function indexReact(): Response
+    {
+        return Inertia::render('Auth/system/partnership/Index');
+    }
+
     public function developerReact(Request $request): Response
     {
         $find = trim((string) $request->query('find', ''));

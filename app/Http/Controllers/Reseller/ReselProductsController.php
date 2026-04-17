@@ -107,6 +107,18 @@ class ReselProductsController extends Controller
         ]);
     }
 
+    public function categories(Request $request): Response
+    {
+        $categories = Category::getAll()->loadMissing('children.children');
+
+        return Inertia::render('Reseller/Resel/Categories', [
+            'cat' => $request->query('cat'),
+            'categories' => $categories->map(function (Category $category) {
+                return $this->mapCategoryForResel($category);
+            })->values()->all(),
+        ]);
+    }
+
     public function order(Request $request, Product $product)
     {
         $product = Product::query()
@@ -360,5 +372,28 @@ class ReselProductsController extends Controller
         };
 
         return $build(0);
+    }
+
+    private function mapCategoryForResel(Category $category): array
+    {
+        return [
+            'id' => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'children' => $category->children->map(function (Category $child) {
+                return [
+                    'id' => $child->id,
+                    'name' => $child->name,
+                    'slug' => $child->slug,
+                    'children' => $child->children->map(function (Category $subCategory) {
+                        return [
+                            'id' => $subCategory->id,
+                            'name' => $subCategory->name,
+                            'slug' => $subCategory->slug,
+                        ];
+                    })->values()->all(),
+                ];
+            })->values()->all(),
+        ];
     }
 }

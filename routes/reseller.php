@@ -3,7 +3,9 @@
 use App\Http\Controllers\ResellerController;
 use App\Http\Controllers\Reseller\ReselProductsController;
 use App\Http\Controllers\Reseller\ReselShopsController;
+use App\Http\Controllers\Reseller\CategoriesController;
 use App\Http\Controllers\Reseller\EarnBySellController;
+use App\Http\Controllers\Reseller\OrdersController;
 use App\Http\Controllers\Reseller\ProductsController;
 use App\Http\Controllers\Reseller\ComissionsController as ResellerComissionsController;
 use App\Http\Controllers\Reseller\ReselOrdersController;
@@ -56,13 +58,18 @@ Route::prefix('/r/')->group(function () {
         ->middleware(AbleTo::class . ":product_edit");
 
 
-    Route::get('/categories', categoryIndexPage::class)->name('reseller.categories.list')->middleware(AbleTo::class . ":category_view");
+    Route::get('/categories/old', categoryIndexPage::class)->name('reseller.categories.list.old')->middleware(AbleTo::class . ":category_view");
+    Route::get('/categories', [CategoriesController::class, 'index'])->name('reseller.categories.list')->middleware(AbleTo::class . ":category_view");
+    Route::post('/categories', [CategoriesController::class, 'store'])->name('reseller.categories.store');
 
     // route for categories
 
     Route::prefix('orders')->name('reseller.order.')->group(function () {
-        Route::get('/', resellerOrderIndex::class)->name('index');
-        Route::get('/{order}', View::class)->name('view');
+        Route::get('/old', resellerOrderIndex::class)->name('index.old');
+        Route::get('/', [OrdersController::class, 'index'])->name('index');
+        Route::get('/{order}/old', View::class)->name('view.old');
+        Route::get('/{order}', [OrdersController::class, 'view'])->name('view');
+        Route::post('/{order}/status', [OrdersController::class, 'updateStatus'])->name('status');
     });
 
 
@@ -77,7 +84,8 @@ Route::prefix('/r/')->group(function () {
         ->name('reseller.resel-product.veiw');
     Route::post('/resel/product/{product}/clone', [ReselProductsController::class, 'clone'])
         ->name('reseller.resel-product.clone');
-    Route::get('/resel/categories', reselCategoriesViewPage::class)->name('reseller.resel-products.catgory');
+    Route::get('/resel/categories/old', reselCategoriesViewPage::class)->name('reseller.resel-products.catgory.old');
+    Route::get('/resel/categories', [ReselProductsController::class, 'categories'])->name('reseller.resel-products.catgory');
     Route::get('/order/resel/old', reselOrderIndexPage::class)->name('reseller.resel-order.index.old');
     Route::get('/order/resel', [ReselOrdersController::class, 'index'])->name('reseller.resel-order.index');
 

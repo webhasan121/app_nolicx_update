@@ -39,7 +39,7 @@ Route::post('products/view/restore', [ProductsController::class, 'bulkRestore'])
 Route::get('products/create/old', vendorProductsCreatePage::class)->name("vendor.products.create.old")->middleware(AbleTo::class . ":product_add");
 Route::get('products/create', [ProductsController::class, 'create'])->name("vendor.products.create")->middleware(AbleTo::class . ":product_add");
 Route::post('products/create', [ProductsController::class, 'store'])->name("vendor.products.store")->middleware(AbleTo::class . ":product_add");
-Route::get('/products/orders', vendorProductsOrderPage::class)->name('vendor.products.orders');
+// **Route::get('/products/orders', vendorProductsOrderPage::class)->name('vendor.products.orders');
 // Route::get('/products/orders/{order}/view', vendorProductsOrderPage::class)->name('vendor.products.orders');
 Route::get('/products/resell/old', vendorProductsResellPage::class)->name('vendor.products.resell.old');
 Route::get('/products/resell', [ProductsController::class, 'resell'])->name('vendor.products.resell');

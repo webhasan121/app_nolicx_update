@@ -1,3 +1,3 @@
 <div>
-    {{-- If your happiness depends on money, you will never be happy with yourself. --}}
+   Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima esse dicta non eos, ipsam libero, magni porro, praesentium laborum illum accusamus velit distinctio. Quod iure natus quaerat sapiente, quis veritatis?
 </div>

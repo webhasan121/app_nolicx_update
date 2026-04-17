@@ -159,8 +159,8 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
             Route::get('/{id}/settings', [VendorController::class, 'settingsReact'])->name('vendor.settings');
             Route::get('/{id}/documents/old', systemVendorDocumentsPage::class)->name('vendor.documents.old');
             Route::get('/{id}/documents', [VendorController::class, 'documentsReact'])->name('vendor.documents');
-            Route::get('/{id}/products', systemVendorProductsPage::class)->name('vendor.products');
-            Route::get('/{id}/categories', systemVendorCategoriesPage::class)->name('vendor.categories');
+            // Route::get('/{id}/products', systemVendorProductsPage::class)->name('vendor.products');
+            // Route::get('/{id}/categories', systemVendorCategoriesPage::class)->name('vendor.categories');
             Route::get('/{id}/orders', [VendorController::class, 'viewOrders'])->name('vendor.orders');
         });
 
@@ -256,7 +256,17 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::post('/packages/{id}/trash', [VipController::class, 'trash'])->name('vip.trash')->middleware(AbleTo::class . ":vip_update");
     Route::post('/packages/{id}/restore', [VipController::class, 'restore'])->name('vip.restore')->middleware(AbleTo::class . ":vip_update");
 
-    Route::get('/vip/{vip}', Edit::class)->name('vip.edit')->middleware(AbleTo::class . ":vip_user_edit");
+    Route::get('/vip/{vip}/old', Edit::class)->name('vip.edit.old')->middleware(AbleTo::class . ":vip_user_edit");
+    Route::get('/vip/{vip}', [VipController::class, 'userEditReact'])->name('vip.edit')->middleware(AbleTo::class . ":vip_user_edit");
+    Route::post('/vip/{vip}/status', [VipController::class, 'updateUserStatus'])->name('vip.status')->middleware(AbleTo::class . ":vip_user_edit");
+    Route::post('/vip/{vip}/task', [VipController::class, 'updateUserTask'])->name('vip.task')->middleware(AbleTo::class . ":vip_user_edit");
+    Route::post('/vip/{vip}/validity', [VipController::class, 'updateUserValidity'])->name('vip.validity')->middleware(AbleTo::class . ":vip_user_edit");
+    Route::post('/vip/{vip}/recalculate-comission', [VipController::class, 'reCalculateRefComission'])->name('vip.recalculate-comission')->middleware(AbleTo::class . ":vip_user_edit");
+    Route::post('/vip/{vip}/pushback-comission', [VipController::class, 'pushBackRefComission'])->name('vip.pushback-comission')->middleware(AbleTo::class . ":vip_user_edit");
+    Route::post('/vip/{vip}/restore', [VipController::class, 'restoreUser'])->name('vip.user.restore')->middleware(AbleTo::class . ":vip_user_edit");
+    Route::delete('/vip/{vip}', [VipController::class, 'deleteUser'])->name('vip.user.delete')->middleware(AbleTo::class . ":vip_user_edit");
+
+
     Route::get('/vips/old', systemVipUsersIndex::class)->name('vip.users.old')->middleware(AbleTo::class . ":vip_user_view");
     Route::get('/vips', [VipController::class, 'usersReact'])->name('vip.users')->middleware(AbleTo::class . ":vip_user_view");
     Route::get('/vips/print-summery/old', VipPrintSummery::class)->name('vip.print-summery.old')->middleware(AbleTo::class . ":vip_user_view");
@@ -511,7 +521,8 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
     // partnership
     Route::prefix('partnership')->name('partnership.')->group( function() {
-        Route::get('/', PartnershipIndex::class)->name('index');
+        Route::get('/old', PartnershipIndex::class)->name('index.old');
+        Route::get('/', [PartnershipController::class, 'indexReact'])->name('index');
         Route::get('/developer/old', PartnershipDeveloper::class)->name('developer.old');
         Route::get('/developer', [PartnershipController::class, 'developerReact'])->name('developer');
         Route::get('/developer/print', [PartnershipController::class, 'printDeveloperReact'])->name('developer.print');

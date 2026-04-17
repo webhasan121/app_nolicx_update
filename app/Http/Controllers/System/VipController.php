@@ -5,15 +5,57 @@ namespace App\Http\Controllers\System;
 use App\Http\Controllers\Controller;
 use App\Models\Package_pays;
 use App\Models\Packages;
+use App\Models\User;
 use App\Models\vip;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class VipController extends Controller
 {
+    public function userEditReact($vip): Response
+    {
+        $vipData = $this->findVipUser($vip);
+
+        return Inertia::render('Auth/system/vip/Edit', [
+            'vipData' => [
+                'id' => $vipData->id,
+                'user_id' => $vipData->user_id,
+                'name' => $vipData->name ?? 'N/A',
+                'created_at_formatted' => $vipData->created_at?->toFormattedDateString(),
+                'package_name' => $vipData->package?->name ?? 'N/A',
+                'package_id' => $vipData->package_id,
+                'status' => (int) ($vipData->status ?? 0),
+                'deleted_at' => $vipData->deleted_at?->toDateTimeString(),
+                'payment_by' => $vipData->payment_by ?? 'N/A',
+                'trx' => $vipData->trx ?? 'N/A',
+                'nid' => $vipData->nid ?? 'N/A',
+                'phone' => $vipData->phone ?? 'N/A',
+                'comission' => $vipData->comission ?? 'N/A',
+                'reference' => $vipData->reference ?? 'N/A',
+                'task_type' => $vipData->task_type ?? 'daily',
+                'valid_till' => $vipData->valid_till,
+                'valid_till_formatted' => $vipData->valid_till ? Carbon::parse($vipData->valid_till)->toFormattedDateString() : null,
+                'valid_till_human' => $vipData->valid_till ? Carbon::parse($vipData->valid_till)->diffForHumans() : null,
+                'expired' => !empty($vipData->valid_till) && Carbon::parse($vipData->valid_till)->lt(now()) && (bool) $vipData->status,
+                'refer_by_name' => $vipData->referBy?->name ?? 'N/A',
+                'refer_by_email' => $vipData->referBy?->email ?? 'N/A',
+                'nid_front_url' => !empty($vipData->nid_front) ? asset('storage/' . $vipData->nid_front) : null,
+                'nid_back_url' => !empty($vipData->nid_back) ? asset('storage/' . $vipData->nid_back) : null,
+            ],
+            'vips' => Packages::query()->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'price' => $item->price,
+                ];
+            })->values()->all(),
+        ]);
+    }
+
     public function indexReact(Request $request)
     {
         $nav = $request->input('nav', 'Active');
@@ -377,6 +419,142 @@ class VipController extends Controller
         ]);
     }
 
+    public function updateUserStatus(Request $request, $vip)
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'in:active,pending,reject'],
+            'valid_days' => ['nullable', 'numeric', 'min:1'],
+        ]);
+
+        $vipData = $this->findVipUser($vip);
+
+        if ($vipData->deleted_at) {
+            return redirect()->back()->with('warning', 'Trashed !');
+        }
+
+        if ($validated['status'] === 'active') {
+            $vipData->status = 1;
+
+            if (empty($vipData->valid_till)) {
+                $days = (int) ($validated['valid_days'] ?? 360);
+                $vipData->valid_from = now();
+                $vipData->valid_till = now()->addDays($days);
+            }
+
+            $vipData->save();
+
+            $vipUser = $vipData->user;
+            $ref = User::find($vipData->refer);
+
+            if ($vipUser && $ref) {
+                $ref->coin += $vipData->comission ?? 100;
+                $ref->save();
+            }
+
+            return redirect()->back()->with('success', 'Status Updated !');
+        }
+
+        if ($validated['status'] === 'pending') {
+            $vipData->status = 0;
+            $vipData->save();
+
+            return redirect()->back()->with('success', 'Status Updated !');
+        }
+
+        $vipData->status = -1;
+        $vipData->delete();
+
+        return redirect()->route('system.vip.users')->with('success', 'Moved to trash !');
+    }
+
+    public function updateUserTask(Request $request, $vip)
+    {
+        $validated = $request->validate([
+            'task' => ['required', 'in:daily,monthly,disabled'],
+        ]);
+
+        $vipData = $this->findVipUser($vip);
+        $vipData->task_type = $validated['task'];
+        $vipData->save();
+
+        return redirect()->back()->with('success', 'Task Type Updated !');
+    }
+
+    public function updateUserValidity(Request $request, $vip)
+    {
+        $validated = $request->validate([
+            'valid_days' => ['required', 'numeric', 'min:1'],
+        ]);
+
+        $vipData = $this->findVipUser($vip);
+        $vipData->valid_from = now();
+        $vipData->valid_till = now()->addDays((int) $validated['valid_days']);
+        $vipData->save();
+
+        return redirect()->back()->with('success', 'Validation Updated!');
+    }
+
+    public function reCalculateRefComission($vip)
+    {
+        $vipData = $this->findVipUser($vip);
+
+        if (!$vipData->refer) {
+            return redirect()->back()->with('error', 'No refer associated with this vip !');
+        }
+
+        $refUser = User::find($vipData->refer);
+
+        if (!$refUser) {
+            return redirect()->back()->with('error', 'Refer user not found !');
+        }
+
+        $refUser->coin += $vipData->comission ?? 100;
+        $refUser->save();
+
+        return redirect()->back()->with('success', 'Comission added to refer user !');
+    }
+
+    public function pushBackRefComission($vip)
+    {
+        $vipData = $this->findVipUser($vip);
+
+        if (!$vipData->refer) {
+            return redirect()->back()->with('error', 'No refer associated with this vip !');
+        }
+
+        $refUser = User::find($vipData->refer);
+
+        if (!$refUser) {
+            return redirect()->back()->with('error', 'Refer user not found !');
+        }
+
+        $refUser->coin -= $vipData->comission ?? 100;
+
+        if ($refUser->coin < 0) {
+            $refUser->coin = 0;
+        }
+
+        $refUser->save();
+
+        return redirect()->back()->with('success', 'Comission removed from refer user !');
+    }
+
+    public function restoreUser($vip)
+    {
+        $vipData = $this->findVipUser($vip);
+        $vipData->restore();
+
+        return redirect()->back()->with('success', 'Succfully restored !');
+    }
+
+    public function deleteUser($vip)
+    {
+        $vipData = $this->findVipUser($vip);
+        $vipData->forceDelete();
+
+        return redirect()->route('system.vip.users')->with('success', 'Deleted permanently !');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -505,5 +683,13 @@ class VipController extends Controller
                 Carbon::parse($edate)->endOfDay(),
             ]);
         }
+    }
+
+    private function findVipUser($vip): vip
+    {
+        return vip::query()
+            ->withTrashed()
+            ->with(['user', 'package', 'referBy'])
+            ->findOrFail($vip);
     }
 }

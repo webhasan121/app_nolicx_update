@@ -27,6 +27,7 @@ use App\Livewire\Pages\Shops\All;
 use App\Livewire\Pages\Shops\Shop;
 use App\Livewire\Pages\SingleProductOrder;
 use App\Http\Controllers\ShopsController;
+use App\Http\Controllers\WebPageController;
 use App\Models\Category;
 use App\Models\country;
 use App\Models\DistributeComissions;
@@ -198,7 +199,8 @@ Route::get('/user-agents', function (Request $request) {
     }
 });
 
-Route::get('page/{slug}', Page::class)->name('web.pages');
+Route::get('page/{slug}/old', Page::class)->name('web.pages.old');
+Route::get('page/{slug}', [WebPageController::class, 'show'])->name('web.pages');
 
 Route::get('/queue', function () {
     Artisan::call('queue:work');
