@@ -74,10 +74,28 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
         }
     };
 
+    const copyText = async (value) => {
+        if (window.navigator?.clipboard?.writeText) {
+            await window.navigator.clipboard.writeText(value);
+            return;
+        }
+
+        const input = document.createElement("input");
+        input.value = value;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+    };
+
     const copyLink = async () => {
-        await navigator.clipboard.writeText(productUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1200);
+        try {
+            await copyText(productUrl);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1200);
+        } catch (error) {
+            console.error("Copy failed:", error);
+        }
     };
 
     const handleMouseMove = (e) => {

@@ -1,28 +1,6 @@
-<?php
-use App\Livewire\Actions\Logout;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Livewire\Volt\Component;
-use function Livewire\Volt\{computed};
-
-$count = computed(function () {
-    return auth()->user() ? auth()->user()->myCarts()->count() : "0";
-});
-
-new class extends Component{
-    /**
-     * Log the current user out of the application.
-     */
-     public function logout(Logout $logout): void
-    {
-        $logout();
-
-        $this->redirect('/', navigate: true);
-    }
-}
-
-
-?>
+@php
+    $count = auth()->user() ? auth()->user()->myCarts()->count() : '0';
+@endphp
 
 <style>
     @media (max-width:991px) {
@@ -66,7 +44,7 @@ new class extends Component{
         <div>
             <nav class="flex items-center justify-between">
 
-                <a wire:navigate href="/" class="flex items-center">
+                <a href="/" class="flex items-center">
                     <img height="50px" width="60px" src="{{asset('icon.png')}}" alt="">
                     <div class="text-lg font-bold ps-2">
                         {{-- app name --}}
@@ -77,18 +55,18 @@ new class extends Component{
                     <ul class="flex items-center">
 
                         <li>
-                            <a wire:navigate href="{{route('home')}}">
+                            <a href="{{route('home')}}">
                                 Home
                             </a>
                         </li>
                         <li class="px-2">
                             <div class="relative">
-                                <a wire:navigate class="nav-link " href="{{route('carts.view')}}"><i
+                                <a class="nav-link " href="{{route('carts.view')}}"><i
                                         class="fas fa-shopping-cart"></i> <span
                                         class="cart-count">{{auth()->user()->myCarts()->count() ?? "0"}}</span></a>
                             </div>
                         </li>
-                        <x-dropdown align="right" width="48">
+                        <x-dropdown align="right" width="64">
                             <x-slot name="trigger">
                                 <button
                                     class="inline-flex items-center px-3 py-2 mx-2 text-sm font-medium leading-5 text-gray-500 transition duration-150 ease-in-out border rounded hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300">
@@ -138,7 +116,7 @@ new class extends Component{
                                 <x-dropdown-link :href="route('upgrade.vendor.create', ['upgrade' => 'reseller'])">
                                     <i class="pr-2 fas fa-shop"></i> {{ __('Open Reseller Shop') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link wire:navigate href="{{route('upgrade.rider.create')}}">
+                                <x-dropdown-link href="{{route('upgrade.rider.create')}}">
                                     <i class="pr-2 fas fa-truck-fast"></i> {{ __('Request Rider') }}
                                 </x-dropdown-link>
 
@@ -150,17 +128,17 @@ new class extends Component{
                                 <x-hr />
                                 @endif
                                 {{-- @if (auth()->user()->hasRole('vendor'))
-                                <x-dropdown-link wire:navigate class="bold" target="_blank" :href="route('dashboard')">
+                                <x-dropdown-link class="bold" target="_blank" :href="route('dashboard')">
                                     Vendor Dashboard
                                 </x-dropdown-link>
                                 @endif
                                 @if (auth()->user()->hasRole('reseller'))
-                                <x-dropdown-link wire:navigate class="bold" target="_blank" :href="route('dashboard')">
+                                <x-dropdown-link class="bold" target="_blank" :href="route('dashboard')">
                                     Reseller Dashboard
                                 </x-dropdown-link>
                                 @endif
                                 @if (auth()->user()->hasRole('rider'))
-                                <x-dropdown-link wire:navigate class="bold" target="_blank" :href="route('dashboard')">
+                                <x-dropdown-link class="bold" target="_blank" :href="route('dashboard')">
                                     Rider Dashboard
                                 </x-dropdown-link>
                                 @endif --}}
@@ -335,7 +313,7 @@ new class extends Component{
                                 <form method="get" action="{{ route('logout') }}">
                                     @csrf
 
-                                    <x-dropdown-link wire:navigate :href="route('logout')" onclick="event.preventDefault();
+                                    <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
                                                             this.closest('form').submit();">
                                         {{ __('Log Out') }}
                                     </x-dropdown-link>

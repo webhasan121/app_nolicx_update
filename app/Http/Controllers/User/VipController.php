@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Packages;
-use App\Models\Vip;
+use App\Models\vip;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -18,7 +18,7 @@ class VipController extends Controller
 
         $packages = Packages::all();
 
-        $vip = Vip::with('package')
+        $vip = vip::with('package')
             ->where('user_id', $user->id)
             ->get()
             ->map(function ($item) use ($user) {

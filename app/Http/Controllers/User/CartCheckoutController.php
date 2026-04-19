@@ -4,9 +4,9 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProductComissionController;
-use App\Models\Cart;
 use App\Models\Order;
 use App\Models\CartOrder;
+use App\Models\cart;
 use App\Models\country;
 use App\Models\state;
 use App\Models\city;
@@ -118,7 +118,7 @@ class CartCheckoutController extends Controller
 
             DB::beginTransaction();
 
-            $cartGroups = Cart::where('user_id', $user->id)
+            $cartGroups = cart::where('user_id', $user->id)
                 ->get()
                 ->groupBy('belongs_to');
 

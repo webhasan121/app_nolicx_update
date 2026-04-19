@@ -1,57 +1,8 @@
-<?php
-
-
-use App\Models\cart;
-use App\Models\Navigations;
-use App\Models\Category;
-use App\Livewire\Actions\Logout;
-use Livewire\Volt\Component;
-use Livewire\Attributs\On;
-use function Livewire\Volt\{computed};
-
-// $count = computed(function () {
-//     return auth()->user() ? auth()->user()->myCarts()->count() : "0";
-// });
-
-
-new class extends Component {
-
-    public $count = 0, $navigations = [], $categories = [];
-    protected $listeners = ['$refresh'];
-
-    public function mount()
-    {
-        $this->count();
-        $this->navigations = Navigations::with('links')->get();
-        // $this->categories = Category::where(['belongs_to' => false, 'slug' => 'default-category'])->orWhereNull('belongs_to')->get();
-        $this->categories = Category::getAll();
-    }
-
-    #[On('cart')]
-    public function count()
-    {
-        $this->count = auth()->user() ? auth()->user()->myCarts()->count() : "0";
-        // $this->count ++;
-    }
-
-    /**
-     * Log the current user out of the application.
-     */
-     public function logout(Logout $logout): void
-    {
-        $logout();
-
-        $this->redirect('/', navigate: true);
-    }
-
-    public function login()
-    {
-        $this->redirect('/login', navigate:true);
-    }
-
-}
-
-?>
+@php
+  $count = auth()->user() ? auth()->user()->myCarts()->count() : '0';
+  $navigations = \App\Models\Navigations::with('links')->get();
+  $categories = \App\Models\Category::getAll();
+@endphp
 
 <header x-data="{open:false}" >
   {{-- normal nav on desktop --}}
@@ -64,7 +15,7 @@ new class extends Component {
           <i x-show="open" class="text-lg fas fa-times" ></i>
         </button>
         {{-- logo --}}
-        <a wire:navigate href="/" class="flex items-center" >
+        <a href="/" class="flex items-center" >
           <img height="50px" width="60px" src="{{asset('icon.png')}}" alt="" />
           <div class="text-lg font-bold ps-2" >
             <x-application-name />
@@ -74,7 +25,7 @@ new class extends Component {
 
       {{-- search --}}
       <div class="items-center justify-between flex-1 hidden w-full px-4 md:flex" id="search_content" >
-        <a wire:navigate href="{{route('shops.reseller')}}" class="block px-2"> Shops </a>
+        <a href="{{route('shops.reseller')}}" class="block px-2"> Shops </a>
 
         <style>
           .nv-shop-item {
@@ -96,37 +47,35 @@ new class extends Component {
 
           <div id="" class="absolute left-0 hidden w-auto bg-white border shadow nv-shop-item" style="top:100%; max-width:1100px;" >
             <div class="" >
-              @volt()
-                <div class="" style="display:grid; grid-template-columns:repeat(auto-fit, 150px); max-width:1400px" >
-                  @foreach ($categories as $item)
-                    @if ($item->slug != 'default-category')
-                      <div class="h-full p-2 space-x-2 text-start" style="" >
-                        <x-nav-link class="font-bold text-gray-900 text-md" style="font-size: 16px" href="{{ route('category.products', ['cat' => $item->slug]) }}" >
-                          <span>{{$item->name}}</span>
-                        </x-nav-link>
+              <div class="" style="display:grid; grid-template-columns:repeat(auto-fit, 150px); max-width:1400px" >
+                @foreach ($categories as $item)
+                  @if ($item->slug != 'default-category')
+                    <div class="h-full p-2 space-x-2 text-start" style="" >
+                      <x-nav-link class="font-bold text-gray-900 text-md" style="font-size: 16px" href="{{ route('category.products', ['cat' => $item->slug]) }}" >
+                        <span>{{$item->name}}</span>
+                      </x-nav-link>
 
-                        <div class="block" >
-                          @foreach ($item->children as $child)
-                            <div>
-                              <x-nav-link class="text-sm text-gray-900 " href="{{ route('category.products', ['cat' => $child->slug]) }}" >
-                                <span>{{ $child->name }}</span>
+                      <div class="block" >
+                        @foreach ($item->children as $child)
+                          <div>
+                            <x-nav-link class="text-sm text-gray-900 " href="{{ route('category.products', ['cat' => $child->slug]) }}" >
+                              <span>{{ $child->name }}</span>
+                            </x-nav-link>
+                          </div>
+
+                          @foreach ($child->children as $sub)
+                            <div class="ms-3" >
+                              <x-nav-link class="text-sm text-gray-900 " href="{{ route('category.products', ['cat' => $sub->slug]) }}" >
+                                <span>{{ $sub->name }}</span>
                               </x-nav-link>
                             </div>
-
-                            @foreach ($child->children as $sub)
-                              <div class="ms-3" >
-                                <x-nav-link class="text-sm text-gray-900 " href="{{ route('category.products', ['cat' => $sub->slug]) }}" >
-                                  <span>{{ $sub->name }}</span>
-                                </x-nav-link>
-                              </div>
-                            @endforeach
                           @endforeach
-                        </div>
+                        @endforeach
                       </div>
-                    @endif
-                  @endforeach
-                </div>
-              @endvolt
+                    </div>
+                  @endif
+                @endforeach
+              </div>
             </div>
           </div>
         </div> --}}
@@ -152,9 +101,7 @@ new class extends Component {
                 <i class="fas fa-cart-plus" ></i>
                 <span id="displayCartItem" class="pb-3 text-green" >
                   @auth
-                    @volt('cart')
-                      <div>{{$this->count ?? "0"}}</div>
-                    @endvolt
+                    <div>{{ $count ?? '0' }}</div>
                   @endauth
                   @guest
                     {{ __('0') }}
@@ -165,7 +112,7 @@ new class extends Component {
 
             <div class="flex" >
               <div class="flex sm:items-center sm:ms-6" >
-                <x-dropdown align="right" width="48" >
+                <x-dropdown align="right" width="64" >
                   <x-slot name="trigger" >
                     <button class="flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out bg-white border rounded-md hover:text-gray-700 focus:outline-none">
                       <div>{{ Str::limit(Auth::user()->name ?? "Unauthorize" , 8, '...') }}</div>
@@ -180,7 +127,7 @@ new class extends Component {
 
                   <x-slot name="content" >
                     @if (count(auth()->user()->getRoleNames()) > 1)
-                      <x-dropdown-link wire:navigate class="bold" target="_blank" :href="route('dashboard')" >
+                      <x-dropdown-link class="bold" target="_blank" :href="route('dashboard')" >
                         <i class="pr-2 fas fa-home" ></i>
                         <span>{{ __('Dashboard') }}</span>
                       </x-dropdown-link>
@@ -285,7 +232,7 @@ new class extends Component {
           <i x-show="open" class="text-lg fas fa-times" ></i>
         </button>
         <div class="flex items-center">
-          <a wire:navigate href="/" class="flex items-center" >
+          <a href="/" class="flex items-center" >
             <x-application-logo style="width:40px" />
             {{-- app name --}}
             <div class="text-lg font-bold ps-2" >
@@ -308,9 +255,7 @@ new class extends Component {
                 <i class="fas fa-cart-plus" ></i>
                 <span id="displayCartItem" class="pb-3 text-green" >
                   @auth
-                    @volt('cart')
-                      <div>{{$this->count ?? "0"}}</div>
-                    @endvolt
+                    <div>{{ $count ?? '0' }}</div>
                   @endauth
                   @guest
                     {{ __('0') }}
@@ -358,7 +303,7 @@ new class extends Component {
                     </x-dropdown-link>
 
                     @if (count(auth()->user()->getRoleNames()) > 1)
-                      <x-dropdown-link wire:navigate class="bold" target="_blank" :href="route('dashboard')">
+                      <x-dropdown-link class="bold" target="_blank" :href="route('dashboard')">
                         <span>{{ __('Dashboard') }}</span>
                       </x-dropdown-link>
                     @endif
@@ -400,7 +345,7 @@ new class extends Component {
         <i class="text-lg fas fa-times" ></i>
       </button>
       <div class="flex items-center">
-          <a wire:navigate href="/" class="flex items-center" >
+          <a href="/" class="flex items-center" >
             <x-application-logo style="width:40px" />
             {{-- app name --}}
             <div class="text-lg font-bold ps-2" >
@@ -409,44 +354,42 @@ new class extends Component {
           </a>
         </div>
     </div>
-    <a wire:navigate href="{{route('shops.reseller')}}" class="flex items-center justify-between w-full p-3 py-4 mb-4 bg-indigo-200 border rounded" >
+    <a href="{{route('shops.reseller')}}" class="flex items-center justify-between w-full p-3 py-4 mb-4 bg-indigo-200 border rounded" >
       <span>{{ __('Shops') }}</span>
       <i class="fas fa-caret-right" ></i>
     </a>
 
-    @volt()
-      <div>
-        @foreach ($categories as $item)
-          <div class="p-3 mb-1 bg-gray-100 border-b" x-data="{display:false}" >
-            {{-- btn --}}
-            <button class="flex items-center justify-between w-full" x-on:click="display = !display" >
-              <span>{{ $item->name ?? "N/A" }}</span>
-              <i x-show="display" class="fas fa-sort-up" ></i>
-              <i x-show="!display" class="fas fa-sort-down" ></i>
-            </button>
+    <div>
+      @foreach ($categories as $item)
+        <div class="p-3 mb-1 bg-gray-100 border-b" x-data="{display:false}" >
+          {{-- btn --}}
+          <button class="flex items-center justify-between w-full" x-on:click="display = !display" >
+            <span>{{ $item->name ?? "N/A" }}</span>
+            <i x-show="display" class="fas fa-sort-up" ></i>
+            <i x-show="!display" class="fas fa-sort-down" ></i>
+          </button>
 
-            {{-- content --}}
-            <div x-show="display" >
-              <x-client.cat-loop :item="$item" :key="$item->ids" />
-              {{-- @foreach ($item->links as $il)
-                <div class="py-1" >
-                  <x-nav-link class="block" >{{ $il->name ?? "N/A" }}</x-nav-link>
-                </div>
-              @endforeach
+          {{-- content --}}
+          <div x-show="display" >
+            <x-client.cat-loop :item="$item" :key="$item->ids" />
+            {{-- @foreach ($item->links as $il)
               <div class="py-1" >
-                <x-nav-link class="block">Home</x-nav-link>
+                <x-nav-link class="block" >{{ $il->name ?? "N/A" }}</x-nav-link>
               </div>
-              <div class="py-1" >
-                <x-nav-link class="block">Home</x-nav-link>
-              </div>
-              <div class="py-1" >
-                <x-nav-link class="block">Home</x-nav-link>
-              </div> --}}
+            @endforeach
+            <div class="py-1" >
+              <x-nav-link class="block">Home</x-nav-link>
             </div>
+            <div class="py-1" >
+              <x-nav-link class="block">Home</x-nav-link>
+            </div>
+            <div class="py-1" >
+              <x-nav-link class="block">Home</x-nav-link>
+            </div> --}}
           </div>
-        @endforeach
-      </div>
-    @endvolt
+        </div>
+      @endforeach
+    </div>
   </aside>
 </header>
 

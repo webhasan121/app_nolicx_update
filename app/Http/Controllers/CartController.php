@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
+use App\Models\cart;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -23,7 +23,7 @@ class CartController extends Controller
             ]);
         }
 
-        Cart::create([
+        cart::create([
             'product_id' => $product->id,
             'name' => $product->title,
             'image' => $product->thumbnail,

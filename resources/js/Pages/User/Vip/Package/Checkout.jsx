@@ -36,9 +36,23 @@ export default function Checkout() {
         post(route("user.package.purchase"));
     };
 
+    const copyText = async (value) => {
+        if (window.navigator?.clipboard?.writeText) {
+            await window.navigator.clipboard.writeText(value);
+            return;
+        }
+
+        const input = document.createElement("input");
+        input.value = value;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+    };
+
     const handleCopy = async (id, value) => {
         try {
-            await navigator.clipboard.writeText(value);
+            await copyText(value);
             setCopiedId(id);
             setTimeout(() => setCopiedId(null), 1500);
         } catch (error) {

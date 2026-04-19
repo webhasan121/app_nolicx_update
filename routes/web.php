@@ -14,18 +14,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\WelcomeController;
-use App\Livewire\Page\Page;
-use App\Livewire\Profile\Modify as ProfileEdit;
-
-use App\Livewire\Welcome;
-use App\Livewire\Pages\Products as userProductsPage;
-use App\Livewire\Pages\Categories as userCategoriesPage;
-use App\Livewire\Pages\Cproducts as userProductsForCategoryPage;
-use App\Livewire\Pages\ProductsDetails as userProductsDetailsPage;
-use App\Livewire\Pages\Search;
-use App\Livewire\Pages\Shops\All;
-use App\Livewire\Pages\Shops\Shop;
-use App\Livewire\Pages\SingleProductOrder;
 use App\Http\Controllers\ShopsController;
 use App\Http\Controllers\WebPageController;
 use App\Models\Category;
@@ -46,19 +34,8 @@ use Illuminate\Support\Facades\Artisan;
 use Inertia\Inertia;
 
 
-Route::get('/old', Welcome::class)->name('home.old');
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 Route::middleware('auth')->post('/cart/add', [CartController::class, 'store']);
-
-Route::get('dashboard/old', function () {
-    if (auth()->user()->hasAnyRole(['system', 'admin']) || auth()->user()->can('access_vendor_dashboard') || auth()->user()->can('access_reseller_dashboard') || auth()->user()->can('access_rider_dashboard')) {
-        return view('dashboard');
-    } else {
-        return redirect()->route('user.dash');
-    }
-})
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard.old');
 
 Route::get('dashboard', function () {
     if (auth()->user()->hasAnyRole(['system', 'admin']) || auth()->user()->can('access_vendor_dashboard') || auth()->user()->can('access_reseller_dashboard') || auth()->user()->can('access_rider_dashboard')) {
@@ -92,7 +69,6 @@ Route::get('dashboard', function () {
 
 
 Route::middleware(['auth'])->prefix('profile')->group(function () {
-    Route::get('/old', ProfileEdit::class)->name('profile.old');
     Route::get('/', [ProfileEditController::class, 'edit'])->name('profile');
 });
 
@@ -101,40 +77,32 @@ Route::middleware(['auth'])->prefix('profile')->group(function () {
 //     ->name('profile');
 
 Route::middleware('auth')->prefix('/u/')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile', [ProfileEditController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileEditController::class, 'updateProfile'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 
 
-Route::get('products/old', userProductsPage::class)->name('products.index.old');
 Route::get('products', [ProductsIndexController::class, 'index'])->name('products.index');
-Route::get('category/{cat}/products/old', userProductsForCategoryPage::class)->name('category.products.old');
 Route::get('category/{cat}/products', [CategoryProductsController::class, 'index'])->name('category.products');
 
-Route::get('category/old', userCategoriesPage::class)->name('category.index.old');
 Route::get('category', [CategoryIndexController::class, 'index'])->name('category.index');
 
-Route::get('product/{id}/{slug}/old', userProductsDetailsPage::class)->name('products.details.old')->middleware('products.view.add');
 Route::get('product/{id}/{slug}', [ProductDetailsController::class, 'show'])->name('products.details')->middleware('products.view.add');
 Route::middleware('auth')->post('product/{id}/{slug}/task', [ProductDetailsController::class, 'countTask'])->name('products.details.task');
 
-Route::get('product/order/{id}/{slug}/old', SingleProductOrder::class)->name('product.makeOrder.old')->middleware('auth');
 Route::get('product/order/{id}/{slug}', [ProductOrderController::class, 'create'])->name('product.makeOrder')->middleware('auth');
 Route::post('product/order/{id}/{slug}', [ProductOrderController::class, 'store'])->name('product.makeOrder.store')->middleware('auth');
 Route::get('product/order/location/cities/{state}', [ProductOrderController::class, 'cities'])->name('product.makeOrder.cities')->middleware('auth');
 
 
 /**shops */
-Route::get('/shops/old', All::class)->name('shops.reseller.old');
 Route::get('/shops', [ShopsController::class, 'index'])->name('shops.reseller');
-Route::get('/shops/{id}/{name}/old', Shop::class)->name('shops.visit.old');
 Route::get('/shops/{id}/{name}', [ShopsController::class, 'show'])->name('shops.visit');
 
 
 /** search */
-Route::get('/search/old', Search::class)->name('search.old');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 
@@ -172,12 +140,6 @@ Route::get('/test', function () {
 });
 
 
-Route::get('/volt-test', function () {
-    return view('livewire.test');
-})->name('test.volt');
-
-
-
 Route::get('/user-agents', function (Request $request) {
     return config('app.system_email');
     try {
@@ -199,7 +161,6 @@ Route::get('/user-agents', function (Request $request) {
     }
 });
 
-Route::get('page/{slug}/old', Page::class)->name('web.pages.old');
 Route::get('page/{slug}', [WebPageController::class, 'show'])->name('web.pages');
 
 Route::get('/queue', function () {

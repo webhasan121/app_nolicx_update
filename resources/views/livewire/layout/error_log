@@ -1,4 +1,0 @@
-[31-Dec-2025 02:49:47 UTC] PHP Fatal error:  Uncaught Error: Class "Livewire\Volt\Component" not found in /home/noliywta/public_html/resources/views/livewire/layout/navigation.blade.php:7
-Stack trace:
-#0 {main}
-  thrown in /home/noliywta/public_html/resources/views/livewire/layout/navigation.blade.php on line 7

@@ -1,4 +1,4 @@
-import { usePage } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import React from "react";
 import ApplicationName from "../ApplicationName";
 import NavLink from "../NavLink";
@@ -24,7 +24,7 @@ export default function Footer() {
         {
             head: "Links",
             menu: [
-                { title: "Earn", route: "/page/how-to-earn" },
+                { title: "Earn", route: "/page/earn" },
                 { title: "Privacy Policy", route: "/page/privacy-policy" },
                 { title: "Return & Refund", route: "/page/return-refund" },
                 {
@@ -70,9 +70,9 @@ export default function Footer() {
                 <div className="flex flex-col gap-8 lg:flex-row lg:gap-16">
                     {/* Logo + Playstore */}
                     <div className="flex flex-row lg:flex-col items-center lg:items-start md:w-[25%]">
-                        <NavLink
+                        <Link
                             href="/"
-                            className="flex items-center w-full border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                            className="flex items-center w-full p-0 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                         >
                             <img
                                 height="50"
@@ -83,16 +83,16 @@ export default function Footer() {
                             <div className="text-4xl font-bold ps-2">
                                 <ApplicationName />
                             </div>
-                        </NavLink>
+                        </Link>
 
-                        <NavLink
+                        <Link
                             href="https://play.google.com"
                             className="w-[150px] md:w-[225px] lg:w-full border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                             target="_blank"
                             rel="noreferrer"
                         >
                             <img src="/playstore.png" alt="playstore" />
-                        </NavLink>
+                        </Link>
                     </div>
 
                     {/* Widgets */}
@@ -110,7 +110,7 @@ export default function Footer() {
                                         <li key={i}>
                                             <NavLink
                                                 href={link.route}
-                                                className="block py-1 mb-1 border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                                                className="block p-0 py-1 mb-1 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                                             >
                                                 {link.title}
                                             </NavLink>
@@ -122,7 +122,7 @@ export default function Footer() {
                                     <NavLink
                                         href="/"
                                         onClick={openMail}
-                                        className="p-2 px-4 rounded-md btn_outline_secondary bold border-b-0 text-inherit hover:text-inherit hover:border-transparent"
+                                        className="p-2 px-4 border-b-0 rounded-md btn_outline_secondary bold text-inherit hover:text-inherit hover:border-transparent"
                                     >
                                         <i className="mr-2 fa-solid fa-paper-plane"></i>
                                         <span>Mail Us</span>

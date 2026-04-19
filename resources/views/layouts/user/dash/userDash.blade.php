@@ -15,7 +15,6 @@
 
    <!-- Scripts -->
    @vite(['resources/css/app.css', 'resources/js/app.js'])
-   @livewireStyles
 
 
    {{--
@@ -247,47 +246,54 @@
 @endif --}}
 <script>
    document.addEventListener('DOMContentLoaded', function () {
-      Livewire.on('cart', (data) => {
-         Swal.fire({
-            title: 'Done!',
-            text: 'Cart Updated',
-            icon: 'Info',
-            confirmButtonText: 'OK'
-         })
-         document.getElementById('displayCartItem').innerHTML = data;
-      });
-      Livewire.on('info', (data) => {
-         Swal.fire({
-            title: 'Look At!',
-            text: data,
-            icon: 'Info',
-            confirmButtonText: 'OK'
-         })
-      });
-      Livewire.on('success', (data) => {
-         Swal.fire({
-            title: 'Congrass !',
-            text: data,
-            icon: 'success',
-            confirmButtonText: 'OK'
-         })
-      });
-      Livewire.on('warning', (data) => {
-         Swal.fire({
-            title: 'Alart !',
-            text: data,
-            icon: 'warning',
-            confirmButtonText: 'OK'
-         })
-      });
-      Livewire.on('error', (data) => {
-         Swal.fire({
-            title: 'Attention !',
-            text: data,
-            icon: 'error',
-            confirmButtonText: 'OK'
-         })
-      });
+      if (window.Livewire && typeof window.Livewire.on === 'function') {
+         Livewire.on('cart', (data) => {
+            Swal.fire({
+               title: 'Done!',
+               text: 'Cart Updated',
+               icon: 'Info',
+               confirmButtonText: 'OK'
+            })
+
+            const cartCount = document.getElementById('displayCartItem');
+
+            if (cartCount) {
+               cartCount.innerHTML = data;
+            }
+         });
+         Livewire.on('info', (data) => {
+            Swal.fire({
+               title: 'Look At!',
+               text: data,
+               icon: 'Info',
+               confirmButtonText: 'OK'
+            })
+         });
+         Livewire.on('success', (data) => {
+            Swal.fire({
+               title: 'Congrass !',
+               text: data,
+               icon: 'success',
+               confirmButtonText: 'OK'
+            })
+         });
+         Livewire.on('warning', (data) => {
+            Swal.fire({
+               title: 'Alart !',
+               text: data,
+               icon: 'warning',
+               confirmButtonText: 'OK'
+            })
+         });
+         Livewire.on('error', (data) => {
+            Swal.fire({
+               title: 'Attention !',
+               text: data,
+               icon: 'error',
+               confirmButtonText: 'OK'
+            })
+         });
+      }
    });
 
 </script>

@@ -10,6 +10,6 @@ hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none fo
 focus:border-gray-300 transition duration-150 ease-in-out';
 @endphp
 
-<a wire:navigate {{ $attributes->merge(['class' => $classes]) }}>
+<a {{ $attributes->merge(['class' => $classes]) }}>
     {{ $slot }}
 </a>

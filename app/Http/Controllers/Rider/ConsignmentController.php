@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Rider;
 
 use App\Http\Controllers\Controller;
+use App\Models\CartOrder;
 use App\Models\cod;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -118,5 +120,69 @@ class ConsignmentController extends Controller
         }
 
         return back()->with('error', 'Order not found or already confirmed.');
+    }
+
+    public function show($id)
+    {
+        $cod = cod::query()
+            ->with(['order', 'seller', 'user'])
+            ->findOrFail($id);
+
+        $seller = User::findOrFail($cod->seller_id);
+        $buyer = User::findOrFail($cod->user_id);
+        $shop = $seller->account_type() === 'reseller'
+            ? $seller->resellerShop()
+            : $seller->vendorShop();
+
+        $cartOrders = CartOrder::query()
+            ->with('product')
+            ->where('order_id', $cod->order_id)
+            ->get()
+            ->map(function (CartOrder $item) {
+                return [
+                    'id' => $item->id,
+                    'product' => [
+                        'id' => $item->product?->id,
+                        'title' => $item->product?->title ?? 'N/A',
+                        'thumbnail' => $item->product?->thumbnail,
+                    ],
+                ];
+            })
+            ->values();
+
+        return Inertia::render('Rider/Consignment/View', [
+            'id' => $id,
+            'cod' => [
+                'id' => $cod->id,
+                'amount' => $cod->amount,
+                'paid_amount' => $cod->paid_amount,
+                'due_amount' => $cod->due_amount,
+                'system_comission' => $cod->system_comission,
+                'total_amount' => $cod->total_amount,
+                'status' => $cod->status,
+            ],
+            'order' => [
+                'id' => $cod->order?->id,
+                'location' => $cod->order?->location,
+                'number' => $cod->order?->number,
+            ],
+            'cartOrders' => $cartOrders,
+            'seller' => [
+                'id' => $seller->id,
+                'name' => $seller->name,
+            ],
+            'buyer' => [
+                'id' => $buyer->id,
+                'name' => $buyer->name,
+            ],
+            'shop' => [
+                'shop_name_en' => $shop?->shop_name_en,
+                'address' => $shop?->address,
+                'district' => $shop?->district,
+                'upozila' => $shop?->upozila,
+                'village' => $shop?->village,
+                'phone' => $shop?->phone,
+            ],
+        ]);
     }
 }

@@ -45,7 +45,7 @@
   <section class="px-6 pt-16 pb-8 mx-auto mb-8 border-b max-w-7xl" >
     <div class="flex flex-col gap-8 lg:flex-row lg:gap-16" >
       <div class="flex flex-row lg:flex-col items-center lg:items-start md:w-[25%]" >
-        <a wire:navigate href="/" class="flex items-center w-full" >
+        <a href="/" class="flex items-center w-full" >
           <img height="50px" width="60px" src="{{asset('icon.png')}}" alt="" />
           <div class="text-4xl font-bold ps-2">
             <x-application-name />

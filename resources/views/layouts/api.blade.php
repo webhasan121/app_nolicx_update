@@ -67,7 +67,7 @@
             <div class="col-lg-3 ">
                 <ul class="list-group">
                     <li class="list-group-item">
-                        <a wire:navigate href="{{route('api.index')}}">Get Started</a>
+                        <a href="{{route('api.index')}}">Get Started</a>
                     </li>
                     <li class="list-group-item">  <a href="{{route('api.auth')}}">Authentication</a> </li>
                     <li class="list-group-item"> Products</li>

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Livewire\System\Slider\Slider;
 use App\Models\Slider as ModelsSlider;
 use Illuminate\Database\Eloquent\Model;
 

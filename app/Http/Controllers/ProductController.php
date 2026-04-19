@@ -12,7 +12,7 @@ class ProductController extends Controller
 {
 
     /**
-     * @param App\Models\product
+     * @param App\Models\Product
      * @param comments
      * 
      * 

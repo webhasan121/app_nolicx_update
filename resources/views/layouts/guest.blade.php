@@ -20,7 +20,7 @@
     <div class="flex flex-col items-center justify-center min-h-screen pt-6 bg-gray-100 sm:pt-0">
         {{-- <div> --}}
             <div>
-                <a href="/" wire:navigate>
+                <a href="/">
                     <x-application-logo class="w-24 h-24 text-gray-500 fill-current" />
                 </a>
             </div>

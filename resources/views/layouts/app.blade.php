@@ -17,10 +17,7 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @livewireStyles
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
     {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> --}}
 
@@ -63,7 +60,7 @@
 <body class="h-screen overflow-x-hidden font-sans antialiased bg-gray-100">
     <div class="h-full overflow-y-auto">
         <x-client.support-button />
-        @livewire('layout.navigation')
+        @includeIf('layouts.user.dash.header')
 
 
         <!-- Page Heading -->
@@ -117,41 +114,42 @@
     </div>
 </body>
 
-@livewireScripts
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-            Livewire.on('info', (data) => {
-                Swal.fire({
-                    title: 'Attention',
-                    text: data,
-                    icon: 'Info',
-                    confirmButtonText: 'OK'
-                })
-            });
-            Livewire.on('success', (data) => {
-                Swal.fire({
-                    title: 'Done',
-                    text: data,
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                })
-            });
-            Livewire.on('warning', (data) => {
-                Swal.fire({
-                    title: 'Alart !',
-                    text: data,
-                    icon: 'warning',
-                    confirmButtonText: 'OK'
-                })
-            });
-            Livewire.on('error', (data) => {
-                Swal.fire({
-                    title: 'Error !',
-                    text: data,
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                })
-            });
+            if (window.Livewire && typeof window.Livewire.on === 'function') {
+                Livewire.on('info', (data) => {
+                    Swal.fire({
+                        title: 'Attention',
+                        text: data,
+                        icon: 'Info',
+                        confirmButtonText: 'OK'
+                    })
+                });
+                Livewire.on('success', (data) => {
+                    Swal.fire({
+                        title: 'Done',
+                        text: data,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    })
+                });
+                Livewire.on('warning', (data) => {
+                    Swal.fire({
+                        title: 'Alart !',
+                        text: data,
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    })
+                });
+                Livewire.on('error', (data) => {
+                    Swal.fire({
+                        title: 'Error !',
+                        text: data,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    })
+                });
+            }
 
         });
 

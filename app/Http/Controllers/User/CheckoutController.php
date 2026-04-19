@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Packages;
+use App\Models\vip;
 use Inertia\Inertia;
 
 class CheckoutController extends Controller
@@ -56,7 +57,7 @@ class CheckoutController extends Controller
         $validated['nid_front'] = $request->file('nid_front')->store('vips', 'public');
         $validated['nid_back'] = $request->file('nid_back')->store('vips', 'public');
 
-        \App\Models\Vip::create($validated);
+        vip::create($validated);
 
         return redirect()->route('user.vip.index');
     }

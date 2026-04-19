@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\City;
-use App\Models\Country;
-use App\Models\State;
+use App\Models\city;
+use App\Models\country;
+use App\Models\state;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -17,10 +17,10 @@ class ProfileEditController extends Controller
     public function edit(Request $request)
     {
         $user = $request->user();
-        $countries = Country::where('name', 'Bangladesh')->get(['id', 'name']);
+        $countries = country::where('name', 'Bangladesh')->get(['id', 'name']);
 
-        $countryId = $this->resolveId(Country::class, $user->country);
-        $stateId = $this->resolveId(State::class, $user->state);
+        $countryId = $this->resolveId(country::class, $user->country);
+        $stateId = $this->resolveId(state::class, $user->state);
 
         return Inertia::render('User/Profile/Edit', [
             'userProfile' => [
@@ -32,7 +32,7 @@ class ProfileEditController extends Controller
                 'gender' => $user->gender,
                 'country' => $countryId,
                 'state' => $stateId,
-                'city' => $this->resolveId(City::class, $user->city),
+                'city' => $this->resolveId(city::class, $user->city),
                 'line1' => $user->line1,
                 'line2' => $user->line2,
                 'zip' => $user->zip,
@@ -40,8 +40,8 @@ class ProfileEditController extends Controller
                 'must_verify_email' => $user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail,
             ],
             'countries' => $countries,
-            'states' => $countryId ? State::where('country_id', $countryId)->get(['id', 'name']) : [],
-            'cities' => $stateId ? City::where('state_id', $stateId)->get(['id', 'name']) : [],
+            'states' => $countryId ? state::where('country_id', $countryId)->get(['id', 'name']) : [],
+            'cities' => $stateId ? city::where('state_id', $stateId)->get(['id', 'name']) : [],
             'genders' => [
                 'Male' => 'Male',
                 'Female' => 'Female',
@@ -73,14 +73,14 @@ class ProfileEditController extends Controller
     public function loadStates($country)
     {
         return response()->json(
-            State::where('country_id', $country)->get(['id', 'name'])
+            state::where('country_id', $country)->get(['id', 'name'])
         );
     }
 
     public function loadCities($state)
     {
         return response()->json(
-            City::where('state_id', $state)->get(['id', 'name'])
+            city::where('state_id', $state)->get(['id', 'name'])
         );
     }
 
@@ -110,9 +110,9 @@ class ProfileEditController extends Controller
         }
 
         if ($user->requestsToBeRider()->where('status', 'Active')->exists()) {
-            $cityName = $validated['city'] ? City::find($validated['city'])?->name : $user->city;
-            $stateName = $validated['state'] ? State::find($validated['state'])?->name : $user->state;
-            $countryName = $validated['country'] ? Country::find($validated['country'])?->name : $user->country;
+            $cityName = $validated['city'] ? city::find($validated['city'])?->name : $user->city;
+            $stateName = $validated['state'] ? state::find($validated['state'])?->name : $user->state;
+            $countryName = $validated['country'] ? country::find($validated['country'])?->name : $user->country;
 
             $user->requestsToBeRider()->where('status', 'Active')->update([
                 'phone' => $validated['phone'] ?? $user->phone,
@@ -155,4 +155,3 @@ class ProfileEditController extends Controller
         return redirect()->back()->with('success', 'Password updated.');
     }
 }
-
