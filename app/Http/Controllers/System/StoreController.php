@@ -22,6 +22,7 @@ class StoreController extends Controller
     public function indexReact(Request $request): Response
     {
         $activeTab = (string) $request->query('tab', 'commissions');
+        $search = trim((string) $request->query('search', ''));
         $tabs = ['commissions', 'withdrawals'];
 
         $store = $this->resolveStore();
@@ -44,6 +45,19 @@ class StoreController extends Controller
         $commissions = DistributeComissions::query()
             ->with('user')
             ->whereIn('info', ['Store Commission', 'Developer Commission', 'Management Commission'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder
+                        ->where('info', 'like', '%' . $search . '%')
+                        ->orWhere('amount', 'like', '%' . $search . '%')
+                        ->orWhere('range', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery
+                                ->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%');
+                        });
+                });
+            })
             ->latest('id')
             ->paginate(20)
             ->withQueryString();
@@ -51,6 +65,7 @@ class StoreController extends Controller
         $withdrawals = Withdraw::query()
             ->with('user')
             ->where('type', 'debit')
+            ->when($search !== '', fn ($query) => $this->applyWithdrawSearch($query, $search))
             ->latest('id')
             ->paginate(20)
             ->withQueryString();
@@ -62,6 +77,10 @@ class StoreController extends Controller
             'widgets' => $widgets,
             'tabs' => $tabs,
             'activeTab' => in_array($activeTab, $tabs, true) ? $activeTab : 'commissions',
+            'filters' => [
+                'tab' => in_array($activeTab, $tabs, true) ? $activeTab : 'commissions',
+                'search' => $search,
+            ],
             'columns1' => $columns1,
             'columns2' => $columns2,
             'storeMeta' => [
@@ -99,6 +118,8 @@ class StoreController extends Controller
                         'active' => $link['active'],
                     ];
                 })->values()->all(),
+                'from' => $commissions->firstItem(),
+                'to' => $commissions->lastItem(),
                 'total' => $commissions->total(),
             ],
             'withdrawals' => [
@@ -121,8 +142,82 @@ class StoreController extends Controller
                         'active' => $link['active'],
                     ];
                 })->values()->all(),
+                'from' => $withdrawals->firstItem(),
+                'to' => $withdrawals->lastItem(),
                 'total' => $withdrawals->total(),
             ],
+            'printUrl' => route('system.store.print', [
+                'tab' => in_array($activeTab, $tabs, true) ? $activeTab : 'commissions',
+                'search' => $search,
+            ]),
+        ]);
+    }
+
+    public function printReact(Request $request): Response
+    {
+        $activeTab = (string) $request->query('tab', 'commissions');
+        $search = trim((string) $request->query('search', ''));
+        $tabs = ['commissions', 'withdrawals'];
+        $activeTab = in_array($activeTab, $tabs, true) ? $activeTab : 'commissions';
+
+        $commissions = DistributeComissions::query()
+            ->with('user')
+            ->whereIn('info', ['Store Commission', 'Developer Commission', 'Management Commission'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder
+                        ->where('info', 'like', '%' . $search . '%')
+                        ->orWhere('amount', 'like', '%' . $search . '%')
+                        ->orWhere('range', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery
+                                ->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->latest('id')
+            ->get();
+
+        $withdrawals = Withdraw::query()
+            ->with('user')
+            ->where('type', 'debit')
+            ->when($search !== '', fn ($query) => $this->applyWithdrawSearch($query, $search))
+            ->latest('id')
+            ->get();
+
+        $commissionStoreMap = $this->buildStoreMap($commissions);
+
+        return Inertia::render('Auth/system/store/PrintSummery', [
+            'activeTab' => $activeTab,
+            'filters' => [
+                'tab' => $activeTab,
+                'search' => $search,
+            ],
+            'commissions' => $commissions->values()->map(function (DistributeComissions $item, int $index) use ($commissionStoreMap) {
+                $store = $this->formatStoreLabel($commissionStoreMap[$item->id] ?? null);
+
+                return [
+                    'sl' => $index + 1,
+                    'user_name' => $item->user?->name ?? 'N/A',
+                    'store' => $store,
+                    'amount' => number_format((float) $item->amount, 2) . '/-',
+                    'range' => number_format((float) $item->range, 2) . '%',
+                    'info' => $item->info ?? '',
+                ];
+            })->all(),
+            'withdrawals' => $withdrawals->values()->map(function (Withdraw $withdraw, int $index) {
+                return [
+                    'sl' => $index + 1,
+                    'user_name' => $withdraw->user?->name ?? 'N/A',
+                    'store_req' => number_format((float) $withdraw->store_req, 2) . '/-',
+                    'maintenance_fee' => number_format((float) $withdraw->maintenance_fee, 2) . '/-',
+                    'server_fee' => number_format((float) $withdraw->server_fee, 2) . '/-',
+                    'pay_by' => $withdraw->pay_by ?? '',
+                    'status' => $withdraw->status === 1 ? 'Confirm' : 'Pending',
+                    'requested_at' => $withdraw->created_at?->format('M d, Y'),
+                ];
+            })->all(),
         ]);
     }
 
@@ -278,6 +373,34 @@ class StoreController extends Controller
             'accountNumber' => ['nullable', 'string'],
             'remarks' => ['nullable', 'string'],
         ]);
+    }
+
+    private function applyWithdrawSearch($query, string $search): void
+    {
+        $searchableColumns = collect([
+            'pay_by',
+            'phone',
+            'account_number',
+            'store_req',
+            'maintenance_fee',
+            'server_fee',
+        ])->filter(fn ($column) => Schema::hasColumn('withdraws', $column))->values();
+
+        $query->where(function ($builder) use ($search, $searchableColumns) {
+            foreach ($searchableColumns as $index => $column) {
+                if ($index === 0) {
+                    $builder->where($column, 'like', '%' . $search . '%');
+                } else {
+                    $builder->orWhere($column, 'like', '%' . $search . '%');
+                }
+            }
+
+            $builder->orWhereHas('user', function ($userQuery) use ($search) {
+                $userQuery
+                    ->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        });
     }
 
     private function buildWithdrawPayload(array $payload, array $overrides = []): array

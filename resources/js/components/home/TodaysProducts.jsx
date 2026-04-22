@@ -2,8 +2,6 @@ import NavLink from "../NavLink";
 import ProductsLoop from "../client/ProductsLoop";
 
 export default function TodaysProducts({ products = [] }) {
-    if (!products.length) return null;
-
     return (
         <div className="pb-6">
             {/* Header */}
@@ -18,9 +16,13 @@ export default function TodaysProducts({ products = [] }) {
                 </NavLink>
             </div>
 
-            <div className="pb-4 transition-all duration-300 product_section">
-                <ProductsLoop products={products} />
-            </div>
+            {products.length ? (
+                <div className="pb-4 transition-all duration-300 product_section">
+                    <ProductsLoop products={products} />
+                </div>
+            ) : (
+                <hr className="mt-2 border-slate-200" />
+            )}
         </div>
     );
 }

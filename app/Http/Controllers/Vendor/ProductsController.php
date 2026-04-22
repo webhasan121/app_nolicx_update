@@ -235,6 +235,7 @@ class ProductsController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+
         $request->validate([
             'name' => 'required|min:5',
             'title' => 'required|min:5|max:255',
@@ -273,7 +274,7 @@ class ProductsController extends Controller
             'unit' => $request->input('unit'),
             'offer_type' => $request->boolean('offer_type'),
             'discount' => $request->input('discount'),
-            'display_at_home' => $request->boolean('display_at_home') ? now() : null,
+            'display_at_home' => $request->boolean('display_at_home'),
             'cod' => $request->boolean('cod'),
             'courier' => $request->boolean('courier'),
             'hand' => $request->boolean('hand'),
@@ -293,15 +294,22 @@ class ProductsController extends Controller
             'meta_thumbnail' => $this->handleImageUpload($request->file('meta_thumbnail'), 'products-seo', ''),
         ];
 
+
         try {
+
             $product = Product::create($data);
 
-            if ($product->id && $request->filled('attr_name')) {
-                product_has_attribute::create([
-                    'product_id' => $product->id,
-                    'name' => $request->input('attr_name'),
-                    'value' => $request->input('attr_value'),
-                ]);
+
+
+
+            if ($product->id && ($request->filled('attr_name') || $request->filled('attr_value'))) {
+                product_has_attribute::updateOrCreate(
+                    ['product_id' => $product->id],
+                    [
+                        'name' => $request->input('attr_name'),
+                        'value' => $request->input('attr_value'),
+                    ]
+                );
             }
 
             if ($product->id && $request->file('newImage')) {

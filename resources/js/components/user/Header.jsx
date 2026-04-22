@@ -1,5 +1,5 @@
 import { usePage, Link, router } from "@inertiajs/react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ApplicationName from "../ApplicationName";
 import CatLoop from "../client/CatLoop";
 import StickyNav from "../StickyNav";
@@ -11,12 +11,15 @@ export default function Header() {
     const { auth, global, roles, activeNav, categories } = usePage().props; // this global() load in AppServiceProvider
     // const categories = global?.categories || [];
     const user = auth?.user;
-
-
-
-    const [active, setActive] = useState(null);
-
     const [open, setOpen] = useState(false);
+    const currentCategorySlug = (() => {
+        if (typeof window === "undefined") {
+            return "";
+        }
+
+        const match = window.location.pathname.match(/^\/category\/([^/]+)\/products\/?$/);
+        return match ? decodeURIComponent(match[1]) : "";
+    })();
 
     // Logout
     const logout = () => {
@@ -305,37 +308,14 @@ export default function Header() {
                     </Link>
 
                     {/* Categories */}
-                    <div>
+                    <div className="px-1 pb-4">
                         {categories?.map((item) => (
-                            <div
+                            <CatLoop
                                 key={item.id}
-                                className="p-3 mb-1 bg-gray-100 border-b"
-                            >
-                                {/* Button */}
-                                <button
-                                    className="flex items-center justify-between w-full"
-                                    onClick={() =>
-                                        setActive(
-                                            active === item.id ? null : item.id,
-                                        )
-                                    }
-                                >
-                                    <span>{item.name ?? "N/A"}</span>
-
-                                    <i
-                                        className={`fas ${
-                                            active === item.id
-                                                ? "fa-sort-up"
-                                                : "fa-sort-down"
-                                        }`}
-                                    ></i>
-                                </button>
-
-                                {/* Content */}
-                                {active === item.id && (
-                                    <CatLoop key={item.id} item={item} />
-                                )}
-                            </div>
+                                item={item}
+                                cat={currentCategorySlug}
+                                variant="sidebar"
+                            />
                         ))}
                     </div>
                 </aside>

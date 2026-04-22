@@ -180,6 +180,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
      * system coin store management
      */
     Route::get('/coins', [StoreController::class, 'indexReact'])->name('store.index')->middleware(AbleTo::class . ":store_view");
+    Route::get('/coins/print', [StoreController::class, 'printReact'])->name('store.print')->middleware(AbleTo::class . ":store_view");
     Route::post('/coins/distribute', [StoreController::class, 'distribute'])->name('store.distribute')->middleware(AbleTo::class . ":store_view");
     Route::post('/coins/withdraw/coin', [StoreController::class, 'withdrawCoin'])->name('store.withdraw.coin')->middleware(AbleTo::class . ":store_view");
     Route::post('/coins/withdraw/coast', [StoreController::class, 'withdrawCoast'])->name('store.withdraw.coast')->middleware(AbleTo::class . ":store_view");
@@ -411,6 +412,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
 
     // earn and sell
     Route::get('/earn/index', [EarnBySellController::class, 'indexReact'])->name('earn.index');
+    Route::get('/earn/print', [EarnBySellController::class, 'printReact'])->name('earn.print');
 
     Route::get('/builder/footer', [FooterBuilderController::class, 'indexReact'])->name('footer.builder');
     Route::post('/builder/footer', [FooterBuilderController::class, 'save'])->name('footer.builder.save');

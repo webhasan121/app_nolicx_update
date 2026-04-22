@@ -11,8 +11,23 @@ import Container from "../../../../components/dashboard/Container";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 
 function CategoryTree({ categories = [], activeCat, search = "" }) {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    const matchesCategory = (category) => {
+        if (!normalizedSearch) {
+            return true;
+        }
+
+        if ((category.name ?? "").toLowerCase().includes(normalizedSearch)) {
+            return true;
+        }
+
+        return (category.children ?? []).some((child) => matchesCategory(child));
+    };
+
     return categories
         .filter((item) => item.slug !== "default-category")
+        .filter((item) => matchesCategory(item))
         .map((item) => (
             <div
                 key={item.id}
@@ -168,6 +183,7 @@ export default function Index({
     const [showOrderModal, setShowOrderModal] = useState(false);
     const [activeProduct, setActiveProduct] = useState(null);
     const [search, setSearch] = useState(filters.search ?? "");
+    const [categorySearch, setCategorySearch] = useState("");
 
     const orderForm = useForm({
         name: "",
@@ -456,28 +472,41 @@ export default function Index({
                 show={showCategoryModal}
                 onClose={() => setShowCategoryModal(false)}
             >
-                        <div className="p-3 flex items-center justify-between">
-                            <div>Explore Categories</div>
-                            <button
-                                type="button"
-                                onClick={() => setShowCategoryModal(false)}
-                            >
-                                <i className="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div className="px-3 pb-3">
-                            <NavLink
-                                href={route("reseller.resel-product.index")}
-                            >
-                                View All Products
-                            </NavLink>
-                        </div>
-                        <hr />
-                        <div className="p-3 flex-1 overflow-y-scroll">
-                            <CategoryTree
-                                categories={categories}
-                                activeCat={filters?.cat}
-                                search={search.trim()}
+                <div className="p-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200">
+                    <div className="text-base font-medium">
+                        Explore Categories
+                    </div>
+                    <div className="flex w-full max-w-sm items-center gap-2 sm:w-auto sm:min-w-[320px]">
+                        <TextInput
+                            type="search"
+                            value={categorySearch}
+                            onChange={(e) =>
+                                setCategorySearch(e.target.value)
+                            }
+                            className="mb-0 w-full py-2"
+                            placeholder="Search categories..."
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowCategoryModal(false)}
+                            className="flex h-10 w-10 items-center justify-center rounded-md text-slate-700 transition hover:bg-slate-100"
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div className="px-3 pb-3">
+                    <NavLink
+                        href={route("reseller.resel-product.index")}
+                    >
+                        View All Products
+                    </NavLink>
+                </div>
+                <div className="p-3 flex-1 overflow-y-scroll">
+                    <CategoryTree
+                        categories={categories}
+                        activeCat={filters?.cat}
+                        search={categorySearch}
                     />
                 </div>
                 <hr />

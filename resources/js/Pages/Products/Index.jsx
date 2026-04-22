@@ -1,8 +1,7 @@
 import { Link, router } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ApplicationName from "../../components/ApplicationName";
 import Container from "../../components/dashboard/Container";
-import SecondaryButton from "../../components/SecondaryButton";
 import ProductCard from "../../components/home/ProductCard";
 import TextInput from "../../components/TextInput";
 import CatLoop from "../../components/client/CatLoop";
@@ -25,7 +24,7 @@ function Heading() {
 
 function CategoriesPanel({ categories = [] }) {
     return (
-        <Container className="">
+        <div className="px-3 py-4">
             <div>
                 <Link href={route("products.index")} className="inline-flex items-center px-4 py-2 mb-4 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
                     All Product
@@ -35,7 +34,7 @@ function CategoriesPanel({ categories = [] }) {
             {categories.map((item) => (
                 <CatLoop key={item.id} item={item} style="font-bold" />
             ))}
-        </Container>
+        </div>
     );
 }
 
@@ -46,34 +45,51 @@ export default function Index({
     loadMore = false,
 }) {
     const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState(filters.search || "");
 
-    const handleSort = (value) => {
+    const visitProducts = (nextSearch, nextSort, nextLimit = filters.limit) => {
         router.get(
             route("products.index"),
             {
                 ...filters,
-                sort: value,
+                search: nextSearch || undefined,
+                sort: nextSort || "desc",
+                limit: nextLimit,
             },
             {
                 preserveScroll: true,
                 preserveState: true,
+                replace: true,
             },
         );
+    };
+
+    const handleSort = (value) => {
+        visitProducts(search.trim(), value);
     };
 
     const handleLoadMore = () => {
-        router.get(
-            route("products.index"),
-            {
-                ...filters,
-                limit: Number(filters.limit || 50) + 1,
-            },
-            {
-                preserveScroll: true,
-                preserveState: true,
-            },
+        visitProducts(
+            search.trim(),
+            filters.sort || "desc",
+            Number(filters.limit || 20) + 20
         );
     };
+
+    useEffect(() => {
+        const trimmedSearch = search.trim();
+        const currentSearch = (filters.search || "").trim();
+
+        if (trimmedSearch === currentSearch) {
+            return undefined;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            visitProducts(trimmedSearch, filters.sort || "desc", 20);
+        }, 400);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [search, filters.search, filters.sort]);
 
     return (
         <UserLayout title="Products">
@@ -84,7 +100,7 @@ export default function Index({
                     <div className="items-start justify-start lg:flex">
                         <div
                             style={{ width: "300px" }}
-                            className="hidden bg-white md:block"
+                            className="hidden bg-white rounded-lg md:block"
                         >
                             <CategoriesPanel categories={categories} />
                         </div>
@@ -111,30 +127,32 @@ export default function Index({
                         </div>
 
                         <div className="w-full px-2">
-                            <div className="flex flex-wrap items-center justify-between mb-3">
+                            <div className="sticky z-20 flex flex-wrap items-center justify-between gap-3 p-3 mb-3 bg-white border rounded-md shadow-sm top-2">
                                 <div>
                                     <TextInput
                                         type="search"
                                         placeholder="Search ...."
-                                        className="py-1"
-                                        defaultValue={filters.search || ""}
+                                        className="py-1 mb-0"
+                                        value={search}
+                                        onChange={(e) =>
+                                            setSearch(e.target.value)
+                                        }
                                     />
                                 </div>
-                                <div className="flex items-center justify-between space-x-2">
-                                    <SecondaryButton>
-                                        <i className="fas fa-filter"></i>
-                                    </SecondaryButton>
-                                    <select
-                                        value={filters.sort || "desc"}
-                                        onChange={(e) =>
-                                            handleSort(e.target.value)
-                                        }
-                                        id="sort_by"
-                                        className="w-24 py-1 rounded"
-                                    >
-                                        <option value="desc">Newest</option>
-                                        <option value="asc">Oldest</option>
-                                    </select>
+                                <div className="flex items-center gap-2">
+                                    <div className="relative">
+                                        <select
+                                            value={filters.sort || "desc"}
+                                            onChange={(e) =>
+                                                handleSort(e.target.value)
+                                            }
+                                            id="sort_by"
+                                            className="w-32 py-2 pl-4 pr-10 text-sm text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm appearance-none focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                                        >
+                                            <option value="desc">Newest</option>
+                                            <option value="asc">Oldest</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
@@ -162,7 +180,7 @@ export default function Index({
                                     <div className="text-center">
                                         <button
                                             onClick={handleLoadMore}
-                                            className="px-3 py-1 mt-3 border rounded"
+                                            className="px-6 py-2 mt-4 font-semibold text-white transition bg-green-600 rounded-md hover:bg-green-700"
                                             type="button"
                                         >
                                             Load More

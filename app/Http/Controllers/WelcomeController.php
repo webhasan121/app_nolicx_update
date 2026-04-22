@@ -19,7 +19,7 @@ class WelcomeController extends Controller
             ->reseller()
             ->active()
             ->latest()
-            ->limit(20)
+            ->limit(21)
             ->get();
 
         $categories = Category::getAll();

@@ -13,6 +13,10 @@ class CategoryProductsController extends Controller
 {
     public function index(Request $request, $cat)
     {
+        $sort = $request->string('sort')->toString() ?: 'desc';
+        $limit = max(20, (int) $request->input('limit', 20));
+        $search = trim((string) $request->input('search', ''));
+
         $category = Category::query()
             ->with('children.children.children')
             ->where('slug', $cat)
@@ -21,13 +25,25 @@ class CategoryProductsController extends Controller
         $ids = [];
         $this->collectCategoryIds($category, $ids);
 
-        $products = Product::query()
+        $productsQuery = Product::query()
             ->whereIn('category_id', $ids)
             ->where([
                 'belongs_to_type' => 'reseller',
                 'status' => 'Active',
-            ])
-            ->paginate(20, [
+            ]);
+
+        if ($search !== '') {
+            $productsQuery->where(function ($query) use ($search) {
+                $query
+                    ->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('title', 'like', '%' . $search . '%');
+            });
+        }
+
+        $products = $productsQuery
+            ->orderBy('id', $sort)
+            ->limit($limit)
+            ->get([
                 'id',
                 'name',
                 'title',
@@ -37,7 +53,7 @@ class CategoryProductsController extends Controller
                 'discount',
                 'price',
                 'unit',
-            ])->withQueryString();
+            ]);
 
         $slider = sliderModel::query()
             ->where(['status' => true])
@@ -65,7 +81,12 @@ class CategoryProductsController extends Controller
             'products' => $products,
             'categories' => Category::getAll(),
             'slides' => $slides,
-            'filters' => $request->only('page'),
+            'filters' => [
+                'search' => $search,
+                'sort' => $sort,
+                'limit' => $limit,
+            ],
+            'loadMore' => (clone $productsQuery)->count() > $limit,
         ]);
     }
 

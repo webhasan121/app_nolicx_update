@@ -124,8 +124,8 @@ export default function Shops({
             <Head title="Vendor Shops" />
 
             <Container>
-                <div className="md:flex justify-between items-center space-y-2">
-                    <div className="flex justify-start items-center py-3">
+                <div className="items-center justify-between space-y-2 md:flex">
+                    <div className="flex items-center justify-start py-3">
                         <NavLink href="/">
                             <i className="fas fa-home pe-2"></i>
                         </NavLink>
@@ -135,13 +135,14 @@ export default function Shops({
                         </NavLink>
                     </div>
 
-                    <div className="flex items-center">
+                    <div className="flex items-center w-full max-w-xl ms-auto">
                         <input
                             type="search"
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
-                            className="py-1 rounded-md"
-                            placeholder="search shops by name"
+                            className="w-full px-3 py-1 text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+                            placeholder={selectedShop ? "Search products..." : "Search shops..."}
+                            style={{ minWidth: 0, fontSize: '16px' }}
                         />
                         <PrimaryButton
                             type="button"
@@ -155,7 +156,7 @@ export default function Shops({
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(true)}
-                                    className="py-2 px-3 text-xs ms-1 border rounded bg-white"
+                                    className="px-3 py-2 text-xs bg-white border rounded ms-1"
                                 >
                                     {location || auth.user.city || "ANY"}{" "}
                                     <i className="ps-2 fas fa-chevron-down"></i>
@@ -175,18 +176,18 @@ export default function Shops({
 
                 {selectedShop ? (
                     <div>
-                        <div className="bg-white overflow-hidden">
+                        <div className="overflow-hidden bg-white">
                             <div className="relative">
                                 {selectedShop.banner_url ? (
                                     <img
-                                        className="w-full bg-indigo-900 h-48"
+                                        className="w-full h-48 bg-indigo-900"
                                         src={selectedShop.banner_url}
                                         alt=""
                                     />
                                 ) : null}
                                 {selectedShop.logo_url ? (
                                     <img
-                                        className="rounded-full absolute left-0 top-0 bg-white m-2"
+                                        className="absolute top-0 left-0 m-2 bg-white rounded-full"
                                         style={{ height: "80px", width: "80px" }}
                                         src={selectedShop.logo_url}
                                         alt=""
@@ -196,7 +197,7 @@ export default function Shops({
                             <Container>
                                 <div>
                                     <div className="flex flex-wrap gaps-10">
-                                        <div className="w-48 m-1 border p-2 rounded-lg">
+                                        <div className="w-48 p-2 m-1 border rounded-lg">
                                             <p>Shop</p>
                                             <div>{selectedShop.shop_name_en}</div>
                                             <p className="text-xs">
@@ -206,31 +207,31 @@ export default function Shops({
                                             </p>
                                             <div className="py-3">
                                                 <div className="flex items-center">
-                                                    <i className="fas fa-star text-indigo-900"></i>
-                                                    <i className="fas fa-star text-indigo-900"></i>
-                                                    <i className="fas fa-star text-indigo-900"></i>
-                                                    <i className="fas fa-star text-indigo-900"></i>
+                                                    <i className="text-indigo-900 fas fa-star"></i>
+                                                    <i className="text-indigo-900 fas fa-star"></i>
+                                                    <i className="text-indigo-900 fas fa-star"></i>
+                                                    <i className="text-indigo-900 fas fa-star"></i>
                                                     <i className="fas fa-star"></i>
                                                 </div>
                                             </div>
-                                            <div className="mt-2 flex justify-between items-center space-x-2 space-y-2">
-                                                <div className="px-2 bg-sky-900 text-white rounded-lg inline-block text-xs">
+                                            <div className="flex items-center justify-between mt-2 space-x-2 space-y-2">
+                                                <div className="inline-block px-2 text-xs text-white rounded-lg bg-sky-900">
                                                     reseller
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="w-48 m-1 border p-2 rounded-lg">
+                                        <div className="w-48 p-2 m-1 border rounded-lg">
                                             <p>Owner</p>
                                             <div className="text-md">
                                                 {selectedShop.user?.name ?? "N/A"}
                                             </div>
                                             <p className="text-xs">
-                                                <i className="fas fa-caret-right pr-3"></i>{" "}
+                                                <i className="pr-3 fas fa-caret-right"></i>{" "}
                                                 {selectedShop.email}
                                             </p>
                                             <p className="text-xs">
-                                                <i className="fas fa-caret-right pr-3"></i>{" "}
+                                                <i className="pr-3 fas fa-caret-right"></i>{" "}
                                                 {selectedShop.phone}
                                             </p>
                                             <p className="text-xs">
@@ -249,10 +250,10 @@ export default function Shops({
                                         <NavLink
                                             href={route("shops", {
                                                 get: selectedShop.id,
-                                                name: selectedShop.shop_name_en,
+                                                slug: selectedShop.shop_name_en,
                                             })}
                                         >
-                                            Visit Shops <i className="fas fa-angle px-2"></i>
+                                            Visit Shop <i className="px-2 fas fa-angle"></i>
                                         </NavLink>
                                     </div>
                                 </div>
@@ -260,8 +261,8 @@ export default function Shops({
                         </div>
 
                         <div className="my-[100]">
-                            <div className="product_section w-full md:w-3/4">
-                                <div className="text-sm py-2">Products</div>
+                            <div className="w-full product_section ">
+                                <div className="py-2 text-sm">Products</div>
                                 {products ? (
                                     <>
                                         <div
@@ -282,18 +283,18 @@ export default function Shops({
                                         </div>
                                         {productPagination.pages.length ? (
                                             <div className="w-full pt-4">
-                                                <div className="flex w-full items-center justify-between gap-3">
+                                                <div className="flex items-center justify-between w-full gap-3">
                                                     <div className="text-sm text-slate-700">
                                                         {products?.total > 0
                                                             ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} products`
                                                             : "No products found"}
                                                     </div>
                                                     <div className="flex items-center md:justify-end">
-                                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                                        <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                                             <button
                                                                 type="button"
                                                                 disabled={!productPagination.prev?.url}
-                                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                                className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                                 onClick={() => goToPage(productPagination.prev?.url)}
                                                             >
                                                                 Previous
@@ -316,7 +317,7 @@ export default function Shops({
                                                             <button
                                                                 type="button"
                                                                 disabled={!productPagination.next?.url}
-                                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                                className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                                 onClick={() => goToPage(productPagination.next?.url)}
                                                             >
                                                                 Next
@@ -345,7 +346,7 @@ export default function Shops({
                             {(shops.data ?? []).length > 0 ? (
                                 shops.data.map((shop) => (
                                     <div key={shop.id}>
-                                        <div className="bg-white rounded-lg shadow overflow-hidden">
+                                        <div className="overflow-hidden bg-white rounded-lg shadow">
                                             <div className="relative">
                                                 {shop.banner_url ? (
                                                     <img
@@ -357,7 +358,7 @@ export default function Shops({
                                                 ) : null}
                                                 {shop.logo_url ? (
                                                     <img
-                                                        className="rounded-full absolute left-0 top-0 bg-white m-2"
+                                                        className="absolute top-0 left-0 m-2 bg-white rounded-full"
                                                         style={{ height: "50px", width: "50px" }}
                                                         src={shop.logo_url}
                                                         alt=""
@@ -372,15 +373,15 @@ export default function Shops({
                                                 </p>
                                                 <div className="py-3">
                                                     <div className="flex items-center">
-                                                        <i className="fas fa-star text-indigo-900"></i>
-                                                        <i className="fas fa-star text-indigo-900"></i>
-                                                        <i className="fas fa-star text-indigo-900"></i>
-                                                        <i className="fas fa-star text-indigo-900"></i>
+                                                        <i className="text-indigo-900 fas fa-star"></i>
+                                                        <i className="text-indigo-900 fas fa-star"></i>
+                                                        <i className="text-indigo-900 fas fa-star"></i>
+                                                        <i className="text-indigo-900 fas fa-star"></i>
                                                         <i className="fas fa-star"></i>
                                                     </div>
                                                 </div>
-                                                <div className="mt-2 flex justify-between items-center space-x-2 space-y-2">
-                                                    <div className="px-2 bg-sky-900 text-white rounded-lg inline-block text-xs">
+                                                <div className="flex items-center justify-between mt-2 space-x-2 space-y-2">
+                                                    <div className="inline-block px-2 text-xs text-white rounded-lg bg-sky-900">
                                                         vendor
                                                     </div>
                                                 </div>
@@ -395,8 +396,7 @@ export default function Shops({
                                                             slug: shop.shop_name_en,
                                                         })}
                                                     >
-                                                        Visit Shops{" "}
-                                                        <i className="fas fa-angle px-2"></i>
+                                                        Visit Shop <i className="px-2 fas fa-angle"></i>
                                                     </NavLink>
                                                 </div>
                                             </div>
@@ -409,18 +409,18 @@ export default function Shops({
                         </div>
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex items-center justify-between w-full gap-3">
                                     <div className="text-sm text-slate-700">
                                         {shops?.total > 0
                                             ? `Showing ${shops?.from ?? 0}-${shops?.to ?? 0} of ${shops?.total ?? 0} shops`
                                             : "No shops found"}
                                     </div>
                                     <div className="flex items-center md:justify-end">
-                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                        <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                             <button
                                                 type="button"
                                                 disabled={!pagination.prev?.url}
-                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
                                             >
                                                 Previous
@@ -443,7 +443,7 @@ export default function Shops({
                                             <button
                                                 type="button"
                                                 disabled={!pagination.next?.url}
-                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
                                             >
                                                 Next
@@ -463,12 +463,12 @@ export default function Shops({
                             From where you want to get the shop.
                         </p>
                         <br />
-                        <div className="text-center space-y-3">
+                        <div className="space-y-3 text-center">
                             {auth?.user ? (
                                 <PrimaryButton
                                     type="button"
                                     onClick={getShopByMyLocation}
-                                    className="p-3 flex justify-center items-center bg-indigo-300 text-white w-full rounded"
+                                    className="flex items-center justify-center w-full p-3 text-white bg-indigo-300 rounded"
                                 >
                                     My Location ({auth.user.city}){" "}
                                     <i className="px-2 fas fa-location"></i>
@@ -478,18 +478,18 @@ export default function Shops({
                             <SecondaryButton
                                 type="button"
                                 onClick={getAllShops}
-                                className="p-3 w-full flex justify-center items-centere"
+                                className="flex justify-center w-full p-3 items-centere"
                             >
                                 All Shops
                             </SecondaryButton>
 
-                            <div className="p-2 rounded bg-gray-200">
+                            <div className="p-2 bg-gray-200 rounded">
                                 <input
                                     type="search"
                                     value={location}
                                     onChange={(e) => setLocation(e.target.value)}
                                     id="find_shop"
-                                    className="py-1 w-full rounded mb-1"
+                                    className="w-full py-1 mb-1 rounded"
                                     placeholder="search shop by state, city or town"
                                 />
                             </div>

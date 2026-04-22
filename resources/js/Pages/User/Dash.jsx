@@ -230,7 +230,7 @@ export default function Dash() {
                             href={route("upgrade.vendor.index", {
                                 upgrade: "vendor",
                             })}
-                            className="p-3 border rounded shadow"
+                            className="p-5 border rounded shadow"
                             style={{
                                 background:
                                     "linear-gradient(135deg, #ebebeb, lightgreen, #ebebeb)",
@@ -250,7 +250,7 @@ export default function Dash() {
                             href={route("upgrade.vendor.index", {
                                 upgrade: "reseller",
                             })}
-                            className="p-3 border rounded shadow"
+                            className="p-5 border rounded shadow"
                             style={{
                                 background:
                                     "linear-gradient(135deg, #ebebeb, lightgreen, #ebebeb)",
@@ -269,7 +269,7 @@ export default function Dash() {
 
                         <Link
                             href={route("upgrade.rider.index")}
-                            className="p-3 border rounded shadow"
+                            className="p-5 border rounded shadow"
                             style={{
                                 background:
                                     "linear-gradient(135deg, #ebebeb, lightgreen, #ebebeb)",

@@ -29,7 +29,7 @@ export default function Management() {
 
                             <div className="mt-4">
                                 <span className="px-4 py-2 text-yellow-800 bg-yellow-100 rounded">
-                                    Status: {managementRequest?.status ?? "pending"}
+                                    Status: {managementRequest?.status === 1 || managementRequest?.status === "1" ? "Approved" : managementRequest?.status ?? "pending"}
                                 </span>
                             </div>
 

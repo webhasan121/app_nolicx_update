@@ -29,7 +29,7 @@ export default function Developer() {
 
                             <div className="mt-4">
                                 <span className="px-4 py-2 text-yellow-800 bg-yellow-100 rounded">
-                                    Status: {developerRequest?.status ?? "pending"}
+                                    Status: {developerRequest?.status === 1 || developerRequest?.status === "1" ? "Approved" : developerRequest?.status ?? "pending"}
                                 </span>
                             </div>
 

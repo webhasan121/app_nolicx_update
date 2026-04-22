@@ -19,28 +19,29 @@ class ReselShopsController extends Controller
         $location = trim((string) $request->query('location', ''));
         $state = $request->query('state', '');
         $get = $request->query('get');
+        $slug = $request->query('slug');
 
         $query = vendor::query()->where('status', 'Active');
 
         if (Auth::check()) {
-            $query->where('country', auth()->user()?->country);
+            $query->where('country', Auth::user()?->country);
         }
 
         if ($q) {
-            $keyword = Str::ucfirst($q);
+            $keyword = mb_strtolower($q);
             $query->where(function ($builder) use ($keyword) {
-                $builder->where('shop_name_en', 'like', '%' . $keyword . '%')
-                    ->orWhere('shop_name_bn', 'like', '%' . $keyword . '%');
+                $builder->whereRaw('LOWER(shop_name_en) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(shop_name_bn) LIKE ?', ["%{$keyword}%"]);
             });
         }
 
         if ($location) {
-            $keyword = Str::ucfirst($location);
+            $keyword = mb_strtolower($location);
             $query->where(function ($builder) use ($keyword) {
-                $builder->where('district', 'like', '%' . $keyword . '%')
-                    ->orWhere('upozila', 'like', '%' . $keyword . '%')
-                    ->orWhere('village', 'like', '%' . $keyword . '%')
-                    ->orWhere('country', 'like', '%' . $keyword . '%');
+                $builder->whereRaw('LOWER(district) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(upozila) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(village) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(country) LIKE ?', ["%{$keyword}%"]);
             });
         }
 
@@ -49,8 +50,13 @@ class ReselShopsController extends Controller
         $selectedShop = null;
         $products = null;
 
-        if ($get) {
-            $shop = vendor::with('user')->findOrFail($get);
+        if ($get || $slug) {
+            $shopQuery = vendor::with('user');
+            if ($get) {
+                $shop = $shopQuery->findOrFail($get);
+            } elseif ($slug) {
+                $shop = $shopQuery->whereRaw('LOWER(shop_name_en) = ?', [mb_strtolower($slug)])->firstOrFail();
+            }
             $selectedShop = [
                 'id' => $shop->id,
                 'shop_name_en' => $shop->shop_name_en,
@@ -72,8 +78,18 @@ class ReselShopsController extends Controller
             $productList = Product::query()
                 ->active()
                 ->vendor()
-                ->where('user_id', $shop->user?->id)
-                ->with(['attr:id,product_id,name,value'])
+                ->where('user_id', $shop->user?->id);
+
+            // Product search
+            if ($q) {
+                $keyword = mb_strtolower($q);
+                $productList->where(function ($builder) use ($keyword) {
+                    $builder->whereRaw('LOWER(name) LIKE ?', ["%{$keyword}%"])
+                        ->orWhereRaw('LOWER(title) LIKE ?', ["%{$keyword}%"]);
+                });
+            }
+
+            $productList = $productList->with(['attr:id,product_id,name,value'])
                 ->paginate(config('app.paginate'))
                 ->withQueryString();
 
@@ -116,6 +132,7 @@ class ReselShopsController extends Controller
                 'location' => $location,
                 'state' => $state,
                 'get' => $get,
+                'slug' => $slug,
             ],
             'shops' => [
                 'data' => $shops->getCollection()->map(function ($shop) {
@@ -147,6 +164,7 @@ class ReselShopsController extends Controller
                 'location' => $location,
                 'state' => $state,
                 'get' => $get,
+                'slug' => $slug,
             ]),
         ]);
     }
@@ -161,7 +179,7 @@ class ReselShopsController extends Controller
         $query = vendor::query()->where('status', 'Active');
 
         if (Auth::check()) {
-            $query->where('country', auth()->user()?->country);
+            $query->where('country', Auth::user()?->country);
         }
 
         if ($q !== '') {

@@ -1,8 +1,10 @@
 import { Head, router } from "@inertiajs/react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Hr from "../../../../components/Hr";
 import NavLink from "../../../../components/NavLink";
 import TextInput from "../../../../components/TextInput";
+import PrimaryButton from "../../../../components/PrimaryButton";
 import Container from "../../../../components/dashboard/Container";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import OverviewDiv from "../../../../components/dashboard/overview/Div";
@@ -30,6 +32,7 @@ function buildParams(filters, page = null) {
         fd: filters?.fd_value ?? filters?.fd ?? "",
         lastDate: filters?.lastDate_value ?? filters?.lastDate ?? "",
         user_type: filters?.user_type ?? "user",
+        find: filters?.find ?? "",
     };
 
     if (page) {
@@ -39,11 +42,22 @@ function buildParams(filters, page = null) {
     return params;
 }
 
-export default function Index({ filters, overview, products }) {
+export default function Index({ filters, overview, products, printUrl }) {
+    const [fd, setFd] = useState(filters?.fd_value ?? "");
+    const [lastDate, setLastDate] = useState(filters?.lastDate_value ?? "");
+    const [search, setSearch] = useState(filters?.find ?? "");
+
+    useEffect(() => {
+        setFd(filters?.fd_value ?? "");
+        setLastDate(filters?.lastDate_value ?? "");
+        setSearch(filters?.find ?? "");
+    }, [filters?.fd_value, filters?.find, filters?.lastDate_value]);
+
     const visit = (nextFilters, page = null) => {
         router.get(route("system.earn.index"), buildParams(nextFilters, page), {
             preserveScroll: true,
             preserveState: true,
+            replace: true,
         });
     };
 
@@ -55,58 +69,47 @@ export default function Index({ filters, overview, products }) {
         visit(
             {
                 nav: nextUrl.searchParams.get("nav") ?? filters?.nav,
-                fd_value: nextUrl.searchParams.get("fd") ?? filters?.fd_value,
-                lastDate_value: nextUrl.searchParams.get("lastDate") ?? filters?.lastDate_value,
+                fd_value: nextUrl.searchParams.get("fd") ?? fd,
+                lastDate_value: nextUrl.searchParams.get("lastDate") ?? lastDate,
                 user_type: nextUrl.searchParams.get("user_type") ?? filters?.user_type,
+                find: nextUrl.searchParams.get("find") ?? search,
             },
             nextUrl.searchParams.get("page") ?? undefined
         );
     };
 
-    return (
-        <AppLayout title="Earn By Sell" header={
-            <PageHeader>
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        const formData = new FormData(e.currentTarget);
-                        visit({
-                            ...filters,
-                            fd_value: formData.get("fd"),
-                            lastDate_value: formData.get("lastDate"),
-                        });
-                    }}
-                >
-                    <div className="w-full flex items-bottom justify-betweeen space-x-2">
-                        <div>
-                            <p className="text-xs">First Date</p>
-                            <input
-                                type="date"
-                                id="firstDate"
-                                name="fd"
-                                defaultValue={filters?.fd_value ?? ""}
-                                className="py-1 rounded font-normal text-sm"
-                            />
-                            <div className="text-xs">{filters?.fd ?? ""}</div>
-                        </div>
+    useEffect(() => {
+        const trimmedSearch = search.trim();
+        const currentSearch = (filters?.find ?? "").trim();
 
-                        <div>
-                            <p className="text-xs">Last Date</p>
-                            <TextInput
-                                type="date"
-                                name="lastDate"
-                                defaultValue={filters?.lastDate_value ?? ""}
-                                className="py-1 rounded font-normal text-sm"
-                            />
-                            <div className="text-xs">{filters?.lastDate ?? ""}</div>
-                        </div>
-                    </div>
-                    <button className="rounded bg-lime-400 px-4 mt-1 py-1 text-sm border" type="submit">
-                        Check
-                    </button>
-                </form>
-            </PageHeader>
-        }>
+        if (trimmedSearch === currentSearch) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            visit({
+                ...filters,
+                fd_value: fd,
+                lastDate_value: lastDate,
+                find: trimmedSearch,
+            });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search]);
+
+    const pagination = useMemo(() => {
+        const links = products?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [products?.links]);
+
+    return (
+        <AppLayout title="Earn By Sell" header={<PageHeader>Earn By Sell</PageHeader>}>
             <Head title="Earn By Sell" />
             <Hr />
             <Container>
@@ -123,14 +126,17 @@ export default function Index({ filters, overview, products }) {
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-between">
-                                <div className="flex space-x-2">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <select
                                         value={filters?.nav ?? "sold"}
                                         onChange={(e) =>
                                             visit({
                                                 ...filters,
                                                 nav: e.target.value,
+                                                fd_value: fd,
+                                                lastDate_value: lastDate,
+                                                find: search,
                                             })
                                         }
                                         className="rounded py-1"
@@ -139,14 +145,76 @@ export default function Index({ filters, overview, products }) {
                                         <option value="sold">Sold</option>
                                         <option value="selling">On-Selling</option>
                                     </select>
+
+                                    <TextInput
+                                        type="date"
+                                        className="py-1"
+                                        value={fd}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+
+                                            setFd(value);
+                                            visit({
+                                                ...filters,
+                                                fd_value: value,
+                                                lastDate_value: lastDate,
+                                                find: search,
+                                            });
+                                        }}
+                                    />
+                                    <TextInput
+                                        type="date"
+                                        className="py-1"
+                                        value={lastDate}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+
+                                            setLastDate(value);
+                                            visit({
+                                                ...filters,
+                                                fd_value: fd,
+                                                lastDate_value: value,
+                                                find: search,
+                                            });
+                                        }}
+                                    />
+                                    <TextInput
+                                        type="search"
+                                        placeholder="Search products..."
+                                        className="py-1"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") {
+                                                return;
+                                            }
+
+                                            e.preventDefault();
+                                            visit({
+                                                ...filters,
+                                                fd_value: fd,
+                                                lastDate_value: lastDate,
+                                                find: search.trim(),
+                                            });
+                                        }}
+                                    />
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={() => window.open(printUrl, "_blank")}
+                                    >
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
                                 </div>
-                                <div>
+                                <div className="flex items-center gap-2">
                                     <select
                                         value={filters?.user_type ?? "user"}
                                         onChange={(e) =>
                                             visit({
                                                 ...filters,
                                                 user_type: e.target.value,
+                                                fd_value: fd,
+                                                lastDate_value: lastDate,
+                                                find: search,
                                             })
                                         }
                                         className="rounded py-1"
@@ -158,13 +226,7 @@ export default function Index({ filters, overview, products }) {
                                 </div>
                             </div>
                         }
-                        content={
-                            <p className="text-sm">
-                                {(products?.count ?? 0) > 0
-                                    ? `${products?.count ?? 0} items found / Unique : ${products?.unique_count ?? 0}`
-                                    : "No Data Found"}
-                            </p>
-                        }
+                        content=""
                     />
                     <Hr />
                     <SectionInner>
@@ -251,17 +313,23 @@ export default function Index({ filters, overview, products }) {
                             </tbody>
                         </Table>
 
-                        {(products?.links ?? []).length > 0 ? (
+                        {(products?.total ?? 0) > 0 ? (
                             <div className="w-full pt-4">
                                 <div className="flex w-full items-center justify-between gap-3">
                                     <div className="text-sm text-slate-700">
-                                        {products?.total > 0
-                                            ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} items`
-                                            : "No items found"}
+                                        {`Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} items`}
                                     </div>
                                     <div className="flex items-center md:justify-end">
                                         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                                            {(products?.links ?? []).map((link, index) => (
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.prev?.url}
+                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.prev?.url)}
+                                            >
+                                                Previous
+                                            </button>
+                                            {pagination.pages.map((link, index) => (
                                                 <button
                                                     key={`${link.label}-${index}`}
                                                     type="button"
@@ -276,6 +344,14 @@ export default function Index({ filters, overview, products }) {
                                                     {link.label}
                                                 </button>
                                             ))}
+                                            <button
+                                                type="button"
+                                                disabled={!pagination.next?.url}
+                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                onClick={() => goToPage(pagination.next?.url)}
+                                            >
+                                                Next
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
