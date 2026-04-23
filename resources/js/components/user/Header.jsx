@@ -8,8 +8,8 @@ import DropdownLink from "../DropdownLink";
 import NavLink from "../NavLink";
 
 export default function Header() {
-    const { auth, global, roles, activeNav, categories } = usePage().props; // this global() load in AppServiceProvider
-    // const categories = global?.categories || [];
+    const { auth, global, roles, activeNav } = usePage().props; // this global() load in AppServiceProvider
+    const categories = global?.categories || [];
     const user = auth?.user;
     const [open, setOpen] = useState(false);
     const currentCategorySlug = (() => {

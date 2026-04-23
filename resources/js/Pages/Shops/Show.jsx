@@ -12,7 +12,7 @@ export default function Show({ shop = {}, products = [] }) {
                     <div className="relative">
                         {shop?.banner ? (
                             <img
-                                className="w-full bg-indigo-900"
+                                className="w-full max-h-[400px] bg-indigo-900"
                                 style={{ aspectRatio: "16/9" }}
                                 src={`/storage/${shop.banner}`}
                                 alt={shop?.shop_name_en ?? ""}

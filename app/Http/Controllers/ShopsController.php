@@ -60,6 +60,7 @@ class ShopsController extends Controller
             ->whereIn('slider_id', $sliderIds)
             ->get();
 
+
         return Inertia::render('Shops/Index', [
             'slides' => $slides,
             'shops' => $shops,
@@ -94,17 +95,10 @@ class ShopsController extends Controller
                 'unit',
             ]);
 
-        $categories = Category::query()
-            ->where([
-                'belongs_to' => 'reseller',
-                'user_id' => $shop?->user?->id,
-            ])
-            ->get();
 
         return Inertia::render('Shops/Show', [
             'shop' => $shop,
             'products' => $products,
-            'categories' => $categories,
         ]);
     }
 

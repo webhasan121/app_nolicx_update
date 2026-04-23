@@ -96,10 +96,10 @@ class HandleInertiaRequests extends Middleware
 
             // Only for frontend routes
             'global' => function () {
-                if (!request()->routeIs('home')) return [];
+                if (!request()->routeIs('home', 'shops.*', 'category.*', 'products.*', 'product.*', 'web.pages', 'search')) return [];
 
                 return [
-                    // 'categories' => \App\Models\Category::getAll(),
+                    'categories' => \App\Models\Category::getAll(),
                     'navigations' => \App\Models\Navigations::with('links')->get(),
                     'branches' => fn() => cache()->remember(
                         'branches',
