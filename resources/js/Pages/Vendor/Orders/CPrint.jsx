@@ -1,9 +1,7 @@
 import { Head } from "@inertiajs/react";
 import { useEffect } from "react";
-import AppLayout from "../../../Layouts/App";
 import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
-import PageHeader from "../../../components/dashboard/PageHeader";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
 
@@ -19,7 +17,7 @@ export default function CPrint({ order }) {
     }, []);
 
     return (
-        <AppLayout title="View Orders" header={<PageHeader>View Orders</PageHeader>}>
+        <div className="min-h-screen bg-white">
             <Head title="View Orders" />
 
             <Container>
@@ -110,6 +108,6 @@ export default function CPrint({ order }) {
                     </Table>
                 </Section>
             </Container>
-        </AppLayout>
+        </div>
     );
 }

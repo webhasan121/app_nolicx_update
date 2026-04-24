@@ -13,6 +13,10 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import Table from "../../../../components/dashboard/table/Table";
 
 export default function Details({ nav = "tab", order, earnFilters, earnComissions = [], resellerProfit, reseller_profit_sum }) {
+    const shippingTotal = Number(order?.shipping ?? 0);
+    const subtotal = Number(order?.cart_sum_total ?? 0);
+    const orderTotal = shippingTotal + subtotal;
+
     const changeNav = (target) => {
         router.get(route("system.orders.details", { id: order.id }), { nav: target }, { preserveScroll: true, preserveState: true });
     };
@@ -146,15 +150,15 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
                                 <tfoot>
                                     <tr className="border-t">
                                         <td colSpan="6" className="text-right">Sub Total</td>
-                                        <td>{order.cart_sum_total} Tk</td>
+                                        <td>{subtotal} Tk</td>
                                     </tr>
                                     <tr>
                                         <td colSpan="6" className="text-right">Shipping</td>
-                                        <td>{order.shipping ?? 0} Tk</td>
+                                        <td>{shippingTotal} Tk</td>
                                     </tr>
                                     <tr className="border-t font-bold text-lg bg-gray-100">
                                         <td colSpan="6" className="text-right">Total</td>
-                                        <td>{order.shipping + order.cart_sum_total} Tk</td>
+                                        <td>{orderTotal} Tk</td>
                                         <td colSpan="5"></td>
                                     </tr>
                                 </tfoot>

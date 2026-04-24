@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
+use App\Support\SystemSettings;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\productSalesIndex;
@@ -49,6 +50,7 @@ class WelcomeController extends Controller
             'categories' => $categories,
             'ss' => $sliders,
             'slides' => $slides,
+            'developer_percentage' => SystemSettings::get('DEVELOPER_PERCENTAGE', '0'),
             'newProducts' => Product::select('id', 'name', 'price', 'thumbnail', 'slug')
                 ->where('badge', 'new')
                 ->latest()

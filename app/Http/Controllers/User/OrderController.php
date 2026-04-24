@@ -171,8 +171,8 @@ class OrderController extends Controller
                 'created_at' => Carbon::parse($order->created_at)->toFormattedDateString(),
                 'created_time' => Carbon::parse($order->created_at)->format('H:i a'),
                 'received_at' => $order->received_at,
-                'total' => $order->total,
-                'shipping' => $order->shipping,
+                'total' => (float) ($order->total ?? 0),
+                'shipping' => (float) ($order->shipping ?? 0),
                 'delevery' => $order->delevery,
                 'area_condition' => $order->area_condition,
                 'location' => $order->location,
@@ -180,10 +180,10 @@ class OrderController extends Controller
                 'cart_orders' => $order->cartOrders->map(function ($item) {
                     return [
                         'id' => $item->id,
-                        'quantity' => $item->quantity,
+                        'quantity' => (int) ($item->quantity ?? 0),
                         'size' => $item->size,
-                        'price' => $item->price,
-                        'total' => $item->total,
+                        'price' => (float) ($item->price ?? 0),
+                        'total' => (float) ($item->total ?? 0),
                         'product' => [
                             'id' => $item->product?->id,
                             'name' => $item->product?->name ?? 'N/A',

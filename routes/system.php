@@ -375,6 +375,8 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::post('/settings/dbid', [SettingsController::class, 'updateDBIDNo'])->name('settings.dbid.update');
     Route::post('/settings/trade-license', [SettingsController::class, 'updateTradeLicense'])->name('settings.trade-license.update');
     Route::post('/settings/playstore', [SettingsController::class, 'updatePlaystoreLink'])->name('settings.playstore.update');
+    Route::post('/settings/developer-percentage', [SettingsController::class, 'updateDeveloperPercentage'])->name('settings.developer-percentage.update');
+    Route::post('/settings/management-percentage', [SettingsController::class, 'updateManagementPercentage'])->name('settings.management-percentage.update');
 
     Route::get('/pages', [PageSettingsController::class, 'indexReact'])->name('pages.index');
     Route::get('/pages/print', [PageSettingsController::class, 'printReact'])->name('pages.print');

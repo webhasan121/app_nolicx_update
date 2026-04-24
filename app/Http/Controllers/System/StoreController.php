@@ -310,11 +310,15 @@ class StoreController extends Controller
     {
         $payload = $this->validateWithdraw($request);
 
-        DB::transaction(function () use ($payload) {
+        $error = DB::transaction(function () use ($payload) {
             $balance = $this->lockBalance();
 
+            if (!$balance) {
+                return 'System balance not found';
+            }
+
             if ($balance['current'] < $payload['amount']) {
-                throw new \Exception('Insufficient system balance');
+                return 'Insufficient system balance';
             }
 
             Withdraw::create($this->buildWithdrawPayload($payload, [
@@ -329,7 +333,13 @@ class StoreController extends Controller
             if ($this->balanceHasColumn('withdraw')) {
                 DB::table('balances')->increment('withdraw', $payload['amount']);
             }
+
+            return null;
         });
+
+        if ($error) {
+            return back()->with('error', $error);
+        }
 
         return back()->with('success', 'Withdraw resquest successfull');
     }
@@ -363,7 +373,7 @@ class StoreController extends Controller
     private function validateWithdraw(Request $request): array
     {
         return $request->validate([
-            'amount' => ['required', 'numeric'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
             'method' => ['required'],
             'phone' => ['nullable'],
             'bankAccount' => ['nullable', 'string'],
@@ -405,9 +415,9 @@ class StoreController extends Controller
 
     private function buildWithdrawPayload(array $payload, array $overrides = []): array
     {
-        $payTo = $payload['accountNumber'] ?: ($payload['phone'] ?: null);
+        $payTo = ($payload['accountNumber'] ?? null) ?: (($payload['phone'] ?? null) ?: null);
 
-        return [
+        $data = [
             'user_id' => Auth::user()->id,
             'phone' => $payload['phone'] ?? null,
             'pay_by' => $payload['method'],
@@ -427,6 +437,19 @@ class StoreController extends Controller
             'remarks' => $payload['remarks'] ?? null,
             ...$overrides,
         ];
+
+        return $this->onlyExistingWithdrawColumns($data);
+    }
+
+    private function onlyExistingWithdrawColumns(array $data): array
+    {
+        if (!Schema::hasTable('withdraws')) {
+            return $data;
+        }
+
+        return collect($data)
+            ->only(Schema::getColumnListing('withdraws'))
+            ->all();
     }
 
     private function resolveStore(?Carbon $date = null): array
@@ -501,20 +524,24 @@ class StoreController extends Controller
 
     private function withdrawDiff(string $column): float
     {
+        if (!Schema::hasTable('withdraws') || !Schema::hasColumn('withdraws', $column)) {
+            return 0;
+        }
+
         $credit = Withdraw::where(['type' => 'credit', 'status' => true])->sum($column);
         $debit = Withdraw::where(['type' => 'debit', 'status' => true])->sum($column);
         return (float) $credit - (float) $debit;
     }
 
-    private function lockBalance(): array
+    private function lockBalance(): ?array
     {
         if (!$this->balanceHasColumn('current')) {
-            throw new \Exception('System balance not found');
+            return null;
         }
 
         $balance = DB::table('balances')->lockForUpdate()->first();
         if (!$balance) {
-            throw new \Exception('System balance not found');
+            return null;
         }
 
         return (array) $balance;

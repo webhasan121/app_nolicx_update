@@ -339,11 +339,7 @@ class OrdersController extends Controller
 
     public function cprint(int $order): Response
     {
-        $data = auth()->user()
-            ->orderToMe()
-            ->where(['belongs_to_type' => auth()->user()->account_type()])
-            ->with(['user', 'cartOrders.product'])
-            ->findOrFail($order);
+        $data = $this->resolvePrintableOrder($order);
 
         return Inertia::render('Vendor/Orders/CPrint', [
             'order' => [
@@ -375,11 +371,7 @@ class OrdersController extends Controller
 
     public function vprint(int $order): Response
     {
-        $data = auth()->user()
-            ->orderToMe()
-            ->where(['belongs_to_type' => auth()->user()->account_type()])
-            ->with(['user', 'cartOrders.product'])
-            ->findOrFail($order);
+        $data = $this->resolvePrintableOrder($order);
 
         return Inertia::render('Vendor/Orders/VPrint', [
             'order' => [
@@ -493,5 +485,18 @@ class OrdersController extends Controller
                 ];
             })->all(),
         ]);
+    }
+
+    private function resolvePrintableOrder(int $orderId): Order
+    {
+        $query = Order::query()->with(['user', 'cartOrders.product']);
+        $user = auth()->user();
+
+        if (!$user->hasAnyRole(['system', 'admin'])) {
+            $query->where('belongs_to', $user->id)
+                ->where('belongs_to_type', $user->account_type());
+        }
+
+        return $query->findOrFail($orderId);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
+use App\Support\SystemSettings;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,11 +20,13 @@ class SettingsController extends Controller
         return Inertia::render('Auth/system/settings/index', [
             'settings' => [
                 'isQueueRunning' => strpos($queueStatus, 'Queue worker is running') !== false,
-                'whatsapp_no' => $this->getEnvValue('WHATSAPP_NO'),
-                'support_mail' => $this->getEnvValue('SUPPORT_MAIL'),
-                'dbid_no' => $this->getEnvValue('DBID_NO'),
-                'trade_license' => $this->getEnvValue('TRADE_LICENSE'),
-                'playstore_link' => $this->getEnvValue('PLAYSTORE_LINK'),
+                'whatsapp_no' => SystemSettings::get('WHATSAPP_NO'),
+                'support_mail' => SystemSettings::get('SUPPORT_MAIL'),
+                'dbid_no' => SystemSettings::get('DBID_NO'),
+                'trade_license' => SystemSettings::get('TRADE_LICENSE'),
+                'playstore_link' => SystemSettings::get('PLAYSTORE_LINK'),
+                'developer_percentage' => SystemSettings::get('DEVELOPER_PERCENTAGE'),
+                'management_percentage' => SystemSettings::get('MANAGEMENT_PERCENTAGE'),
             ],
         ]);
     }
@@ -45,7 +48,7 @@ class SettingsController extends Controller
             'support_mail' => 'required|email|min:10',
         ]);
 
-        $this->setEnvValue('SUPPORT_MAIL', $validated['support_mail']);
+        SystemSettings::set('SUPPORT_MAIL', $validated['support_mail']);
 
         return redirect()->back()->with('success', 'Support email updated successfully!');
 
@@ -57,7 +60,7 @@ class SettingsController extends Controller
             'whatsapp_no' => 'required|string|min:11',
         ]);
 
-        $this->setEnvValue('WHATSAPP_NO', $validated['whatsapp_no']);
+        SystemSettings::set('WHATSAPP_NO', $validated['whatsapp_no']);
 
         return redirect()->back()->with('success', 'WhatsApp number updated successfully!');
     }
@@ -68,7 +71,7 @@ class SettingsController extends Controller
             'dbid_no' => 'required|string',
         ]);
 
-        $this->setEnvValue('DBID_NO', $validated['dbid_no']);
+        SystemSettings::set('DBID_NO', $validated['dbid_no']);
 
         return redirect()->back()->with('success', 'DBID no. updated successfully!');
     }
@@ -79,7 +82,7 @@ class SettingsController extends Controller
             'trade_license' => 'required|string',
         ]);
 
-        $this->setEnvValue('TRADE_LICENSE', $validated['trade_license']);
+        SystemSettings::set('TRADE_LICENSE', $validated['trade_license']);
 
         return redirect()->back()->with('success', 'Trade License no. updated successfully!');
     }
@@ -90,44 +93,31 @@ class SettingsController extends Controller
             'playstore_link' => 'required|string',
         ]);
 
-        $this->setEnvValue('PLAYSTORE_LINK', $validated['playstore_link']);
+        SystemSettings::set('PLAYSTORE_LINK', $validated['playstore_link']);
 
         return redirect()->back()->with('success', 'Playstore link updated successfully!');
     }
 
-    private function getEnvValue(string $key): string
+    public function updateDeveloperPercentage(Request $request): RedirectResponse
     {
-        $envPath = app()->environmentFilePath();
+        $validated = $request->validate([
+            'developer_percentage' => 'required|numeric|min:0|max:100',
+        ]);
 
-        if (!file_exists($envPath)) {
-            return '';
-        }
+        SystemSettings::set('DEVELOPER_PERCENTAGE', (string) $validated['developer_percentage']);
 
-        $env = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
-        foreach ($env as $line) {
-            if (str_starts_with(trim($line), $key . '=')) {
-                $value = explode('=', $line, 2)[1] ?? '';
-
-                return trim($value, "\"'");
-            }
-        }
-
-        return '';
+        return redirect()->back()->with('success', 'Developer percentage updated successfully!');
     }
 
-    private function setEnvValue(string $key, string $value): void
+    public function updateManagementPercentage(Request $request): RedirectResponse
     {
-        $envPath = app()->environmentFilePath();
-        $env = file_get_contents($envPath);
+        $validated = $request->validate([
+            'management_percentage' => 'required|numeric|min:0|max:100',
+        ]);
 
-        if (strpos($env, $key . '=') !== false) {
-            $env = preg_replace('/' . preg_quote($key, '/') . '=.*/', $key . '=' . $value, $env);
-        } else {
-            $env .= "\n" . $key . '=' . $value;
-        }
+        SystemSettings::set('MANAGEMENT_PERCENTAGE', (string) $validated['management_percentage']);
 
-        file_put_contents($envPath, $env);
-        Artisan::call('config:clear');
+        return redirect()->back()->with('success', 'Management percentage updated successfully!');
     }
+
 }

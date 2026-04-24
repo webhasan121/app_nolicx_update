@@ -28,7 +28,7 @@ function SettingCard({ title, content, href, buttonText, isQueueRunning, onStart
                     ) : queueControlAvailable === false ? (
                         <div className="text-sm">
                             <div className="mb-2 text-gray-600">Run manually:</div>
-                            <code className="block p-2 border rounded bg-gray-100 normal-case">
+                            <code className="block p-2 normal-case bg-gray-100 border rounded">
                                 {queueCommand}
                             </code>
                         </div>
@@ -50,7 +50,10 @@ function SettingCard({ title, content, href, buttonText, isQueueRunning, onStart
 function EnvCard({ title, content, label, form, field, type = "text", routeName }) {
     const save = (e) => {
         e.preventDefault();
-        form.post(route(routeName));
+        form.post(route(routeName), {
+            preserveScroll: true,
+            preserveState: true,
+        });
     };
 
     return (
@@ -67,15 +70,19 @@ function EnvCard({ title, content, label, form, field, type = "text", routeName 
             <SectionInner>
                 <form onSubmit={save} className="relative">
                     <label>{label}</label>
-                    <div className="flex justify-between items-center gap-4">
+                    <div className="flex items-center justify-between gap-4">
                         <input
                             type={type}
                             value={form.data[field]}
                             onChange={(e) => form.setData(field, e.target.value)}
-                            className="border p-2 rounded-md w-full"
+                            className="w-full p-2 border rounded-md"
                         />
-                        <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded-md">
-                            <span>Save</span>
+                        <button
+                            type="submit"
+                            disabled={form.processing}
+                            className="px-4 py-2 text-white bg-green-500 rounded-md disabled:opacity-50"
+                        >
+                            <span>{form.processing ? "Saving..." : "Save"}</span>
                         </button>
                     </div>
                     <InputError messages={form.errors[field]} className="mt-2" />
@@ -106,6 +113,13 @@ export default function Index({ settings }) {
         playstore_link: settings?.playstore_link ?? "",
     });
 
+    const developerPercentageForm = useForm({
+        developer_percentage: settings?.developer_percentage ?? "",
+    });
+    const managementPercentageForm = useForm({
+        management_percentage: settings?.management_percentage ?? "",
+    });
+
     const startQueue = () => {
         router.post(route("system.settings.queue.start"));
     };
@@ -115,7 +129,7 @@ export default function Index({ settings }) {
             <Head title="Settings" />
 
             <Container>
-                <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <SettingCard
                         title="Page Setup"
                         content="Setup your necessary pages from here. add, edit and delete."
@@ -147,7 +161,7 @@ export default function Index({ settings }) {
                     />
                 </section>
 
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     <EnvCard
                         title="Support Email"
                         content="Update support email from here"
@@ -193,6 +207,24 @@ export default function Index({ settings }) {
                         field="playstore_link"
                         type="url"
                         routeName="system.settings.playstore.update"
+                    />
+                    <EnvCard
+                        title="Developer Percentage "
+                        content="Update developer percentage from here"
+                        label="Developer Percentage"
+                        form={developerPercentageForm}
+                        field="developer_percentage"
+                        type="number"
+                        routeName="system.settings.developer-percentage.update"
+                    />
+                    <EnvCard
+                        title="Management Percentage "
+                        content="Update management percentage from here"
+                        label="Management Percentage"
+                        form={managementPercentageForm}
+                        field="management_percentage"
+                        type="number"
+                        routeName="system.settings.management-percentage.update"
                     />
                 </section>
             </Container>

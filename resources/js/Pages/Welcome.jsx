@@ -20,7 +20,9 @@ export default function Welcome({
     topSales = [],
     newProducts = [],
     todaysProducts = [],
+    developer_percentage = 0
 }) {
+console.log('developer_percentage', developer_percentage);
 
     return (
         <UserLayout>

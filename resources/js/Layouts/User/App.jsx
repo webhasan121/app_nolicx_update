@@ -10,6 +10,8 @@ export default function UserLayout({ children, title }) {
     // Inertia theke flash message receive korar jonno
     const { flash, appConfig } = usePage().props;
 
+    console.log('appConfig',appConfig);
+
     // Handle SweetAlert Notifications (Livewire er bodole)
     useEffect(() => {
         if (flash?.success) {

@@ -40,6 +40,9 @@ function StatusBox({ label, orderStatus, statuses, title }) {
 
 export default function OrderDetails() {
     const { order } = usePage().props;
+    const orderTotal = Number(order?.total ?? 0);
+    const shippingTotal = Number(order?.shipping ?? 0);
+    const payableTotal = orderTotal + shippingTotal;
 
     const markAsReceived = () => {
         router.post(route("user.orders.received", { id: order.id }));
@@ -200,19 +203,19 @@ export default function OrderDetails() {
                                 <td colSpan="5" className="text-right">
                                     Total
                                 </td>
-                                <td>{order.total ?? "0"} TK</td>
+                                <td>{orderTotal} TK</td>
                             </tr>
                             <tr>
                                 <td colSpan="5" className="text-right">
                                     Shipping
                                 </td>
-                                <td>{order.shipping ?? "120"} Tk</td>
+                                <td>{shippingTotal} Tk</td>
                             </tr>
                             <tr className="bg-gray-200">
                                 <td colSpan="5" className="text-right">
                                     Payable
                                 </td>
-                                <td>{(order.shipping || 0) + (order.total || 0)} TK</td>
+                                <td>{payableTotal} TK</td>
                             </tr>
                         </tfoot>
                     </Table>
@@ -224,7 +227,7 @@ export default function OrderDetails() {
                             <div>Shipping</div>
                             <div>
                                 <div className="px-2 py-1 text-white bg-indigo-900 rounded-lg">
-                                    {order.shipping ?? "0"} TK
+                                    {shippingTotal} TK
                                 </div>
                             </div>
                         </div>
@@ -266,4 +269,3 @@ export default function OrderDetails() {
         </UserDash>
     );
 }
-
