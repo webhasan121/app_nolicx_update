@@ -153,30 +153,35 @@ export default function Footer() {
             </section>
 
             {/* Branch Section */}
-            <section className="mb-16 max-w-7xl">
-                <div className="grid gap-8 lg:grid-cols-3 ml-14">
-                    {branches?.map((branch) => (
-                        <div key={branch.id} className="block">
-                            <h4 className="mb-4 text-2xl font-bold text-blue-600 uppercase">
-                                {branch.name}
-                            </h4>
+            <section className="px-4 mx-auto mb-16 max-w-7xl">
+                <div className="pb-3 overflow-x-auto [scrollbar-width:thin] [scrollbar-color:#9ca3af_#f3f4f6]">
+                    <div className="flex gap-4 min-w-max">
+                        {branches?.map((branch) => (
+                            <div
+                                key={branch.id}
+                                className="block p-4 bg-white border rounded-lg shadow-sm w-72 shrink-0"
+                            >
+                                <h4 className="mb-3 text-lg font-bold text-blue-600 uppercase truncate">
+                                    {branch.name}
+                                </h4>
 
-                            <p>
-                                <i className="w-6 mr-2 fa-solid fa-map-marker-alt"></i>
-                                : {branch.address}
-                            </p>
+                                <p className="text-sm">
+                                    <i className="w-5 mr-2 fa-solid fa-map-marker-alt"></i>
+                                    : {branch.address}
+                                </p>
 
-                            <p className="my-2">
-                                <i className="w-6 mr-2 fa-solid fa-phone"></i>:{" "}
-                                {branch.phone}
-                            </p>
+                                <p className="my-2 text-sm">
+                                    <i className="w-5 mr-2 fa-solid fa-phone"></i>:{" "}
+                                    {branch.phone}
+                                </p>
 
-                            <p>
-                                <i className="w-6 mr-2 fa-solid fa-envelope"></i>
-                                : {branch.email}
-                            </p>
-                        </div>
-                    ))}
+                                <p className="text-sm">
+                                    <i className="w-5 mr-2 fa-solid fa-envelope"></i>
+                                    : {branch.email}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 

@@ -1,15 +1,5 @@
 import { useForm, usePage } from "@inertiajs/react";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import {
-    ClassicEditor,
-    Bold,
-    Essentials,
-    Heading,
-    Italic,
-    Link,
-    List,
-    Paragraph,
-} from "ckeditor5";
+import { useEffect, useId, useRef, useState } from "react";
 import AppLayout from "../../../../../Layouts/App";
 import DangerButton from "../../../../../components/DangerButton";
 import Hr from "../../../../../components/Hr";
@@ -23,10 +13,14 @@ import PageHeader from "../../../../../components/dashboard/PageHeader";
 import SectionHeader from "../../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../../components/dashboard/section/Section";
-import "ckeditor5/ckeditor5.css";
 
 export default function Create() {
     const { paymentOptions = [] } = usePage().props;
+    const inputId = useId().replace(/:/g, "");
+    const editorRef = useRef(null);
+    const [trixReady, setTrixReady] = useState(
+        typeof window !== "undefined" && !!window.Trix
+    );
     const form = useForm({
         name: "",
         price: "",
@@ -38,6 +32,73 @@ export default function Create() {
         description: "",
         paymentOptions,
     });
+
+    useEffect(() => {
+        let isMounted = true;
+
+        if (typeof window === "undefined" || window.Trix) {
+            setTrixReady(true);
+            return undefined;
+        }
+
+        if (!document.querySelector('link[data-trix="true"]')) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.type = "text/css";
+            link.href = "https://unpkg.com/trix@2.0.8/dist/trix.css";
+            link.dataset.trix = "true";
+            document.head.appendChild(link);
+        }
+
+        let script = document.querySelector('script[data-trix="true"]');
+        const onLoad = () => {
+            if (isMounted) {
+                setTrixReady(true);
+            }
+        };
+
+        if (!script) {
+            script = document.createElement("script");
+            script.src = "https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js";
+            script.async = true;
+            script.dataset.trix = "true";
+            script.addEventListener("load", onLoad);
+            document.body.appendChild(script);
+        } else if (window.Trix) {
+            setTrixReady(true);
+        } else {
+            script.addEventListener("load", onLoad);
+        }
+
+        return () => {
+            isMounted = false;
+            if (script) {
+                script.removeEventListener("load", onLoad);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        const editor = editorRef.current;
+
+        if (!editor || !trixReady) {
+            return undefined;
+        }
+
+        const handleChange = (event) => {
+            form.setData("description", event.target.value);
+        };
+
+        editor.addEventListener("trix-change", handleChange);
+
+        if (form.data.description && editor.editor) {
+            editor.editor.loadHTML(form.data.description);
+        }
+
+        return () => {
+            editor.removeEventListener("trix-change", handleChange);
+        };
+    }, [trixReady]);
 
     const addPaymentOption = () => {
         form.setData("paymentOptions", [
@@ -249,41 +310,35 @@ export default function Create() {
                                     Description
                                 </InputLabel>
                                 <main>
-                                    <CKEditor
-                                        editor={ClassicEditor}
-                                        config={{
-                                            licenseKey: "GPL",
-                                            plugins: [
-                                                Essentials,
-                                                Paragraph,
-                                                Heading,
-                                                Bold,
-                                                Italic,
-                                                Link,
-                                                List,
-                                            ],
-                                            toolbar: [
-                                                "undo",
-                                                "redo",
-                                                "|",
-                                                "heading",
-                                                "|",
-                                                "bold",
-                                                "italic",
-                                                "|",
-                                                "link",
-                                                "bulletedList",
-                                                "numberedList",
-                                            ],
-                                        }}
-                                        data={form.data.description}
-                                        onChange={(_, editor) => {
-                                            form.setData(
-                                                "description",
-                                                editor.getData()
-                                            );
-                                        }}
+                                    {trixReady && (
+                                        <trix-toolbar
+                                            id={`my_toolbar_${inputId}`}
+                                        ></trix-toolbar>
+                                    )}
+                                    <div className="more-stuff-inbetween"></div>
+                                    <input
+                                        type="hidden"
+                                        name="content"
+                                        id={`my_input_${inputId}`}
+                                        value={form.data.description}
+                                        onChange={() => {}}
                                     />
+                                    {trixReady ? (
+                                        <trix-editor
+                                            ref={editorRef}
+                                            toolbar={`my_toolbar_${inputId}`}
+                                            input={`my_input_${inputId}`}
+                                        ></trix-editor>
+                                    ) : (
+                                        <textarea
+                                            className="w-full rounded-md shadow-sm border-gray-300"
+                                            rows="10"
+                                            value={form.data.description}
+                                            onChange={(e) =>
+                                                form.setData("description", e.target.value)
+                                            }
+                                        />
+                                    )}
                                 </main>
                             </div>
 
