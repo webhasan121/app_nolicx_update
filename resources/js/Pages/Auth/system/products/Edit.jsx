@@ -1,4 +1,5 @@
 import { router, useForm, usePage } from "@inertiajs/react";
+import { useEffect, useId, useRef, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Hr from "../../../../components/Hr";
 import Image from "../../../../components/Image";
@@ -53,6 +54,12 @@ function ProductNavigations({ productId, nav = "Product" }) {
 
 export default function Edit() {
     const { productData, categories = [], errors = {} } = usePage().props;
+    const inputId = useId().replace(/:/g, "");
+    const editorRef = useRef(null);
+    const [trixReady, setTrixReady] = useState(
+        typeof window !== "undefined" && !!window.Trix
+    );
+    const [videoPreview, setVideoPreview] = useState(null);
 
     const form = useForm({
         name: productData?.name ?? "",
@@ -78,9 +85,89 @@ export default function Edit() {
         attr_name: productData?.attr?.name ?? "",
         attr_value: productData?.attr?.value ?? "",
         thumb: null,
+        video: null,
         newseothumb: null,
         newImage: [],
     });
+
+    useEffect(() => {
+        let isMounted = true;
+
+        if (typeof window === "undefined" || window.Trix) {
+            setTrixReady(true);
+            return undefined;
+        }
+
+        if (!document.querySelector('link[data-trix="true"]')) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.type = "text/css";
+            link.href = "https://unpkg.com/trix@2.0.8/dist/trix.css";
+            link.dataset.trix = "true";
+            document.head.appendChild(link);
+        }
+
+        let script = document.querySelector('script[data-trix="true"]');
+        const onLoad = () => {
+            if (isMounted) {
+                setTrixReady(true);
+            }
+        };
+
+        if (!script) {
+            script = document.createElement("script");
+            script.src = "https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js";
+            script.async = true;
+            script.dataset.trix = "true";
+            script.addEventListener("load", onLoad);
+            document.body.appendChild(script);
+        } else if (window.Trix) {
+            setTrixReady(true);
+        } else {
+            script.addEventListener("load", onLoad);
+        }
+
+        return () => {
+            isMounted = false;
+            if (script) {
+                script.removeEventListener("load", onLoad);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        const editor = editorRef.current;
+
+        if (!editor || !trixReady) {
+            return undefined;
+        }
+
+        const handleChange = (event) => {
+            form.setData("description", event.target.value);
+        };
+
+        editor.addEventListener("trix-change", handleChange);
+
+        if (form.data.description && editor.editor) {
+            editor.editor.loadHTML(form.data.description);
+        }
+
+        return () => {
+            editor.removeEventListener("trix-change", handleChange);
+        };
+    }, [trixReady]);
+
+    useEffect(() => {
+        if (!(form.data.video instanceof File)) {
+            setVideoPreview(null);
+            return undefined;
+        }
+
+        const url = URL.createObjectURL(form.data.video);
+        setVideoPreview(url);
+
+        return () => URL.revokeObjectURL(url);
+    }, [form.data.video]);
 
     const save = (e) => {
         e.preventDefault();
@@ -147,7 +234,7 @@ export default function Edit() {
                                             type="button"
                                             onClick={restoreFromTrash}
                                         >
-                                            <i className="fa-solid fa-sync mr-2"></i>{" "}
+                                            <i className="mr-2 fa-solid fa-sync"></i>{" "}
                                             Restore
                                         </SecondaryButton>
                                     ) : (
@@ -155,7 +242,7 @@ export default function Edit() {
                                             type="button"
                                             onClick={moveToTrash}
                                         >
-                                            <i className="fa-solid fa-trash mr-2"></i>{" "}
+                                            <i className="mr-2 fa-solid fa-trash"></i>{" "}
                                             Trash
                                         </SecondaryButton>
                                     )}
@@ -187,11 +274,11 @@ export default function Edit() {
                                     <div className="text-sm">
                                         Type :
                                         {productData.is_resel ? (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">
+                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">
                                                 Resel
                                             </span>
                                         ) : (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">
+                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">
                                                 {" "}
                                                 Owner{" "}
                                             </span>
@@ -277,7 +364,7 @@ export default function Edit() {
                             <SectionInner>
                                 <div>
                                     <InputField
-                                        className=" mx-1"
+                                        className="mx-1 "
                                         labelWidth="100px"
                                         label="Product Buying Price"
                                         name="buying_price"
@@ -291,7 +378,7 @@ export default function Edit() {
                                         }
                                     />
                                     <InputField
-                                        className=" mx-1"
+                                        className="mx-1 "
                                         labelWidth="100px"
                                         label="Product Sell Price"
                                         name="price"
@@ -302,7 +389,7 @@ export default function Edit() {
                                         }
                                     />
                                     <InputField
-                                        className=" mx-1"
+                                        className="mx-1 "
                                         labelWidth="100px"
                                         type="number"
                                         label="Product Unite"
@@ -389,7 +476,7 @@ export default function Edit() {
                             content="Define your product delevery option and charge from here."
                         />
                         <SectionInner>
-                            <div className="md:flex justify-between  ">
+                            <div className="justify-between md:flex ">
                                 <div>
                                     <InputFile
                                         error="cod"
@@ -560,7 +647,7 @@ export default function Edit() {
                                 errors={errors}
                             >
                                 <textarea
-                                    className="rounded-md p-2 shadow w-full"
+                                    className="w-full p-2 rounded-md shadow"
                                     rows="4"
                                     placeholder="Meta Description ...."
                                     value={form.data.meta_description}
@@ -611,7 +698,7 @@ export default function Edit() {
                                         }
                                     />
                                     <label htmlFor="newseothumb">
-                                        <i className="fas fa-upload px-2"></i>
+                                        <i className="px-2 fas fa-upload"></i>
                                     </label>
                                 </div>
                             </InputFile>
@@ -651,7 +738,7 @@ export default function Edit() {
                     </SectionSection>
 
                     <SectionSection>
-                        <div className="md:flex flex-rowreverse justify-between">
+                        <div className="justify-between md:flex flex-rowreverse">
                             <SectionHeader
                                 title="Image Thumbnail"
                                 content={
@@ -665,7 +752,7 @@ export default function Edit() {
                                             <input
                                                 id="prod_thumb"
                                                 type="file"
-                                                className="absolute hidden border p-1"
+                                                className="absolute hidden p-1 border"
                                                 onChange={(e) =>
                                                     form.setData(
                                                         "thumb",
@@ -675,7 +762,7 @@ export default function Edit() {
                                             />
                                             <label
                                                 htmlFor="prod_thumb"
-                                                className="p-2 rounded border"
+                                                className="p-2 border rounded"
                                             >
                                                 <i className="fas fa-upload"></i>
                                             </label>
@@ -698,6 +785,59 @@ export default function Edit() {
                                 ) : null}
                             </SectionInner>
                         </div>
+                    </SectionSection>
+
+                    <SectionSection>
+                        <SectionHeader
+                            title="Product Video"
+                            content="Upload an optional product video for the details page."
+                        />
+                        <SectionInner>
+                            <InputFile
+                                label="Video"
+                                className="md:flex"
+                                labelWidth="250px"
+                                error="video"
+                                errors={errors}
+                            >
+                                {videoPreview ? (
+                                    <video
+                                        src={videoPreview}
+                                        controls
+                                        className="mb-3 max-h-64 w-full rounded border"
+                                    />
+                                ) : productData.video_url ? (
+                                    <video
+                                        src={productData.video_url}
+                                        controls
+                                        className="mb-3 max-h-64 w-full rounded border"
+                                    />
+                                ) : null}
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        id="product_video"
+                                        className="absolute hidden p-1 border"
+                                        accept="video/mp4,video/quicktime,video/x-msvideo,video/webm,video/x-matroska"
+                                        onChange={(e) =>
+                                            form.setData(
+                                                "video",
+                                                e.target.files?.[0] ?? null
+                                            )
+                                        }
+                                    />
+                                    <label
+                                        htmlFor="product_video"
+                                        className="p-2 border rounded"
+                                    >
+                                        <i className="fas fa-upload"></i>
+                                    </label>
+                                    <div className="mt-2 text-xs">
+                                        Allowed: mp4, mov, avi, webm, mkv. Max 50MB.
+                                    </div>
+                                </div>
+                            </InputFile>
+                        </SectionInner>
                     </SectionSection>
 
                     <SectionSection>
@@ -760,7 +900,7 @@ export default function Edit() {
                                 <input
                                     type="file"
                                     id="multi_prod_img"
-                                    className="absolute hidden border p-1"
+                                    className="absolute hidden p-1 border"
                                     multiple
                                     onChange={(e) =>
                                         form.setData(
@@ -795,18 +935,39 @@ export default function Edit() {
                                 error="description"
                                 errors={errors}
                             >
-                                <textarea
-                                    className="w-full rounded border-gray-300"
-                                    id="editor"
-                                    rows="10"
-                                    value={form.data.description}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "description",
-                                            e.target.value
-                                        )
-                                    }
-                                ></textarea>
+                                <main>
+                                    {trixReady && (
+                                        <trix-toolbar id={`my_toolbar_${inputId}`}></trix-toolbar>
+                                    )}
+                                    <div className="more-stuff-inbetween"></div>
+                                    <input
+                                        type="hidden"
+                                        name="content"
+                                        id={`my_input_${inputId}`}
+                                        value={form.data.description}
+                                        onChange={() => {}}
+                                    />
+                                    {trixReady ? (
+                                        <trix-editor
+                                            ref={editorRef}
+                                            toolbar={`my_toolbar_${inputId}`}
+                                            input={`my_input_${inputId}`}
+                                        ></trix-editor>
+                                    ) : (
+                                        <textarea
+                                            className="w-full border-gray-300 rounded"
+                                            id="editor"
+                                            rows="10"
+                                            value={form.data.description}
+                                            onChange={(e) =>
+                                                form.setData(
+                                                    "description",
+                                                    e.target.value
+                                                )
+                                            }
+                                        ></textarea>
+                                    )}
+                                </main>
                             </InputFile>
                         </SectionInner>
                     </SectionSection>

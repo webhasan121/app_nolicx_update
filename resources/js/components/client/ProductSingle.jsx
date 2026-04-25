@@ -10,6 +10,7 @@ import Swal from "sweetalert2";
 export default function ProductSingle({ product, relatedProduct = [] }) {
     const [copied, setCopied] = useState(false);
     const [previewImage, setPreviewImage] = useState(product?.thumbnail);
+    const [showVideoModal, setShowVideoModal] = useState(false);
     const [isZooming, setIsZooming] = useState(false);
     const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
     const [bgPosition, setBgPosition] = useState("0px 0px");
@@ -145,7 +146,7 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
                 <div className="w-full p-3" style={{ maxWidth: "600px" }}>
                     <div className="items-start rounded product-zoom-wrapper sm:flex sm:justify-start lg:block">
                         <div
-                            className="image-area"
+                            className="image-area shrink-0"
                             onMouseEnter={() => setIsZooming(true)}
                             onMouseLeave={() => setIsZooming(false)}
                             onMouseMove={handleMouseMove}
@@ -156,10 +157,23 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
                                 style={{
                                     objectFit: "contain",
                                     height: "420px",
+                                    maxWidth: "600px"
                                 }}
                                 src={`/storage/${previewImage}`}
                                 alt={product.title}
                             />
+
+                            {product?.video_url ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowVideoModal(true)}
+                                    className="absolute flex items-center justify-center w-14 h-14 text-white transition -translate-x-1/2 -translate-y-1/2 rounded-full shadow-lg left-1/2 top-1/2 bg-black/70 hover:bg-orange-500"
+                                    style={{ zIndex: 20 }}
+                                    title="Play product video"
+                                >
+                                    <i className="text-lg fas fa-play"></i>
+                                </button>
+                            ) : null}
 
                             {isZooming ? (
                                 <div
@@ -178,6 +192,8 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
                                 />
                             ) : null}
                         </div>
+
+
 
                         {gallery.length > 1 ? (
                             <div className="flex flex-wrap items-center md:block lg:flex">
@@ -232,7 +248,7 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
                                     id: product.owner.shop.id,
                                     name: product.owner.shop.shop_name_en,
                                 })}
-                                className="border-b-0 px-2 pt-0 rounded-xl bg-gray-50 text-inherit hover:text-inherit hover:border-transparent"
+                                className="px-2 pt-0 border-b-0 rounded-xl bg-gray-50 text-inherit hover:text-inherit hover:border-transparent"
                             >
                                 <strong>
                                     {product?.owner?.shop?.shop_name_en ??
@@ -298,7 +314,7 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
                                 href={route("category.products", {
                                     cat: product?.category?.slug,
                                 })}
-                                className="border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                                className="p-0 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                             >
                                 {product?.category?.name ?? "Undefined"}
                             </NavLink>
@@ -449,6 +465,34 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
                     </div>
                 </>
             )}
+
+            {showVideoModal && product?.video_url ? (
+                <div
+                    className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/70"
+                    onClick={() => setShowVideoModal(false)}
+                >
+                    <div
+                        className="relative w-full max-w-4xl p-3 bg-white rounded-lg shadow-2xl"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => setShowVideoModal(false)}
+                            className="absolute flex items-center justify-center w-10 h-10 text-white rounded-full top-3 right-3 bg-black/70 hover:bg-black"
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
+
+                        <video
+                            key={product.video_url}
+                            src={product.video_url}
+                            controls
+                            autoPlay
+                            className="w-full rounded-lg max-h-[80vh] bg-black"
+                        />
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 }

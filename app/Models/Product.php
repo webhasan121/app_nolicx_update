@@ -26,6 +26,7 @@ class Product extends Model
         'user_id',
         'belongs_to_type', // vendor or reseller
         'thumbnail',
+        'video',
         'offer_type',
         'unit',
         'status', //

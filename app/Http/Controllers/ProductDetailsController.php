@@ -24,9 +24,11 @@ class ProductDetailsController extends Controller
             ->where([
                 'id' => (int) $id,
                 'status' => 'Active',
-                'belongs_to_type' => 'reseller',
+                // 'belongs_to_type' => 'reseller',
             ])
             ->firstOrFail();
+
+
 
         $ownerShop = $product->owner?->resellerShop();
 
@@ -34,7 +36,7 @@ class ProductDetailsController extends Controller
             ->where([
                 'category_id' => $product->category_id,
                 'status' => 'Active',
-                'belongs_to_type' => 'reseller',
+                // 'belongs_to_type' => 'reseller',
             ])
             ->limit(10)
             ->get([
@@ -67,6 +69,9 @@ class ProductDetailsController extends Controller
                 'unit',
             ]);
 
+
+
+
         return Inertia::render('Products/Details', [
             'product' => [
                 'id' => $product->id,
@@ -75,6 +80,8 @@ class ProductDetailsController extends Controller
                 'slug' => $product->slug,
                 'description' => $product->description,
                 'thumbnail' => $product->thumbnail,
+                'video' => $product->video,
+                'video_url' => $product->video ? asset('storage/' . $product->video) : null,
                 'offer_type' => $product->offer_type,
                 'discount' => $product->discount,
                 'price' => $product->price,

@@ -10,6 +10,7 @@ use App\Http\Controllers\System\GeolocationController;
 use App\Http\Controllers\System\NavigationController;
 use App\Http\Controllers\System\OrdersController;
 use App\Http\Controllers\System\PageSettingsController;
+use App\Http\Controllers\System\LevelController;
 use App\Http\Controllers\System\BranchController;
 use App\Http\Controllers\System\FooterBuilderController;
 use App\Http\Controllers\System\PartnershipController;
@@ -35,6 +36,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use App\Livewire\System\Level\Index as LevelIndex;
+use App\Livewire\System\Level\History as LevelHistory;
 
 use function Laravel\Prompts\form;
 
@@ -409,6 +412,16 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
         Route::post('/management/{id}/accept', [PartnershipController::class, 'acceptManagement'])->name('management.accept');
         Route::post('/management/{id}/reject', [PartnershipController::class, 'rejectManagement'])->name('management.reject');
         Route::delete('/management/{id}', [PartnershipController::class, 'destroyManagement'])->name('management.destroy');
+    });
+
+
+    // star system
+    Route::prefix('levels')->name('levels.')->group( function () {
+        Route::get('/', [LevelController::class, 'indexReact'])->name('index');
+        Route::post('/', [LevelController::class, 'store'])->name('store');
+        Route::post('/{level}', [LevelController::class, 'update'])->name('update');
+        Route::delete('/{level}', [LevelController::class, 'destroy'])->name('destroy');
+        Route::get('/history', [LevelController::class, 'historyReact'])->name('history');
     });
 
 

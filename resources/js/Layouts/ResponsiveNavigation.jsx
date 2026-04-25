@@ -174,6 +174,22 @@ export default function ResponsiveNavigation() {
             <Hr />
 
             <ResponsiveNavLink
+                href={route("system.levels.index")}
+                active={route().current("system.levels.index")}
+            >
+                <i className="w-6 pr-2 fas fa-star"></i> Star System
+            </ResponsiveNavLink>
+            <ResponsiveNavLink
+                href={route("system.levels.history")}
+                active={route().current("system.levels.history")}
+            >
+                <i className="w-6 pr-2 fas fa-star"></i> Level-up History
+            </ResponsiveNavLink>
+
+
+            <Hr />
+
+            <ResponsiveNavLink
                 href={route("system.partnership.developer")}
                 active={route().current("system.partnership.developer*")}
             >
