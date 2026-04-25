@@ -51,6 +51,7 @@ class WelcomeController extends Controller
             'ss' => $sliders,
             'slides' => $slides,
             'developer_percentage' => SystemSettings::get('DEVELOPER_PERCENTAGE', '0'),
+            'management_percentage' => SystemSettings::get('MANAGEMENT_PERCENTAGE', '0'),
             'newProducts' => Product::select('id', 'name', 'price', 'thumbnail', 'slug')
                 ->where('badge', 'new')
                 ->latest()

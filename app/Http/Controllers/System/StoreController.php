@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
+use App\Models\DeveloperAccess;
 use App\Models\DistributeComissions;
+use App\Models\ManagementAccess;
 use App\Models\Store;
 use App\Models\TakeComissions;
 use App\Models\User;
 use App\Models\Withdraw;
+use App\Support\SystemSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -25,17 +28,18 @@ class StoreController extends Controller
         $search = trim((string) $request->query('search', ''));
         $tabs = ['commissions', 'withdrawals'];
 
-        $store = $this->resolveStore();
-        $targetStore = $this->resolveStore(Carbon::now()->subMonth());
+        $metrics = $this->buildStoreMetrics();
+        $store = $metrics['current'];
+        $targetStore = $metrics['previous'];
 
         $widgets = [
-            ['label' => 'Total Earnings', 'value' => $this->sumStoreColumn('total_balance')],
-            ['label' => 'Final Remaining', 'value' => $this->sumBalanceColumn('current')],
+            ['label' => 'Total Earnings', 'value' => $metrics['totals']['earnings']],
+            ['label' => 'Final Remaining', 'value' => $metrics['totals']['remaining']],
             ['label' => 'Monthly Total', 'value' => $store['total_balance'] ?? 0],
             ['label' => 'Current Balance', 'value' => $store['current_balance'] ?? 0],
-            ['label' => 'Total Distributed', 'value' => $store['distribute_balance'] ?? 0],
+            ['label' => 'Developer Share', 'value' => $store['developer_balance'] ?? 0],
+            ['label' => 'Management Share', 'value' => $store['management_balance'] ?? 0],
             ['label' => 'Previous Total', 'value' => $targetStore['total_balance'] ?? 0],
-            ['label' => 'Previous Balance', 'value' => $targetStore['current_balance'] ?? 0],
             ['label' => 'Last Distributed', 'value' => $targetStore['distribute_balance'] ?? 0],
         ];
 
@@ -73,7 +77,7 @@ class StoreController extends Controller
         $commissionStoreMap = $this->buildStoreMap($commissions);
 
         return Inertia::render('Auth/system/store/index', [
-            'pageTitle' => 'Coin Store - ' . now()->format('F Y'),
+            'pageTitle' => 'Coin Store - ' . ($store['label'] ?? now()->format('F Y')),
             'widgets' => $widgets,
             'tabs' => $tabs,
             'activeTab' => in_array($activeTab, $tabs, true) ? $activeTab : 'commissions',
@@ -86,9 +90,11 @@ class StoreController extends Controller
             'storeMeta' => [
                 'current' => $store,
                 'target' => $targetStore,
+                'totals' => $metrics['totals'],
+                'percentages' => $metrics['percentages'],
             ],
             'coinStore' => [
-                'store' => $this->sumBalanceColumn('current'),
+                'store' => $metrics['totals']['remaining'],
                 'take' => TakeComissions::where(['confirmed' => true])->sum('take_comission'),
                 'give' => TakeComissions::where(['confirmed' => true])->sum('distribute_comission'),
             ],
@@ -223,7 +229,8 @@ class StoreController extends Controller
 
     public function distribute(Request $request): RedirectResponse
     {
-        $targetStore = $this->resolveStore(Carbon::now()->subMonth());
+        $metrics = $this->buildStoreMetrics();
+        $targetStore = $metrics['previous'];
 
         if (!$targetStore || empty($targetStore['id'])) {
             return back()->with('error', 'Previous month store not found');
@@ -238,17 +245,15 @@ class StoreController extends Controller
             return back()->with('error', 'No balance available for distribution');
         }
 
-        $developerPool = $balance * 0.05;
-        $managementPool = $balance * 0.10;
-        $levelPool = $balance * 0.85;
+        $developerPercentage = (float) ($metrics['percentages']['developer'] ?? 0);
+        $managementPercentage = (float) ($metrics['percentages']['management'] ?? 0);
 
-        $developers = User::with('developerAccess')
-            ->whereHas('developerAccess')
-            ->get();
+        $developerPool = round(($balance * $developerPercentage) / 100, 8);
+        $managementPool = round(($balance * $managementPercentage) / 100, 8);
+        $levelPool = max(0, round($balance - $developerPool - $managementPool, 8));
 
-        $managers = User::with('managementAccess')
-            ->whereHas('managementAccess')
-            ->get();
+        $developers = $this->approvedPartnershipUsers(DeveloperAccess::class);
+        $managers = $this->approvedPartnershipUsers(ManagementAccess::class);
 
         $levelUsers = User::with('currentLevel')
             ->where('current_level_id', '!=', 1)
@@ -489,6 +494,126 @@ class StoreController extends Controller
         return $fallback ? $fallback->toArray() : [];
     }
 
+    private function buildStoreMetrics(): array
+    {
+        $now = now();
+        $developerPercentage = (float) SystemSettings::get('DEVELOPER_PERCENTAGE', '0');
+        $managementPercentage = (float) SystemSettings::get('MANAGEMENT_PERCENTAGE', '0');
+
+        $currentStart = $this->settlementStart($now);
+        $previousStart = $currentStart->copy()->subMonthNoOverflow();
+
+        $current = $this->buildPeriodStore($currentStart, $developerPercentage, $managementPercentage, true);
+        $previous = $this->buildPeriodStore($previousStart, $developerPercentage, $managementPercentage, false);
+
+        $earnings = $this->sumConfirmedStore();
+        $distributed = $this->sumDistributedCommissions();
+
+        return [
+            'current' => $current,
+            'previous' => $previous,
+            'totals' => [
+                'earnings' => $earnings,
+                'distributed' => $distributed,
+                'remaining' => max(0, round($earnings - $distributed, 2)),
+            ],
+            'percentages' => [
+                'developer' => $developerPercentage,
+                'management' => $managementPercentage,
+            ],
+        ];
+    }
+
+    private function settlementStart(Carbon $date): Carbon
+    {
+        return $date->copy()->startOfMonth()->addDays(5)->startOfDay();
+    }
+
+    private function settlementEnd(Carbon $start): Carbon
+    {
+        return $start->copy()->addMonthNoOverflow()->day(5)->endOfDay();
+    }
+
+    private function buildPeriodStore(
+        Carbon $start,
+        float $developerPercentage,
+        float $managementPercentage,
+        bool $allowFutureWindow
+    ): array {
+        $end = $this->settlementEnd($start);
+        $now = now();
+        $effectiveEnd = $allowFutureWindow && $now->lt($start)
+            ? null
+            : ($now->lt($end) ? $now->copy() : $end->copy());
+
+        $totalBalance = $effectiveEnd
+            ? $this->sumConfirmedStoreBetween($start, $effectiveEnd)
+            : 0.0;
+
+        $store = $this->syncStoreSnapshot($start, $totalBalance);
+        $distributedBalance = $this->sumDistributedForStore($store, $start, $end);
+        $currentBalance = max(0, round($totalBalance - $distributedBalance, 2));
+        $developerBalance = round(($totalBalance * $developerPercentage) / 100, 2);
+        $managementBalance = round(($totalBalance * $managementPercentage) / 100, 2);
+
+        if (!empty($store)) {
+            $store['total_balance'] = $totalBalance;
+            $store['current_balance'] = $currentBalance;
+            $store['distribute_balance'] = $distributedBalance;
+            $store['developer_balance'] = $developerBalance;
+            $store['management_balance'] = $managementBalance;
+            $store['label'] = $start->format('F Y');
+            $store['range_label'] = $start->format('d M Y') . ' - ' . $end->format('d M Y');
+        }
+
+        if (!empty($store['id']) && $this->storeHasColumns(['total_balance', 'current_balance', 'distribute_balance'])) {
+            DB::table('stores')
+                ->where('id', $store['id'])
+                ->update([
+                    'total_balance' => $totalBalance,
+                    'current_balance' => $currentBalance,
+                    'distribute_balance' => $distributedBalance,
+                    'updated_at' => now(),
+                ]);
+        }
+
+        return $store;
+    }
+
+    private function syncStoreSnapshot(Carbon $start, float $totalBalance): array
+    {
+        if (!$this->storeHasColumns(['year', 'month', 'total_balance', 'current_balance', 'distribute_balance', 'generate'])) {
+            return $this->resolveStore($start);
+        }
+
+        $store = DB::table('stores')
+            ->where('year', $start->year)
+            ->where('month', $start->month)
+            ->first();
+
+        if (!$store) {
+            $insert = [
+                'year' => $start->year,
+                'month' => $start->month,
+                'total_balance' => $totalBalance,
+                'current_balance' => $totalBalance,
+                'distribute_balance' => 0,
+                'generate' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            DB::table('stores')->insert($insert);
+
+            $store = DB::table('stores')
+                ->where('year', $start->year)
+                ->where('month', $start->month)
+                ->first();
+        }
+
+        return $store ? (array) $store : [];
+    }
+
     private function storeHasColumns(array $columns): bool
     {
         foreach ($columns as $column) {
@@ -533,6 +658,60 @@ class StoreController extends Controller
         return (float) $credit - (float) $debit;
     }
 
+    private function sumConfirmedStore(): float
+    {
+        if (!Schema::hasTable('take_comissions') || !Schema::hasColumn('take_comissions', 'store')) {
+            return 0;
+        }
+
+        return (float) TakeComissions::query()
+            ->where('confirmed', true)
+            ->sum('store');
+    }
+
+    private function sumConfirmedStoreBetween(Carbon $start, Carbon $end): float
+    {
+        if (!Schema::hasTable('take_comissions') || !Schema::hasColumn('take_comissions', 'store')) {
+            return 0;
+        }
+
+        return (float) TakeComissions::query()
+            ->where('confirmed', true)
+            ->whereBetween('created_at', [$start, $end])
+            ->sum('store');
+    }
+
+    private function sumDistributedCommissions(): float
+    {
+        if (!Schema::hasTable('distribute_comissions') || !Schema::hasColumn('distribute_comissions', 'amount')) {
+            return 0;
+        }
+
+        return (float) DistributeComissions::query()
+            ->whereIn('info', ['Store Commission', 'Developer Commission', 'Management Commission'])
+            ->where('confirmed', true)
+            ->sum('amount');
+    }
+
+    private function sumDistributedForStore(array $store, Carbon $start, Carbon $end): float
+    {
+        if (!Schema::hasTable('distribute_comissions') || !Schema::hasColumn('distribute_comissions', 'amount')) {
+            return 0;
+        }
+
+        $query = DistributeComissions::query()
+            ->whereIn('info', ['Store Commission', 'Developer Commission', 'Management Commission'])
+            ->where('confirmed', true);
+
+        if (Schema::hasColumn('distribute_comissions', 'store_id') && !empty($store['id'])) {
+            $query->where('store_id', $store['id']);
+        } else {
+            $query->whereBetween('created_at', [$start, $end]);
+        }
+
+        return (float) $query->sum('amount');
+    }
+
     private function lockBalance(): ?array
     {
         if (!$this->balanceHasColumn('current')) {
@@ -547,12 +726,12 @@ class StoreController extends Controller
         return (array) $balance;
     }
 
-    private function insertCommission(int $userId, ?float $percentage, string $info, int $storeId, float $balance): void
+    private function insertCommission(int $userId, ?float $percentage, string $info, int $storeId, float $amount): void
     {
         $data = [
             'user_id' => $userId,
             'confirmed' => 1,
-            'amount' => $percentage === null ? $balance : ($percentage / 100) * $balance,
+            'amount' => $amount,
             'range' => $percentage ?? 0,
             'info' => $info,
             'created_at' => now(),
@@ -572,7 +751,8 @@ class StoreController extends Controller
             return [];
         }
 
-        $storeIds = $commissions->getCollection()->pluck('store_id')->filter()->unique()->values();
+        $items = $this->extractCollection($commissions);
+        $storeIds = $items->pluck('store_id')->filter()->unique()->values();
         if ($storeIds->isEmpty()) {
             return [];
         }
@@ -580,11 +760,36 @@ class StoreController extends Controller
         $stores = DB::table('stores')->whereIn('id', $storeIds)->get()->keyBy('id');
         $map = [];
 
-        foreach ($commissions as $commission) {
+        foreach ($items as $commission) {
             $map[$commission->id] = $stores[$commission->store_id] ?? null;
         }
 
         return $map;
+    }
+
+    private function extractCollection($items)
+    {
+        return method_exists($items, 'getCollection')
+            ? $items->getCollection()
+            : collect($items);
+    }
+
+    private function approvedPartnershipUsers(string $modelClass)
+    {
+        $userIds = $modelClass::query()
+            ->where('status', 1)
+            ->pluck('applied_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($userIds->isEmpty()) {
+            return collect();
+        }
+
+        return User::query()
+            ->whereIn('id', $userIds)
+            ->get();
     }
 
     private function formatStoreLabel($store): string
