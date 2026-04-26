@@ -17,7 +17,7 @@ class ProductsIndexController extends Controller
 
         $productsQuery = Product::query()
             ->where([
-                // 'belongs_to_type' => 'reseller',
+                'belongs_to_type' => 'reseller',
                 'status' => 'Active',
             ]);
 

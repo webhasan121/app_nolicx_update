@@ -250,6 +250,7 @@ class OrdersController extends Controller
             'shipping' => ['nullable', 'numeric'],
         ]);
 
+
         $data = auth()->user()
             ->orderToMe()
             ->where(['belongs_to_type' => auth()->user()->account_type()])

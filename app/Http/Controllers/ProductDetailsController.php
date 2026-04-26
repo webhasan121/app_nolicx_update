@@ -24,7 +24,7 @@ class ProductDetailsController extends Controller
             ->where([
                 'id' => (int) $id,
                 'status' => 'Active',
-                // 'belongs_to_type' => 'reseller',
+                'belongs_to_type' => 'reseller',
             ])
             ->firstOrFail();
 
@@ -36,7 +36,7 @@ class ProductDetailsController extends Controller
             ->where([
                 'category_id' => $product->category_id,
                 'status' => 'Active',
-                // 'belongs_to_type' => 'reseller',
+                'belongs_to_type' => 'reseller',
             ])
             ->limit(10)
             ->get([
