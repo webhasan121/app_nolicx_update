@@ -25,10 +25,15 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
               .filter(Boolean)
         : [];
 
-    const gallery = [...new Set([
+    const galleryImages = [...new Set([
         product.thumbnail,
         ...(product?.showcase?.map((image) => image?.image) ?? []),
     ].filter(Boolean))];
+
+    const gallery = [
+        ...galleryImages.map((image) => ({ type: "image", value: image })),
+        ...(product?.video_url ? [{ type: "video", value: product.video_url }] : []),
+    ];
 
     const discountPercentage =
         product.offer_type && product.price
@@ -163,18 +168,6 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
                                 alt={product.title}
                             />
 
-                            {product?.video_url ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowVideoModal(true)}
-                                    className="absolute flex items-center justify-center w-14 h-14 text-white transition -translate-x-1/2 -translate-y-1/2 rounded-full shadow-lg left-1/2 top-1/2 bg-black/70 hover:bg-orange-500"
-                                    style={{ zIndex: 20 }}
-                                    title="Play product video"
-                                >
-                                    <i className="text-lg fas fa-play"></i>
-                                </button>
-                            ) : null}
-
                             {isZooming ? (
                                 <div
                                     style={{
@@ -197,20 +190,43 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
 
                         {gallery.length > 1 ? (
                             <div className="flex flex-wrap items-center md:block lg:flex">
-                                {gallery.map((image) => (
+                                {gallery.map((item) => (
                                     <button
-                                        key={image}
+                                        key={`${item.type}-${item.value}`}
                                         type="button"
                                         className="p-1 mb-1 rounded"
-                                        onClick={() => setPreviewImage(image)}
+                                        onClick={() => {
+                                            if (item.type === "video") {
+                                                setShowVideoModal(true);
+                                                return;
+                                            }
+
+                                            setPreviewImage(item.value);
+                                        }}
                                     >
-                                        <img
-                                            className="p-1 border rounded"
-                                            src={`/storage/${image}`}
-                                            width="60"
-                                            height="60"
-                                            alt={product.title}
-                                        />
+                                        {item.type === "video" ? (
+                                            <div
+                                                className="relative flex items-center justify-center p-1 border rounded bg-slate-900"
+                                                style={{ width: "60px", height: "60px" }}
+                                            >
+                                                <video
+                                                    src={item.value}
+                                                    muted
+                                                    className="absolute inset-0 object-cover w-full h-full rounded opacity-70"
+                                                />
+                                                <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
+                                                    <i className="text-xs fas fa-play"></i>
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <img
+                                                className="p-1 border rounded"
+                                                src={`/storage/${item.value}`}
+                                                width="60"
+                                                height="60"
+                                                alt={product.title}
+                                            />
+                                        )}
                                     </button>
                                 ))}
                             </div>

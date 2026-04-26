@@ -33,39 +33,39 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
 
     return (
         <div>
-            <div className=" rounded w-full bg-white text-center">
-                <div className="border border-green-900 rounded md:flex justify-between items-start p-2">
-                    <div className="px-3 py-1 lg:p-3 bold text-center flex justify-between items-center md:block">
-                        <div className="fs-5 fw-bold text-sm text-start">
+            <div className="w-full text-center bg-white rounded ">
+                <div className="items-start justify-between p-2 border border-green-900 rounded md:flex">
+                    <div className="flex items-center justify-between px-3 py-1 text-center lg:p-3 bold md:block">
+                        <div className="text-sm fs-5 fw-bold text-start">
                             <NavLink
                                 href="#"
-                                className="flex items-center border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                                className="flex items-center p-0 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                                 onClick={(e) => e.preventDefault()}
                             >
-                                <i className="fas fa-store fs-6 p-2"></i>
+                                <i className="p-2 fas fa-store fs-6"></i>
                                 Comission Store
                             </NavLink>
                         </div>
                         <div className="relative mt-2">
-                            <button
+                            {/* <button
                                 type="button"
                                 onClick={() => setOpen(true)}
-                                className="inline-block bg-blue-500 hover:bg-blue-600 rounded-md px-3 py-1"
+                                className="inline-block px-3 py-1 bg-blue-500 rounded-md hover:bg-blue-600"
                             >
-                                <span className="text-sm text-white font-bold">
+                                <span className="text-sm font-bold text-white">
                                     Withdraw
                                 </span>
-                            </button>
+                            </button> */}
                         </div>
                     </div>
-                    <div className="px-3 text-center py-1 lg:p-3  text-lg fw-bold text-green-900">
-                        <div className="font-bold px-2 border rounded">
+                    <div className="px-3 py-1 text-lg text-center text-green-900 lg:p-3 fw-bold">
+                        <div className="px-2 font-bold border rounded">
                             {store}
                         </div>
 
-                        <div className=" py-2">
-                            <div className="flex justify-center items-center text-xs">
-                                <div className="text-start text-red-900" style={{ color: "red" }}>
+                        <div className="py-2 ">
+                            <div className="flex items-center justify-center text-xs">
+                                <div className="text-red-900 text-start" style={{ color: "red" }}>
                                     {give}
                                     <i className="fas fa-long-arrow-alt-up"></i>
                                 </div>
@@ -80,7 +80,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
 
                     <div className="px-3 py-1 lg:p-3 text-end">
                         <div className="flex items-center text-xs">
-                            <div className="text-start text-red-900" style={{ color: "red" }}>
+                            <div className="text-red-900 text-start" style={{ color: "red" }}>
                                 <i className="fas fa-long-arrow-alt-up"></i>
                             </div>
                             <div className="px-3">|</div>
@@ -104,7 +104,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                                     id="coin-method"
                                     value={form.data.method}
                                     onChange={(e) => form.setData("method", e.target.value)}
-                                    className="py-2 rounded-md w-full"
+                                    className="w-full py-2 rounded-md"
                                 >
                                     <option value=""> -- Choose -- </option>
                                     {["Bkash", "Nogod", "Rocket", "Bank"].map((item) => (
@@ -126,7 +126,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                                     placeholder="Enter withdraw amount"
                                 />
                                 {form.errors.amount ? (
-                                    <span className="text-red-500 text-sm">{form.errors.amount}</span>
+                                    <span className="text-sm text-red-500">{form.errors.amount}</span>
                                 ) : null}
                             </div>
                         </div>
@@ -216,7 +216,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                                 rows="3"
                                 value={form.data.remarks}
                                 onChange={(e) => form.setData("remarks", e.target.value)}
-                                className="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             ></textarea>
                         </div>
 

@@ -18,6 +18,7 @@ export default function Shops({
     products = null,
     printUrl,
 }) {
+
     const { auth } = usePage().props;
     const [q, setQ] = useState(filters.q ?? "");
     const [location, setLocation] = useState(filters.location ?? "");
@@ -187,7 +188,7 @@ export default function Shops({
                                 ) : null}
                                 {selectedShop.logo_url ? (
                                     <img
-                                        className="absolute top-0 left-0 m-2 bg-white rounded-full"
+                                        className="absolute top-0 right-0 m-2 bg-white rounded-full"
                                         style={{ height: "80px", width: "80px" }}
                                         src={selectedShop.logo_url}
                                         alt=""
@@ -216,7 +217,7 @@ export default function Shops({
                                             </div>
                                             <div className="flex items-center justify-between mt-2 space-x-2 space-y-2">
                                                 <div className="inline-block px-2 text-xs text-white rounded-lg bg-sky-900">
-                                                    reseller
+                                                    Vendor
                                                 </div>
                                             </div>
                                         </div>
@@ -358,7 +359,7 @@ export default function Shops({
                                                 ) : null}
                                                 {shop.logo_url ? (
                                                     <img
-                                                        className="absolute top-0 left-0 m-2 bg-white rounded-full"
+                                                        className="absolute top-0 right-0 m-2 bg-white rounded-full"
                                                         style={{ height: "50px", width: "50px" }}
                                                         src={shop.logo_url}
                                                         alt=""
