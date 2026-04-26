@@ -40,12 +40,14 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         meta_description: "",
         meta_thumbnail: null,
         thumb: null,
+        video: null,
         newImage: [],
         attr_name: "",
         attr_value: "",
     });
 
     const [thumbPreview, setThumbPreview] = useState(null);
+    const [videoPreview, setVideoPreview] = useState(null);
     const [metaThumbPreview, setMetaThumbPreview] = useState(null);
     const [newImagePreviews, setNewImagePreviews] = useState([]);
 
@@ -125,6 +127,16 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         setThumbPreview(url);
         return () => URL.revokeObjectURL(url);
     }, [form.data.thumb]);
+
+    useEffect(() => {
+        if (!(form.data.video instanceof File)) {
+            setVideoPreview(null);
+            return undefined;
+        }
+        const url = URL.createObjectURL(form.data.video);
+        setVideoPreview(url);
+        return () => URL.revokeObjectURL(url);
+    }, [form.data.video]);
 
     useEffect(() => {
         if (!(form.data.meta_thumbnail instanceof File)) {
@@ -475,6 +487,33 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                         <label htmlFor="prod_thumbnail" className="p-2 rounded border">
                                             <i className="fas fa-upload"></i>
                                         </label>
+                                    </div>
+                                </InputFile>
+                            </SectionInner>
+                        </Section>
+
+                        <Section>
+                            <SectionHeader
+                                title="Product Video"
+                                content="Upload an optional product video for the details page."
+                            />
+                            <SectionInner>
+                                <InputFile label="Video" className="md:flex" labelWidth="250px" error="video" errors={form.errors}>
+                                    {videoPreview ? (
+                                        <video src={videoPreview} controls className="mb-3 max-h-64 w-full rounded border" />
+                                    ) : null}
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            className="absolute hidden"
+                                            id="product_video"
+                                            accept="video/mp4,video/quicktime,video/x-msvideo,video/webm,video/x-matroska"
+                                            onChange={(e) => form.setData("video", e.target.files?.[0] ?? null)}
+                                        />
+                                        <label htmlFor="product_video" className="p-2 rounded border">
+                                            <i className="fas fa-upload"></i>
+                                        </label>
+                                        <p className="mt-2 text-xs">Allowed: mp4, mov, avi, webm, mkv. Max 50MB.</p>
                                     </div>
                                 </InputFile>
                             </SectionInner>

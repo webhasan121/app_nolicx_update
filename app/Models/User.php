@@ -53,11 +53,11 @@ class User extends Authenticatable
         'language',
         'site_language',
         'kyc_status', // backend_logic
-        'is_active', // backend_logic 
+        'is_active', // backend_logic
         'metadata', // backend_logic
 
         'dob', // date of birth
-        'bio', // about 
+        'bio', // about
         'current_level_id'
     ];
 
@@ -72,7 +72,7 @@ class User extends Authenticatable
         'line2',
 
         'dob', // date of birth
-        'bio', // about 
+        'bio', // about
     ];
 
     /**
@@ -139,7 +139,7 @@ class User extends Authenticatable
     }
 
     /**
-     * give user default 'user' role 
+     * give user default 'user' role
      * when model is created
      */
     protected static function boot(): void
@@ -189,7 +189,7 @@ class User extends Authenticatable
     }
 
     /**
-     * scope method 
+     * scope method
      */
     public function scopeWithAdmin($query)
     {
@@ -239,7 +239,7 @@ class User extends Authenticatable
         } else {
             return $this->coin - 500;
         }
-    } 
+    }
 
     /**
      * @return Array
@@ -261,13 +261,13 @@ class User extends Authenticatable
     }
 
 
-    //////////////// 
+    ////////////////
     // Relations //
     ///////////////
 
     /**
      * user address
-     * 
+     *
      * @return User_has_address
      */
     public function address()
@@ -463,7 +463,7 @@ class User extends Authenticatable
 
     /**
      * vip package
-     * @return vip 
+     * @return vip
      */
     public function subscription()
     {

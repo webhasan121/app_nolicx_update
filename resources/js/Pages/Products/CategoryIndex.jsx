@@ -95,7 +95,7 @@ export default function CategoryIndex({
                             style={{ width: "300px" }}
                             className="hidden bg-white rounded-lg md:block"
                         >
-                            <div className="my-3">
+                            <div className="py-3">
                                 <div className="px-3">
                                     <div>
                                         <Link

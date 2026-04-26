@@ -13,7 +13,9 @@ export default function Header() {
     const { auth, roles, active_nav, permissions = [] } = usePage().props;
     const user = auth.user;
 
+
     const roleNames = user?.roles?.map((r) => r.name) ?? [];
+
     const permissionNames = Array.isArray(permissions)
         ? permissions
         : permissions?.map?.((p) => p.name) ?? [];
