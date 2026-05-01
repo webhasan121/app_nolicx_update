@@ -1,4 +1,4 @@
-import { router } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import { useRef, useState } from "react";
 import axios from "axios";
 import SecondaryButton from "../SecondaryButton";
@@ -399,12 +399,12 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
 
                     <Hr />
                     <div className="flex items-center justify-start w-full space-x-2 purchase-info">
-                        <NavLink
+                        <Link
                             href={route("product.makeOrder", { id: product.id, slug: product.slug })}
                             className="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase bg-orange-500 border border-transparent rounded-md hover:text-white hover:border-transparent"
                         >
                             Buy Now <i className="fas fa-arrow-right ms-2"></i>
-                        </NavLink>
+                        </Link>
                         <SecondaryButton type="button" onClick={addToCart} className="py-2 space-x-2">
                             <i className="fas fa-cart-plus"></i>
                             <span className="hidden md:block">Add to Cart</span>

@@ -35,7 +35,7 @@ export default function DisplayCategory({ categories = [] }) {
               >
                 <NavLink
                   href={route("category.products", { cat: item.slug })}
-                  className="flex flex-col items-center w-full h-full border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                  className="flex flex-col items-center w-full h-full p-0 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                   style={{
                     width: "100px",
                     height: "100px",

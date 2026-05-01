@@ -14,6 +14,7 @@ export default function Header() {
     console.log("roles", roles);
 
     const [open, setOpen] = useState(false);
+    const [categoryQuery, setCategoryQuery] = useState("");
     const currentCategorySlug = (() => {
         if (typeof window === "undefined") {
             return "";
@@ -34,6 +35,26 @@ export default function Header() {
         const q = e.target.q.value;
         router.get(route("search"), { q });
     };
+
+    const matchesCategory = (item, keyword) => {
+        const name = String(item?.name ?? "").toLowerCase();
+        const slug = String(item?.slug ?? "").toLowerCase();
+        const childMatches = (item?.children ?? []).some((child) =>
+            matchesCategory(child, keyword)
+        );
+
+        return (
+            name.includes(keyword) ||
+            slug.includes(keyword) ||
+            childMatches
+        );
+    };
+
+    const filteredCategories = !categoryQuery.trim()
+        ? categories
+        : categories.filter((item) =>
+              matchesCategory(item, categoryQuery.trim().toLowerCase())
+          );
 
     return (
         <>
@@ -311,7 +332,16 @@ export default function Header() {
 
                     {/* Categories */}
                     <div className="px-1 pb-4">
-                        {categories?.map((item) => (
+                        <div className="px-3 pb-3">
+                            <input
+                                type="search"
+                                value={categoryQuery}
+                                onChange={(e) => setCategoryQuery(e.target.value)}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                placeholder="Search categories..."
+                            />
+                        </div>
+                        {filteredCategories?.map((item) => (
                             <CatLoop
                                 key={item.id}
                                 item={item}
@@ -319,6 +349,11 @@ export default function Header() {
                                 variant="sidebar"
                             />
                         ))}
+                        {!filteredCategories?.length ? (
+                            <div className="px-4 py-2 text-sm text-slate-500">
+                                No category found
+                            </div>
+                        ) : null}
                     </div>
                 </aside>
             </header>

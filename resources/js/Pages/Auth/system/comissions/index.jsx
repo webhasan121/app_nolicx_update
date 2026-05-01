@@ -13,6 +13,16 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 
+function SummaryBadge({ value, className = "" }) {
+    return (
+        <span
+            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${className}`}
+        >
+            {value ?? 0}
+        </span>
+    );
+}
+
 export default function Index({ filters, comissions }) {
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [where, setWhere] = useState(filters?.where ?? "");
@@ -101,6 +111,13 @@ export default function Index({ filters, comissions }) {
             }),
             "_blank"
         );
+    };
+
+    const confirmTakeComission = (id) => {
+        router.post(route("system.comissions.take.confirm", { id }), {}, {
+            preserveScroll: true,
+            preserveState: true,
+        });
     };
 
     return (
@@ -242,10 +259,12 @@ export default function Index({ filters, comissions }) {
                                         ) : (
                                             <>
                                                 <span className="p-1 px-2 rounded-xl bg-gray-900 text-white">Pending</span>
-                                                <form action={route("system.comissions.take.confirm", { id: item.id })} method="post">
-                                                    <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.content ?? ""} />
-                                                    <button type="submit">Confirm</button>
-                                                </form>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => confirmTakeComission(item.id)}
+                                                >
+                                                    Confirm
+                                                </button>
                                             </>
                                         )}
                                     </td>
@@ -267,14 +286,49 @@ export default function Index({ filters, comissions }) {
                                 <th></th>
                                 <th></th>
                                 <th></th>
-                                <th>{comissions?.summary?.buying_price}</th>
-                                <th>{comissions?.summary?.selling_price}</th>
-                                <th>{comissions?.summary?.profit}</th>
+                                <th>
+                                    <SummaryBadge
+                                        value={comissions?.summary?.buying_price}
+                                        className="bg-slate-200 text-slate-700"
+                                    />
+                                </th>
+                                <th>
+                                    <SummaryBadge
+                                        value={comissions?.summary?.selling_price}
+                                        className="bg-blue-100 text-blue-700"
+                                    />
+                                </th>
+                                <th>
+                                    <SummaryBadge
+                                        value={comissions?.summary?.profit}
+                                        className="bg-emerald-100 text-emerald-700"
+                                    />
+                                </th>
                                 <td></td>
-                                <th>{comissions?.summary?.take_comission}</th>
-                                <th>{comissions?.summary?.distribute_comission}</th>
-                                <th>{comissions?.summary?.store}</th>
-                                <th>{comissions?.summary?.return}</th>
+                                <th>
+                                    <SummaryBadge
+                                        value={comissions?.summary?.take_comission}
+                                        className="bg-rose-100 text-rose-700"
+                                    />
+                                </th>
+                                <th>
+                                    <SummaryBadge
+                                        value={comissions?.summary?.distribute_comission}
+                                        className="bg-amber-100 text-amber-700"
+                                    />
+                                </th>
+                                <th>
+                                    <SummaryBadge
+                                        value={comissions?.summary?.store}
+                                        className="bg-violet-100 text-violet-700"
+                                    />
+                                </th>
+                                <th>
+                                    <SummaryBadge
+                                        value={comissions?.summary?.return}
+                                        className="bg-cyan-100 text-cyan-700"
+                                    />
+                                </th>
                                 <th></th>
                                 <th></th>
                             </tr>

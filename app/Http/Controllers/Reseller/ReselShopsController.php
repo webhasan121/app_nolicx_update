@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Reseller;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\country;
 use App\Models\vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,16 @@ class ReselShopsController extends Controller
         $query = vendor::query()->where('status', 'Active');
 
         if (Auth::check()) {
-            $query->where('country', Auth::user()?->country);
+            $country = trim((string) Auth::user()?->country);
+            if ($country !== '') {
+                $countryName = ctype_digit($country)
+                    ? trim((string) country::query()->find((int) $country)?->name)
+                    : $country;
+
+                if ($countryName !== '') {
+                    $query->whereRaw('LOWER(country) = ?', [mb_strtolower($countryName)]);
+                }
+            }
         }
 
         if ($q) {
@@ -179,7 +189,16 @@ class ReselShopsController extends Controller
         $query = vendor::query()->where('status', 'Active');
 
         if (Auth::check()) {
-            $query->where('country', Auth::user()?->country);
+            $country = trim((string) Auth::user()?->country);
+            if ($country !== '') {
+                $countryName = ctype_digit($country)
+                    ? trim((string) country::query()->find((int) $country)?->name)
+                    : $country;
+
+                if ($countryName !== '') {
+                    $query->whereRaw('LOWER(country) = ?', [mb_strtolower($countryName)]);
+                }
+            }
         }
 
         if ($q !== '') {

@@ -59,6 +59,9 @@ export default function Edit() {
     const [trixReady, setTrixReady] = useState(
         typeof window !== "undefined" && !!window.Trix
     );
+    console.log("productData", productData);
+
+    const [videoPreview, setVideoPreview] = useState(null);
 
     const form = useForm({
         name: productData?.name ?? "",
@@ -84,6 +87,7 @@ export default function Edit() {
         attr_name: productData?.attr?.name ?? "",
         attr_value: productData?.attr?.value ?? "",
         thumb: null,
+        video: null,
         newseothumb: null,
         newImage: [],
     });
@@ -153,6 +157,18 @@ export default function Edit() {
             editor.removeEventListener("trix-change", handleChange);
         };
     }, [trixReady]);
+
+    useEffect(() => {
+        if (!(form.data.video instanceof File)) {
+            setVideoPreview(null);
+            return undefined;
+        }
+
+        const url = URL.createObjectURL(form.data.video);
+        setVideoPreview(url);
+
+        return () => URL.revokeObjectURL(url);
+    }, [form.data.video]);
 
     const save = (e) => {
         e.preventDefault();
@@ -767,6 +783,59 @@ export default function Edit() {
                                 ) : null}
                             </SectionInner>
                         </div>
+                    </SectionSection>
+
+                    <SectionSection>
+                        <SectionHeader
+                            title="Product Video"
+                            content="Upload an optional product video for the details page."
+                        />
+                        <SectionInner>
+                            <InputFile
+                                label="Video"
+                                className="md:flex"
+                                labelWidth="250px"
+                                error="video"
+                                errors={errors}
+                            >
+                                {videoPreview ? (
+                                    <video
+                                        src={videoPreview}
+                                        controls
+                                        className="mb-3 max-h-64 w-full rounded border"
+                                    />
+                                ) : productData.video_url ? (
+                                    <video
+                                        src={productData.video_url}
+                                        controls
+                                        className="mb-3 max-h-64 w-full rounded border"
+                                    />
+                                ) : null}
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        id="product_video"
+                                        className="absolute hidden border p-1"
+                                        accept="video/mp4,video/quicktime,video/x-msvideo,video/webm,video/x-matroska"
+                                        onChange={(e) =>
+                                            form.setData(
+                                                "video",
+                                                e.target.files?.[0] ?? null
+                                            )
+                                        }
+                                    />
+                                    <label
+                                        htmlFor="product_video"
+                                        className="p-2 border rounded"
+                                    >
+                                        <i className="fas fa-upload"></i>
+                                    </label>
+                                    <div className="mt-2 text-xs">
+                                        Allowed: mp4, mov, avi, webm, mkv. Max 50MB.
+                                    </div>
+                                </div>
+                            </InputFile>
+                        </SectionInner>
                     </SectionSection>
 
                     <SectionSection>

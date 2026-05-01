@@ -42,6 +42,8 @@ class ProductOrderController extends Controller
                 'slug' => $product->slug,
                 'description' => $product->description,
                 'thumbnail' => $product->thumbnail,
+                'video' => $product->video,
+                'video_url' => $product->video ? asset('storage/' . $product->video) : null,
                 'offer_type' => $product->offer_type,
                 'discount' => $product->discount,
                 'price' => $product->price,
