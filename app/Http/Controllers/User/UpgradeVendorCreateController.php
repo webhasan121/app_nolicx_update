@@ -8,7 +8,7 @@ use App\Models\city;
 use App\Models\country;
 use App\Models\reseller;
 use App\Models\state;
-use App\Models\vendor;
+use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -26,7 +26,7 @@ class UpgradeVendorCreateController extends Controller
 
         $user = $request->user();
         $requestModel = $upgrade === 'vendor'
-            ? vendor::where(['user_id' => $user->id])->orderByDesc('id')->first()
+            ? Vendor::where(['user_id' => $user->id])->orderByDesc('id')->first()
             : reseller::where(['user_id' => $user->id])->orderByDesc('id')->first();
 
         if ($requestModel && $requestModel->status === 'Pending') {
@@ -72,7 +72,7 @@ class UpgradeVendorCreateController extends Controller
 
         $user = $request->user();
         $requestModel = $upgrade === 'vendor'
-            ? vendor::where(['user_id' => $user->id])->orderByDesc('id')->first()
+            ? Vendor::where(['user_id' => $user->id])->orderByDesc('id')->first()
             : reseller::where(['user_id' => $user->id])->orderByDesc('id')->first();
 
         if ($requestModel && in_array($requestModel->status, ['Pending', 'Active'], true)) {
@@ -123,7 +123,7 @@ class UpgradeVendorCreateController extends Controller
 
         if ($upgrade === 'vendor') {
             $payload['fixed_amount'] = 500;
-            $record = vendor::create($payload);
+            $record = Vendor::create($payload);
         } else {
             $payload['fixed_amount'] = 500;
             $record = reseller::create($payload);

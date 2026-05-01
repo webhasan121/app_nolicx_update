@@ -4,15 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class user_task extends Model
+class UserTask extends Model
 {
-    //
+    protected $table = 'user_tasks';
+
     protected $fillable =
     [
         'user_id',
         'vip_id',
         'package_id',
-        'earn_by', // task, vip-purchase, reffered,
+        'earn_by',
         'coin',
         'time',
     ];

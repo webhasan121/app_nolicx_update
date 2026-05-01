@@ -59,7 +59,7 @@ class ProductComissionController extends Controller
                         break;
 
                     case 'vendor':
-                        // $shop = vendor::query(['user_id' => $orderData->belongs_to])->first('system_get_comission');
+                        // $shop = Vendor::query(['user_id' => $orderData->belongs_to])->first('system_get_comission');
                         $shop = $seller?->vendorShop();
                         break;
                 }

@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\user_has_refs;
+use App\Models\UserHasRefs;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
@@ -36,7 +36,7 @@ class SystemRoleSeeder extends Seeder
             /**
              * system has it's own reffer code 
              */
-            // user_has_refs::create(
+            // UserHasRefs::create(
             //     [
             //         'user_id' => $system->id,
             //         'ref' => config('app.ref'),

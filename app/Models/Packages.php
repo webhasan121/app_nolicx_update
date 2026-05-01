@@ -51,7 +51,7 @@ class Packages extends Model
 
     public function owner()
     {
-        return $this->belongsTo(vip::class, 'id', 'package_id');
+        return $this->belongsTo(Vip::class, 'id', 'package_id');
     }
 
     // package has a payment option
@@ -62,6 +62,6 @@ class Packages extends Model
 
     public function purchase()
     {
-        return $this->hasMany(vip::class);
+        return $this->hasMany(Vip::class);
     }
 }

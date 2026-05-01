@@ -9,7 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Auth;
-use App\Models\user_has_refs;
+use App\Models\UserHasRefs;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Json;
 use Laravel\Sanctum\HasApiTokens;
@@ -167,7 +167,7 @@ class User extends Authenticatable
                 } else {
                     $ref = str_pad($user->id, 4, '0', STR_PAD_LEFT);
                 }
-                user_has_refs::create(
+                UserHasRefs::create(
                     [
                         'user_id' => $user->id,
                         'ref' => date('ym') . $ref,
@@ -281,7 +281,7 @@ class User extends Authenticatable
      */
     public function myRef()
     {
-        return $this->hasOne(user_has_refs::class)->withDefault([
+        return $this->hasOne(UserHasRefs::class)->withDefault([
             'ref' => null,
         ]);
     }
@@ -291,7 +291,7 @@ class User extends Authenticatable
      */
     public function getReffOwner()
     {
-        return $this->belongsTo(user_has_refs::class, 'reference', 'ref')->withDefault([
+        return $this->belongsTo(UserHasRefs::class, 'reference', 'ref')->withDefault([
             'ref' => null,
         ]);
     }
@@ -301,7 +301,7 @@ class User extends Authenticatable
      */
     public function getMyvipRef()
     {
-        return $this->hasMany(vip::class, 'refer', 'id');
+        return $this->hasMany(Vip::class, 'refer', 'id');
     }
 
     /**
@@ -313,7 +313,7 @@ class User extends Authenticatable
     }
 
     public function referredUsers() {
-        return $this->hasMany(user_has_refs::class, 'ref', 'reference');
+        return $this->hasMany(UserHasRefs::class, 'ref', 'reference');
     }
 
     public function referrals()
@@ -324,7 +324,7 @@ class User extends Authenticatable
 
     public function requestsToBeVendor()
     {
-        return $this->hasMany(vendor::class);
+        return $this->hasMany(Vendor::class);
     }
     public function requestsToBeReseller()
     {
@@ -467,7 +467,7 @@ class User extends Authenticatable
      */
     public function subscription()
     {
-        return $this->hasOne(vip::class);
+        return $this->hasOne(Vip::class);
     }
 
 

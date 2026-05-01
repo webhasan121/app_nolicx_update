@@ -212,7 +212,7 @@ class Order extends Model
         }
 
         if ($this->belongs_to_type == 'vendor') {
-            return $this->belongsTo(vendor::class, 'belongs_to', 'user_id');
+            return $this->belongsTo(Vendor::class, 'belongs_to', 'user_id');
         }
     }
 

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Level;
 use App\Models\User;
-use App\Models\user_has_refs;
+use App\Models\UserHasRefs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -96,7 +96,7 @@ class DashController extends Controller
 
         $reference = $request->newRef;
 
-        $reff = user_has_refs::where('ref', $reference)->first();
+        $reff = UserHasRefs::where('ref', $reference)->first();
 
         if ($user->created_at->diffInHours(Carbon::now()) > 72 || $user->reference_accepted_at) {
             return back()->with('info', 'Time Up. You can not update your ref');

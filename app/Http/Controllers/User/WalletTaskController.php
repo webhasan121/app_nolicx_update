@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\user_task;
+use App\Models\UserTask;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,7 +12,7 @@ class WalletTaskController extends Controller
 {
     public function index(Request $request)
     {
-        $tasks = user_task::where(['user_id' => $request->user()->id])
+        $tasks = UserTask::where(['user_id' => $request->user()->id])
             ->orderBy('id', 'desc')
             ->get()
             ->map(function ($item) {
@@ -32,4 +32,3 @@ class WalletTaskController extends Controller
         ]);
     }
 }
-

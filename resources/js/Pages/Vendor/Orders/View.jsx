@@ -37,10 +37,16 @@ export default function View({ order }) {
 
 
     const submitStatus = (status) => {
-        form.setData("status", status);
-        form.post(route("vendor.orders.status", { order: order.id }), {
+        router.post(
+            route("vendor.orders.status", { order: order.id }),
+            {
+                ...form.data,
+                status,
+            },
+            {
             preserveScroll: true,
-        });
+            },
+        );
     };
 
     const currentFlowIndex = progressFlow.indexOf(order?.status);
@@ -74,6 +80,7 @@ export default function View({ order }) {
     };
 
     const canFinish = Boolean(order?.received_at);
+
     const removeRider = (codId) => {
         router.delete(route("vendor.orders.rider.remove", { order: order.id, cod: codId }));
     };
@@ -86,11 +93,11 @@ export default function View({ order }) {
                     View Orders
                     <br />
                     <div className="text-sm font-normal">
-                        {order?.user_type} <i className="fas fa-arrow-right mx-2"></i>{" "}
+                        {order?.user_type} <i className="mx-2 fas fa-arrow-right"></i>{" "}
                         {order?.belongs_to_type}
                     </div>
-                    <div className="text-xs flex items-center sapce-x-2">
-                        {order?.delevery} Delvevery <i className="fas fa-caret-right px-2"></i>{" "}
+                    <div className="flex items-center text-xs sapce-x-2">
+                        {order?.delevery} Delvevery <i className="px-2 fas fa-caret-right"></i>{" "}
                         {order?.area_condition === "Dhaka" ? "Inside Dhaka" : "Outside of Dhaka"}
                     </div>
                 </PageHeader>
@@ -100,9 +107,9 @@ export default function View({ order }) {
 
             <Container>
                 <Section>
-                    <div className="rounded-md border">
+                    <div className="border rounded-md">
                         <div className="p-3">
-                            <div className="mb-2 flex gap-2 flex-wrap">
+                            <div className="flex flex-wrap gap-2 mb-2">
                                 {progressFlow.map((step, idx) => {
                                     const done = currentFlowIndex >= idx;
                                     return (
@@ -136,14 +143,14 @@ export default function View({ order }) {
                         <div className="p-3">
                             <div className="pb-2">{statusMessage()}</div>
                             {order?.status === "Accept" ? (
-                                <ul className="list-disc pl-5 text-sm pb-2">
+                                <ul className="pb-2 pl-5 text-sm list-disc">
                                     <li>Order now visible at rider dashboard for confirmation.</li>
                                     <li>Or You can assign a rider from bellow button. If you assign a rider, order might hide from rider public dashboard, And assigned rider can view the order shipment.</li>
                                     <li>If you wish to send custom shipping method, skip this section and go next.</li>
                                 </ul>
                             ) : null}
                             {order?.status === "Picked" ? (
-                                <ul className="list-disc pl-5 text-sm pb-2">
+                                <ul className="pb-2 pl-5 text-sm list-disc">
                                     <li>Get your order item from your wirehouse.</li>
                                     <li>Packed the items for shipment.</li>
                                     <li>Send items to rider. Or courier delivery.</li>
@@ -152,7 +159,7 @@ export default function View({ order }) {
                                 </ul>
                             ) : null}
                             {order?.status === "Delivery" ? (
-                                <ul className="list-disc pl-5 text-sm pb-2">
+                                <ul className="pb-2 pl-5 text-sm list-disc">
                                     <li>Product On the Ride. You Already Send your product to rider or direct delivery to the customer.</li>
                                     <li>Now rider able to <strong>Make as Received</strong> the order, if you send it through rider.</li>
                                     <li>If order send to rider, Check bottom rider status. Make confirm rider status changed to <strong>Received</strong>.</li>
@@ -161,7 +168,7 @@ export default function View({ order }) {
                                 </ul>
                             ) : null}
                             {order?.status === "Delivered" ? (
-                                <ul className="list-disc pl-5 text-sm pb-2">
+                                <ul className="pb-2 pl-5 text-sm list-disc">
                                     {canFinish ? (
                                         <>
                                             <li>Customer successfully received the order.</li>
@@ -176,7 +183,7 @@ export default function View({ order }) {
                                     )}
                                 </ul>
                             ) : null}
-                            <div className="pb-2 flex items-center gap-2 flex-wrap">
+                            <div className="flex flex-wrap items-center gap-2 pb-2">
                                 {order?.status === "Pending" ? (
                                     <>
                                         <PrimaryButton type="button" onClick={() => setAcceptOpen(true)}>
@@ -189,7 +196,7 @@ export default function View({ order }) {
                                     <>
                                         {Number(order?.has_rider_count ?? 0) < 1 ? (
                                             <PrimaryButton type="button" onClick={() => setRiderOpen(true)}>
-                                                <i className="fas fa-plus pr-2"></i> Rider
+                                                <i className="pr-2 fas fa-plus"></i> Rider
                                             </PrimaryButton>
                                         ) : null}
                                         <PrimaryButton type="button" onClick={() => submitStatus("Picked")}>
@@ -230,10 +237,10 @@ export default function View({ order }) {
                         </div>
                     </div>
 
-                    <div className="flex justify-end items-center space-x-2 mt-2">
+                    <div className="flex items-center justify-end mt-2 space-x-2">
                         {Number(order?.has_rider_count ?? 0) > 0 ? (
                             <PrimaryButton type="button">
-                                <i className="fas fa-truck-fast pr-2"></i> Rider Assigned
+                                <i className="pr-2 fas fa-truck-fast"></i> Rider Assigned
                             </PrimaryButton>
                         ) : null}
 
@@ -264,7 +271,7 @@ export default function View({ order }) {
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between items-start px-5">
+                            <div className="flex items-start justify-between px-5">
                                 <div className="order-info">
                                     <div>Order ID: {order?.id}</div>
                                     <div>Date: <span className="text-xs">{order?.created_at_daytime}</span></div>
@@ -316,9 +323,9 @@ export default function View({ order }) {
                                     </td>
                                     <td>
                                         {item.is_resel && order?.account_type === "reseller" ? (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">Resel</span>
+                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">Resel</span>
                                         ) : (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">You</span>
+                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">You</span>
                                         )}
                                     </td>
                                     <td>{item.price} TK</td>
@@ -340,7 +347,7 @@ export default function View({ order }) {
                                 <td colSpan="6" className="text-right">Delivery</td>
                                 <td>{order?.shipping ?? 0} Tk</td>
                             </tr>
-                            <tr className="border-t font-bold text-lg bg-gray-100">
+                            <tr className="text-lg font-bold bg-gray-100 border-t">
                                 <td colSpan="6" className="text-right">Total</td>
                                 <td>{(Number(order?.shipping ?? 0) + Number(order?.cart_sum_total ?? 0))} Tk</td>
                             </tr>
@@ -352,10 +359,10 @@ export default function View({ order }) {
                     <Section>
                         <SectionHeader
                             title={
-                                <div className="flex justify-between items-center">
+                                <div className="flex items-center justify-between">
                                     RIDER
                                     <PrimaryButton type="button" onClick={() => setRiderOpen(true)}>
-                                        <i className="fas fa-plus pr-2"></i> Rider
+                                        <i className="pr-2 fas fa-plus"></i> Rider
                                     </PrimaryButton>
                                 </div>
                             }
@@ -421,12 +428,12 @@ export default function View({ order }) {
 
             <Modal show={acceptOpen} onClose={() => setAcceptOpen(false)}>
                 <div className="p-3">
-                    <div className="font-semibold border-b pb-2">Accept Order</div>
+                    <div className="pb-2 font-semibold border-b">Accept Order</div>
                     <p className="pt-2">Add Shipping Amount</p>
                     <div className="py-2">
                         <input
                             type="number"
-                            className="w-full rounded border-gray-300"
+                            className="w-full border-gray-300 rounded"
                             value={form.data.shipping}
                             onChange={(e) => form.setData("shipping", e.target.value)}
                         />
@@ -445,7 +452,7 @@ export default function View({ order }) {
 
             <Modal show={riderOpen} onClose={() => setRiderOpen(false)}>
                 <div className="p-3">
-                    <div className="font-semibold border-b pb-2">Assign Rider</div>
+                    <div className="pb-2 font-semibold border-b">Assign Rider</div>
                     <div className="py-2">
                         <select
                             className="w-full rounded-md"

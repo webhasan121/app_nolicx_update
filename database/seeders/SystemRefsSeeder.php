@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\user_has_refs;
+use App\Models\UserHasRefs;
 
 class SystemRefsSeeder extends Seeder
 {
@@ -28,7 +28,7 @@ class SystemRefsSeeder extends Seeder
 
             // $system->syncRole($systemRole);
         } else {
-            user_has_refs::create(
+            UserHasRefs::create(
                 [
                     'user_id' => $system->id,
                     'ref' => config('app.ref'),

@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class user_has_refs extends Model
+class UserHasRefs extends Model
 {
-    // 
+    protected $table = 'user_has_refs';
+
     protected $fillable =
     [
         'user_id',
@@ -28,7 +29,6 @@ class user_has_refs extends Model
      */
     public function owner()
     {
-        // return $this->belongsTo(User::class, 'user_id', 'id');
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 

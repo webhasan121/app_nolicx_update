@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\PackagePurchaseComissionForReferred;
-use App\Models\user_has_refs;
+use App\Models\UserHasRefs;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Carbon;
@@ -29,7 +29,7 @@ class SendPackagePurchaseComissionForReferred
         if ($vipUser->reference && $vipUser->created_at->diffInHours(Carbon::now()) <= 72) {
             // if user accept the reference and user registration won't over the 72 hours
 
-            $ref = user_has_refs::query()->where(['ref' => $vipUser->reference])->first();
+            $ref = UserHasRefs::query()->where(['ref' => $vipUser->reference])->first();
             if ($ref) {
                 // ref exists 
             }

@@ -8,7 +8,7 @@ use App\Models\DistributeComissions;
 use App\Models\reseller;
 use App\Models\TakeComissions;
 use App\Models\User;
-use App\Models\vendor;
+use App\Models\Vendor;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +45,7 @@ class TakeProductComissions
                 break;
 
             case 'vendor':
-                // $shop = vendor::query(['user_id' => $orderData->belongs_to])->first('system_get_comission');
+                // $shop = Vendor::query(['user_id' => $orderData->belongs_to])->first('system_get_comission');
                 $shop = $seller->vendorShop();
                 break;
         }

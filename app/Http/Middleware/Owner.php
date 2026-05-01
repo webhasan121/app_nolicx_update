@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\vendor;
+use App\Models\Vendor;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +15,7 @@ class Owner
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, vendor $Ru): Response
+    public function handle(Request $request, Closure $next, Vendor $Ru): Response
     {
         /**
          * if request is owner user

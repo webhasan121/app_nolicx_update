@@ -1,5 +1,5 @@
 import { router, usePage } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ApplicationName from "@/components/ApplicationName";
 import Modal from "@/components/Modal";
 import NavLink from "@/components/NavLink";
@@ -20,11 +20,24 @@ export default function Index({
     const [q, setQ] = useState(filters.q ?? "");
     const [location, setLocation] = useState(filters.location ?? "");
     const [showModal, setShowModal] = useState(false);
+    const [shopItems, setShopItems] = useState(shops?.data ?? []);
+    const [pagination, setPagination] = useState(shops ?? {});
+    const [loadingMore, setLoadingMore] = useState(false);
+    const loadingMoreRef = useRef(false);
 
     useEffect(() => {
         setQ(filters.q ?? "");
         setLocation(filters.location ?? "");
     }, [filters.q, filters.location]);
+
+    useEffect(() => {
+        if (loadingMoreRef.current) {
+            return;
+        }
+
+        setShopItems(shops?.data ?? []);
+        setPagination(shops ?? {});
+    }, [shops?.current_page, filters.q, filters.location, filters.state]);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -62,14 +75,38 @@ export default function Index({
     const getAllShops = () => {
         router.get(
             route("shops.reseller"),
-            { location: "Bangladesh", state: "all", q: "" },
+            { location: "", state: "all", q: "" },
             { preserveState: true, preserveScroll: true },
         );
     };
 
-    const paginationLinks = shops?.links?.filter(
-        (link) => link.label !== "&laquo; Previous" && link.label !== "Next &raquo;",
-    );
+    const loadMore = () => {
+        if (!pagination?.next_page_url || loadingMore) {
+            return;
+        }
+
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+
+        router.visit(pagination.next_page_url, {
+            preserveScroll: true,
+            preserveState: true,
+            only: ["shops", "filters", "showFiltered"],
+            onSuccess: (page) => {
+                const nextShops = page.props.shops ?? {};
+
+                setShopItems((current) => [
+                    ...current,
+                    ...(nextShops.data ?? []),
+                ]);
+                setPagination(nextShops);
+            },
+            onFinish: () => {
+                setLoadingMore(false);
+                loadingMoreRef.current = false;
+            },
+        });
+    };
 
     return (
         <UserLayout title="Shops">
@@ -136,99 +173,41 @@ export default function Index({
                     </div>
                 )}
 
-                {showFiltered && (
-                    <>
-                        <div className="flex flex-wrap items-center gap-2 py-3">
-                            {shops?.prev_page_url && (
-                                <button
-                                    type="button"
-                                    className="px-3 py-1 bg-white border rounded"
-                                    onClick={() =>
-                                        router.visit(shops.prev_page_url, {
-                                            preserveScroll: true,
-                                            preserveState: true,
-                                        })
-                                    }
-                                >
-                                    Previous
-                                </button>
-                            )}
+                <div>
+                    <p>
+                        Showing {shopItems.length} of {pagination?.total ?? 0} shops
+                    </p>
 
-                            {paginationLinks?.map((link, index) => (
-                                <button
-                                    key={index}
-                                    type="button"
-                                    disabled={!link.url}
-                                    className={`px-3 py-1 border rounded ${
-                                        link.active
-                                            ? "bg-gray-900 text-white"
-                                            : "bg-white"
-                                    }`}
-                                    onClick={() =>
-                                        link.url &&
-                                        router.visit(link.url, {
-                                            preserveScroll: true,
-                                            preserveState: true,
-                                        })
-                                    }
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
-                            ))}
-
-                            {shops?.next_page_url && (
-                                <button
-                                    type="button"
-                                    className="px-3 py-1 bg-white border rounded"
-                                    onClick={() =>
-                                        router.visit(shops.next_page_url, {
-                                            preserveScroll: true,
-                                            preserveState: true,
-                                        })
-                                    }
-                                >
-                                    Next
-                                </button>
-                            )}
-                        </div>
-
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, 300px)",
-                                justifyContent: "start",
-                                alignItems: "start",
-                                gridGap: "10px",
-                            }}
-                        >
-                            {shops?.data?.length > 0 ? (
-                                shops.data.map((shop) => (
-                                    <ShopsCart key={shop.id} shop={shop} />
-                                ))
-                            ) : (
-                                <p>No Shops Found !</p>
-                            )}
-                        </div>
-                    </>
-                )}
-
-                {!showFiltered && (
-                    <div>
-                        <p>{shops?.total ?? 0} shops found !</p>
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, 300px)",
-                                justifyContent: "start",
-                                alignItems: "start",
-                                gridGap: "10px",
-                            }}
-                        >
-                            {shops?.data?.map((shop) => (
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit, 300px)",
+                            justifyContent: "start",
+                            alignItems: "start",
+                            gridGap: "10px",
+                        }}
+                    >
+                        {shopItems.length > 0 ? (
+                            shopItems.map((shop) => (
                                 <ShopsCart key={shop.id} shop={shop} />
-                            ))}
-                        </div>
+                            ))
+                        ) : (
+                            <p>No Shops Found !</p>
+                        )}
                     </div>
-                )}
+
+                    {pagination?.next_page_url && (
+                        <div className="py-6 text-center">
+                            <PrimaryButton
+                                type="button"
+                                onClick={loadMore}
+                                disabled={loadingMore}
+                            >
+                                {loadingMore ? "Loading..." : "Load More"}
+                            </PrimaryButton>
+                        </div>
+                    )}
+                </div>
 
                 <Modal show={showModal} onClose={() => setShowModal(false)}>
                     <div className="p-3">

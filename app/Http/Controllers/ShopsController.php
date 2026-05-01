@@ -8,7 +8,6 @@ use App\Models\Product;
 use App\Models\Slider as SliderModel;
 use App\Models\Slider_has_slide;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,10 +21,6 @@ class ShopsController extends Controller
         $state = $request->string('state')->toString();
 
         $query = reseller::where('status', 'Active');
-
-        if (Auth::check()) {
-            $query->where('country', auth()->user()?->country);
-        }
 
         if ($q !== '') {
             $query->whereAny(
@@ -47,7 +42,7 @@ class ShopsController extends Controller
         }
 
         $shops = ($q !== '' || $location !== '')
-            ? $query->paginate(config('app.paginate'))->withQueryString()
+            ? $query->latest('id')->paginate(16)->withQueryString()
             : $this->defaultShops();
 
         $sliderIds = SliderModel::query()
@@ -104,18 +99,10 @@ class ShopsController extends Controller
 
     private function defaultShops()
     {
-        $query = reseller::query();
-
-        if (Auth::check()) {
-            return $query
-                ->where([
-                    'country' => auth()->user()?->country,
-                    'status' => 'Active',
-                ])
-                ->paginate(config('app.paginate'))
-                ->withQueryString();
-        }
-
-        return $query->paginate(config('app.paginate'))->withQueryString();
+        return reseller::query()
+            ->where('status', 'Active')
+            ->latest('id')
+            ->paginate(16)
+            ->withQueryString();
     }
 }

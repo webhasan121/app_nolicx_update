@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Package_pays;
 use App\Models\Packages;
 use App\Models\User;
-use App\Models\vip;
+use App\Models\Vip;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -190,7 +190,7 @@ class VipController extends Controller
         $edate = $request->input('edate');
         $type = $request->input('type', 'All');
         $validity = $request->input('validity', 'All');
-        $query = vip::query()
+        $query = Vip::query()
             ->with(['user', 'package']);
 
         if ($nav === 'Trash') {
@@ -216,7 +216,7 @@ class VipController extends Controller
         $this->applyDateFilter($query, $sdate, $edate);
 
         if (!empty($search)) {
-            $query = vip::query()
+            $query = Vip::query()
                 ->with(['user', 'package'])
                 ->where('name', 'like', '%' . $search . '%')
                 ->orWhere('phone', 'like', '%' . $search . '%')
@@ -312,7 +312,7 @@ class VipController extends Controller
         $type = $request->input('type');
         $validity = $request->input('validity');
 
-        $query = vip::query()
+        $query = Vip::query()
             ->with(['user', 'package']);
 
         if ($nav == 'Trash') {
@@ -334,7 +334,7 @@ class VipController extends Controller
         $this->applyDateFilter($query, $sdate, $edate);
 
         if (isset($search) && !empty($search)) {
-            $query = vip::query()
+            $query = Vip::query()
                 ->with(['user', 'package'])
                 ->where('name', 'like', '%' . $search . '%')
                 ->orWhere('phone', 'like', '%' . $search . '%');
@@ -687,7 +687,7 @@ class VipController extends Controller
 
     private function findVipUser($vip): vip
     {
-        return vip::query()
+        return Vip::query()
             ->withTrashed()
             ->with(['user', 'package', 'referBy'])
             ->findOrFail($vip);

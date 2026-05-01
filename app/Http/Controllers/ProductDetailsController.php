@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\user_task;
+use App\Models\UserTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +24,7 @@ class ProductDetailsController extends Controller
             ->where([
                 'id' => (int) $id,
                 'status' => 'Active',
-                // 'belongs_to_type' => 'reseller',
+                'belongs_to_type' => 'reseller',
             ])
             ->firstOrFail();
 
@@ -36,7 +36,7 @@ class ProductDetailsController extends Controller
             ->where([
                 'category_id' => $product->category_id,
                 'status' => 'Active',
-                // 'belongs_to_type' => 'reseller',
+                'belongs_to_type' => 'reseller',
             ])
             ->limit(10)
             ->get([
@@ -153,7 +153,7 @@ class ProductDetailsController extends Controller
         $vip = $request->user()->subscription()->active()->valid()->first();
         $package = $vip?->package;
         $duration = ($package?->countdown ?? 0) * 60;
-        $currentTask = user_task::where([
+        $currentTask = UserTask::where([
             'user_id' => $request->user()->id,
             'package_id' => $vip?->package_id,
         ])->whereDate('created_at', today())->first();
@@ -171,7 +171,7 @@ class ProductDetailsController extends Controller
             }
 
             if (!$currentTask && $taskData['task_not_complete_yet']) {
-                user_task::create([
+                UserTask::create([
                     'user_id' => Auth::id(),
                     'package_id' => $package?->id,
                     'vip_id' => $vip?->id,
@@ -197,12 +197,12 @@ class ProductDetailsController extends Controller
             return $this->emptyTaskData();
         }
 
-        $currentTask = user_task::where([
+        $currentTask = UserTask::where([
             'user_id' => $request->user()->id,
             'package_id' => $vip->package_id,
         ])->whereDate('created_at', today())->first();
 
-        $lastTask = user_task::where([
+        $lastTask = UserTask::where([
             'user_id' => $request->user()->id,
             'package_id' => $vip->package_id,
         ])->latest()->first();

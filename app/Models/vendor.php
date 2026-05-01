@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use App\Models\vendor_has_document;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Session;
 use Spatie\Permission\Models\Role;
 
-class vendor extends Model
+class Vendor extends Model
 {
-    //
+    protected $table = 'vendors';
+
     protected $fillable = [
         'user_id',
         'shop_name_bn',
@@ -33,17 +32,12 @@ class vendor extends Model
         'house_no',
         'address',
 
-        // business type 
-        // 'business_type', // Corporation, LLC, Sole Provider, Partnership, Other
-
         // has many reference
         'ref_to_company',
         'ref_name',
         'ref_contact',
 
-
-
-        // authorization 
+        // authorization
         'is_rejected',
         'rejected_for',
         'system_get_comission',
@@ -65,39 +59,26 @@ class vendor extends Model
         'fixed_amount',
     ];
 
-    //////////////// 
-    // MODEL BOOT //
-    ///////////////
+    protected $casts = [
+        'information_update_date' => 'datetime',
+    ];
+
     protected static function boot()
     {
         parent::boot();
-        // static::observe(ShopObserver::class);
 
-        /**
-         * if model inserte
-         */
         static::creating(function ($model) {
             $model->status = 'Pending';
             $model->user_id = Auth::id();
         });
 
-        // static::created
-
         static::created(function ($model) {
-            // add new documents 
-            vendor_has_document::create(['user_id' => Auth::id(), 'vendor_id' => $model->id]);
-
-            // add new nomini
-            vendor_has_nomini::create(['user_id' => Auth::id(), 'vendor_id' => $model->id]);
+            VendorHasDocument::create(['user_id' => Auth::id(), 'vendor_id' => $model->id]);
+            VendorHasNomini::create(['user_id' => Auth::id(), 'vendor_id' => $model->id]);
 
             $model->documents()->update(['deatline' => Carbon::now()->addDays(7)]);
-
-            // Session::flash('Success', "Model Created !");
         });
 
-        /**
-         * if model saving and have status = 1
-         */
         static::saving(function ($model) {
             if ($model->isDirty('status') && $model->status == 'Active') {
                 $model->is_rejected = 0;
@@ -110,51 +91,23 @@ class vendor extends Model
                 $model->is_rejected = 0;
             }
 
-            /**
-             * if rejected
-             */
             if ($model->isDirty('is_rejected') && $model->is_rejected) {
                 $model->status = "Suspended";
-                // $model->rejected_for = $request;
             }
         });
 
-        static::updated(function (vendor $rider) {
-            /**
-             * if the status field is updated,
-             * and status is Active,
-             * then assign the rider role
-             */
-
-            // get the rider role
-            $riderRoleName =  Role::where('name', 'rider')->first();
-            if ($rider->isDirty('status') && $rider->status == 'Active') {
-                // assign role to user
-                $rider->user?->assignRole($riderRoleName);
+        static::updated(function (Vendor $vendor) {
+            $vendorRole = Role::where('name', 'rider')->first();
+            if ($vendor->isDirty('status') && $vendor->status == 'Active') {
+                $vendor->user?->assignRole($vendorRole);
             } else {
-
-                // else remove the role if exists
-                if ($rider->user?->hasRole($riderRoleName)) {
-                    $rider->user?->removeRole($riderRoleName);
+                if ($vendor->user?->hasRole($vendorRole)) {
+                    $vendor->user?->removeRole($vendorRole);
                 }
             }
         });
     }
 
-
-    /**
-     * cast information_update_date to datetime
-     */
-    protected $casts = [
-        'information_update_date' => 'datetime',
-    ];
-
-
-
-
-    //////////////// 
-    // SCOPE //
-    ///////////////
     public function scopeActive($query)
     {
         return $query->where('status', '=', 'Active');
@@ -164,26 +117,17 @@ class vendor extends Model
     {
         return $query->where('status', '=', 'Pending');
     }
+
     public function scopeSuspended($query)
     {
         return $query->where('status', '=', 'Suspended');
     }
+
     public function scopeDisabled($query)
     {
         return $query->where('status', '=', 'Disabled');
     }
 
-
-
-
-    //////////////// 
-    // RELATION //
-    ///////////////
-
-
-    /**
-     * model belongs to a user
-     */
     public function user()
     {
         return $this->belongsTo(User::class)->withDefault(
@@ -195,12 +139,8 @@ class vendor extends Model
         );
     }
 
-    /**
-     * model has document
-     * vendor_has_document table
-     */
     public function documents()
     {
-        return $this->hasOne(vendor_has_document::class);
+        return $this->hasOne(VendorHasDocument::class);
     }
 }

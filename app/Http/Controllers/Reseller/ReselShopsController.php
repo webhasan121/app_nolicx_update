@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Reseller;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\vendor;
+use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -21,7 +21,7 @@ class ReselShopsController extends Controller
         $get = $request->query('get');
         $slug = $request->query('slug');
 
-        $query = vendor::query()->where('status', 'Active');
+        $query = Vendor::query()->where('status', 'Active');
 
         if (Auth::check()) {
             $query->where('country', Auth::user()?->country);
@@ -51,7 +51,7 @@ class ReselShopsController extends Controller
         $products = null;
 
         if ($get || $slug) {
-            $shopQuery = vendor::with('user');
+            $shopQuery = Vendor::with('user');
             if ($get) {
                 $shop = $shopQuery->findOrFail($get);
             } elseif ($slug) {
@@ -176,7 +176,7 @@ class ReselShopsController extends Controller
         $state = $request->query('state', '');
         $get = $request->query('get');
 
-        $query = vendor::query()->where('status', 'Active');
+        $query = Vendor::query()->where('status', 'Active');
 
         if (Auth::check()) {
             $query->where('country', Auth::user()?->country);
@@ -206,7 +206,7 @@ class ReselShopsController extends Controller
         $products = [];
 
         if ($get) {
-            $shop = vendor::with('user')->findOrFail($get);
+            $shop = Vendor::with('user')->findOrFail($get);
             $selectedShop = [
                 'id' => $shop->id,
                 'shop_name_en' => $shop->shop_name_en,

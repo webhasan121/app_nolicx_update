@@ -4,16 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class vendor_has_document extends Model
+class VendorHasDocument extends Model
 {
-    //
-    // protected $table = 'vendor_has_document';
+    protected $table = 'vendor_has_documents';
+
     protected $fillable = [
         'user_id',
         'vendor_id',
         'deatline',
 
-        // verification 
+        // verification
         'nid',
         'nid_front',
         'nid_back',
@@ -22,30 +22,18 @@ class vendor_has_document extends Model
         'shop_trade_image',
         'shop_tin',
         'shop_tin_image',
-        // 'shop_bin',
-        // 'shop_bin_image',
 
-        // payments 
+        // payments
         'payment_type',
         'payment_by',
         'holder_name',
         'payment_to',
         'swift_code',
-
-        // certificate
-        // 'iso',
-        // 'minority',
-        // 'women',
-        // 'other',
     ];
 
-
-    //////////////// 
-    // RELATION //
-    ///////////////
     public function vendorRequest()
     {
-        return $this->belongsTo(vendor::class, 'vendor_id', 'id');
+        return $this->belongsTo(Vendor::class, 'vendor_id', 'id');
     }
 
     public function user()

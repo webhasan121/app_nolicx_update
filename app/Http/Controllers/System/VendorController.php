@@ -11,8 +11,8 @@ use Illuminate\Support\Str;
 use App\HandleVendor;
 use App\Http\Middleware\Owner;
 use App\Models\Product;
-use App\Models\vendor;
-use App\Models\vendor_has_document;
+use App\Models\Vendor;
+use App\Models\VendorHasDocument;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -84,7 +84,7 @@ class VendorController extends Controller
         ]);
         $request->mergeIfMissing(['slug' => Str::slug($request->shop_name_en)]); // slug
 
-        $vendorId = vendor::create($request->except('_token'));
+        $vendorId = Vendor::create($request->except('_token'));
         // dd();
         return redirect()->route('upgrade.vendor.edit', ['id' => $vendorId->id]);
         // $this->vendor()->update([]);
@@ -96,7 +96,7 @@ class VendorController extends Controller
          * user can able to update the rquest,
          * if the request is pending
          */
-        // $vendor = vendor::find($id);
+        // $vendor = Vendor::find($id);
         // if ($vendor->status == 'Pending') {
 
 
@@ -125,7 +125,7 @@ class VendorController extends Controller
     {
         // 
         // $data = auth()->user()->requestsToBeVendor()->find($id);
-        $data = vendor_has_document::find($id);
+        $data = VendorHasDocument::find($id);
         // dd($data->vendorRequest->status);
         if ($data && $data->vendorRequest->status == 'Pending') {
             $data->update(request()->except('_token'));
@@ -155,7 +155,7 @@ class VendorController extends Controller
         //         # code...
         //         break;
         // }
-        $vendors = vendor::where(['status' => 'Pending'])->orderBy('id', 'desc')->get();
+        $vendors = Vendor::where(['status' => 'Pending'])->orderBy('id', 'desc')->get();
         return view('auth.system.vendors.index', compact('vendors'));
     }
 
@@ -166,7 +166,7 @@ class VendorController extends Controller
         $sd = $request->input('sd');
         $ed = $request->input('ed');
 
-        $query = vendor::query()
+        $query = Vendor::query()
             ->with('user')
             ->orderBy('id', 'desc');
 
@@ -203,11 +203,11 @@ class VendorController extends Controller
                 'ed' => $ed,
             ],
             'widgets' => [
-                ['title' => 'Total Vendor', 'content' => vendor::query()->count()],
-                ['title' => 'Pending', 'content' => vendor::query()->pending()->count()],
-                ['title' => 'Active', 'content' => vendor::query()->active()->count()],
-                ['title' => 'Disabled', 'content' => vendor::query()->disabled()->count()],
-                ['title' => 'Suspended', 'content' => vendor::query()->suspended()->count()],
+                ['title' => 'Total Vendor', 'content' => Vendor::query()->count()],
+                ['title' => 'Pending', 'content' => Vendor::query()->pending()->count()],
+                ['title' => 'Active', 'content' => Vendor::query()->active()->count()],
+                ['title' => 'Disabled', 'content' => Vendor::query()->disabled()->count()],
+                ['title' => 'Suspended', 'content' => Vendor::query()->suspended()->count()],
             ],
             'vendors' => [
                 'data' => $vendors->getCollection()->map(function ($vendor) {
@@ -258,7 +258,7 @@ class VendorController extends Controller
         $sd = $request->input('sd');
         $ed = $request->input('ed');
 
-        $query = vendor::query()
+        $query = Vendor::query()
             ->with('user')
             ->orderBy('id', 'desc');
 
@@ -323,13 +323,13 @@ class VendorController extends Controller
      */
     public function edit($id)
     {
-        $vendor = vendor::find($id);
+        $vendor = Vendor::find($id);
         return view('auth.system.vendors.edit', compact('vendor'));
     }
 
     public function editReact($id)
     {
-        $vendor = vendor::with('user.getReffOwner.owner')->findOrFail($id);
+        $vendor = Vendor::with('user.getReffOwner.owner')->findOrFail($id);
         $user = $vendor->user;
 
         return Inertia::render('Auth/system/vendors/Edit', [
@@ -365,14 +365,14 @@ class VendorController extends Controller
 
     public function viewSettings($id)
     {
-        $vendor = vendor::find($id);
+        $vendor = Vendor::find($id);
         $permissions = Permission::all();
         return view('auth.system.vendors.vendor.settings', compact('vendor', 'permissions'));
     }
 
     public function settingsReact($id)
     {
-        $vendor = vendor::with('user')->findOrFail($id);
+        $vendor = Vendor::with('user')->findOrFail($id);
 
         return Inertia::render('Auth/system/vendors/Settings', [
             'vendor' => [
@@ -404,23 +404,23 @@ class VendorController extends Controller
     }
     public function viewProducts($id)
     {
-        $vendor = vendor::find($id);
+        $vendor = Vendor::find($id);
         return view('auth.system.vendors.vendor.products', compact('vendor'));
     }
     public function viewOrders($id)
     {
-        $vendor = vendor::find($id);
+        $vendor = Vendor::find($id);
         return view('auth.system.vendors.vendor.orders', compact('vendor'));
     }
     public function viewDocuments($id)
     {
-        $vendor = vendor::find($id);
+        $vendor = Vendor::find($id);
         return view('auth.system.vendors.vendor.documents', compact('vendor'));
     }
 
     public function documentsReact($id)
     {
-        $vendor = vendor::with(['user', 'documents'])->findOrFail($id);
+        $vendor = Vendor::with(['user', 'documents'])->findOrFail($id);
         $document = $vendor->documents;
         $deadline = $document?->deatline ? Carbon::parse($document->deatline) : null;
 
@@ -459,7 +459,7 @@ class VendorController extends Controller
             'deatline' => ['required', 'date'],
         ]);
 
-        $vendor = vendor::with('documents')->findOrFail($id);
+        $vendor = Vendor::with('documents')->findOrFail($id);
         $vendor->documents?->update([
             'deatline' => $request->deatline,
         ]);
@@ -468,14 +468,14 @@ class VendorController extends Controller
     }
     public function viewCategories($id)
     {
-        $vendor = vendor::find($id);
+        $vendor = Vendor::find($id);
         return view('auth.system.vendors.vendor.categories');
     }
 
     public function updateBySystem($id)
     {
         // dd(request()->except(['id', '_token']));
-        $data = vendor::find($id);
+        $data = Vendor::find($id);
         // dd($data->id);
 
         if ($data) {

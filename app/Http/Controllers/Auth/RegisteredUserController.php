@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
-use App\Models\user_has_refs;
+use App\Models\UserHasRefs;
 
 class RegisteredUserController extends Controller
 {
@@ -53,7 +53,7 @@ class RegisteredUserController extends Controller
 
         // Reference handling
         if (!empty($request->reference) &&
-            user_has_refs::where('ref', $request->reference)->exists()) {
+            UserHasRefs::where('ref', $request->reference)->exists()) {
 
             $validated['reference'] = $request->reference;
             $validated['reference_accepted_at'] = now();
@@ -84,7 +84,7 @@ class RegisteredUserController extends Controller
         if (config('app.comission')) {
             $isRef = null;
             if ($request('reference') && $request('reference') != config('app.ref')) {
-                if (user_has_refs::where('ref', $request('reference'))->exists()) {
+                if (UserHasRefs::where('ref', $request('reference'))->exists()) {
                     $reference = $request('reference');
                     $isRef = today();
                 } else {
@@ -119,7 +119,7 @@ class RegisteredUserController extends Controller
         //         $ref = str_pad($user->id, 3, '0', STR_PAD_LEFT);
         //     }
 
-        //     user_has_refs::create([
+        //     UserHasRefs::create([
         //         'ref' => date('ym') . $ref,
         //         'user_id' => $user->id,
         //         'status' => 1,

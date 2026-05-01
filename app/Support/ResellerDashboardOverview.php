@@ -4,7 +4,7 @@ namespace App\Support;
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\vendor;
+use App\Models\Vendor;
 
 class ResellerDashboardOverview
 {
@@ -12,7 +12,7 @@ class ResellerDashboardOverview
     {
         return [
             'tp' => Product::where(['belongs_to_type' => 'vendor'])->count(),
-            'vendor' => vendor::count(),
+            'vendor' => Vendor::count(),
             'category' => Category::count(),
             'products' => Product::where([
                 'belongs_to_type' => 'vendor',

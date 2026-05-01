@@ -66,7 +66,7 @@ class reseller extends Model
             reseller_has_document::create(['user_id' => Auth::id(), 'reseller_id' => $model->id]);
 
             // add new nomini
-            // vendor_has_nomini::create(['user_id' => Auth::id(), 'vendor_id' => $model->id]);
+            // VendorHasNomini::create(['user_id' => Auth::id(), 'vendor_id' => $model->id]);
 
             $model->documents()->update(['deatline' => Carbon::now()->addDays(7)]);
 

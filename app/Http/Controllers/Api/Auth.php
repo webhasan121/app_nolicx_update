@@ -5,99 +5,208 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\ApiResponse;
-use App\HandleImageUpload;
-use Illuminate\Validation\Rules;
-use App\Models\user_has_refs;
+use App\Models\city;
+use App\Models\country;
+use App\Models\state;
+use App\Models\UserHasRefs;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth as AuthP;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules;
 
 class Auth extends Controller
 {
-    use HandleImageUpload;
-    private $userId;
     public function register(Request $request)
     {
-        $request->validate([
+        $this->mergeConfirmedPassword($request);
+
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
-            'country' => ['required', 'string', 'max:25'],
-            'gender' => ['nullable', 'max:10'],
-            'phone' => ['required'],
-            'profile_photo' => 'required',
-            'password' => ['required', 'confirmed', 'min:8', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => ['required', 'string', 'max:25'],
+            'reference' => ['nullable', 'string', 'max:255'],
+            'country_id' => ['required', 'integer', 'exists:countries,id'],
+            'state_id' => [
+                'required',
+                'integer',
+                Rule::exists('states', 'id')->where('country_id', $request->integer('country_id')),
+            ],
+            'city_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('cities', 'id')->where('state_id', $request->integer('state_id')),
+            ],
         ]);
 
-        $reference = null;
-        $isRef = null;
-
-
-        // active reference 
-        if (config('app.comission')) {
-            if ($request->reference && $request->reference != config('app.ref')) {
-                if (user_has_refs::where('ref', $request->reference)->exists()) {
-                    $reference = $request->reference;
-                    $isRef = today();
-                } else {
-                    $reference = config('app.ref');
-                    // $isRef = today();
-                }
-            } else {
-                $reference = config('app.ref'); // default reference
-            }
-        }
-
         try {
+            $country = country::findOrFail($validated['country_id']);
+            $state = state::findOrFail($validated['state_id']);
+            $city = !empty($validated['city_id']) ? city::find($validated['city_id']) : null;
+            $reference = config('app.ref');
+            $referenceAcceptedAt = null;
 
-            DB::transaction(function () use ($request, $reference, $isRef) {
+            if (!empty($validated['reference']) && $validated['reference'] !== config('app.ref')) {
+                if (UserHasRefs::where('ref', $validated['reference'])->exists()) {
+                    $reference = $validated['reference'];
+                    $referenceAcceptedAt = now();
+                }
+            }
 
-                $this->userId = User::insertGetId([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'phone' => $request->phone,
-                    'country' => $request->country,
-                    'gender' => $request->gender,
+            $user = DB::transaction(function () use ($validated, $country, $state, $city, $reference, $referenceAcceptedAt) {
+                return User::create([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password']),
+                    'phone' => $validated['phone'],
+                    'country' => $country->name,
+                    'country_code' => $country->iso2,
+                    'state' => $state->name,
+                    'city' => $city?->name,
                     'reference' => $reference,
-                    'profile_photo_path' => $this->handleImageUpload($request->profile_photo, 'profile', null),
-                    'reference_accepted_at' => $isRef,
+                    'reference_accepted_at' => $referenceAcceptedAt,
                 ]);
             });
-            if ($this->userId) {
-                /**
-                 * user has a ref code
-                 */
-                if (config('app.comission')) {
 
-                    $length = strlen($this->userId);
+            event(new Registered($user));
 
-                    if ($length >= 4) {
-                        $ref = $this->userId;
-                    } else {
-                        $ref = str_pad($this->userId, 3, '0', STR_PAD_LEFT);
-                    }
+            $token = $user->createToken('postman-api')->plainTextToken;
 
-
-                    user_has_refs::create([
-                        'ref' => date('ym') . $ref,
-                        'user_id' => $this->userId,
-                        'status' => 1,
-                    ]);
-                }
-                try {
-                    //code...
-                    AuthP::attempt($request->Only(['email', 'password']));
-                    $token = $request->user()->createToken(AuthP::getName());
-
-                    // return ['token' => $token->plainTextToken];
-                    return ApiResponse::success(['token' => $token->plainTextToken]);
-                } catch (\Throwable $th) {
-                    return ApiResponse::unauthorized($th->getMessage());
-                }
-            }
+            return ApiResponse::success([
+                'token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user->fresh(),
+            ], 'Registration successful', 201);
         } catch (\Throwable $th) {
-            return ApiResponse::error('Error While Register', $th->getMessage(), 422);
+            return ApiResponse::error('Error while register', $th->getMessage(), 422);
+        }
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            return ApiResponse::error('The provided credentials do not match our records.', null, 401);
+        }
+
+        $token = $user->createToken('postman-api')->plainTextToken;
+
+        return ApiResponse::success([
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
+        ], 'Login successful');
+    }
+
+    public function me(Request $request)
+    {
+        return ApiResponse::success($request->user(), 'Authenticated user');
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()?->currentAccessToken()?->delete();
+
+        return ApiResponse::success(null, 'Logout successful');
+    }
+
+    public function sendVerification(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return ApiResponse::success(null, 'Email already verified');
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return ApiResponse::success(null, 'Verification link sent');
+    }
+
+    public function verify(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => ['required', 'integer'],
+            'hash' => ['required', 'string'],
+        ]);
+
+        $user = $request->user();
+
+        if ((int) $validated['id'] !== (int) $user->getKey()) {
+            return ApiResponse::error('Invalid verification user.', null, 403);
+        }
+
+        if (!hash_equals((string) $validated['hash'], sha1($user->getEmailForVerification()))) {
+            return ApiResponse::error('Invalid verification hash.', null, 403);
+        }
+
+        if (!$user->hasVerifiedEmail() && $user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
+
+        return ApiResponse::success($user->fresh(), 'Email verified successfully');
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $status = Password::sendResetLink($request->only('email'));
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            return ApiResponse::error(__($status), null, 422);
+        }
+
+        return ApiResponse::success(null, __($status));
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $this->mergeConfirmedPassword($request);
+
+        $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user) use ($request) {
+                $user->forceFill([
+                    'password' => Hash::make($request->password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status !== Password::PASSWORD_RESET) {
+            return ApiResponse::error(__($status), null, 422);
+        }
+
+        return ApiResponse::success(null, __($status));
+    }
+
+    private function mergeConfirmedPassword(Request $request): void
+    {
+        if (!$request->has('password_confirmation') && $request->has('confirmed')) {
+            $request->merge([
+                'password_confirmation' => $request->input('confirmed'),
+            ]);
         }
     }
 }

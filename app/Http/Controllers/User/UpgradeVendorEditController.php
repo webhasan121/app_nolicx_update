@@ -6,8 +6,8 @@ use App\HandleImageUpload;
 use App\Http\Controllers\Controller;
 use App\Models\reseller;
 use App\Models\reseller_has_document;
-use App\Models\vendor;
-use App\Models\vendor_has_document;
+use App\Models\Vendor;
+use App\Models\VendorHasDocument;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -147,7 +147,7 @@ class UpgradeVendorEditController extends Controller
         }
 
         $data = $upgrade === 'vendor'
-            ? vendor_has_document::find($id)
+            ? VendorHasDocument::find($id)
             : reseller_has_document::find($id);
 
         if (!$data) {
@@ -179,4 +179,3 @@ class UpgradeVendorEditController extends Controller
         return redirect()->back()->with('success', 'Information Updated Successfully');
     }
 }
-

@@ -3,7 +3,7 @@
 namespace App\Events;
 
 use App\Models\Packages;
-use App\Models\vip;
+use App\Models\Vip;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -22,7 +22,7 @@ class PackagePurchaseComissionForReferred
      */
     public function __construct($vip)
     {
-        $this->vip = vip::findOrFail($vip);
+        $this->vip = Vip::findOrFail($vip);
     }
 
     /**

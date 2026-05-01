@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class vip extends Model
+class Vip extends Model
 {
     use SoftDeletes;
-    //
+
+    protected $table = 'vips';
+
     protected $fillable =
     [
-
         'name',
         'phone',
         'nid_front',
@@ -21,15 +22,14 @@ class vip extends Model
         'trx',
         'user_id',
         'package_id',
-        'status', //pending, confirmed,
-        'valid_till', //a package valid for 360 days
-        'valid_from', //renew date
-        'task_type', //montyly, daily
+        'status',
+        'valid_till',
+        'valid_from',
+        'task_type',
 
-        'reference', //if user register with reference
-        'comission', //if user register with reference, the comission for the reference user
-        'refer', //if user register with reference, the refer user id
-
+        'reference',
+        'comission',
+        'refer',
     ];
 
     public function user()
@@ -75,24 +75,18 @@ class vip extends Model
 
     /**
      * method return the active query
-     * @return vip
+     * @return Vip
      */
     public function scopeActive($query)
     {
         return $query->where(['status' => 1]);
     }
 
-    /**
-     * method add the valid scope
-     */
     public function scopeValid($query)
     {
         return $query->where('valid_till', '>', today());
     }
 
-    /**
-     * method add the valid scope
-     */
     public function scopeInValid($query)
     {
         return $query->where('valid_till', '<', today());

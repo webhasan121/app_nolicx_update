@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\DistributeComissions;
 use App\Models\TakeComissions;
-use App\Models\user_task;
+use App\Models\UserTask;
 use App\Models\Withdraw;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +34,7 @@ class WalletController extends Controller
         $comission = DistributeComissions::where(['user_id' => Auth::id(), 'confirmed' => true])->whereDate('updated_at', today())->sum('amount');
         $cut = TakeComissions::where(['user_id' => Auth::id(), 'confirmed' => true])->whereDate('updated_at', today())->sum('take_comission');
         $reffer = auth()->user()->getMyvipRef()->whereDate('updated_at', today())->sum('comission');
-        $task = user_task::where(['user_id' => Auth::id()])->whereDate('updated_at', '=', today())->first();
+        $task = UserTask::where(['user_id' => Auth::id()])->whereDate('updated_at', '=', today())->first();
 
         return Inertia::render('User/Wallet/Index', [
             'task' => $task,

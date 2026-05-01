@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\user_has_refs;
+use App\Models\UserHasRefs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\View;
@@ -254,7 +254,7 @@ class SystemUsersController extends Controller
         $user->email = $request->email;
 
         if ($request->filled('reference')) {
-            $reffArray = user_has_refs::all('ref', 'user_id');
+            $reffArray = UserHasRefs::all('ref', 'user_id');
             $reference = $request->reference;
             $reff = $reffArray->where('ref', $reference)->first();
 

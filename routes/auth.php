@@ -39,7 +39,7 @@ use App\Models\User;
 use App\Models\city;
 use App\Models\country;
 use App\Models\state;
-use App\Models\vip;
+use App\Models\Vip;
 use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
@@ -187,7 +187,7 @@ Route::middleware('auth')->group(function () {
         Route::get('vip/packages/{id}', [CheckoutController::class, 'index'])->name('user.package.checkout');
         Route::post('vip/package/purchase', [CheckoutController::class, 'purchase'])->name('user.package.purchase');
         // Route::get('vip/packages/{id}/cancle', function ($id) {
-        //     dd(vip::find($id));
+        //     dd(Vip::find($id));
         // })->name('user.package.cancle');
 
 

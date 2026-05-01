@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\vendor;
+use App\Models\Vendor;
 use Illuminate\Support\Facades\Auth;
 
 class VendorPolicy
@@ -14,7 +14,7 @@ class VendorPolicy
      * if the user is the vendor, they can perform the action.
      * if the vendor membership is on pending, only the user can't perform the action.
      */
-    public function update(vendor $vendor)
+    public function update(Vendor $vendor)
     {
         // if the vendor membership in on pending, user can update the request
         if (auth()->user()->can('manage_vendor') || (Auth::id() == $vendor->user_id && $vendor->status == 'Pending')) {

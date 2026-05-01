@@ -180,6 +180,3 @@ Route::get('/countries', function () {
     return response()->json($countries);
 })->name('countries');
 
-Route::prefix('api')->controller(LocationController::class)->name('location.')->group(function () {
-    Route::get('/countries', 'countries')->name('countries');
-});
