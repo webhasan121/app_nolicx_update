@@ -111,8 +111,11 @@ export default function UserLayout({ children, title }) {
                 th { vertical-align: middle !important; font-size: 14px; }
                 .discount-badge {
                     position: absolute; top: 0; left: 0; color: white; font-weight: bold;
-                    padding: 3px 8px; clip-path: polygon(0px 0px, 85px 0px, 0px 75px);
-                    width: 100px; height: 100px; text-align: center; display: flex; font-size: 18px;
+                    display: inline-flex; align-items: center; justify-content: flex-start;
+                    min-width: 72px; width: max-content; height: 32px;
+                    padding: 4px 16px 4px 8px; white-space: nowrap;
+                    clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
+                    font-size: 16px; line-height: 1;
                 }
                 .m_body { margin: 0; font-family: sans-serif; background: #f4f4f4; display: flex; justify-content: center; align-items: center; }
                 .m_slider { position: relative; width: 100%; height: auto; max-height: 400px; overflow: hidden; background: #fff; aspect-ratio: 16/9; }
