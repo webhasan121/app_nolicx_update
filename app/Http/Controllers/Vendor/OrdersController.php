@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProductComissionController;
+use App\Models\CartOrder;
 use App\Models\cod;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\rider;
+use App\Models\syncOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -143,10 +146,11 @@ class OrdersController extends Controller
         $data = auth()->user()
             ->orderToMe()
             ->where(['belongs_to_type' => auth()->user()->account_type()])
-            ->with(['user', 'cartOrders.product', 'comissionsInfo.product', 'hasRider.rider', 'resellerProfit'])
+            ->with(['user', 'cartOrders.product.isResel', 'comissionsInfo.product', 'hasRider.rider', 'resellerProfit'])
             ->findOrFail($order);
 
         $actor = auth()->user();
+
         $systemComissionRate = $actor->account_type() === 'reseller'
             ? ($actor->resellerShop()?->system_get_comission ?? 0)
             : ($actor->vendorShop()?->system_get_comission ?? 0);
@@ -161,6 +165,9 @@ class OrdersController extends Controller
                 'belongs_to_type' => $data->belongs_to_type,
                 'delevery' => $data->delevery,
                 'area_condition' => $data->area_condition,
+                'district' => $data->district,
+                'upozila' => $data->upozila,
+                'target_area' => $data->target_area,
                 'shipping' => $data->shipping,
                 'total' => $data->total,
                 'received_at' => $data->received_at,
@@ -174,6 +181,11 @@ class OrdersController extends Controller
                 ],
                 'cart_orders' => $data->cartOrders->map(function ($item) use ($data) {
                     $profit = 0;
+                    $alreadySynced = syncOrder::query()->where([
+                        'user_order_id' => $data->id,
+                        'reseller_product_id' => $item->product_id,
+                    ])->first();
+
                     if ($item->order?->name === 'Resel') {
                         $profit = intval($item->buying_price) - intval($item->product?->buying_price);
                     } else {
@@ -185,6 +197,11 @@ class OrdersController extends Controller
                         'product_title' => $item->product?->title ?? 'N/A',
                         'product_thumbnail' => $item->product?->thumbnail ? asset('storage/' . $item->product?->thumbnail) : null,
                         'is_resel' => (bool) ($item->product?->isResel ?? false),
+                        'already_synced' => $alreadySynced ? [
+                            'status' => $alreadySynced->status ?? 'Pending',
+                            'reseller_order_id' => $alreadySynced->reseller_order_id,
+                            'url' => route('reseller.order.view', ['order' => $alreadySynced->reseller_order_id]),
+                        ] : null,
                         'price' => $item->price,
                         'quantity' => $item->quantity,
                         'total' => $item->total,
@@ -287,6 +304,103 @@ class OrdersController extends Controller
         }
 
         return redirect()->back()->with('success', 'Order status updated');
+    }
+
+    public function syncOrder(Request $request, int $order): RedirectResponse
+    {
+        $payload = $request->validate([
+            'cart_order_id' => ['required', 'integer'],
+            'delevery' => ['required', 'string'],
+        ]);
+
+        if (auth()->user()->account_type() !== 'reseller') {
+            return redirect()->back()->with('error', 'Only reseller can sync this order');
+        }
+
+        $data = auth()->user()
+            ->orderToMe()
+            ->where(['belongs_to_type' => auth()->user()->account_type()])
+            ->findOrFail($order);
+
+        if (in_array($data->status, ['Pending', 'Hold', 'Cancelled', 'Cancel', 'Reject'], true)) {
+            return redirect()->back()->with('error', 'You can sync only accepted orders');
+        }
+
+        $cartOrder = CartOrder::query()
+            ->with('product.isResel')
+            ->where('order_id', $data->id)
+            ->findOrFail($payload['cart_order_id']);
+
+        $reselProduct = $cartOrder->product?->isResel;
+        if (!$reselProduct) {
+            return redirect()->back()->with('error', 'Resel product not found');
+        }
+
+        $alreadySynced = syncOrder::query()->where([
+            'user_order_id' => $data->id,
+            'reseller_product_id' => $cartOrder->product_id,
+        ])->first();
+
+        if ($alreadySynced) {
+            return redirect()->back()->with('error', 'This order is already synced');
+        }
+
+        $mainProduct = Product::find($reselProduct->product_id);
+        if (!$mainProduct) {
+            return redirect()->back()->with('error', 'Main product not found');
+        }
+
+        $newOrder = Order::create([
+            'user_id' => auth()->id(),
+            'user_type' => 'reseller',
+            'belongs_to' => $reselProduct->belongs_to,
+            'belongs_to_type' => 'vendor',
+            'quantity' => $cartOrder->quantity,
+            'total' => $cartOrder->quantity * $cartOrder->price,
+            'status' => 'Pending',
+            'name' => 'Resel',
+            'district' => $data->district,
+            'upozila' => $data->upozila,
+            'target_area' => $data->target_area,
+            'location' => $data->location,
+            'house_no' => $data->house_no,
+            'road_no' => $data->road_no,
+            'area_condition' => $data->area_condition,
+            'delevery' => $payload['delevery'],
+            'number' => $data->number,
+            'shipping' => $data->area_condition === 'Dhaka' ? 80 : 120,
+        ]);
+
+        $newCartOrder = CartOrder::create([
+            'user_id' => auth()->id(),
+            'user_type' => 'reseller',
+            'belongs_to' => intval($reselProduct->belongs_to),
+            'belongs_to_type' => 'vendor',
+            'order_id' => $newOrder->id,
+            'product_id' => $reselProduct->parent_id,
+            'quantity' => $cartOrder->quantity,
+            'price' => $cartOrder->price,
+            'size' => $cartOrder->size,
+            'total' => $cartOrder->quantity * $cartOrder->price,
+            'buying_price' => $mainProduct->buying_price,
+            'status' => 'Pending',
+        ]);
+
+        ProductComissionController::dispatchProductComissionsListeners($newOrder->id);
+
+        syncOrder::create([
+            'user_id' => $data->user_id,
+            'user_order_id' => $data->id,
+            'user_cart_order_id' => $cartOrder->id,
+            'reseller_product_id' => $cartOrder->product_id,
+            'reseller_order_id' => $newOrder->id,
+            'vendor_product_id' => $reselProduct->id,
+            'reseller_id' => auth()->id(),
+            'vendor_id' => $reselProduct->belongs_to,
+            'status' => 'Pending',
+        ]);
+
+        return redirect()->back()->with('success', 'Order synced successfully');
     }
 
     public function assignRider(Request $request, int $order): RedirectResponse

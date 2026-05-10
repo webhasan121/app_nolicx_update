@@ -8,6 +8,7 @@ export default function InputField({
     value,
     type = "text",
     required = false,
+    disabled = false,
     labelWidth = "350px",
     inputClass = "w-full",
     className = "",
@@ -33,6 +34,7 @@ export default function InputField({
                 onChange={onChange}
                 placeholder={label}
                 required={required}
+                disabled={disabled}
             />
                 {error && <div className="text-sm text-red-600">{error}</div>}
 

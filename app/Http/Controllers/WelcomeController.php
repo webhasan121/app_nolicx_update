@@ -16,6 +16,10 @@ class WelcomeController extends Controller
 {
     public function index()
     {
+        $medicineCategoryIds = $this->categoryTreeIds('medicine', 'Medicine');
+        $foodCategoryIds = $this->categoryTreeIds('food-items', 'Food Items');
+        $megaDealsCategoryIds = $this->categoryTreeIds('mega-deals', 'Mega Deals');
+
         $products = Product::query()
             ->reseller()
             ->active()
@@ -68,7 +72,57 @@ class WelcomeController extends Controller
                 ->orderBy('vc')
                 ->limit(20)
                 ->get(),
+            'medicineProducts' => Product::query()
+                ->reseller()
+                ->active()
+                ->when($medicineCategoryIds, fn($query) => $query->whereIn('category_id', $medicineCategoryIds))
+                ->latest()
+                ->limit(20)
+                ->get(),
+            'foodProducts' => Product::query()
+                ->reseller()
+                ->active()
+                ->when($foodCategoryIds, fn($query) => $query->whereIn('category_id', $foodCategoryIds))
+                ->latest()
+                ->limit(20)
+                ->get(),
+            'megaDealsProducts' => Product::query()
+                ->reseller()
+                ->active()
+                ->when($megaDealsCategoryIds, fn($query) => $query->whereIn('category_id', $megaDealsCategoryIds))
+                ->latest()
+                ->limit(20)
+                ->get(),
             'topSales' => Product::query()->reseller()->whereIn('id', productSalesIndex::query()->orderBy('total_sales', 'desc')->limit(20)->pluck('product_id'))->get()
         ]);
+    }
+
+    private function categoryTreeIds(string $slug, string $name): array
+    {
+        $category = Category::query()
+            ->with('children.children.children')
+            ->where(function ($query) use ($slug, $name) {
+                $query->where('slug', $slug)
+                    ->orWhere('name', $name);
+            })
+            ->first();
+
+        if (!$category) {
+            return [];
+        }
+
+        $ids = [];
+        $this->collectCategoryIds($category, $ids);
+
+        return $ids;
+    }
+
+    private function collectCategoryIds(Category $category, array &$ids): void
+    {
+        $ids[] = $category->id;
+
+        foreach ($category->children as $child) {
+            $this->collectCategoryIds($child, $ids);
+        }
     }
 }

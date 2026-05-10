@@ -189,7 +189,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 comission from your profit.
                                 <br />
                                 {!ableToCreate && (
-                                    <span className="p-3 shadow-lg rounded bg-red-200 text-red-900">
+                                    <span className="p-3 text-red-900 bg-red-200 rounded shadow-lg">
                                         You have reached your maximum product upload limit ({shop?.max_product_upload ?? 0}
                                         ). Please contact support to increase your limit.
                                     </span>
@@ -200,7 +200,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                 </Section>
 
                 <form onSubmit={submit}>
-                    <div className="md:flex justify-between">
+                    <div className="justify-between md:flex">
                         <Section>
                             <SectionHeader
                                 title="Basic Information"
@@ -233,7 +233,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                     labelWidth={''}
                                 >
                                     <select
-                                        className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        className="border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         value={form.data.category_id}
                                         onChange={(e) => form.setData("category_id", e.target.value)}
                                     >
@@ -321,7 +321,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 content="Define your product delevery option and charge from here."
                             />
                             <SectionInner>
-                                <div className="md:flex justify-between">
+                                <div className="justify-between md:flex">
                                     <div>
                                         <InputFile error="cod" label="Available Cash-On-Delevery" className="lg:flex" name="cod">
                                             <input
@@ -416,7 +416,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 />
                                 <InputFile label="Meta Description" name="meta_description" error="meta_description" errors={form.errors}>
                                     <textarea
-                                        className="rounded-md p-2 shadow w-full"
+                                        className="w-full p-2 rounded-md shadow"
                                         rows="4"
                                         placeholder="Meta Description ...."
                                         value={form.data.meta_description}
@@ -441,7 +441,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             }
                                         />
                                         <label htmlFor="newseothumb">
-                                            <i className="fas fa-upload px-2"></i>
+                                            <i className="px-2 fas fa-upload"></i>
                                         </label>
                                     </div>
                                 </InputFile>
@@ -486,7 +486,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             id="prod_thumbnail"
                                             onChange={(e) => form.setData("thumb", e.target.files?.[0] ?? null)}
                                         />
-                                        <label htmlFor="prod_thumbnail" className="p-2 rounded border">
+                                        <label htmlFor="prod_thumbnail" className="p-2 border rounded">
                                             <i className="fas fa-upload"></i>
                                         </label>
                                     </div>
@@ -502,7 +502,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                             <SectionInner>
                                 <InputFile label="Video" className="md:flex" labelWidth="250px" error="video" errors={form.errors}>
                                     {videoPreview ? (
-                                        <video src={videoPreview} controls className="mb-3 max-h-64 w-full rounded border" />
+                                        <video src={videoPreview} controls className="w-full mb-3 border rounded max-h-64" />
                                     ) : null}
                                     <div className="relative">
                                         <input
@@ -512,7 +512,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             accept="video/mp4,video/quicktime,video/x-msvideo,video/webm,video/x-matroska"
                                             onChange={(e) => form.setData("video", e.target.files?.[0] ?? null)}
                                         />
-                                        <label htmlFor="product_video" className="p-2 rounded border">
+                                        <label htmlFor="product_video" className="p-2 border rounded">
                                             <i className="fas fa-upload"></i>
                                         </label>
                                         <p className="mt-2 text-xs">Allowed: mp4, mov, avi, webm, mkv. Max 50MB.</p>
@@ -562,7 +562,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 content="Descrive your product as you need."
                             />
                             <SectionInner>
-                                <div className="flex flex-wrap items-center p-3 border-b bg-gray-50 gap-2"></div>
+                                <div className="flex flex-wrap items-center gap-2 p-3 border-b bg-gray-50"></div>
                                 <InputFile label="Description" className="md:flex" labelWidth="250px" error="description" errors={form.errors}>
                                     <hr />
                                     <main>
@@ -583,7 +583,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             ></trix-editor>
                                         ) : (
                                             <textarea
-                                                className="w-full rounded-md shadow-sm border-gray-300"
+                                                className="w-full border-gray-300 rounded-md shadow-sm"
                                                 rows="10"
                                                 value={form.data.description}
                                                 onChange={(e) => form.setData("description", e.target.value)}

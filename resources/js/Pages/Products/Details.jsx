@@ -198,7 +198,7 @@ export default function Details({
 
                     {auth?.user?.id === product.owner?.id ? (
                         <SectionInner>
-                            <strong className="p-2 text-white rounded border bg-sky-900">
+                            <strong className="p-2 text-white border rounded bg-sky-900">
                                 It&apos;s your product
                             </strong>
                         </SectionInner>
@@ -210,7 +210,7 @@ export default function Details({
                                     <div className="text-sm font-normal">
                                         Shop Name
                                     </div>
-                                    <div className="text-md font-bold">
+                                    <div className="font-bold text-md">
                                         {shop?.shop_name_en ?? "N/A"}
                                     </div>
                                 </div>
@@ -218,7 +218,7 @@ export default function Details({
                                     <div className="text-sm font-normal">
                                         Shop Owner
                                     </div>
-                                    <div className="text-md font-bold">
+                                    <div className="font-bold text-md">
                                         {product.owner?.name ?? "N/A"}
                                     </div>
                                 </div>
@@ -226,7 +226,7 @@ export default function Details({
                                     <div className="text-sm font-normal">
                                         Shop Location
                                     </div>
-                                    <div className="text-md font-bold">
+                                    <div className="font-bold text-md">
                                         {shop?.address ?? "N/A"}
                                     </div>
                                 </div>
@@ -234,7 +234,7 @@ export default function Details({
                                     <div className="text-sm font-normal">
                                         Shop Address
                                     </div>
-                                    <div className="text-md font-bold">
+                                    <div className="font-bold text-md">
                                         {shop?.address ?? "N/A"}
                                     </div>
                                 </div>
