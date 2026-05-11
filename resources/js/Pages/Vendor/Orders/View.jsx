@@ -12,6 +12,8 @@ import SecondaryButton from "../../../components/SecondaryButton";
 import OverviewSection from "../../../components/dashboard/overview/Section";
 import Div from "../../../components/dashboard/overview/Div";
 import Modal from "../../../components/Modal";
+import InputField from "../../../components/InputField";
+import InputLabel from "../../../components/InputLabel";
 
 const progressFlow = [
     "Pending",
@@ -28,10 +30,17 @@ export default function View({ order }) {
     const [comissionOpen, setComissionOpen] = useState(false);
     const [acceptOpen, setAcceptOpen] = useState(false);
     const [riderOpen, setRiderOpen] = useState(false);
+    const [syncOpen, setSyncOpen] = useState(false);
+    const [selectedSyncItem, setSelectedSyncItem] = useState(null);
     const form = useForm({
         status: order?.status ?? "Pending",
         shipping: order?.shipping ?? "",
         rider_id: "",
+    });
+    const syncForm = useForm({
+        cart_order_id: "",
+        delevery: order?.delevery ?? "",
+        area_condition: order?.area_condition ?? "",
     });
 
 
@@ -84,6 +93,23 @@ export default function View({ order }) {
     const removeRider = (codId) => {
         router.delete(route("vendor.orders.rider.remove", { order: order.id, cod: codId }));
     };
+
+    const openSyncModal = (item) => {
+        if (["Pending", "Hold", "Cancelled", "Cancel", "Reject"].includes(order?.status)) {
+            window.alert("You can sync only accepted orders");
+            return;
+        }
+
+        setSelectedSyncItem(item);
+        syncForm.setData({
+            cart_order_id: item.id,
+            delevery: order?.delevery ?? "",
+            area_condition: order?.area_condition ?? "",
+        });
+        setSyncOpen(true);
+    };
+
+
 
     return (
         <AppLayout
@@ -278,14 +304,24 @@ export default function View({ order }) {
                                     <NavLinkBtn href={route("vendor.orders.cprint", { order: order?.id })}>Print</NavLinkBtn>
                                 </div>
                                 <div className="order-total text-end">
-                                    <p>
-                                        <strong>{order?.user?.name}<br /></strong>
-                                        {order?.location}
-                                        <br />
-                                        {order?.house_no}, {order?.road_no}
-                                        <br />
-                                        {order?.number}
-                                    </p>
+                                    <table className="table">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <p className="flex flex-col">
+                                                        <strong>{order?.user?.name}<br /></strong>
+                                                        <span>{order?.location}</span>
+                                                    </p>
+                                                    <p>
+                                                        <span>{`House-${order?.house_no ?? "N/A"}`}</span>
+                                                        <span>, </span>
+                                                        <span>{`Road-${order?.road_no ?? "N/A"}`}</span>
+                                                    </p>
+                                                    <p>{order?.number}</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         }
@@ -322,11 +358,36 @@ export default function View({ order }) {
                                         </div>
                                     </td>
                                     <td>
-                                        {item.is_resel && order?.account_type === "reseller" ? (
-                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">Resel</span>
-                                        ) : (
-                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">You</span>
-                                        )}
+                                        <div className="flex items-center space-x-1 text-xs">
+                                            {item.is_resel && order?.account_type === "reseller" ? (
+                                                <span>Resel</span>
+                                            ) : (
+                                                <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">You</span>
+                                            )}
+
+                                            {item.is_resel && order?.account_type === "reseller" ? (
+                                                item.already_synced?.url ? (
+                                                    <a href={item.already_synced.url} className="p-2 text-xs border rounded">
+                                                        <i
+                                                            className={`fas pr-2 ${
+                                                                item.already_synced.status === "Confirm"
+                                                                    ? "fa-check-circle"
+                                                                    : "fa-link"
+                                                            }`}
+                                                        ></i>
+                                                        {item.already_synced.status}
+                                                    </a>
+                                                ) : (
+                                                    <button
+                                                        className="p-2 text-xs border rounded"
+                                                        type="button"
+                                                        onClick={() => openSyncModal(item)}
+                                                    >
+                                                        <i className="pr-2 fas fa-angle-right"></i> Link to Vendor
+                                                    </button>
+                                                )
+                                            ) : null}
+                                        </div>
                                     </td>
                                     <td>{item.price} TK</td>
                                     <td>{item.quantity}</td>
@@ -446,6 +507,63 @@ export default function View({ order }) {
                         }}
                     >
                         Confirm
+                    </PrimaryButton>
+                </div>
+            </Modal>
+
+            <Modal show={syncOpen} onClose={() => setSyncOpen(false)}>
+                <div className="p-3 border-b bold">
+                    Reseller Order Product
+                </div>
+                <div className="p-5">
+                    <InputField className="md:flex" inputClass="w-full bg-gray-100" label="Customer Name" name="sync_customer_name" value={order?.user?.name ?? ""} disabled />
+                    <InputField className="md:flex" inputClass="w-full bg-gray-100" label="Customer Phone" name="sync_customer_phone" value={order?.number ?? ""} disabled />
+                    <InputField className="md:flex" inputClass="w-full bg-gray-100" label="Customer District" name="sync_customer_district" value={order?.district ?? ""} disabled />
+                    <InputField className="md:flex" inputClass="w-full bg-gray-100" label="Customer Upozila" name="sync_customer_upozila" value={order?.upozila ?? ""} disabled />
+                    <InputField inputClass="w-full bg-gray-100" label="Customer Full Address" name="sync_customer_location" value={order?.location ?? ""} disabled />
+                    <InputField className="md:flex" inputClass="w-full bg-gray-100" label="Customer Road No" name="sync_customer_road_no" value={order?.road_no ?? ""} disabled />
+                    <InputField className="md:flex" inputClass="w-full bg-gray-100" label="Customer House No" name="sync_customer_house_no" value={order?.house_no ?? ""} disabled />
+                    <hr className="my-4" />
+                    <InputField className="md:flex" inputClass="w-full bg-gray-100" label="Reseller Price" name="sync_reseller_price" value={selectedSyncItem?.price ?? ""} disabled />
+                    <hr className="my-4" />
+                    <InputField className="md:flex" inputClass="w-full bg-gray-100" label="Product Quantity" name="sync_product_quantity" value={selectedSyncItem?.quantity ?? ""} disabled />
+                    <InputField className="md:flex" inputClass="w-full bg-gray-100" label="Product Size/Attribute" name="sync_product_attr" value={selectedSyncItem?.size ?? ""} disabled />
+                    <hr className="my-4" />
+                    <div className="mb-4">
+                        <InputLabel>Area Condition</InputLabel>
+                        <select className="w-full bg-gray-100 rounded-md" value={syncForm.data.area_condition} disabled>
+                            <option value="">Select Area</option>
+                            <option value="Dhaka">Inside Dhaka</option>
+                            <option value="Other">Out side of Dhaka</option>
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <InputLabel>Delivery Method</InputLabel>
+                        <select
+                            className="w-full rounded-md"
+                            value={syncForm.data.delevery}
+                            onChange={(e) => syncForm.setData("delevery", e.target.value)}
+                        >
+                            <option value="">Select Shipping Type</option>
+                            <option value="cash">Cash on Delivery</option>
+                            <option value="courier">Courier</option>
+                            <option value="home">Home Delivery</option>
+                        </select>
+                    </div>
+                    <hr className="my-4" />
+                    <PrimaryButton
+                        type="button"
+                        onClick={() => {
+                            syncForm.post(route("vendor.orders.sync", { order: order.id }), {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    setSyncOpen(false);
+                                    setSelectedSyncItem(null);
+                                },
+                            });
+                        }}
+                    >
+                        Order
                     </PrimaryButton>
                 </div>
             </Modal>

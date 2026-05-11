@@ -69,13 +69,17 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
                             left: 0;
                             color: white;
                             font-weight: bold;
-                            padding: 3px 8px;
-                            clip-path: polygon(0px 0px, 75px 0px, 0px 75px);
-                            width: 100px;
-                            height: 100px;
-                            text-align: center;
-                            display: flex;
-                            font-size: 18px;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: flex-start;
+                            min-width: 72px;
+                            width: max-content;
+                            height: 32px;
+                            padding: 4px 16px 4px 8px;
+                            white-space: nowrap;
+                            clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
+                            font-size: 16px;
+                            line-height: 1;
                         }
                     `,
                 }}

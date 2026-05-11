@@ -220,6 +220,8 @@ class ReselProductsController extends Controller
                 'description' => $product->description,
                 'thumbnail' => $product->thumbnail,
                 'thumbnail_url' => $product->thumbnail ? asset('storage/' . $product->thumbnail) : null,
+                'video' => $product->video,
+                'video_url' => $product->video ? asset('storage/' . $product->video) : null,
                 'price' => $product->price,
                 'discount' => $product->discount,
                 'offer_type' => (bool) $product->offer_type,

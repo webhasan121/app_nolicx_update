@@ -1,5 +1,6 @@
 import { Link, router } from "@inertiajs/react";
 import axios from "axios";
+import Swal from "sweetalert2";
 import NavLink from "../NavLink";
 
 export default function ProductCard({ product }) {
@@ -18,17 +19,35 @@ export default function ProductCard({ product }) {
                 product_id: product.id,
             });
 
-            alert(response.data.message);
+            const responseType = response.data?.type || "success";
+            const isAlreadyInCart = responseType === "info";
 
-            if (response.data.cartCount !== undefined) {
-                router.reload({ only: ["auth"] });
-            }
+            Swal.fire({
+                icon: isAlreadyInCart ? "info" : "success",
+                title: isAlreadyInCart ? "Look At!" : "Congrass !",
+                text: response.data?.message || "Product Added to cart",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#6c5ce7",
+            }).then(() => {
+                if (!isAlreadyInCart && response.data.cartCount !== undefined) {
+                    router.reload({ only: ["auth"] });
+                }
+            });
         } catch (error) {
             if (error.response?.status === 401) {
-                alert("Login to add cart");
+                Swal.fire({
+                    icon: "warning",
+                    title: "Alert !",
+                    text: "Login to add Cart",
+                    confirmButtonText: "OK",
+                    confirmButtonColor: "#6c5ce7",
+                }).then(() => {
+                    router.get(route("login"));
+                });
             }
         }
     };
+                // alert("Login to add cart");
 
     return (
         <div className="relative overflow-hidden bg-white border box group">
@@ -92,7 +111,7 @@ export default function ProductCard({ product }) {
                             : product.title}
                     </NavLink>
 
-                    <div className="p-1 text-xs bg_primary">
+                    <div className="h-full p-1 text-xs bg_primary">
                         {product.unit ?? 0}
                     </div>
                 </div>

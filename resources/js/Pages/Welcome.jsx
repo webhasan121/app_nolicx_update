@@ -10,6 +10,10 @@ import TodaysProducts from "../components/home/TodaysProducts";
 import UserLayout from "../Layouts/User/App";
 import RecommendedProducts from "../components/home/RecommendedProducts";
 import TopSales from "../components/home/TopSales";
+import MedicineProducts from "../components/home/MedicineProducts";
+import FoodProducts from "../components/home/FoodProducts";
+import MegaDealsProducts from "../components/home/MegaDealsProducts";
+import NavLink from "../components/NavLink";
 
 export default function Welcome({
     products = [],
@@ -17,6 +21,9 @@ export default function Welcome({
     ss = [],
     slides = [],
     recommended = [],
+    megaDealsProducts = [],
+    foodProducts = [],
+    medicineProducts = [],
     topSales = [],
     newProducts = [],
     todaysProducts = [],
@@ -189,18 +196,21 @@ console.log('developer_percentage', developer_percentage);
                 <div className="pb-6">
                     <div className="flex items-center justify-between px-2 py-4">
                         <h2 className="text-xl font-bold">Products</h2>
-                        <Link
+                        <NavLink
                             href={route("products.index")}
-                            className="px-3 py-2 rounded text-inherit hover:text-indigo-600"
+                             className="px-3 py-2 rounded hover:text-indigo-600"
                         >
                             View All
-                        </Link>
+                        </NavLink>
                     </div>
 
                     <div className="transition-all duration-300 product_section">
                         <ProductsLoop products={products} />
                     </div>
                 </div>
+                <MegaDealsProducts products={megaDealsProducts} />
+                <FoodProducts products={foodProducts} />
+                <MedicineProducts products={medicineProducts} />
                 <TopSales products={topSales} />
             </Container>
 

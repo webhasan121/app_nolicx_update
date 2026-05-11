@@ -28,7 +28,7 @@ class rider extends Model
         'targeted_area',
 
         'fixed_amount',
-        'commission',
+        'comission',
         'is_rejected',
         'rejected_for',
         'doc_1',
@@ -50,7 +50,7 @@ class rider extends Model
         'vehicle_color', // e.g. Red
     ];
 
-    // hidden 
+    // hidden
     protected $hidden = [
         'id',
         'user_id',
@@ -58,7 +58,7 @@ class rider extends Model
         'updated_at',
     ];
 
-    //////////////// 
+    ////////////////
     // boot //
     ///////////////
     protected static function boot(): void
@@ -90,7 +90,7 @@ class rider extends Model
         });
     }
 
-    //////////////// 
+    ////////////////
     // attributes //
     ///////////////
     protected function country(): Attribute
@@ -156,7 +156,7 @@ class rider extends Model
         );
     }
 
-    //////////////// 
+    ////////////////
     // SCOPE //
     ///////////////
 
@@ -183,7 +183,7 @@ class rider extends Model
         return $this->status == 'Active';
     }
 
-    //////////////// 
+    ////////////////
     // relation //
     ///////////////
     public function user()

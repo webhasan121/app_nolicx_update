@@ -7,7 +7,11 @@ import NavLink from "../NavLink";
 import ProductsLoop from "./ProductsLoop";
 import Swal from "sweetalert2";
 
-export default function ProductSingle({ product, relatedProduct = [] }) {
+export default function ProductSingle({
+    product,
+    relatedProduct = [],
+    onBuyNowClick = null,
+}) {
     const [copied, setCopied] = useState(false);
     const [previewImage, setPreviewImage] = useState(product?.thumbnail);
     const [showVideoModal, setShowVideoModal] = useState(false);
@@ -399,12 +403,22 @@ export default function ProductSingle({ product, relatedProduct = [] }) {
 
                     <Hr />
                     <div className="flex items-center justify-start w-full space-x-2 purchase-info">
-                        <Link
-                            href={route("product.makeOrder", { id: product.id, slug: product.slug })}
-                            className="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase bg-orange-500 border border-transparent rounded-md hover:text-white hover:border-transparent"
-                        >
-                            Buy Now <i className="fas fa-arrow-right ms-2"></i>
-                        </Link>
+                        {onBuyNowClick ? (
+                            <button
+                                type="button"
+                                onClick={onBuyNowClick}
+                                className="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase bg-orange-500 border border-transparent rounded-md hover:text-white hover:border-transparent"
+                            >
+                                Buy Now <i className="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        ) : (
+                            <Link
+                                href={route("product.makeOrder", { id: product.id, slug: product.slug })}
+                                className="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase bg-orange-500 border border-transparent rounded-md hover:text-white hover:border-transparent"
+                            >
+                                Buy Now <i className="fas fa-arrow-right ms-2"></i>
+                            </Link>
+                        )}
                         <SecondaryButton type="button" onClick={addToCart} className="py-2 space-x-2">
                             <i className="fas fa-cart-plus"></i>
                             <span className="hidden md:block">Add to Cart</span>

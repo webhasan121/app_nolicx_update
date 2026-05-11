@@ -1,5 +1,5 @@
 import { Head, useForm } from "@inertiajs/react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Modal from "../../../../components/Modal";
 import Hr from "../../../../components/Hr";
@@ -36,6 +36,11 @@ export default function View({
         product?.thumbnail_url ?? ""
     );
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showVideoModal, setShowVideoModal] = useState(false);
+    const [isZooming, setIsZooming] = useState(false);
+    const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
+    const [bgPosition, setBgPosition] = useState("0px 0px");
+    const imageRef = useRef(null);
 
     const form = useForm({
         resel_price: reselDefaults?.resel_price ?? "",
@@ -55,6 +60,65 @@ export default function View({
         if (!value) return [];
         return value.split(",").map((item) => item.trim()).filter(Boolean);
     }, [product]);
+
+    const gallery = useMemo(() => {
+        const items = [];
+
+        if (product?.thumbnail_url) {
+            items.push({
+                type: "image",
+                key: `thumb-${product.thumbnail_url}`,
+                value: product.thumbnail_url,
+            });
+        }
+
+        (product?.showcase ?? []).forEach((image) => {
+            if (image?.url) {
+                items.push({
+                    type: "image",
+                    key: `showcase-${image.id}`,
+                    value: image.url,
+                });
+            }
+        });
+
+        if (product?.video_url) {
+            items.push({
+                type: "video",
+                key: `video-${product.video_url}`,
+                value: product.video_url,
+            });
+        }
+
+        return items.filter(
+            (item, index, array) =>
+                array.findIndex(
+                    (candidate) =>
+                        candidate.type === item.type &&
+                        candidate.value === item.value,
+                ) === index,
+        );
+    }, [product]);
+
+    const handleMouseMove = (event) => {
+        const image = imageRef.current;
+
+        if (!image) return;
+
+        const rect = image.getBoundingClientRect();
+        const lensWidth = 120;
+        const lensHeight = 120;
+        const zoom = 4;
+
+        let x = event.clientX - rect.left - lensWidth / 2;
+        let y = event.clientY - rect.top - lensHeight / 2;
+
+        x = Math.max(0, Math.min(x, rect.width - lensWidth));
+        y = Math.max(0, Math.min(y, rect.height - lensHeight));
+
+        setLensPosition({ x, y });
+        setBgPosition(`-${x * zoom}px -${y * zoom}px`);
+    };
 
     const confirmClone = () => {
         form.post(
@@ -79,12 +143,37 @@ export default function View({
     return (
         <AppLayout title="Resel Product">
             <Head title="Resel Product" />
+            <style>{`
+                .resel-product-zoom {
+                    display: flex;
+                    gap: 20px;
+                    align-items: flex-start;
+                }
+
+                .resel-product-image-area {
+                    position: relative;
+                    width: 360px;
+                    border: 1px solid #eee;
+                    background: #fff;
+                    flex-shrink: 0;
+                }
+
+                @media (max-width: 1024px) {
+                    .resel-product-zoom {
+                        display: block;
+                    }
+
+                    .resel-product-image-area {
+                        width: 100%;
+                    }
+                }
+            `}</style>
 
             <Container>
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="md:flex justify-between items-center">
+                            <div className="items-center justify-between md:flex">
                                 <div className="text-md">
                                     Product Review for Resel
                                 </div>
@@ -112,7 +201,7 @@ export default function View({
                                 </div>
                                 <div className="flex">
                                     {!ableToAdd ? (
-                                        <div className="p-2 bg-red-200 text-red-800">
+                                        <div className="p-2 text-red-800 bg-red-200">
                                             You have reached the maximum number
                                             of products you can upload{" "}
                                             {shop?.max_resell_product ?? 0}.
@@ -128,7 +217,7 @@ export default function View({
                                             type="button"
                                             onClick={() => setShowConfirm(true)}
                                         >
-                                            <i className="fas fa-sync pr-2"></i>{" "}
+                                            <i className="pr-2 fas fa-sync"></i>{" "}
                                             resell
                                         </PrimaryButton>
                                     )}
@@ -139,65 +228,101 @@ export default function View({
                     <Hr />
 
                     <SectionInner>
-                        <div className="lg:flex justify-between item-start p-2">
-                            <div className="w-full lg:w-1/2">
-                                <div className="img-display">
-                                    <div className="img-showcase relative">
+                        <div className="items-start gap-6 p-2 lg:flex">
+                            <div className="w-full lg:max-w-[460px] xl:max-w-[500px]">
+                                <div className="resel-product-zoom">
+                                    <div
+                                        className="resel-product-image-area shrink-0"
+                                        onMouseEnter={() =>
+                                            setIsZooming(true)
+                                        }
+                                        onMouseLeave={() =>
+                                            setIsZooming(false)
+                                        }
+                                        onMouseMove={handleMouseMove}
+                                    >
                                         {selectedImage ? (
                                             <img
+                                                ref={imageRef}
                                                 className="p-2 rounded"
                                                 style={{
                                                     width: "100%",
                                                     objectFit: "contain",
-                                                    maxWidth: "400px",
-                                                    height: "300px",
+                                                    maxWidth: "360px",
+                                                    height: "360px",
                                                 }}
                                                 src={selectedImage}
                                                 alt="image"
                                             />
                                         ) : null}
+
+                                        {isZooming ? (
+                                            <div
+                                                style={{
+                                                    position: "absolute",
+                                                    width: "120px",
+                                                    height: "120px",
+                                                    border: "2px solid #ff6a00",
+                                                    background:
+                                                        "rgba(255, 255, 255, 0.35)",
+                                                    left: `${lensPosition.x}px`,
+                                                    top: `${lensPosition.y}px`,
+                                                    pointerEvents: "none",
+                                                    zIndex: 10,
+                                                }}
+                                            />
+                                        ) : null}
                                     </div>
 
-                                    {product?.showcase?.length ? (
-                                        <div
-                                            className="d-flex align-items-center"
-                                            style={{ flexWrap: "wrap" }}
-                                        >
-                                            {product.thumbnail_url ? (
-                                                <button className="p-1 rounded mb-1">
-                                                    <img
-                                                        className="border p-1 rounded"
-                                                        onClick={() =>
-                                                            setSelectedImage(
-                                                                product.thumbnail_url
-                                                            )
-                                                        }
-                                                        src={
-                                                            product.thumbnail_url
-                                                        }
-                                                        width="45px"
-                                                        height="45px"
-                                                        alt=""
-                                                    />
-                                                </button>
-                                            ) : null}
-                                            {product.showcase.map((image) => (
+                                    {gallery.length > 1 ? (
+                                        <div className="flex flex-wrap items-center gap-1 md:block">
+                                            {gallery.map((item) => (
                                                 <button
-                                                    className="p-1 rounded mb-1"
-                                                    key={image.id}
-                                                >
-                                                    <img
-                                                        width="45px"
-                                                        height="45px"
-                                                        className="border p-1 rounded"
-                                                        onClick={() =>
-                                                            setSelectedImage(
-                                                                image.url
-                                                            )
+                                                    type="button"
+                                                    className="p-1 mb-1 rounded"
+                                                    key={item.key}
+                                                    onClick={() => {
+                                                        if (
+                                                            item.type ===
+                                                            "video"
+                                                        ) {
+                                                            setShowVideoModal(
+                                                                true,
+                                                            );
+                                                            return;
                                                         }
-                                                        src={image.url}
-                                                        alt=""
-                                                    />
+
+                                                        setSelectedImage(
+                                                            item.value,
+                                                        );
+                                                    }}
+                                                >
+                                                    {item.type === "video" ? (
+                                                        <div
+                                                            className="relative flex items-center justify-center p-1 border rounded bg-slate-900"
+                                                            style={{
+                                                                width: "60px",
+                                                                height: "60px",
+                                                            }}
+                                                        >
+                                                            <video
+                                                                src={item.value}
+                                                                muted
+                                                                className="absolute inset-0 object-cover w-full h-full rounded opacity-70"
+                                                            />
+                                                            <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
+                                                                <i className="text-xs fas fa-play"></i>
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <img
+                                                            width="60"
+                                                            height="60"
+                                                            className="p-1 border rounded"
+                                                            src={item.value}
+                                                            alt=""
+                                                        />
+                                                    )}
                                                 </button>
                                             ))}
                                         </div>
@@ -205,10 +330,36 @@ export default function View({
                                 </div>
                             </div>
 
-                            <div className="w-full lg:w-1/2 py-3 lg:py-0 px-4 lg:px-0">
+                            <div className="relative flex-1 w-full min-w-0 px-4 py-3 lg:px-0 lg:py-0">
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        top: "0",
+                                        right: "0",
+                                        width: "100%",
+                                        height: "420px",
+                                        border: "1px solid #eee",
+                                        backgroundRepeat: "no-repeat",
+                                        backgroundColor: "#fff",
+                                        display:
+                                            isZooming &&
+                                            typeof window !== "undefined" &&
+                                            window.innerWidth > 1024
+                                                ? "block"
+                                                : "none",
+                                        zIndex: 30,
+                                        boxShadow:
+                                            "0 8px 24px rgba(0,0,0,.15)",
+                                        backgroundImage: selectedImage
+                                            ? `url('${selectedImage}')`
+                                            : "none",
+                                        backgroundSize: "1680px 1680px",
+                                        backgroundPosition: bgPosition,
+                                    }}
+                                />
                                 <div>
                                     <div
-                                        className="text-gray-400 bold rounded"
+                                        className="text-gray-400 rounded bold"
                                         style={{ fontSize: "12px" }}
                                     >
                                         <NavLink
@@ -218,13 +369,13 @@ export default function View({
                                                     cat: product?.category?.id,
                                                 }
                                             )}
-                                            className="w-full p-1 bg-indigo-700 text-white uppercase"
+                                            className="w-full p-1 text-white uppercase bg-indigo-700 hover:text-white"
                                         >
                                             {product?.category?.name ??
                                                 "Undefined"}
                                         </NavLink>
                                     </div>
-                                    <div className="text-indigo-900 text-bold text-3xl capitalize">
+                                    <div className="text-3xl text-indigo-900 capitalize text-bold">
                                         {product?.title ?? ""}
                                     </div>
                                 </div>
@@ -237,7 +388,7 @@ export default function View({
                                                 {product.attr.name}
                                             </h4>
                                             <div
-                                                className="flex justify-start items-center my-1"
+                                                className="flex items-center justify-start my-1"
                                                 style={{
                                                     flexWrap: "wrap",
                                                     gap: "10px",
@@ -246,7 +397,7 @@ export default function View({
                                                 {attrValues.map((attr) => (
                                                     <div
                                                         key={attr}
-                                                        className="border rounded mr-2"
+                                                        className="mr-2 border rounded"
                                                         style={{
                                                             width: "45px",
                                                             height: "35px",
@@ -264,9 +415,9 @@ export default function View({
                                     ) : null}
                                 </div>
 
-                                <div className="text-2xl flex bold">
+                                <div className="flex text-2xl bold">
                                     {product?.offer_type ? (
-                                        <div className="md:flex items-baseline">
+                                        <div className="items-baseline md:flex">
                                             <div
                                                 style={{
                                                     fontSize: "22px",
@@ -278,7 +429,7 @@ export default function View({
                                                     {product.total_price} TK
                                                 </strong>
                                             </div>
-                                            <div className="flex justify-start items-baseline">
+                                            <div className="flex items-baseline justify-start">
                                                 <del
                                                     className="px-1"
                                                     style={{
@@ -306,8 +457,8 @@ export default function View({
                                     )}
                                 </div>
 
-                                <div className="rounded-lg bg-gray-200 p-3 mt-3">
-                                    <div className="md:flex justify-between w-full">
+                                <div className="p-3 mt-3 bg-gray-200 rounded-lg">
+                                    <div className="justify-between w-full md:flex">
                                         <div>
                                             <div>
                                                 <div className="text-sm">
@@ -343,7 +494,7 @@ export default function View({
                                                         })}
                                                     >
                                                         visit shops{" "}
-                                                        <i className="fas fa-angle-right pl-2"></i>
+                                                        <i className="pl-2 fas fa-angle-right"></i>
                                                     </NavLink>
                                                 </div>
                                             </div>
@@ -418,15 +569,15 @@ export default function View({
                         <Hr />
                         <ul list-item="number">
                             <li>
-                                <i className="fas fa-check-circle w-6 pr-2"></i>{" "}
+                                <i className="w-6 pr-2 fas fa-check-circle"></i>{" "}
                                 Product going to be add to your product list.
                             </li>
                             <li>
-                                <i className="fas fa-check-circle w-6 pr-2"></i>{" "}
+                                <i className="w-6 pr-2 fas fa-check-circle"></i>{" "}
                                 Sytem take a track for your reseling.
                             </li>
                             <li>
-                                <i className="fas fa-check-circle w-6 pr-2"></i>{" "}
+                                <i className="w-6 pr-2 fas fa-check-circle"></i>{" "}
                                 Product owner get a message from you that you
                                 are reselling this products.
                             </li>
@@ -439,7 +590,7 @@ export default function View({
                                 {product?.thumbnail_url ? (
                                     <img
                                         src={product.thumbnail_url}
-                                        className="h-12 w-12 rounded-md mb-2"
+                                        className="w-12 h-12 mb-2 rounded-md"
                                         alt=""
                                     />
                                 ) : null}
@@ -447,14 +598,14 @@ export default function View({
                                 <p className="text-lg">{product?.title}</p>
 
                                 {product?.offer_type ? (
-                                    <div className="md:flex items-baseline">
-                                        <div className="font-bold font-normal text-md">
+                                    <div className="items-baseline md:flex">
+                                        <div className="font-normal font-bold text-md">
                                             Price :{" "}
                                             <strong>
                                                 {product?.total_price} TK
                                             </strong>
                                         </div>
-                                        <div className="flex justify-start items-baseline">
+                                        <div className="flex items-baseline justify-start">
                                             <del
                                                 className="px-1"
                                                 style={{ fontSize: "14px" }}
@@ -502,7 +653,7 @@ export default function View({
                                 </p>
                             ) : null}
                         </div>
-                        <div className="mt-2 border rounded p-2 shadow">
+                        <div className="p-2 mt-2 border rounded shadow">
                             <div className="flex justify-between mb-2">
                                 <label className="text-sm font-bold">
                                     Resel Discount Price
@@ -549,7 +700,7 @@ export default function View({
                             Profit :
                             {form.data.is_resel_with_discount_price ? (
                                 <>
-                                    <span className="text-red-500 px-2">
+                                    <span className="px-2 text-red-500">
                                         (with discount)
                                     </span>
                                     <span className="text-red-500">
@@ -558,7 +709,7 @@ export default function View({
                                 </>
                             ) : (
                                 <>
-                                    <span className="text-red-500 px-2">
+                                    <span className="px-2 text-red-500">
                                         (without discount)
                                     </span>
                                     <span className="text-red-500">
@@ -573,7 +724,7 @@ export default function View({
                                 Reseller Category
                             </label>
                             <select
-                                className="rounded border w-full"
+                                className="w-full border rounded"
                                 value={form.data.reseller_category_id}
                                 onChange={(e) =>
                                     form.setData(
@@ -595,16 +746,44 @@ export default function View({
                     <Hr />
                     For procced, click to confirm button. After successfully
                     cloned, You can update resel product from your product list.
-                    <div className="flex justify-end items-start p-2">
+                    <div className="flex items-start justify-end p-2">
                         <PrimaryButton
                             type="button"
                             onClick={confirmClone}
                         >
-                            <i className="fas fa-sync pr-2"></i> Confirm
+                            <i className="pr-2 fas fa-sync"></i> Confirm
                         </PrimaryButton>
                     </div>
                 </div>
             </Modal>
+
+            {showVideoModal && product?.video_url ? (
+                <div
+                    className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/70"
+                    onClick={() => setShowVideoModal(false)}
+                >
+                    <div
+                        className="relative w-full max-w-4xl p-3 bg-white rounded-lg shadow-2xl"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => setShowVideoModal(false)}
+                            className="absolute flex items-center justify-center w-10 h-10 text-white rounded-full top-3 right-3 bg-black/70 hover:bg-black"
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
+
+                        <video
+                            key={product.video_url}
+                            src={product.video_url}
+                            controls
+                            autoPlay
+                            className="w-full rounded-lg max-h-[80vh] bg-black"
+                        />
+                    </div>
+                </div>
+            ) : null}
         </AppLayout>
     );
 }

@@ -101,12 +101,12 @@ export default function Index({ products, filters, printUrl }) {
             title="Products"
             header={
                 <PageHeader>
-                    <div className="flex justify-between items-start">
+                    <div className="flex items-start justify-between">
                         Products
 
                         <div className="flex space-x-1">
                             <NavLinkBtn href={route("vendor.products.create")}>
-                                <i className="fas fa-plus pr-2"></i> New
+                                <i className="pr-2 fas fa-plus"></i> New
                             </NavLinkBtn>
                             <NavLinkBtn href={route("reseller.resel-product.index")}>
                                 Recel from vendor
@@ -136,7 +136,7 @@ export default function Index({ products, filters, printUrl }) {
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex justify-end items-center gap-2">
+                            <div className="flex items-center justify-end gap-2">
                                 <TextInput
                                     type="search"
                                     value={search}
@@ -161,7 +161,7 @@ export default function Index({ products, filters, printUrl }) {
                             </div>
                         }
                         content={
-                            <div className="flex justify-between items-center">
+                            <div className="flex items-center justify-between">
                                 <div>
                                     <NavLink
                                         href={route("reseller.products.list", {
@@ -252,7 +252,7 @@ export default function Index({ products, filters, printUrl }) {
                                             {product.has_pending && (
                                                 <a
                                                     title={`Pending Order #${product.first_order_id ?? ""}`}
-                                                    className="rounded text-white px-1 bg-red-900 mr-1 inline-flex text-xs block"
+                                                    className="inline-flex block px-1 mr-1 text-xs text-white bg-red-900 rounded"
                                                 >
                                                     {product.first_order_id ?? "N\\A"}
                                                 </a>
@@ -260,7 +260,7 @@ export default function Index({ products, filters, printUrl }) {
                                             {product.has_accept && (
                                                 <a
                                                     title={`Accept Order #${product.first_order_id ?? ""}`}
-                                                    className="rounded text-white px-1 bg-green-900 mr-1 inline-flex text-xs block"
+                                                    className="inline-flex block px-1 mr-1 text-xs text-white bg-green-900 rounded"
                                                 >
                                                     {product.first_order_id ?? "N\\A"}
                                                 </a>
@@ -287,16 +287,16 @@ export default function Index({ products, filters, printUrl }) {
                         </Table>
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex items-center justify-between w-full gap-3">
                                     <div className="text-sm text-slate-700">
                                         {resultSummary}
                                     </div>
                                     <div className="flex items-center md:justify-end">
-                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                        <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                             <button
                                                 type="button"
                                                 disabled={!pagination.prev?.url}
-                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
                                             >
                                                 Previous
@@ -319,7 +319,7 @@ export default function Index({ products, filters, printUrl }) {
                                             <button
                                                 type="button"
                                                 disabled={!pagination.next?.url}
-                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
                                             >
                                                 Next

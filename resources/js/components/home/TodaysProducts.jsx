@@ -10,7 +10,7 @@ export default function TodaysProducts({ products = [] }) {
 
                 <NavLink
                     href={`${route("products.index")}?tag=today`}
-                    className="border-b-0 px-3 py-2 rounded text-inherit hover:text-indigo-600 hover:border-transparent"
+                    className="px-3 py-2 rounded hover:text-indigo-600"
                 >
                     View All
                 </NavLink>

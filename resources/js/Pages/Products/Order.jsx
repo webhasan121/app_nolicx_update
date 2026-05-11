@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "@inertiajs/react";
 import Container from "../../components/dashboard/Container";
 import SectionSection from "../../components/dashboard/section/Section";
@@ -13,6 +13,7 @@ import TextInput from "../../components/TextInput";
 import UserLayout from "../../Layouts/User/App";
 
 export default function Order({ product, states = [], initialPrice = 0 }) {
+    const orderSectionRef = useRef(null);
     const attrValues = product?.attr?.value
         ? String(product.attr.value)
               .split(",")
@@ -77,25 +78,36 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
         post(route("product.makeOrder.store", { id: product.id, slug: product.slug }));
     };
 
+    const scrollToOrderSection = () => {
+        orderSectionRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
+    };
+
     return (
         <UserLayout title={product?.title}>
             <Container>
                 <SectionSection>
-                    <ProductSingle product={product} />
+                    <ProductSingle
+                        product={product}
+                        onBuyNowClick={scrollToOrderSection}
+                    />
                 </SectionSection>
 
                 <Hr />
 
-                <SectionSection>
-                    <SectionHeader
-                        title="Order Now"
-                        content={<strong>Single Product: {total ?? 0} TK</strong>}
-                    />
-                    <Hr />
-                    <SectionInner>
-                        <form onSubmit={submit}>
-                            <div className="items-start justify-between md:flex">
-                                <div className="top-0 w-48 p-3 pr-2 text-white bg-indigo-900 rounded shadow md:sticky">
+                <div ref={orderSectionRef}>
+                    <SectionSection>
+                        <SectionHeader
+                            title="Order Now"
+                            content={<strong>Single Product: {total ?? 0} TK</strong>}
+                        />
+                        <Hr />
+                        <SectionInner>
+                            <form onSubmit={submit}>
+                                <div className="items-start justify-between md:flex">
+                                    <div className="top-0 w-48 p-3 pr-2 text-white bg-indigo-900 rounded shadow md:sticky">
                                     <div className="p-4 rounded shadow">
                                         <div>
                                             <div className="text-xs">Product</div>
@@ -377,11 +389,12 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
                                     <PrimaryButton disabled={processing}>
                                         Confirm Order
                                     </PrimaryButton>
+                                    </div>
                                 </div>
-                            </div>
-                        </form>
-                    </SectionInner>
-                </SectionSection>
+                            </form>
+                        </SectionInner>
+                    </SectionSection>
+                </div>
             </Container>
         </UserLayout>
     );
