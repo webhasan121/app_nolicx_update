@@ -23,6 +23,8 @@ export default function Index() {
         filters = {
             tab: "commissions",
             search: "",
+            start_date: "",
+            end_date: "",
         },
         columns1 = [],
         columns2 = [],
@@ -38,6 +40,8 @@ export default function Index() {
     const targetStore = storeMeta?.target ?? {};
     const canDistribute = Boolean(targetStore?.id) && !Boolean(Number(targetStore.generate ?? 0));
     const [search, setSearch] = useState(filters.search ?? "");
+    const [startDate, setStartDate] = useState(filters.start_date ?? "");
+    const [endDate, setEndDate] = useState(filters.end_date ?? "");
     const [distributing, setDistributing] = useState(false);
     const shareFilters = {
         "Developer Share": "Developer Commission",
@@ -48,6 +52,8 @@ export default function Index() {
     const requestStore = ({
         nextTab = activeTab,
         nextSearch = search,
+        nextStartDate = startDate,
+        nextEndDate = endDate,
         page = undefined,
     } = {}) => {
         router.get(
@@ -55,6 +61,8 @@ export default function Index() {
             {
                 tab: nextTab,
                 search: nextSearch.trim(),
+                start_date: nextStartDate,
+                end_date: nextEndDate,
                 page,
             },
             {
@@ -70,6 +78,11 @@ export default function Index() {
     }, [filters.search]);
 
     useEffect(() => {
+        setStartDate(filters.start_date ?? "");
+        setEndDate(filters.end_date ?? "");
+    }, [filters.start_date, filters.end_date]);
+
+    useEffect(() => {
         const trimmedSearch = search.trim();
         const currentSearch = (filters.search ?? "").trim();
 
@@ -81,6 +94,8 @@ export default function Index() {
             requestStore({
                 nextTab: activeTab,
                 nextSearch: trimmedSearch,
+                nextStartDate: startDate,
+                nextEndDate: endDate,
             });
         }, 400);
 
@@ -91,6 +106,26 @@ export default function Index() {
         requestStore({
             nextTab: tab,
             nextSearch: search,
+            nextStartDate: startDate,
+            nextEndDate: endDate,
+        });
+    };
+
+    const updateDateFilter = (key, value) => {
+        const nextStartDate = key === "start" ? value : startDate;
+        const nextEndDate = key === "end" ? value : endDate;
+
+        if (key === "start") {
+            setStartDate(value);
+        } else {
+            setEndDate(value);
+        }
+
+        requestStore({
+            nextTab: activeTab,
+            nextSearch: search,
+            nextStartDate,
+            nextEndDate,
         });
     };
 
@@ -121,6 +156,8 @@ export default function Index() {
         requestStore({
             nextTab: "commissions",
             nextSearch,
+            nextStartDate: startDate,
+            nextEndDate: endDate,
         });
     };
 
@@ -146,6 +183,8 @@ export default function Index() {
         requestStore({
             nextTab: nextUrl.searchParams.get("tab") ?? activeTab,
             nextSearch: nextUrl.searchParams.get("search") ?? search,
+            nextStartDate: nextUrl.searchParams.get("start_date") ?? startDate,
+            nextEndDate: nextUrl.searchParams.get("end_date") ?? endDate,
             page: nextUrl.searchParams.get("page") ?? undefined,
         });
     };
@@ -155,6 +194,24 @@ export default function Index() {
         activeCollection?.total > 0
             ? `Showing ${activeCollection?.from ?? 0}-${activeCollection?.to ?? 0} of ${activeCollection?.total ?? 0} ${resultLabel}`
             : `No ${resultLabel} found`;
+    const dateFilterControls = (
+        <>
+            <TextInput
+                type="date"
+                className="py-1"
+                value={startDate}
+                onChange={(e) => updateDateFilter("start", e.target.value)}
+                title="Start date"
+            />
+            <TextInput
+                type="date"
+                className="py-1"
+                value={endDate}
+                onChange={(e) => updateDateFilter("end", e.target.value)}
+                title="End date"
+            />
+        </>
+    );
 
     return (
         <AppLayout title={pageTitle} header={<PageHeader>{pageTitle}</PageHeader>}>
@@ -245,6 +302,7 @@ export default function Index() {
                                 <div className="flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
                                     <h4>Distributed Commissions</h4>
                                     <div className="flex flex-wrap items-center justify-end gap-2">
+                                        {dateFilterControls}
                                         <TextInput
                                             type="search"
                                             placeholder="Search commissions..."
@@ -388,6 +446,7 @@ export default function Index() {
                                 <div className="flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
                                     <h4>Withdrawal History</h4>
                                     <div className="flex flex-wrap items-center justify-end gap-2">
+                                        {dateFilterControls}
                                         <TextInput
                                             type="search"
                                             placeholder="Search withdrawals..."

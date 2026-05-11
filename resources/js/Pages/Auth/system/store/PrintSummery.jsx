@@ -36,6 +36,8 @@ export default function PrintSummery() {
                         <p>{title}</p>
                         <p>Tab: {isWithdrawalTab ? "Withdrawals" : "Commissions"}</p>
                         {filters?.search ? <p>Search: {filters.search}</p> : null}
+                        {filters?.start_date ? <p>Start Date: {filters.start_date}</p> : null}
+                        {filters?.end_date ? <p>End Date: {filters.end_date}</p> : null}
                     </div>
                     <hr className="my-2" />
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Modal from "../../components/Modal";
 import DangerButton from "../../components/DangerButton";
 import Hr from "../../components/Hr";
@@ -33,6 +33,33 @@ function CategoryItem({ item, depth = 0 }) {
             ) : null}
         </div>
     );
+}
+
+function categoryMatches(item, query) {
+    return String(item?.name ?? "").toLowerCase().includes(query);
+}
+
+function filterCategories(items, query) {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+        return items ?? [];
+    }
+
+    return (items ?? [])
+        .map((item) => {
+            const children = filterCategories(item.children ?? [], normalizedQuery);
+
+            if (categoryMatches(item, normalizedQuery) || children.length > 0) {
+                return {
+                    ...item,
+                    children,
+                };
+            }
+
+            return null;
+        })
+        .filter(Boolean);
 }
 
 function OverviewDiv({ title, children }) {
@@ -153,6 +180,16 @@ export default function Dashboard({
     activeNav,
 }) {
     const [open, setOpen] = useState(false);
+    const [categorySearch, setCategorySearch] = useState("");
+    const filteredCategories = useMemo(
+        () => filterCategories(categories, categorySearch),
+        [categories, categorySearch]
+    );
+
+    const closeCategoryModal = () => {
+        setOpen(false);
+        setCategorySearch("");
+    };
 
     return (
         <div>
@@ -227,8 +264,20 @@ export default function Dashboard({
                     </ResponsiveNavLink>
                 </div>
 
-                <Modal show={open} onClose={() => setOpen(false)}>
-                    <div className="p-3 border-b">Explore Category</div>
+                <Modal show={open} onClose={closeCategoryModal}>
+                    <div className="p-3 border-b flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>Explore Category</div>
+                        <input
+                            type="search"
+                            value={categorySearch}
+                            onChange={(event) =>
+                                setCategorySearch(event.target.value)
+                            }
+                            placeholder="Search category"
+                            className="w-full sm:w-56 rounded border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500"
+                            autoComplete="off"
+                        />
+                    </div>
                     <div className="p-3 text-sm text-gray-600">
                         <div className="mb-2">
                             <NavLink
@@ -238,13 +287,19 @@ export default function Dashboard({
                                 View All Products
                             </NavLink>
                         </div>
-                        {(categories ?? []).map((item) => (
-                            <CategoryItem key={item.id} item={item} />
-                        ))}
+                        {filteredCategories.length > 0 ? (
+                            filteredCategories.map((item) => (
+                                <CategoryItem key={item.id} item={item} />
+                            ))
+                        ) : (
+                            <div className="py-6 text-center text-gray-500">
+                                No category found.
+                            </div>
+                        )}
                     </div>
                     <hr className="my-1" />
                     <div className="flex justify-end items-center p-3">
-                        <DangerButton onClick={() => setOpen(false)}>
+                        <DangerButton onClick={closeCategoryModal}>
                             close
                         </DangerButton>
                     </div>

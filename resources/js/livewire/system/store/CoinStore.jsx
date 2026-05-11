@@ -49,7 +49,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                                 Comission Store
                             </NavLink>
                         </div>
-                        <div className="relative mt-2">
+                        {/* <div className="relative mt-2">
                             <button
                                 type="button"
                                 onClick={() => setOpen(true)}
@@ -59,7 +59,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                                     Withdraw
                                 </span>
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                     <div className="px-3 py-1 text-lg text-center text-green-900 lg:p-3 fw-bold">
                         <div className="px-2 font-bold border rounded">

@@ -29,6 +29,8 @@ class StoreController extends Controller
     {
         $activeTab = (string) $request->query('tab', 'commissions');
         $search = trim((string) $request->query('search', ''));
+        $startDate = $this->dateQueryValue($request, 'start_date');
+        $endDate = $this->dateQueryValue($request, 'end_date');
         $tabs = ['commissions', 'withdrawals'];
 
         $metrics = $this->buildStoreMetrics();
@@ -52,7 +54,8 @@ class StoreController extends Controller
 
         $commissions = DistributeComissions::query()
             ->with('user')
-            ->whereIn('info', ['Store Commission', 'Developer Commission', 'Management Commission'])
+            ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
+            ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
                     $builder
@@ -74,6 +77,8 @@ class StoreController extends Controller
         $withdrawals = Withdraw::query()
             ->with('user')
             ->where('type', 'debit')
+            ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
+            ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
             ->when($search !== '', fn ($query) => $this->applyWithdrawSearch($query, $search))
             ->latest('id')
             ->paginate(20)
@@ -89,6 +94,8 @@ class StoreController extends Controller
             'filters' => [
                 'tab' => in_array($activeTab, $tabs, true) ? $activeTab : 'commissions',
                 'search' => $search,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
             ],
             'columns1' => $columns1,
             'columns2' => $columns2,
@@ -161,6 +168,8 @@ class StoreController extends Controller
             'printUrl' => route('system.store.print', [
                 'tab' => in_array($activeTab, $tabs, true) ? $activeTab : 'commissions',
                 'search' => $search,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
             ]),
         ]);
     }
@@ -169,12 +178,15 @@ class StoreController extends Controller
     {
         $activeTab = (string) $request->query('tab', 'commissions');
         $search = trim((string) $request->query('search', ''));
+        $startDate = $this->dateQueryValue($request, 'start_date');
+        $endDate = $this->dateQueryValue($request, 'end_date');
         $tabs = ['commissions', 'withdrawals'];
         $activeTab = in_array($activeTab, $tabs, true) ? $activeTab : 'commissions';
 
         $commissions = DistributeComissions::query()
             ->with('user')
-            ->whereIn('info', ['Store Commission', 'Developer Commission', 'Management Commission'])
+            ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
+            ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
                     $builder
@@ -195,6 +207,8 @@ class StoreController extends Controller
         $withdrawals = Withdraw::query()
             ->with('user')
             ->where('type', 'debit')
+            ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
+            ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
             ->when($search !== '', fn ($query) => $this->applyWithdrawSearch($query, $search))
             ->latest('id')
             ->get();
@@ -206,6 +220,8 @@ class StoreController extends Controller
             'filters' => [
                 'tab' => $activeTab,
                 'search' => $search,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
             ],
             'commissions' => $commissions->values()->map(function (DistributeComissions $item, int $index) use ($commissionStoreMap) {
                 $store = $this->formatStoreLabel($commissionStoreMap[$item->id] ?? null);
@@ -717,7 +733,7 @@ class StoreController extends Controller
         }
 
         return (float) DistributeComissions::query()
-            ->whereIn('info', ['Store Commission', 'Developer Commission', 'Management Commission'])
+            ->whereIn('info', $this->storeDistributionInfoTypes())
             ->where('confirmed', true)
             ->sum('amount');
     }
@@ -729,7 +745,7 @@ class StoreController extends Controller
         }
 
         $query = DistributeComissions::query()
-            ->whereIn('info', ['Store Commission', 'Developer Commission', 'Management Commission'])
+            ->whereIn('info', $this->storeDistributionInfoTypes())
             ->where('confirmed', true);
 
         if (Schema::hasColumn('distribute_comissions', 'store_id') && !empty($store['id'])) {
@@ -739,6 +755,11 @@ class StoreController extends Controller
         }
 
         return (float) $query->sum('amount');
+    }
+
+    private function storeDistributionInfoTypes(): array
+    {
+        return ['Store Commission', 'Developer Commission', 'Management Commission'];
     }
 
     private function lockBalance(): ?array
@@ -904,6 +925,25 @@ class StoreController extends Controller
         return method_exists($items, 'getCollection')
             ? $items->getCollection()
             : collect($items);
+    }
+
+    private function dateQueryValue(Request $request, string $key): string
+    {
+        $value = trim((string) $request->input($key, ''));
+
+        if ($value === '') {
+            return '';
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}/', $value, $matches) !== 1) {
+            return '';
+        }
+
+        try {
+            return Carbon::createFromFormat('Y-m-d', $matches[0])->format('Y-m-d');
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     private function approvedPartnershipUsers(string $modelClass)

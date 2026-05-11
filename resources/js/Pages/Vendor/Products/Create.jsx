@@ -50,6 +50,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
     const [videoPreview, setVideoPreview] = useState(null);
     const [metaThumbPreview, setMetaThumbPreview] = useState(null);
     const [newImagePreviews, setNewImagePreviews] = useState([]);
+    const categoryItems = useMemo(() => flattenCategories(categories), [categories]);
 
     useEffect(() => {
         let isMounted = true;
@@ -171,8 +172,6 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         });
     };
 
-    const categoryOptions = useMemo(() => renderCategoryOptions(categories), [categories]);
-
     return (
         <AppLayout title="Add Products" header={<PageHeader>Add Products</PageHeader>}>
             <Head title="Add Products" />
@@ -232,14 +231,13 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                     errors={form.errors}
                                     labelWidth={''}
                                 >
-                                    <select
-                                        className="border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    <SearchableCategorySelect
+                                        categories={categoryItems}
                                         value={form.data.category_id}
-                                        onChange={(e) => form.setData("category_id", e.target.value)}
-                                    >
-                                        <option value=""> -- Chose an category -- </option>
-                                        {categoryOptions}
-                                    </select>
+                                        onChange={(categoryId) =>
+                                            form.setData("category_id", categoryId)
+                                        }
+                                    />
                                 </InputFile>
                             </SectionInner>
                         </Section>
@@ -604,35 +602,85 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
     );
 }
 
-function renderCategoryOptions(categories = [], depth = 0) {
+function SearchableCategorySelect({ categories = [], value, onChange }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState("");
+    const selectedCategory = categories.find(
+        (category) => String(category.id) === String(value)
+    );
+    const visibleValue = isOpen ? search : selectedCategory?.label ?? "";
+    const filteredCategories = categories.filter((category) =>
+        category.searchText.includes(search.trim().toLowerCase())
+    );
+
+    const chooseCategory = (category) => {
+        onChange(category.id);
+        setSearch("");
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative">
+            <input
+                type="text"
+                value={visibleValue}
+                onFocus={() => {
+                    setSearch("");
+                    setIsOpen(true);
+                }}
+                onChange={(event) => {
+                    setSearch(event.target.value);
+                    onChange("");
+                    setIsOpen(true);
+                }}
+                onBlur={() => {
+                    window.setTimeout(() => {
+                        setSearch("");
+                        setIsOpen(false);
+                    }, 150);
+                }}
+                placeholder="-- Chose an category --"
+                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                autoComplete="off"
+            />
+
+            {isOpen && (
+                <div className="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                    {filteredCategories.length > 0 ? (
+                        filteredCategories.map((category) => (
+                            <button
+                                key={category.id}
+                                type="button"
+                                className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100"
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => chooseCategory(category)}
+                            >
+                                {category.label}
+                            </button>
+                        ))
+                    ) : (
+                        <div className="px-3 py-4 text-center text-sm text-gray-500">
+                            No category found.
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function flattenCategories(categories = [], depth = 0) {
     return categories.flatMap((category) => {
-        const label = `${depth === 0 ? "" : "-".repeat(depth * 2) + " "}${category.name}`;
-        const options = [
-            <option key={category.id} value={category.id}>
-                {label}
-            </option>,
+        const prefix = depth === 0 ? "" : `${"-".repeat(depth * 2)} `;
+        const current = {
+            id: category.id,
+            label: `${prefix}${category.name}`,
+            searchText: String(category.name ?? "").toLowerCase(),
+        };
+
+        return [
+            current,
+            ...flattenCategories(category.children ?? [], depth + 1),
         ];
-
-        if (Array.isArray(category.children) && category.children.length > 0) {
-            category.children.forEach((child) => {
-                options.push(
-                    <option key={child.id} value={child.id}>
-                        {`${"-".repeat((depth + 1) * 2)} ${child.name}`}
-                    </option>
-                );
-
-                if (Array.isArray(child.children) && child.children.length > 0) {
-                    child.children.forEach((grandChild) => {
-                        options.push(
-                            <option key={grandChild.id} value={grandChild.id}>
-                                {`${"-".repeat((depth + 2) * 2)} ${grandChild.name}`}
-                            </option>
-                        );
-                    });
-                }
-            });
-        }
-
-        return options;
     });
 }
