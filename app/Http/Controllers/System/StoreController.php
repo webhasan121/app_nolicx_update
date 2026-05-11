@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\UserWalletController;
 use App\Models\DeveloperAccess;
 use App\Models\DistributeComissions;
+use App\Models\Level;
+use App\Models\LevelHistory;
 use App\Models\ManagementAccess;
 use App\Models\Store;
 use App\Models\TakeComissions;
@@ -39,11 +42,12 @@ class StoreController extends Controller
             ['label' => 'Current Balance', 'value' => $store['current_balance'] ?? 0],
             ['label' => 'Developer Share', 'value' => $store['developer_balance'] ?? 0],
             ['label' => 'Management Share', 'value' => $store['management_balance'] ?? 0],
+            ['label' => 'Star System Share', 'value' => $store['star_system_balance'] ?? 0],
             ['label' => 'Previous Total', 'value' => $targetStore['total_balance'] ?? 0],
             ['label' => 'Last Distributed', 'value' => $targetStore['distribute_balance'] ?? 0],
         ];
 
-        $columns1 = ['SL', 'Name of User', 'Store Info', 'Given', 'Range', 'Purpose', 'A/C'];
+        $columns1 = ['SL', 'Name of User', 'Store Info', 'Given', 'Range', 'Purpose', 'Distributed At', 'A/C'];
         $columns2 = ['SL', 'Name of User', 'Store', 'Server Cost', 'Donation', 'Method', 'Status', 'Requested At', 'A/C'];
 
         $commissions = DistributeComissions::query()
@@ -55,6 +59,7 @@ class StoreController extends Controller
                         ->where('info', 'like', '%' . $search . '%')
                         ->orWhere('amount', 'like', '%' . $search . '%')
                         ->orWhere('range', 'like', '%' . $search . '%')
+                        ->orWhere('created_at', 'like', '%' . $search . '%')
                         ->orWhereHas('user', function ($userQuery) use ($search) {
                             $userQuery
                                 ->where('name', 'like', '%' . $search . '%')
@@ -115,6 +120,7 @@ class StoreController extends Controller
                         'amount' => number_format((float) $item->amount, 2) . '/-',
                         'range' => number_format((float) $item->range, 2) . '%',
                         'info' => $item->info ?? '',
+                        'created_at' => $item->created_at?->format('M d, Y'),
                     ];
                 })->all(),
                 'links' => collect($commissions->linkCollection())->map(function ($link) {
@@ -175,6 +181,7 @@ class StoreController extends Controller
                         ->where('info', 'like', '%' . $search . '%')
                         ->orWhere('amount', 'like', '%' . $search . '%')
                         ->orWhere('range', 'like', '%' . $search . '%')
+                        ->orWhere('created_at', 'like', '%' . $search . '%')
                         ->orWhereHas('user', function ($userQuery) use ($search) {
                             $userQuery
                                 ->where('name', 'like', '%' . $search . '%')
@@ -210,6 +217,7 @@ class StoreController extends Controller
                     'amount' => number_format((float) $item->amount, 2) . '/-',
                     'range' => number_format((float) $item->range, 2) . '%',
                     'info' => $item->info ?? '',
+                    'created_at' => $item->created_at?->format('M d, Y'),
                 ];
             })->all(),
             'withdrawals' => $withdrawals->values()->map(function (Withdraw $withdraw, int $index) {
@@ -254,11 +262,7 @@ class StoreController extends Controller
 
         $developers = $this->approvedPartnershipUsers(DeveloperAccess::class);
         $managers = $this->approvedPartnershipUsers(ManagementAccess::class);
-
-        $levelUsers = User::with('currentLevel')
-            ->where('current_level_id', '!=', 1)
-            ->whereHas('currentLevel')
-            ->get();
+        $levelUsers = $this->refreshQualifiedLevelUsers();
 
         DB::transaction(function () use (
             $developers,
@@ -287,12 +291,34 @@ class StoreController extends Controller
                 }
             }
 
-            $totalBonus = $levelUsers->sum(fn ($u) => $u->currentLevel->bonus ?? 0);
-            if ($totalBonus > 0) {
-                foreach ($levelUsers as $user) {
+            $starShares = $levelUsers
+                ->map(function (User $user) use ($levelPool) {
                     $percent = (float) ($user->currentLevel->bonus ?? 0);
-                    $share = ($percent / $totalBonus) * $levelPool;
-                    $this->insertCommission($user->id, $percent, 'Store Commission', $targetStore['id'], $share);
+
+                    return [
+                        'user' => $user,
+                        'percent' => $percent,
+                        'amount' => round(($levelPool * $percent) / 100, 8),
+                    ];
+                })
+                ->filter(fn ($share) => $share['amount'] > 0)
+                ->values();
+
+            $rawStarTotal = (float) $starShares->sum('amount');
+            $scale = $rawStarTotal > $levelPool && $levelPool > 0
+                ? $levelPool / $rawStarTotal
+                : 1;
+
+            foreach ($starShares as $shareData) {
+                $share = round($shareData['amount'] * $scale, 8);
+                if ($share > 0) {
+                    $this->insertCommission(
+                        $shareData['user']->id,
+                        $shareData['percent'],
+                        'Store Commission',
+                        $targetStore['id'],
+                        $share
+                    );
                     $totalDistributed += $share;
                 }
             }
@@ -499,7 +525,7 @@ class StoreController extends Controller
         $now = now();
         $developerPercentage = (float) SystemSettings::get('DEVELOPER_PERCENTAGE', '0');
         $managementPercentage = (float) SystemSettings::get('MANAGEMENT_PERCENTAGE', '0');
-
+        $starSystemPercentage = Level::query()->where('status', true)->max('bonus') ?? 0;
         $currentStart = $this->settlementStart($now);
         $previousStart = $currentStart->copy()->subMonthNoOverflow();
 
@@ -520,6 +546,7 @@ class StoreController extends Controller
             'percentages' => [
                 'developer' => $developerPercentage,
                 'management' => $managementPercentage,
+                'star_system' => $starSystemPercentage,
             ],
         ];
     }
@@ -555,6 +582,7 @@ class StoreController extends Controller
         $currentBalance = max(0, round($totalBalance - $distributedBalance, 2));
         $developerBalance = round(($totalBalance * $developerPercentage) / 100, 2);
         $managementBalance = round(($totalBalance * $managementPercentage) / 100, 2);
+        $starSystemBalance = max(0, round($totalBalance - $developerBalance - $managementBalance, 2));
 
         if (!empty($store)) {
             $store['total_balance'] = $totalBalance;
@@ -562,6 +590,7 @@ class StoreController extends Controller
             $store['distribute_balance'] = $distributedBalance;
             $store['developer_balance'] = $developerBalance;
             $store['management_balance'] = $managementBalance;
+            $store['star_system_balance'] = $starSystemBalance;
             $store['label'] = $start->format('F Y');
             $store['range_label'] = $start->format('d M Y') . ' - ' . $end->format('d M Y');
         }
@@ -728,6 +757,10 @@ class StoreController extends Controller
 
     private function insertCommission(int $userId, ?float $percentage, string $info, int $storeId, float $amount): void
     {
+        if ($amount <= 0) {
+            return;
+        }
+
         $data = [
             'user_id' => $userId,
             'confirmed' => 1,
@@ -743,6 +776,105 @@ class StoreController extends Controller
         }
 
         DB::table('distribute_comissions')->insert($data);
+        UserWalletController::add($userId, $amount);
+    }
+
+    private function refreshQualifiedLevelUsers()
+    {
+        $levels = Level::query()
+            ->where('status', true)
+            ->orderBy('req_users')
+            ->orderBy('vip_users')
+            ->orderBy('id')
+            ->get();
+
+        if ($levels->isEmpty()) {
+            return collect();
+        }
+
+        $userRefs = DB::table('user_has_refs')
+            ->select('user_id', 'ref')
+            ->whereNotNull('ref')
+            ->get()
+            ->keyBy('user_id');
+
+        if ($userRefs->isEmpty()) {
+            return collect();
+        }
+
+        $referenceCodes = $userRefs->pluck('ref')->filter()->values();
+        $referralCounts = User::query()
+            ->select('reference', DB::raw('COUNT(*) as total_refs'))
+            ->whereIn('reference', $referenceCodes)
+            ->groupBy('reference')
+            ->pluck('total_refs', 'reference');
+
+        $vipReferralCounts = $this->vipReferralCounts($referenceCodes);
+        $qualified = collect();
+
+        User::query()
+            ->with('currentLevel')
+            ->whereIn('id', $userRefs->keys())
+            ->chunkById(200, function ($users) use ($levels, $userRefs, $referralCounts, $vipReferralCounts, $qualified) {
+                foreach ($users as $user) {
+                    $ref = $userRefs[$user->id]->ref ?? null;
+                    if (!$ref) {
+                        continue;
+                    }
+
+                    $reqUsers = (int) ($referralCounts[$ref] ?? 0);
+                    $vipUsers = (int) ($vipReferralCounts[$ref] ?? 0);
+                    $matchedLevel = $levels
+                        ->filter(fn (Level $level) => $reqUsers >= (int) $level->req_users && $vipUsers >= (int) $level->vip_users)
+                        ->sortByDesc('id')
+                        ->first();
+
+                    if (!$matchedLevel) {
+                        continue;
+                    }
+
+                    if ((int) $user->current_level_id !== (int) $matchedLevel->id) {
+                        LevelHistory::create([
+                            'user_id' => $user->id,
+                            'from_level_id' => $user->current_level_id,
+                            'to_level_id' => $matchedLevel->id,
+                        ]);
+
+                        $user->forceFill(['current_level_id' => $matchedLevel->id])->save();
+                        $user->setRelation('currentLevel', $matchedLevel);
+                    }
+
+                    if ((float) $matchedLevel->bonus > 0) {
+                        $qualified->push($user);
+                    }
+                }
+            });
+
+        return $qualified->values();
+    }
+
+    private function vipReferralCounts($referenceCodes)
+    {
+        if (Schema::hasColumn('users', 'vip')) {
+            return User::query()
+                ->select('reference', DB::raw('COUNT(*) as total_vips'))
+                ->whereIn('reference', $referenceCodes)
+                ->where('vip', true)
+                ->groupBy('reference')
+                ->pluck('total_vips', 'reference');
+        }
+
+        if (!Schema::hasTable('vips') || !Schema::hasColumn('vips', 'refer')) {
+            return collect();
+        }
+
+        return DB::table('vips')
+            ->join('user_has_refs', 'vips.refer', '=', 'user_has_refs.user_id')
+            ->whereIn('user_has_refs.ref', $referenceCodes)
+            ->where('vips.status', 1)
+            ->select('user_has_refs.ref', DB::raw('COUNT(*) as total_vips'))
+            ->groupBy('user_has_refs.ref')
+            ->pluck('total_vips', 'user_has_refs.ref');
     }
 
     private function buildStoreMap($commissions): array

@@ -163,6 +163,8 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
     }, [form.data.newImage]);
 
     const submit = (e) => {
+        console.log("form", form);
+
         e.preventDefault();
         form.post(route("vendor.products.store"), {
             forceFormData: true,

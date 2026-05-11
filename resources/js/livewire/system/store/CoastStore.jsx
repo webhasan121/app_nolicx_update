@@ -40,7 +40,10 @@ export default function CoastStore({ store = 0 }) {
                             <NavLink
                                 href="#"
                                 className="flex items-center border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
-                                onClick={(e) => e.preventDefault()}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setOpen(true);
+                                }}
                             >
                                 <i className="fas fa-store text-md pe-2"></i>
                                 Server Cost

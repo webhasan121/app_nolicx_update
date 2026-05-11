@@ -5,18 +5,18 @@ import NavLink from "../NavLink";
 
 export default function Footer() {
     const email = "support@example.com"; // config('app.support_mail')
-    const { auth, global } = usePage().props;
+    const { auth, global, appConfig } = usePage().props;
 
     const branches = global?.branches || [];
 
-
+    const { support_mail, playstore_link, dbid_no, trade_license,whatsapp_no } = appConfig;
 
     const widgets = [
         {
             head: "Menu",
             menu: [
                 { title: "About Us", route: "/page/about-us" },
-                { title: "Contact Us", route: "/page/about-us" },
+                { title: "Contact Us", route: "/page/ContactUS" },
                 { title: "Products", route: "/products" },
                 { title: "Categories", route: "/category" },
             ],
@@ -54,10 +54,10 @@ export default function Footer() {
         e.preventDefault();
 
         if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
-            window.location.href = `mailto:${email}`;
+            window.location.href = `mailto:${support_mail}`;
         } else {
             window.open(
-                `https://mail.google.com/mail/?view=cm&fs=1&to=${email}`,
+                `https://mail.google.com/mail/?view=cm&fs=1&to=${support_mail}`,
                 "_blank",
             );
         }
@@ -85,14 +85,14 @@ export default function Footer() {
                             </div>
                         </Link>
 
-                        <Link
-                            href="https://play.google.com"
+                        <a
+                            href={playstore_link}
                             className="w-[150px] md:w-[225px] lg:w-full border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                             target="_blank"
                             rel="noreferrer"
                         >
                             <img src="/playstore.png" alt="playstore" />
-                        </Link>
+                        </a>
                     </div>
 
                     {/* Widgets */}
@@ -140,11 +140,11 @@ export default function Footer() {
                             <div className="space-y-4">
                                 <p>
                                     <strong>DBID No</strong> :{" "}
-                                    <span>123456</span>
+                                    <span>{dbid_no}</span>
                                 </p>
                                 <p>
                                     <strong>Trade License</strong> :{" "}
-                                    <span>TR-987654</span>
+                                    <span>{trade_license}</span>
                                 </p>
                             </div>
                         </div>
@@ -171,8 +171,8 @@ export default function Footer() {
                                 </p>
 
                                 <p className="my-2 text-sm">
-                                    <i className="w-5 mr-2 fa-solid fa-phone"></i>:{" "}
-                                    {branch.phone}
+                                    <i className="w-5 mr-2 fa-solid fa-phone"></i>
+                                    : {branch.phone}
                                 </p>
 
                                 <p className="text-sm">

@@ -36,8 +36,14 @@ export default function Index() {
     } = usePage().props;
 
     const targetStore = storeMeta?.target ?? {};
-    const canDistribute = targetStore && targetStore.generate === false;
+    const canDistribute = Boolean(targetStore?.id) && !Boolean(Number(targetStore.generate ?? 0));
     const [search, setSearch] = useState(filters.search ?? "");
+    const [distributing, setDistributing] = useState(false);
+    const shareFilters = {
+        "Developer Share": "Developer Commission",
+        "Management Share": "Management Commission",
+        "Star System Share": "Store Commission",
+    };
 
     const requestStore = ({
         nextTab = activeTab,
@@ -89,7 +95,33 @@ export default function Index() {
     };
 
     const distribute = () => {
-        router.post(route("system.store.distribute"), {}, { preserveScroll: true });
+        if (!window.confirm("Distribute the previous month commission to qualified users?")) {
+            return;
+        }
+
+        setDistributing(true);
+        router.post(
+            route("system.store.distribute"),
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setDistributing(false),
+            }
+        );
+    };
+
+    const openShareList = (label) => {
+        const nextSearch = shareFilters[label];
+
+        if (!nextSearch) {
+            return;
+        }
+
+        setSearch(nextSearch);
+        requestStore({
+            nextTab: "commissions",
+            nextSearch,
+        });
     };
 
     const activeCollection = activeTab === "withdrawals" ? withdrawals : commissions;
@@ -127,12 +159,38 @@ export default function Index() {
     return (
         <AppLayout title={pageTitle} header={<PageHeader>{pageTitle}</PageHeader>}>
             <Container>
+                <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-800">{pageTitle}</h3>
+                        {targetStore?.range_label ? (
+                            <p className="text-sm text-gray-500">
+                                Previous distribution period: {targetStore.range_label}
+                            </p>
+                        ) : null}
+                    </div>
+                    {canDistribute ? (
+                        <button
+                            type="button"
+                            onClick={distribute}
+                            disabled={distributing}
+                            className="inline-flex items-center justify-center rounded-md bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {distributing ? "Distributing..." : "Distribute"}
+                        </button>
+                    ) : (
+                        <span className="inline-flex items-center justify-center rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700">
+                            Generated
+                        </span>
+                    )}
+                </div>
                 <section className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                     {widgets.map((widget, index) => (
                         <OverviewDiv
                             key={`${widget.label}-${index}`}
                             title={widget.label}
                             content={widget.value ?? 0}
+                            onClick={shareFilters[widget.label] ? () => openShareList(widget.label) : null}
+                            titleText={shareFilters[widget.label] ? `View ${shareFilters[widget.label]} list` : ""}
                         />
                     ))}
                 </section>
@@ -212,12 +270,15 @@ export default function Index() {
                                             <button
                                                 type="button"
                                                 onClick={distribute}
-                                                className="inline-block bg-blue-500 hover:bg-blue-600 rounded-md px-4 pb-1"
+                                                disabled={distributing}
+                                                className="inline-block bg-blue-500 hover:bg-blue-600 rounded-md px-4 py-1 disabled:cursor-not-allowed disabled:opacity-60"
                                             >
-                                                <span className="text-sm text-white">Distribute</span>
+                                                <span className="text-sm text-white">
+                                                    {distributing ? "Distributing..." : "Distribute"}
+                                                </span>
                                             </button>
                                         ) : (
-                                            <div className="inline-block bg-blue-500 hover:bg-blue-600 rounded-md px-4 pb-1">
+                                            <div className="inline-block bg-blue-500 hover:bg-blue-600 rounded-md px-4 py-1">
                                                 <span className="text-sm text-white">Generated</span>
                                             </div>
                                         )}
@@ -256,6 +317,7 @@ export default function Index() {
                                                     <td className="px-4 py-3 font-medium text-gray-700">{item.amount}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{item.range}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{item.info}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-700">{item.created_at}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">
                                                         <span>-</span>
                                                     </td>
@@ -263,7 +325,7 @@ export default function Index() {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="7" className="px-4 py-6 text-center text-gray-500">
+                                                <td colSpan={columns1.length} className="px-4 py-6 text-center text-gray-500">
                                                     <span>No histories found.</span>
                                                 </td>
                                             </tr>

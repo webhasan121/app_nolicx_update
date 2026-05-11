@@ -1,7 +1,14 @@
-export default function Div({ title = "Overview", content = " 0 / 0" }) {
+export default function Div({ title = "Overview", content = " 0 / 0", onClick = null, titleText = "" }) {
+    const Component = onClick ? "button" : "div";
+
     return (
-        <div
-            className="rounded d-block shadow p-3 relative overflow-hidden"
+        <Component
+            type={onClick ? "button" : undefined}
+            onClick={onClick ?? undefined}
+            title={titleText}
+            className={`rounded d-block shadow p-3 relative overflow-hidden text-left w-full ${
+                onClick ? "cursor-pointer transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-2" : ""
+            }`}
             style={{ backgroundColor: "orange", zIndex: 1, color: "white" }}
         >
             <style
@@ -38,6 +45,6 @@ export default function Div({ title = "Overview", content = " 0 / 0" }) {
             <div className="text-end text-2xl">{content}</div>
 
             <div className="div_wrapper"></div>
-        </div>
+        </Component>
     );
 }

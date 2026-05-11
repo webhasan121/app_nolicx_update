@@ -176,6 +176,12 @@ class LevelController extends Controller
                 'fromLevel:id,name',
                 'toLevel:id,name',
             ])
+            ->whereNotNull('user_id')
+            ->whereNotNull('from_level_id')
+            ->whereNotNull('to_level_id')
+            ->whereHas('user')
+            ->whereHas('fromLevel')
+            ->whereHas('toLevel')
             ->latest('id')
             ->when(!empty($search), function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {

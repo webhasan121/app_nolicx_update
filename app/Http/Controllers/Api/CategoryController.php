@@ -22,9 +22,9 @@ class CategoryController extends Controller
 
         $categories = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($search, $limit) {
             return Category::query()
-                ->select('id', 'name', 'slug', 'image', 'belongs_to', 'description', 'status')
+                ->select('id', 'name', 'slug', 'image', 'belongs_to')
                 ->with(['children' => function ($query) {
-                    $query->select('id', 'name', 'slug', 'image', 'belongs_to', 'description', 'status')
+                    $query->select('id', 'name', 'slug', 'image', 'belongs_to')
                         ->orderBy('name');
                 }])
                 ->where(function ($query) {

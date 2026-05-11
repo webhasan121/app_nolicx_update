@@ -169,6 +169,8 @@ class ProductsController extends Controller
                 'description' => $data->description,
                 'thumbnail' => $data->thumbnail,
                 'thumbnail_url' => $data->thumbnail ? asset('storage/' . $data->thumbnail) : null,
+                'video' => $data->video,
+                'video_url' => $data->video ? asset('storage/' . $data->video) : null,
                 'meta_title' => $data->meta_title,
                 'meta_description' => $data->meta_description,
                 'keyword' => $data->keyword,
@@ -250,6 +252,7 @@ class ProductsController extends Controller
         $data->unit = $payload['unit'] ?? $data->unit;
         $data->description = $payload['description'] ?? $data->description;
         $data->thumbnail = $this->handleImageUpload($request->file('thumb'), 'products', $data->thumbnail);
+        $data->video = $this->handleImageUpload($request->file('video'), 'products-videos', $data->video);
         $data->meta_title = $payload['meta_title'] ?? $data->meta_title;
         $data->meta_description = $payload['meta_description'] ?? $data->meta_description;
         $data->keyword = $payload['keyword'] ?? $data->keyword;
