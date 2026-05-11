@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class syncOrder extends Model
 {
+    protected $guarded = [];
 
     // booted 
     protected static function booted(): void

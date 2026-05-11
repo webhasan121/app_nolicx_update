@@ -242,6 +242,10 @@ class View extends Component
         //     ]
         // )->exists();
 
+        $shipping = strtolower((string) $this->delevery) === 'hand'
+            ? 0
+            : ($this->area_condition == 'Dhaka' ? 80 : 120);
+
         $order = order::create(
             [
                 'user_id' => auth()->user()->id,
@@ -263,7 +267,7 @@ class View extends Component
                 'area_condition' => $this->area_condition,
                 'delevery' => $this->delevery,
                 'number' => $this->phone,
-                'shipping' => $this->area_condition == 'Dhaka' ? 80 : 120,
+                'shipping' => $shipping,
             ]
         );
 

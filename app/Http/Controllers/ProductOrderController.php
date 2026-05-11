@@ -127,12 +127,15 @@ class ProductOrderController extends Controller
         }
 
         $price = $product->offer_type ? $product->discount : $product->price;
-        $shipping = $data['delevery'] === 'hand'
+        $shipping = strtolower((string) $data['delevery']) === 'hand'
             ? 0
             : (($data['area_condition'] ?? 'Dhaka') === 'Dhaka'
                 ? $product->shipping_in_dhaka
                 : $product->shipping_out_dhaka);
         $total = $price * (int) $data['quantity'];
+
+
+
 
         $order = Order::create([
             'user_id' => auth()->id(),

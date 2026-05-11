@@ -157,7 +157,7 @@ export default function Shops({
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(true)}
-                                    className="px-3 py-2 text-xs bg-white border rounded ms-1"
+                                    className="inline-flex px-3 py-2 text-xs bg-white border rounded ms-1"
                                 >
                                     {location || auth.user.city || "ANY"}{" "}
                                     <i className="ps-2 fas fa-chevron-down"></i>

@@ -13,7 +13,16 @@ export default function InputField({
     inputClass = "w-full",
     className = "",
     onChange,
+    onClearError,
 }) {
+    const handleChange = (e) => {
+        onChange?.(e);
+
+        if (error) {
+            onClearError?.();
+        }
+    };
+
     return (
         <div className={`my-3 ${className}`}>
             <div style={{ width: labelWidth }}>
@@ -31,7 +40,7 @@ export default function InputField({
                 name={name}
                 className={inputClass}
                 value={value || ""}
-                onChange={onChange}
+                onChange={handleChange}
                 placeholder={label}
                 required={required}
                 disabled={disabled}

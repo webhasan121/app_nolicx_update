@@ -131,6 +131,9 @@ class CartCheckoutController extends Controller
 
                 $qty = 0;
                 $total = 0;
+                $shipping = strtolower((string) $request->delevery) === 'hand'
+                    ? 0
+                    : ($request->area_condition == 'Dhaka' ? 80 : 120);
 
                 $order = Order::create([
                     'user_id' => $user->id,
@@ -149,7 +152,7 @@ class CartCheckoutController extends Controller
                     'target_area' => $request->upozila,
                     'road_no' => $request->road_no,
                     'house_no' => $request->house_no,
-                    'shipping' => $request->area_condition == 'Dhaka' ? 80 : 120,
+                    'shipping' => $shipping,
                 ]);
 
                 foreach ($items as $item) {

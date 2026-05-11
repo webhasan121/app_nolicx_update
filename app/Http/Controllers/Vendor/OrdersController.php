@@ -13,6 +13,7 @@ use App\Models\syncOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -350,55 +351,61 @@ class OrdersController extends Controller
             return redirect()->back()->with('error', 'Main product not found');
         }
 
-        $newOrder = Order::create([
-            'user_id' => auth()->id(),
-            'user_type' => 'reseller',
-            'belongs_to' => $reselProduct->belongs_to,
-            'belongs_to_type' => 'vendor',
-            'quantity' => $cartOrder->quantity,
-            'total' => $cartOrder->quantity * $cartOrder->price,
-            'status' => 'Pending',
-            'name' => 'Resel',
-            'district' => $data->district,
-            'upozila' => $data->upozila,
-            'target_area' => $data->target_area,
-            'location' => $data->location,
-            'house_no' => $data->house_no,
-            'road_no' => $data->road_no,
-            'area_condition' => $data->area_condition,
-            'delevery' => $payload['delevery'],
-            'number' => $data->number,
-            'shipping' => $data->area_condition === 'Dhaka' ? 80 : 120,
-        ]);
+        DB::transaction(function () use ($data, $payload, $cartOrder, $reselProduct, $mainProduct) {
+            $shipping = strtolower((string) $payload['delevery']) === 'hand'
+                ? 0
+                : ($data->area_condition === 'Dhaka' ? 80 : 120);
 
-        $newCartOrder = CartOrder::create([
-            'user_id' => auth()->id(),
-            'user_type' => 'reseller',
-            'belongs_to' => intval($reselProduct->belongs_to),
-            'belongs_to_type' => 'vendor',
-            'order_id' => $newOrder->id,
-            'product_id' => $reselProduct->parent_id,
-            'quantity' => $cartOrder->quantity,
-            'price' => $cartOrder->price,
-            'size' => $cartOrder->size,
-            'total' => $cartOrder->quantity * $cartOrder->price,
-            'buying_price' => $mainProduct->buying_price,
-            'status' => 'Pending',
-        ]);
+            $newOrder = Order::create([
+                'user_id' => auth()->id(),
+                'user_type' => 'reseller',
+                'belongs_to' => $reselProduct->belongs_to,
+                'belongs_to_type' => 'vendor',
+                'quantity' => $cartOrder->quantity,
+                'total' => $cartOrder->quantity * $cartOrder->price,
+                'status' => 'Pending',
+                'name' => 'Resel',
+                'district' => $data->district,
+                'upozila' => $data->upozila,
+                'target_area' => $data->target_area,
+                'location' => $data->location,
+                'house_no' => $data->house_no,
+                'road_no' => $data->road_no,
+                'area_condition' => $data->area_condition,
+                'delevery' => $payload['delevery'],
+                'number' => $data->number,
+                'shipping' => $shipping,
+            ]);
 
-        ProductComissionController::dispatchProductComissionsListeners($newOrder->id);
+            CartOrder::create([
+                'user_id' => auth()->id(),
+                'user_type' => 'reseller',
+                'belongs_to' => intval($reselProduct->belongs_to),
+                'belongs_to_type' => 'vendor',
+                'order_id' => $newOrder->id,
+                'product_id' => $reselProduct->parent_id,
+                'quantity' => $cartOrder->quantity,
+                'price' => $cartOrder->price,
+                'size' => $cartOrder->size,
+                'total' => $cartOrder->quantity * $cartOrder->price,
+                'buying_price' => $mainProduct->buying_price,
+                'status' => 'Pending',
+            ]);
 
-        syncOrder::create([
-            'user_id' => $data->user_id,
-            'user_order_id' => $data->id,
-            'user_cart_order_id' => $cartOrder->id,
-            'reseller_product_id' => $cartOrder->product_id,
-            'reseller_order_id' => $newOrder->id,
-            'vendor_product_id' => $reselProduct->id,
-            'reseller_id' => auth()->id(),
-            'vendor_id' => $reselProduct->belongs_to,
-            'status' => 'Pending',
-        ]);
+            ProductComissionController::dispatchProductComissionsListeners($newOrder->id);
+
+            syncOrder::create([
+                'user_id' => $data->user_id,
+                'user_order_id' => $data->id,
+                'user_cart_order_id' => $cartOrder->id,
+                'reseller_product_id' => $cartOrder->product_id,
+                'reseller_order_id' => $newOrder->id,
+                'vendor_product_id' => $reselProduct->id,
+                'reseller_id' => auth()->id(),
+                'vendor_id' => $reselProduct->belongs_to,
+                'status' => 'Pending',
+            ]);
+        });
 
         return redirect()->back()->with('success', 'Order synced successfully');
     }

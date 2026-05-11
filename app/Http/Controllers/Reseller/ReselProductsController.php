@@ -143,9 +143,13 @@ class ReselProductsController extends Controller
 
         $data = $request->validate($rules);
 
-        $shipping = $data['area_condition'] === 'Dhaka'
-            ? ($product->shipping_in_dhaka ?? 0)
-            : ($product->shipping_out_dhaka ?? 0);
+
+
+        $shipping = strtolower((string) $data['delevery']) === 'hand'
+            ? 0
+            : ($data['area_condition'] === 'Dhaka'
+                ? ($product->shipping_in_dhaka ?? 0)
+                : ($product->shipping_out_dhaka ?? 0));
 
         $order = Order::create([
             'user_id' => Auth::id(),
