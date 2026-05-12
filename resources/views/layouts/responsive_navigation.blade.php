@@ -118,8 +118,11 @@
 {{-- @endcan --}}
 
 {{-- @can('partnership_management') --}}
-<x-responsive-nav-link :href="route('system.partnership.management')" :active="request()->routeIs('system.partnership.management*')">
+<x-responsive-nav-link :href="route('system.partnership.management')" :active="request()->routeIs('system.partnership.management') || request()->routeIs('system.partnership.management.*')">
     <i class="fas fa-handshake pr-2 w-6"></i> {{ __('Management') }}
+</x-responsive-nav-link>
+<x-responsive-nav-link :href="route('system.partnership.management-team')" :active="request()->routeIs('system.partnership.management-team') || request()->routeIs('system.partnership.management-team.*')">
+    <i class="fas fa-users-cog pr-2 w-6"></i> {{ __('Management TM') }}
 </x-responsive-nav-link>
 {{-- @endcan --}}
 <x-hr />

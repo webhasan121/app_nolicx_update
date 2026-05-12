@@ -9,6 +9,7 @@ use App\Models\DistributeComissions;
 use App\Models\Level;
 use App\Models\LevelHistory;
 use App\Models\ManagementAccess;
+use App\Models\ManagementTeam;
 use App\Models\Store;
 use App\Models\TakeComissions;
 use App\Models\User;
@@ -45,7 +46,9 @@ class StoreController extends Controller
             ['label' => 'Current Balance', 'value' => $store['current_balance'] ?? 0],
             ['label' => 'Developer Share', 'value' => $store['developer_balance'] ?? 0],
             ['label' => 'Management Share', 'value' => $store['management_balance'] ?? 0],
+            ['label' => 'Management TM Share', 'value' => $store['management_team_balance'] ?? 0],
             ['label' => 'Star System Share', 'value' => $store['star_system_balance'] ?? 0],
+            ['label' => 'Total Share', 'value' => $store['total_share'] ?? 0],
             ['label' => 'Previous Total', 'value' => $targetStore['total_balance'] ?? 0],
             ['label' => 'Last Distributed', 'value' => $targetStore['distribute_balance'] ?? 0],
         ];
@@ -276,14 +279,17 @@ class StoreController extends Controller
 
         $developerPercentage = (float) ($metrics['percentages']['developer'] ?? 0);
         $managementPercentage = (float) ($metrics['percentages']['management'] ?? 0);
+        $managementTeamPercentage = (float) ($metrics['percentages']['management_team'] ?? 0);
         $starSystemPercentage = (float) ($metrics['percentages']['star_system'] ?? 0);
 
         $developerPool = round(($balance * $developerPercentage) / 100, 8);
         $managementPool = round(($balance * $managementPercentage) / 100, 8);
-        $levelPool = max(0, round($balance - $developerPool - $managementPool, 8));
+        $managementTeamPool = round(($balance * $managementTeamPercentage) / 100, 8);
+        $levelPool = max(0, round($balance - $developerPool - $managementPool - $managementTeamPool, 8));
 
         $developers = $this->approvedPartnershipUsers(DeveloperAccess::class);
         $managers = $this->approvedPartnershipUsers(ManagementAccess::class);
+        $managementTeams = $this->approvedPartnershipUsers(ManagementTeam::class);
         $levelUsers = $this->refreshQualifiedLevelUsers();
 
         DB::transaction(function () use (
@@ -292,10 +298,12 @@ class StoreController extends Controller
             $levelUsers,
             $developerPool,
             $managementPool,
+            $managementTeamPool,
             $levelPool,
             $targetStore,
             $developerPercentage,
             $managementPercentage,
+            $managementTeamPercentage,
             $starSystemPercentage
         ) {
             $totalDistributed = 0;
@@ -312,6 +320,14 @@ class StoreController extends Controller
                 $share = $managementPool / $managers->count();
                 foreach ($managers as $user) {
                     $this->insertCommission($user->id, $managementPercentage, 'Management Commission', $targetStore['id'], $share);
+                    $totalDistributed += $share;
+                }
+            }
+
+            if ($managementTeams->count() > 0) {
+                $share = $managementTeamPool / $managementTeams->count();
+                foreach ($managementTeams as $user) {
+                    $this->insertCommission($user->id, $managementTeamPercentage, 'Management TM Commission', $targetStore['id'], $share);
                     $totalDistributed += $share;
                 }
             }
@@ -550,12 +566,27 @@ class StoreController extends Controller
         $now = now();
         $developerPercentage = (float) SystemSettings::get('DEVELOPER_PERCENTAGE', '0');
         $managementPercentage = (float) SystemSettings::get('MANAGEMENT_PERCENTAGE', '0');
-        $starSystemPercentage = max(0, 100 - $developerPercentage - $managementPercentage);
+        $managementTeamPercentage = (float) SystemSettings::get('MANAGEMENT_TEAM_PERCENTAGE', '0');
+        $starSystemPercentage = max(0, 100 - $developerPercentage - $managementPercentage - $managementTeamPercentage);
         $currentStart = $this->settlementStart($now);
         $previousStart = $currentStart->copy()->subMonthNoOverflow();
 
-        $current = $this->buildPeriodStore($currentStart, $developerPercentage, $managementPercentage, true);
-        $previous = $this->buildPeriodStore($previousStart, $developerPercentage, $managementPercentage, false);
+        $current = $this->buildPeriodStore(
+            $currentStart,
+            $developerPercentage,
+            $managementPercentage,
+            $managementTeamPercentage,
+            $starSystemPercentage,
+            true
+        );
+        $previous = $this->buildPeriodStore(
+            $previousStart,
+            $developerPercentage,
+            $managementPercentage,
+            $managementTeamPercentage,
+            $starSystemPercentage,
+            false
+        );
 
         $earnings = $this->sumConfirmedStore();
         $distributed = $this->sumDistributedCommissions();
@@ -571,6 +602,7 @@ class StoreController extends Controller
             'percentages' => [
                 'developer' => $developerPercentage,
                 'management' => $managementPercentage,
+                'management_team' => $managementTeamPercentage,
                 'star_system' => $starSystemPercentage,
             ],
         ];
@@ -590,6 +622,8 @@ class StoreController extends Controller
         Carbon $start,
         float $developerPercentage,
         float $managementPercentage,
+        float $managementTeamPercentage,
+        float $starSystemPercentage,
         bool $allowFutureWindow
     ): array {
         $end = $this->settlementEnd($start);
@@ -607,7 +641,9 @@ class StoreController extends Controller
         $currentBalance = max(0, round($totalBalance - $distributedBalance, 2));
         $developerBalance = round(($totalBalance * $developerPercentage) / 100, 2);
         $managementBalance = round(($totalBalance * $managementPercentage) / 100, 2);
-        $starSystemBalance = max(0, round($totalBalance - $developerBalance - $managementBalance, 2));
+        $managementTeamBalance = round(($totalBalance * $managementTeamPercentage) / 100, 2);
+        $starSystemBalance = max(0, round($totalBalance - $developerBalance - $managementBalance - $managementTeamBalance, 2));
+        $totalShare = round($developerBalance + $managementBalance + $managementTeamBalance + $starSystemBalance, 2);
 
         if (!empty($store)) {
             $store['total_balance'] = $totalBalance;
@@ -615,20 +651,40 @@ class StoreController extends Controller
             $store['distribute_balance'] = $distributedBalance;
             $store['developer_balance'] = $developerBalance;
             $store['management_balance'] = $managementBalance;
+            $store['management_team_balance'] = $managementTeamBalance;
             $store['star_system_balance'] = $starSystemBalance;
+            $store['developer_percentage'] = $developerPercentage;
+            $store['management_percentage'] = $managementPercentage;
+            $store['management_team_percentage'] = $managementTeamPercentage;
+            $store['star_system_percentage'] = $starSystemPercentage;
+            $store['total_share'] = $totalShare;
             $store['label'] = $start->format('F Y');
             $store['range_label'] = $start->format('d M Y') . ' - ' . $end->format('d M Y');
         }
 
         if (!empty($store['id']) && $this->storeHasColumns(['total_balance', 'current_balance', 'distribute_balance'])) {
+            $updates = [
+                'total_balance' => $totalBalance,
+                'current_balance' => $currentBalance,
+                'distribute_balance' => $distributedBalance,
+                'updated_at' => now(),
+            ];
+
+            foreach ([
+                'developer_percentage' => $developerPercentage,
+                'management_percentage' => $managementPercentage,
+                'management_team_percentage' => $managementTeamPercentage,
+                'star_system_percentage' => $starSystemPercentage,
+                'total_share' => $totalShare,
+            ] as $column => $value) {
+                if (Schema::hasColumn('stores', $column)) {
+                    $updates[$column] = $value;
+                }
+            }
+
             DB::table('stores')
                 ->where('id', $store['id'])
-                ->update([
-                    'total_balance' => $totalBalance,
-                    'current_balance' => $currentBalance,
-                    'distribute_balance' => $distributedBalance,
-                    'updated_at' => now(),
-                ]);
+                ->update($updates);
         }
 
         return $store;
@@ -768,7 +824,7 @@ class StoreController extends Controller
 
     private function storeDistributionInfoTypes(): array
     {
-        return ['Store Commission', 'Developer Commission', 'Management Commission'];
+        return ['Store Commission', 'Developer Commission', 'Management Commission', 'Management TM Commission'];
     }
 
     private function canDistributeStore(array $store): bool

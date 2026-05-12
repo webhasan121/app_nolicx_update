@@ -165,20 +165,6 @@ export default function UserDash({ children }) {
                             </span>
                         </NavLink>
 
-                        <NavLink
-                            href={route("user.management")}
-                            active={
-                                route().current("user.management") ||
-                                route().current("user.management.*")
-                            }
-                            className="asside_link wallet"
-                        >
-                            <i className="pr-2 fas fa-coins"></i>
-                            <span className="hidden pl-2 md:block">
-                                Management
-                            </span>
-                        </NavLink>
-
                         {(roles.includes("reseller") ||
                             roles.includes("vendor")) &&
                             activeNav && (
@@ -195,6 +181,34 @@ export default function UserDash({ children }) {
                                     </span>
                                 </NavLink>
                             )}
+
+                        <NavLink
+                            href={route("user.management")}
+                            active={
+                                route().current("user.management") ||
+                                route().current("user.management.*")
+                            }
+                            className="asside_link wallet"
+                        >
+                            <i className="pr-2 fas fa-coins"></i>
+                            <span className="hidden pl-2 md:block">
+                                Management
+                            </span>
+                        </NavLink>
+
+                        <NavLink
+                            href={route("user.management-team")}
+                            active={
+                                route().current("user.management-team") ||
+                                route().current("user.management-team.*")
+                            }
+                            className="asside_link wallet"
+                        >
+                            <i className="pr-2 fas fa-users-cog"></i>
+                            <span className="hidden pl-2 md:block">
+                                Management TM
+                            </span>
+                        </NavLink>
                     </div>
                     <div
                         id="user_content"

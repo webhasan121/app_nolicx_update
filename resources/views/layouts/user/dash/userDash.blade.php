@@ -188,14 +188,6 @@
                   Developer
                </span>
             </x-nav-link>
-            <x-nav-link class="asside_link wallet" :active="request()->routeIs('user.management.*')"
-               href="{{route('user.management')}}">
-               <i class="pr-2 fas fa-coins"></i>
-               <span class="hidden pl-2 md:block">
-                  Management
-               </span>
-            </x-nav-link>
-
             @if ((auth()->user()?->hasRole('reseller') || auth()->user()?->hasRole('vendor')) &&
             !empty(auth()?->user()?->active_nav))
             <x-nav-link class="asside_link shop" href="{{route('my-shop', ['user' => auth()->user()->name])}}"
@@ -206,6 +198,20 @@
                </span>
             </x-nav-link>
             @endif
+            <x-nav-link class="asside_link wallet" :active="request()->routeIs('user.management') || request()->routeIs('user.management.*')"
+               href="{{route('user.management')}}">
+               <i class="pr-2 fas fa-coins"></i>
+               <span class="hidden pl-2 md:block">
+                  Management
+               </span>
+            </x-nav-link>
+            <x-nav-link class="asside_link wallet" :active="request()->routeIs('user.management-team') || request()->routeIs('user.management-team.*')"
+               href="{{route('user.management-team')}}">
+               <i class="pr-2 fas fa-users-cog"></i>
+               <span class="hidden pl-2 md:block">
+                  Management TM
+               </span>
+            </x-nav-link>
          </div>
 
          {{-- right content --}}

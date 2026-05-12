@@ -2,7 +2,7 @@ import { useForm, usePage } from "@inertiajs/react";
 import Container from "../../../components/dashboard/Container";
 import UserDash from "../../../components/user/dash/UserDash";
 
-export default function Management() {
+export default function ManagementTeam() {
     const { name, email, phone, hasApplied, managementRequest } = usePage().props;
     const requestStatus = managementRequest?.status;
     const statusText =
@@ -17,7 +17,7 @@ export default function Management() {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("user.management.apply"));
+        post(route("user.management-team.apply"));
     };
 
     return (
@@ -27,11 +27,11 @@ export default function Management() {
                     {hasApplied ? (
                         <div className="py-10 text-center">
                             <h2 className="mb-2 text-2xl font-bold text-gray-800">
-                                Management Application Submitted
+                                Management TM Application Submitted
                             </h2>
 
                             <p className="text-gray-600">
-                                You have already applied for management access.
+                                You have already applied for Management TM access.
                             </p>
 
                             <div className="mt-4">
@@ -42,7 +42,7 @@ export default function Management() {
 
                             {statusText === "Approved" && (
                                 <div className="mt-6 font-semibold text-green-700">
-                                    Your management access has been approved!
+                                    Your Management TM access has been approved!
                                 </div>
                             )}
                             {statusText === "Rejected" && (
@@ -54,7 +54,7 @@ export default function Management() {
                     ) : (
                         <>
                             <h2 className="mb-6 text-2xl font-bold text-gray-800">
-                                Management Partnership Form
+                                Management TM Partnership Form
                             </h2>
 
                             <form onSubmit={submit} className="space-y-5">

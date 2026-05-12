@@ -8,6 +8,7 @@ use App\Models\Reseller_resel_product;
 use App\Models\Category;
 use App\Models\product_has_attribute;
 use App\Models\product_has_image;
+use App\Rules\MaxVideoDuration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -237,6 +238,7 @@ class ProductsController extends Controller
             'attr_name' => ['nullable', 'string'],
             'attr_value' => ['nullable', 'string'],
             'thumb' => ['nullable', 'file', 'image'],
+            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,webm,mkv', new MaxVideoDuration(15)],
             'newseothumb' => ['nullable', 'file', 'image'],
             'newImage.*' => ['nullable', 'file', 'image'],
         ]);

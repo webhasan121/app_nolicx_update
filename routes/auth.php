@@ -16,6 +16,7 @@ use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\CheckoutController;
 use App\Http\Controllers\User\DeveloperController;
 use App\Http\Controllers\User\ManagementController;
+use App\Http\Controllers\User\ManagementTeamController;
 use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\PackageIndexController;
 use App\Http\Controllers\User\ProfileEditController;
@@ -126,6 +127,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/developer/apply', [DeveloperController::class, 'apply'])->name('developer.apply');
         Route::get('/management', [ManagementController::class, 'index'])->name('management');
         Route::post('/management/apply', [ManagementController::class, 'apply'])->name('management.apply');
+        Route::get('/management-team', [ManagementTeamController::class, 'index'])->name('management-team');
+        Route::post('/management-team/apply', [ManagementTeamController::class, 'apply'])->name('management-team.apply');
     });
 
     Route::prefix('/user/upgrade')->group(function () {

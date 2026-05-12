@@ -27,6 +27,7 @@ class SettingsController extends Controller
                 'playstore_link' => SystemSettings::get('PLAYSTORE_LINK'),
                 'developer_percentage' => SystemSettings::get('DEVELOPER_PERCENTAGE'),
                 'management_percentage' => SystemSettings::get('MANAGEMENT_PERCENTAGE'),
+                'management_team_percentage' => SystemSettings::get('MANAGEMENT_TEAM_PERCENTAGE'),
             ],
         ]);
     }
@@ -118,6 +119,17 @@ class SettingsController extends Controller
         SystemSettings::set('MANAGEMENT_PERCENTAGE', (string) $validated['management_percentage']);
 
         return redirect()->back()->with('success', 'Management percentage updated successfully!');
+    }
+
+    public function updateManagementTeamPercentage(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'management_team_percentage' => 'required|numeric|min:0|max:100',
+        ]);
+
+        SystemSettings::set('MANAGEMENT_TEAM_PERCENTAGE', (string) $validated['management_team_percentage']);
+
+        return redirect()->back()->with('success', 'Management TM percentage updated successfully!');
     }
 
 }

@@ -380,6 +380,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::post('/settings/playstore', [SettingsController::class, 'updatePlaystoreLink'])->name('settings.playstore.update');
     Route::post('/settings/developer-percentage', [SettingsController::class, 'updateDeveloperPercentage'])->name('settings.developer-percentage.update');
     Route::post('/settings/management-percentage', [SettingsController::class, 'updateManagementPercentage'])->name('settings.management-percentage.update');
+    Route::post('/settings/management-team-percentage', [SettingsController::class, 'updateManagementTeamPercentage'])->name('settings.management-team-percentage.update');
 
     Route::get('/pages', [PageSettingsController::class, 'indexReact'])->name('pages.index');
     Route::get('/pages/print', [PageSettingsController::class, 'printReact'])->name('pages.print');
@@ -412,6 +413,11 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
         Route::post('/management/{id}/accept', [PartnershipController::class, 'acceptManagement'])->name('management.accept');
         Route::post('/management/{id}/reject', [PartnershipController::class, 'rejectManagement'])->name('management.reject');
         Route::delete('/management/{id}', [PartnershipController::class, 'destroyManagement'])->name('management.destroy');
+        Route::get('/management-team', [PartnershipController::class, 'managementTeamReact'])->name('management-team');
+        Route::get('/management-team/print', [PartnershipController::class, 'printManagementTeamReact'])->name('management-team.print');
+        Route::post('/management-team/{id}/accept', [PartnershipController::class, 'acceptManagementTeam'])->name('management-team.accept');
+        Route::post('/management-team/{id}/reject', [PartnershipController::class, 'rejectManagementTeam'])->name('management-team.reject');
+        Route::delete('/management-team/{id}', [PartnershipController::class, 'destroyManagementTeam'])->name('management-team.destroy');
     });
 
 

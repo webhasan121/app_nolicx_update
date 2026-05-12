@@ -21,6 +21,7 @@ class SampleSeeder extends Seeder {
             'developer_accesses',
             'distribute_comissions',
             'management_accesses',
+            'management_teams',
             'orders',
             'reseller_resell_profits',
             'stores',

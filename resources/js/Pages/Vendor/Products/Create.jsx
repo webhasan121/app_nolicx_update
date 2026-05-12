@@ -11,6 +11,10 @@ import PageHeader from "../../../components/dashboard/PageHeader";
 import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
+import {
+    PRODUCT_VIDEO_DURATION_ERROR,
+    validateProductVideoDuration,
+} from "../../../utils/videoValidation";
 
 export default function Create({ categories = [], shop, ableToCreate = true }) {
     const inputId = useId().replace(/:/g, "");
@@ -163,9 +167,27 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         };
     }, [form.data.newImage]);
 
-    const submit = (e) => {
-        console.log("form", form);
+    const handleVideoChange = async (event) => {
+        const file = event.target.files?.[0] ?? null;
 
+        if (!file) {
+            form.clearErrors("video");
+            form.setData("video", null);
+            return;
+        }
+
+        try {
+            await validateProductVideoDuration(file);
+            form.clearErrors("video");
+            form.setData("video", file);
+        } catch (error) {
+            event.target.value = "";
+            form.setData("video", null);
+            form.setError("video", error?.message || PRODUCT_VIDEO_DURATION_ERROR);
+        }
+    };
+
+    const submit = (e) => {
         e.preventDefault();
         form.post(route("vendor.products.store"), {
             forceFormData: true,
@@ -508,12 +530,12 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             className="absolute hidden"
                                             id="product_video"
                                             accept="video/mp4,video/quicktime,video/x-msvideo,video/webm,video/x-matroska"
-                                            onChange={(e) => form.setData("video", e.target.files?.[0] ?? null)}
+                                            onChange={handleVideoChange}
                                         />
                                         <label htmlFor="product_video" className="p-2 border rounded">
                                             <i className="fas fa-upload"></i>
                                         </label>
-                                        <p className="mt-2 text-xs">Allowed: mp4, mov, avi, webm, mkv. Max 50MB.</p>
+                                        <p className="mt-2 text-xs">Allowed: mp4, mov, avi, webm, mkv. Max 15 seconds.</p>
                                     </div>
                                 </InputFile>
                             </SectionInner>

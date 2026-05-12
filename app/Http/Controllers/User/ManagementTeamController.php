@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\ManagementAccess;
+use App\Models\ManagementTeam;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class ManagementController extends Controller
+class ManagementTeamController extends Controller
 {
     public function index(Request $request)
     {
         $user = $request->user();
-        $managementRequest = ManagementAccess::where('applied_id', $user->id)->first();
+        $managementRequest = ManagementTeam::where('applied_id', $user->id)->first();
 
-        return Inertia::render('User/Partnership/Management', [
+        return Inertia::render('User/Partnership/ManagementTeam', [
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,
@@ -28,7 +28,7 @@ class ManagementController extends Controller
 
     public function apply(Request $request)
     {
-        $exists = ManagementAccess::where('applied_id', $request->user()->id)->exists();
+        $exists = ManagementTeam::where('applied_id', $request->user()->id)->exists();
 
         if ($exists) {
             return redirect()->back()->with('warning', 'You already applied!');
@@ -38,12 +38,12 @@ class ManagementController extends Controller
             'message' => 'nullable|max:500',
         ]);
 
-        ManagementAccess::create([
+        ManagementTeam::create([
             'applied_id' => $request->user()->id,
             'message' => $validated['message'] ?? null,
             'status' => null,
         ]);
 
-        return redirect()->route('user.management')->with('success', 'Successfully applied!!!');
+        return redirect()->route('user.management-team')->with('success', 'Management TM application submitted successfully!');
     }
 }

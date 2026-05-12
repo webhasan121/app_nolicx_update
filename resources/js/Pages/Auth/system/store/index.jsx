@@ -49,6 +49,7 @@ export default function Index() {
     const shareFilters = {
         "Developer Share": "Developer Commission",
         "Management Share": "Management Commission",
+        "Management TM Share": "Management TM Commission",
         "Star System Share": "Store Commission",
     };
 

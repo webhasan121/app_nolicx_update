@@ -198,9 +198,22 @@ export default function ResponsiveNavigation() {
 
             <ResponsiveNavLink
                 href={route("system.partnership.management")}
-                active={route().current("system.partnership.management*")}
+                active={
+                    route().current("system.partnership.management") ||
+                    route().current("system.partnership.management.*")
+                }
             >
                 <i className="w-6 pr-2 fas fa-handshake"></i> Management
+            </ResponsiveNavLink>
+
+            <ResponsiveNavLink
+                href={route("system.partnership.management-team")}
+                active={
+                    route().current("system.partnership.management-team") ||
+                    route().current("system.partnership.management-team.*")
+                }
+            >
+                <i className="w-6 pr-2 fas fa-users-cog"></i> Management TM
             </ResponsiveNavLink>
 
             <Hr />

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\product_has_attribute;
 use App\Models\product_has_image;
+use App\Rules\MaxVideoDuration;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -244,7 +245,7 @@ class ProductsController extends Controller
             'buying_price' => 'required',
             'price' => 'required',
             'thumb' => 'required|image|max:4096',
-            'video' => 'nullable|file|mimes:mp4,mov,avi,webm,mkv|max:51200',
+            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,webm,mkv', new MaxVideoDuration(15)],
             'newImage.*' => 'image|max:2048',
         ]);
 
@@ -425,7 +426,7 @@ class ProductsController extends Controller
             'attr_name' => ['nullable', 'string'],
             'attr_value' => ['nullable', 'string'],
             'thumb' => ['nullable', 'file', 'image'],
-            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,webm,mkv', 'max:51200'],
+            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,webm,mkv', new MaxVideoDuration(15)],
             'newseothumb' => ['nullable', 'file', 'image'],
             'newImage.*' => ['nullable', 'file', 'image'],
         ]);

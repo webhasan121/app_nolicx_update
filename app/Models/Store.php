@@ -6,7 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Store extends Model
 {
-    protected $fillable = ['year', 'month', 'total_balance', 'current_balance', 'distribute_balance', 'generate' ];
+    protected $fillable = [
+        'year',
+        'month',
+        'total_balance',
+        'current_balance',
+        'distribute_balance',
+        'generate',
+        'developer_percentage',
+        'management_percentage',
+        'management_team_percentage',
+        'star_system_percentage',
+        'total_share',
+    ];
 
     protected $casts = [
         'generate' => 'boolean',

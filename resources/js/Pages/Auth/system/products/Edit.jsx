@@ -13,6 +13,10 @@ import Container from "../../../../components/dashboard/Container";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../components/dashboard/section/Section";
+import {
+    PRODUCT_VIDEO_DURATION_ERROR,
+    validateProductVideoDuration,
+} from "../../../../utils/videoValidation";
 
 function renderCategoryOptions(categories = [], depth = 0) {
     return categories.flatMap((category) => [
@@ -168,6 +172,26 @@ export default function Edit() {
 
         return () => URL.revokeObjectURL(url);
     }, [form.data.video]);
+
+    const handleVideoChange = async (event) => {
+        const file = event.target.files?.[0] ?? null;
+
+        if (!file) {
+            form.clearErrors("video");
+            form.setData("video", null);
+            return;
+        }
+
+        try {
+            await validateProductVideoDuration(file);
+            form.clearErrors("video");
+            form.setData("video", file);
+        } catch (error) {
+            event.target.value = "";
+            form.setData("video", null);
+            form.setError("video", error?.message || PRODUCT_VIDEO_DURATION_ERROR);
+        }
+    };
 
     const save = (e) => {
         e.preventDefault();
@@ -819,12 +843,7 @@ export default function Edit() {
                                         id="product_video"
                                         className="absolute hidden p-1 border"
                                         accept="video/mp4,video/quicktime,video/x-msvideo,video/webm,video/x-matroska"
-                                        onChange={(e) =>
-                                            form.setData(
-                                                "video",
-                                                e.target.files?.[0] ?? null
-                                            )
-                                        }
+                                        onChange={handleVideoChange}
                                     />
                                     <label
                                         htmlFor="product_video"
@@ -833,7 +852,7 @@ export default function Edit() {
                                         <i className="fas fa-upload"></i>
                                     </label>
                                     <div className="mt-2 text-xs">
-                                        Allowed: mp4, mov, avi, webm, mkv. Max 50MB.
+                                        Allowed: mp4, mov, avi, webm, mkv. Max 15 seconds.
                                     </div>
                                 </div>
                             </InputFile>

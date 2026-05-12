@@ -119,6 +119,9 @@ export default function Index({ settings }) {
     const managementPercentageForm = useForm({
         management_percentage: settings?.management_percentage ?? "",
     });
+    const managementTeamPercentageForm = useForm({
+        management_team_percentage: settings?.management_team_percentage ?? "",
+    });
 
     const startQueue = () => {
         router.post(route("system.settings.queue.start"));
@@ -225,6 +228,15 @@ export default function Index({ settings }) {
                         field="management_percentage"
                         type="number"
                         routeName="system.settings.management-percentage.update"
+                    />
+                    <EnvCard
+                        title="Management TM Percentage "
+                        content="Update management TM percentage from here"
+                        label="Management TM Percentage"
+                        form={managementTeamPercentageForm}
+                        field="management_team_percentage"
+                        type="number"
+                        routeName="system.settings.management-team-percentage.update"
                     />
                 </section>
             </Container>
