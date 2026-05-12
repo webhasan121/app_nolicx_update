@@ -11,6 +11,7 @@ import UserLayout from "../Layouts/User/App";
 import RecommendedProducts from "../components/home/RecommendedProducts";
 import TopSales from "../components/home/TopSales";
 import MedicineProducts from "../components/home/MedicineProducts";
+import WomensProducts from "../components/home/WomensProducts";
 import FoodProducts from "../components/home/FoodProducts";
 import MegaDealsProducts from "../components/home/MegaDealsProducts";
 import NavLink from "../components/NavLink";
@@ -24,6 +25,7 @@ export default function Welcome({
     megaDealsProducts = [],
     foodProducts = [],
     medicineProducts = [],
+    womenProducts = [],
     topSales = [],
     newProducts = [],
     todaysProducts = [],
@@ -209,8 +211,9 @@ console.log('developer_percentage', developer_percentage);
                     </div>
                 </div>
                 <MegaDealsProducts products={megaDealsProducts} />
-                <FoodProducts products={foodProducts} />
+                <WomensProducts products={womenProducts} />
                 <MedicineProducts products={medicineProducts} />
+                <FoodProducts products={foodProducts} />
                 <TopSales products={topSales} />
             </Container>
 
