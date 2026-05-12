@@ -38,7 +38,10 @@ export default function Index() {
     } = usePage().props;
 
     const targetStore = storeMeta?.target ?? {};
-    const canDistribute = Boolean(targetStore?.id) && !Boolean(Number(targetStore.generate ?? 0));
+    const canDistribute = Boolean(targetStore?.can_distribute);
+    const distributionStatusLabel = Boolean(Number(targetStore.generate ?? 0))
+        ? "Generated"
+        : "Available on 5th";
     const [search, setSearch] = useState(filters.search ?? "");
     const [startDate, setStartDate] = useState(filters.start_date ?? "");
     const [endDate, setEndDate] = useState(filters.end_date ?? "");
@@ -236,7 +239,7 @@ export default function Index() {
                         </button>
                     ) : (
                         <span className="inline-flex items-center justify-center rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700">
-                            Generated
+                            {distributionStatusLabel}
                         </span>
                     )}
                 </div>
@@ -337,7 +340,7 @@ export default function Index() {
                                             </button>
                                         ) : (
                                             <div className="inline-block bg-blue-500 hover:bg-blue-600 rounded-md px-4 py-1">
-                                                <span className="text-sm text-white">Generated</span>
+                                                <span className="text-sm text-white">{distributionStatusLabel}</span>
                                             </div>
                                         )}
                                     </div>

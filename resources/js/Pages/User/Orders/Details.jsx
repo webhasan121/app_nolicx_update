@@ -2,7 +2,6 @@ import { router, usePage } from "@inertiajs/react";
 import Container from "../../../components/dashboard/Container";
 import SectionSection from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
-import SectionInner from "../../../components/dashboard/section/Inner";
 import UserDash from "../../../components/user/dash/UserDash";
 import Table from "../../../components/dashboard/table/Table";
 import NavLink from "../../../components/NavLink";
@@ -38,11 +37,87 @@ function StatusBox({ label, orderStatus, statuses, title }) {
     );
 }
 
+function TimelineItem({ title, description }) {
+    return (
+        <div className="relative flex items-center px-2 py-2 border-l">
+            <i
+                className="absolute w-12 h-12 fas fa-check-circle"
+                style={{ left: "-8px", top: "12px" }}
+            ></i>
+            <div className="px-4">
+                <p>{title}</p>
+                {description ? <p className="text-xs">{description}</p> : null}
+            </div>
+        </div>
+    );
+}
+
+function buildOrderTimeline(order) {
+    if (!order) {
+        return [];
+    }
+
+    const placed = {
+        title: "Placed the order",
+        description: order.created_at,
+    };
+    const accepted = {
+        title: "Order has been accepted by seller.",
+    };
+    const packed = {
+        title: "Order Packed.",
+        description: "Order product has been packed and ready for shipment.",
+    };
+    const sent = {
+        title: "Order Send",
+        description:
+            order.delevery === "cash"
+                ? `Order has been send to ${order.location ?? "N/A"}`
+                : `Order has beed send to ${order.location ?? "N/A"}.`,
+    };
+    const assigned = {
+        title: order.status === "Delivery" ? "Order Assignedd to Rider" : "Order Assigned",
+        description:
+            order.delevery === "cash" && order.assigned_rider?.name
+                ? `Assigned to rider ${order.assigned_rider.name}`
+                : "",
+    };
+    const delivered = {
+        title: "Delivered",
+        description: "Order has been marked as delivered to you by rider at.",
+    };
+    const finished = {
+        title: "Success and Finished",
+    };
+
+    switch (order.status) {
+        case "Pending":
+            return [placed];
+        case "Accept":
+            return [accepted, placed];
+        case "Picked":
+            return [packed, accepted, placed];
+        case "Delivery":
+            return order.assigned_rider
+                ? [assigned, sent, packed, accepted, placed]
+                : [sent, packed, accepted, placed];
+        case "Delivered":
+            return order.assigned_rider
+                ? [delivered, assigned, sent, packed, accepted, placed]
+                : [delivered, sent, packed, accepted, placed];
+        case "Confirm":
+            return [finished, assigned, sent, packed, accepted, placed];
+        default:
+            return [];
+    }
+}
+
 export default function OrderDetails() {
     const { order } = usePage().props;
     const orderTotal = Number(order?.total ?? 0);
     const shippingTotal = Number(order?.shipping ?? 0);
     const payableTotal = orderTotal + shippingTotal;
+    const orderTimeline = buildOrderTimeline(order);
 
     const markAsReceived = () => {
         router.post(route("user.orders.received", { id: order.id }));
@@ -65,7 +140,7 @@ export default function OrderDetails() {
                         content={
                             <div>
                                 <div>Order Id : {order.id}</div>
-                                <div className="w-full overflow-hidden overflow-x-scroll md:flex justify-between items-center space-y-2">
+                                <div className="items-center justify-between w-full space-y-2 overflow-hidden overflow-x-scroll md:flex">
                                     <div>
                                         <div className="flex gap-2 mb-2">
                                             <StatusBox
@@ -262,6 +337,16 @@ export default function OrderDetails() {
                                     <div>N/A</div>
                                 )}
                             </div>
+                        </div>
+
+                        <div>
+                            {orderTimeline.map((item, index) => (
+                                <TimelineItem
+                                    key={`${item.title}-${index}`}
+                                    title={item.title}
+                                    description={item.description}
+                                />
+                            ))}
                         </div>
                     </SectionSection>
                 </div>

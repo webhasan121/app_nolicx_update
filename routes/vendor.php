@@ -6,8 +6,6 @@ use App\Http\Controllers\Vendor\OrdersController;
 use App\Http\Controllers\Vendor\ProductsController;
 use App\Http\Middleware\AbleTo;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\IsActiveVendor;
-use App\Livewire\Vendor\Orders\View as vendorOrderViewPage;
 
 // Route::get('/','VendorController@index')->name('vendor.index');
 
@@ -30,9 +28,6 @@ Route::delete('products/{product}/images/{image}', [ProductsController::class, '
 
 Route::prefix('/order')->group(function () {
     Route::get('/', [OrdersController::class, 'index'])->name('vendor.orders.index');
-
-    // Route::get('/view/{order}/old', vendorOrderViewPage::class)->name('vendor.orders.view');
-
 
     Route::get('/view/{order}/', [OrdersController::class, 'view'])->name('vendor.orders.view');
     Route::post('/view/{order}/sync', [OrdersController::class, 'syncOrder'])->name('vendor.orders.sync');

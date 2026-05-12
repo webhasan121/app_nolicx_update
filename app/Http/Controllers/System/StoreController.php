@@ -36,6 +36,7 @@ class StoreController extends Controller
         $metrics = $this->buildStoreMetrics();
         $store = $metrics['current'];
         $targetStore = $metrics['previous'];
+        $targetStore['can_distribute'] = $this->canDistributeStore($targetStore);
 
         $widgets = [
             ['label' => 'Total Earnings', 'value' => $metrics['totals']['earnings']],
@@ -130,7 +131,7 @@ class StoreController extends Controller
                         'created_at' => $item->created_at?->format('M d, Y'),
                     ];
                 })->all(),
-                'links' => collect($commissions->linkCollection())->map(function ($link) {
+                'links' => collect($commissions->linkCollection())->map(function (array $link) {
                     return [
                         'url' => $link['url'],
                         'label' => strip_tags($link['label']),
@@ -154,7 +155,7 @@ class StoreController extends Controller
                         'requested_at' => $withdraw->created_at?->format('M d, Y'),
                     ];
                 })->all(),
-                'links' => collect($withdrawals->linkCollection())->map(function ($link) {
+                'links' => collect($withdrawals->linkCollection())->map(function (array $link) {
                     return [
                         'url' => $link['url'],
                         'label' => strip_tags($link['label']),
@@ -264,6 +265,10 @@ class StoreController extends Controller
             return back()->with('error', 'Distribution already generated');
         }
 
+        if (now()->day < 5) {
+            return back()->with('error', 'Distribution will be available from the 5th of each month');
+        }
+
         $balance = (float) ($targetStore['total_balance'] ?? 0);
         if ($balance <= 0) {
             return back()->with('error', 'No balance available for distribution');
@@ -271,6 +276,7 @@ class StoreController extends Controller
 
         $developerPercentage = (float) ($metrics['percentages']['developer'] ?? 0);
         $managementPercentage = (float) ($metrics['percentages']['management'] ?? 0);
+        $starSystemPercentage = (float) ($metrics['percentages']['star_system'] ?? 0);
 
         $developerPool = round(($balance * $developerPercentage) / 100, 8);
         $managementPool = round(($balance * $managementPercentage) / 100, 8);
@@ -287,14 +293,17 @@ class StoreController extends Controller
             $developerPool,
             $managementPool,
             $levelPool,
-            $targetStore
+            $targetStore,
+            $developerPercentage,
+            $managementPercentage,
+            $starSystemPercentage
         ) {
             $totalDistributed = 0;
 
             if ($developers->count() > 0) {
                 $share = $developerPool / $developers->count();
                 foreach ($developers as $user) {
-                    $this->insertCommission($user->id, null, 'Developer Commission', $targetStore['id'], $share);
+                    $this->insertCommission($user->id, $developerPercentage, 'Developer Commission', $targetStore['id'], $share);
                     $totalDistributed += $share;
                 }
             }
@@ -302,7 +311,7 @@ class StoreController extends Controller
             if ($managers->count() > 0) {
                 $share = $managementPool / $managers->count();
                 foreach ($managers as $user) {
-                    $this->insertCommission($user->id, null, 'Management Commission', $targetStore['id'], $share);
+                    $this->insertCommission($user->id, $managementPercentage, 'Management Commission', $targetStore['id'], $share);
                     $totalDistributed += $share;
                 }
             }
@@ -330,7 +339,7 @@ class StoreController extends Controller
                 if ($share > 0) {
                     $this->insertCommission(
                         $shareData['user']->id,
-                        $shareData['percent'],
+                        $starSystemPercentage,
                         'Store Commission',
                         $targetStore['id'],
                         $share
@@ -541,7 +550,7 @@ class StoreController extends Controller
         $now = now();
         $developerPercentage = (float) SystemSettings::get('DEVELOPER_PERCENTAGE', '0');
         $managementPercentage = (float) SystemSettings::get('MANAGEMENT_PERCENTAGE', '0');
-        $starSystemPercentage = Level::query()->where('status', true)->max('bonus') ?? 0;
+        $starSystemPercentage = max(0, 100 - $developerPercentage - $managementPercentage);
         $currentStart = $this->settlementStart($now);
         $previousStart = $currentStart->copy()->subMonthNoOverflow();
 
@@ -760,6 +769,13 @@ class StoreController extends Controller
     private function storeDistributionInfoTypes(): array
     {
         return ['Store Commission', 'Developer Commission', 'Management Commission'];
+    }
+
+    private function canDistributeStore(array $store): bool
+    {
+        return !empty($store['id'])
+            && empty($store['generate'])
+            && now()->day >= 5;
     }
 
     private function lockBalance(): ?array

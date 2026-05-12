@@ -11,6 +11,7 @@ import PrimaryButton from "../../components/PrimaryButton";
 import ProductSingle from "../../components/client/ProductSingle";
 import TextInput from "../../components/TextInput";
 import UserLayout from "../../Layouts/User/App";
+import NavLink from "../../components/NavLink";
 
 export default function Order({ product, states = [], initialPrice = 0 }) {
     const orderSectionRef = useRef(null);
@@ -365,7 +366,7 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
                                                 <div className="bg-green-50">
                                                     <strong>
                                                         Shop : {product?.owner?.shop?.shop_name_en ?? "N/A"}{" "}
-                                                        <a
+                                                        <NavLink
                                                             className="px-2 rounded-xl bg-gray-50"
                                                             href={route("shops.visit", {
                                                                 id: product?.owner?.shop?.id,
@@ -373,7 +374,7 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
                                                             })}
                                                         >
                                                             visit
-                                                        </a>
+                                                        </NavLink>
                                                     </strong>
                                                 </div>
                                             ) : null}

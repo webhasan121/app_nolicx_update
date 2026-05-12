@@ -14,6 +14,7 @@ import Div from "../../../components/dashboard/overview/Div";
 import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
 import InputLabel from "../../../components/InputLabel";
+import NavLink from "../../../components/NavLink";
 
 const progressFlow = [
     "Pending",
@@ -367,7 +368,7 @@ export default function View({ order }) {
 
                                             {item.is_resel && order?.account_type === "reseller" ? (
                                                 item.already_synced?.url ? (
-                                                    <a href={item.already_synced.url} className="p-2 text-xs border rounded">
+                                                    <NavLink href={item.already_synced.url} className="p-2 text-xs border rounded">
                                                         <i
                                                             className={`fas pr-2 ${
                                                                 item.already_synced.status === "Confirm"
@@ -376,7 +377,7 @@ export default function View({ order }) {
                                                             }`}
                                                         ></i>
                                                         {item.already_synced.status}
-                                                    </a>
+                                                    </NavLink>
                                                 ) : (
                                                     <button
                                                         className="p-2 text-xs border rounded"

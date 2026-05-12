@@ -161,7 +161,6 @@ Route::middleware('auth')->group(function () {
         Route::patch('orders/{order}/cancel', [OrderController::class, 'cancel'])
             ->name('user.orders.cancel');
 
-
         Route::get('orders/details/{id}', [OrderController::class, 'details'])->name('user.orders.details');
         Route::post('orders/details/{id}/received', [OrderController::class, 'markReceived'])->name('user.orders.received');
 

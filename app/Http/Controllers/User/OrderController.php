@@ -19,7 +19,7 @@ class OrderController extends Controller
         $query = Order::with('cartOrders')
             ->where([
                 'user_id' => $request->user()->id,
-                'user_type' => 'user',
+                // 'user_type' => 'user',
             ])
             ->latest('id');
 
