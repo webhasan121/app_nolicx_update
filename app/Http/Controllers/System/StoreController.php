@@ -268,8 +268,8 @@ class StoreController extends Controller
             return back()->with('error', 'Distribution already generated');
         }
 
-        if (now()->day < 5) {
-            return back()->with('error', 'Distribution will be available from the 5th of each month');
+        if (now()->day !== 5) {
+            return back()->with('error', 'Distribution is available only on the 5th of each month');
         }
 
         $balance = (float) ($targetStore['total_balance'] ?? 0);
@@ -280,12 +280,10 @@ class StoreController extends Controller
         $developerPercentage = (float) ($metrics['percentages']['developer'] ?? 0);
         $managementPercentage = (float) ($metrics['percentages']['management'] ?? 0);
         $managementTeamPercentage = (float) ($metrics['percentages']['management_team'] ?? 0);
-        $starSystemPercentage = (float) ($metrics['percentages']['star_system'] ?? 0);
-
         $developerPool = round(($balance * $developerPercentage) / 100, 8);
         $managementPool = round(($balance * $managementPercentage) / 100, 8);
         $managementTeamPool = round(($balance * $managementTeamPercentage) / 100, 8);
-        $levelPool = max(0, round($balance - $developerPool - $managementPool - $managementTeamPool, 8));
+        $levelCap = max(0, round($balance - $developerPool - $managementPool - $managementTeamPool, 8));
 
         $developers = $this->approvedPartnershipUsers(DeveloperAccess::class);
         $managers = $this->approvedPartnershipUsers(ManagementAccess::class);
@@ -299,12 +297,12 @@ class StoreController extends Controller
             $developerPool,
             $managementPool,
             $managementTeamPool,
-            $levelPool,
+            $levelCap,
+            $balance,
             $targetStore,
             $developerPercentage,
             $managementPercentage,
-            $managementTeamPercentage,
-            $starSystemPercentage
+            $managementTeamPercentage
         ) {
             $totalDistributed = 0;
 
@@ -332,30 +330,14 @@ class StoreController extends Controller
                 }
             }
 
-            $starShares = $levelUsers
-                ->map(function (User $user) use ($levelPool) {
-                    $percent = (float) ($user->currentLevel->bonus ?? 0);
-
-                    return [
-                        'user' => $user,
-                        'percent' => $percent,
-                        'amount' => round(($levelPool * $percent) / 100, 8),
-                    ];
-                })
-                ->filter(fn ($share) => $share['amount'] > 0)
-                ->values();
-
-            $rawStarTotal = (float) $starShares->sum('amount');
-            $scale = $rawStarTotal > $levelPool && $levelPool > 0
-                ? $levelPool / $rawStarTotal
-                : 1;
+            $starShares = $this->buildStarSystemShares($levelUsers, $balance, $levelCap);
 
             foreach ($starShares as $shareData) {
-                $share = round($shareData['amount'] * $scale, 8);
+                $share = round($shareData['amount'], 8);
                 if ($share > 0) {
                     $this->insertCommission(
                         $shareData['user']->id,
-                        $starSystemPercentage,
+                        $shareData['percent'],
                         'Store Commission',
                         $targetStore['id'],
                         $share
@@ -567,7 +549,6 @@ class StoreController extends Controller
         $developerPercentage = (float) SystemSettings::get('DEVELOPER_PERCENTAGE', '0');
         $managementPercentage = (float) SystemSettings::get('MANAGEMENT_PERCENTAGE', '0');
         $managementTeamPercentage = (float) SystemSettings::get('MANAGEMENT_TEAM_PERCENTAGE', '0');
-        $starSystemPercentage = max(0, 100 - $developerPercentage - $managementPercentage - $managementTeamPercentage);
         $currentStart = $this->settlementStart($now);
         $previousStart = $currentStart->copy()->subMonthNoOverflow();
 
@@ -576,7 +557,6 @@ class StoreController extends Controller
             $developerPercentage,
             $managementPercentage,
             $managementTeamPercentage,
-            $starSystemPercentage,
             true
         );
         $previous = $this->buildPeriodStore(
@@ -584,7 +564,6 @@ class StoreController extends Controller
             $developerPercentage,
             $managementPercentage,
             $managementTeamPercentage,
-            $starSystemPercentage,
             false
         );
 
@@ -603,7 +582,7 @@ class StoreController extends Controller
                 'developer' => $developerPercentage,
                 'management' => $managementPercentage,
                 'management_team' => $managementTeamPercentage,
-                'star_system' => $starSystemPercentage,
+                'star_system' => (float) ($current['star_system_percentage'] ?? 0),
             ],
         ];
     }
@@ -623,7 +602,6 @@ class StoreController extends Controller
         float $developerPercentage,
         float $managementPercentage,
         float $managementTeamPercentage,
-        float $starSystemPercentage,
         bool $allowFutureWindow
     ): array {
         $end = $this->settlementEnd($start);
@@ -642,7 +620,18 @@ class StoreController extends Controller
         $developerBalance = round(($totalBalance * $developerPercentage) / 100, 2);
         $managementBalance = round(($totalBalance * $managementPercentage) / 100, 2);
         $managementTeamBalance = round(($totalBalance * $managementTeamPercentage) / 100, 2);
-        $starSystemBalance = max(0, round($totalBalance - $developerBalance - $managementBalance - $managementTeamBalance, 2));
+        $starSystemCap = max(0, round($totalBalance - $developerBalance - $managementBalance - $managementTeamBalance, 2));
+        $starSystemBalance = round(
+            $this->buildStarSystemShares(
+                $this->qualifiedLevelUsersFromHistory(),
+                $totalBalance,
+                $starSystemCap
+            )->sum('amount'),
+            2
+        );
+        $starSystemPercentage = $totalBalance > 0
+            ? round(($starSystemBalance / $totalBalance) * 100, 2)
+            : 0;
         $totalShare = round($developerBalance + $managementBalance + $managementTeamBalance + $starSystemBalance, 2);
 
         if (!empty($store)) {
@@ -831,7 +820,9 @@ class StoreController extends Controller
     {
         return !empty($store['id'])
             && empty($store['generate'])
-            && now()->day >= 5;
+            && now()->day === 5
+            && (float) ($store['total_balance'] ?? 0) > 0
+            && (float) ($store['current_balance'] ?? 0) > 0;
     }
 
     private function lockBalance(): ?array
@@ -870,6 +861,70 @@ class StoreController extends Controller
 
         DB::table('distribute_comissions')->insert($data);
         UserWalletController::add($userId, $amount);
+    }
+
+    private function buildStarSystemShares($levelUsers, float $totalBalance, float $cap)
+    {
+        $shares = collect($levelUsers)
+            ->map(function (User $user) use ($totalBalance) {
+                $percent = (float) ($user->currentLevel->bonus ?? 0);
+
+                return [
+                    'user' => $user,
+                    'percent' => $percent,
+                    'amount' => round(($totalBalance * $percent) / 100, 8),
+                ];
+            })
+            ->filter(fn ($share) => $share['amount'] > 0)
+            ->values();
+
+        $rawTotal = (float) $shares->sum('amount');
+
+        if ($rawTotal <= 0 || $cap <= 0) {
+            return collect();
+        }
+
+        $scale = $rawTotal > $cap ? $cap / $rawTotal : 1;
+
+        return $shares
+            ->map(function (array $share) use ($scale) {
+                $share['amount'] = round($share['amount'] * $scale, 8);
+                return $share;
+            })
+            ->filter(fn ($share) => $share['amount'] > 0)
+            ->values();
+    }
+
+    private function qualifiedLevelUsersFromHistory()
+    {
+        if (!Schema::hasTable('level_histories')) {
+            return collect();
+        }
+
+        return LevelHistory::query()
+            ->with([
+                'user',
+                'toLevel',
+            ])
+            ->whereNotNull('user_id')
+            ->whereNotNull('to_level_id')
+            ->whereHas('user')
+            ->whereHas('toLevel', fn ($query) => $query->where('status', true)->where('bonus', '>', 0))
+            ->latest('id')
+            ->get()
+            ->unique('user_id')
+            ->map(function (LevelHistory $history) {
+                $user = $history->user;
+
+                if (!$user || !$history->toLevel) {
+                    return null;
+                }
+
+                $user->setRelation('currentLevel', $history->toLevel);
+                return $user;
+            })
+            ->filter()
+            ->values();
     }
 
     private function refreshQualifiedLevelUsers()
