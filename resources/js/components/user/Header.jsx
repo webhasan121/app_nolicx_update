@@ -6,11 +6,13 @@ import StickyNav from "../StickyNav";
 import Dropdown from "../Dropdown";
 import DropdownLink from "../DropdownLink";
 import NavLink from "../NavLink";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Header() {
     const { auth, global, roles, activeNav } = usePage().props; // this global() load in AppServiceProvider
     const categories = global?.categories || [];
     const user = auth?.user;
+    const { t } = useTranslation();
     console.log("roles", roles);
 
     const [open, setOpen] = useState(false);
@@ -92,7 +94,7 @@ export default function Header() {
                                 href={route("shops.reseller")}
                                 className="block px-2"
                             >
-                                Shops
+                                {t("Shops")}
                             </Link>
 
                             <div className="relative flex-1 max-w-xl">
@@ -100,7 +102,7 @@ export default function Header() {
                                     <input
                                         type="search"
                                         name="q"
-                                        placeholder="Search Product By Title or Tags"
+                                        placeholder={t("Search Product By Title or Tags")}
                                         className="w-full border border-gray-200 rounded-md shadow-0 focus:border-0 focus:shadow-0"
                                         style={{ marginBottom: 0 }}
                                         id="search"
@@ -171,7 +173,7 @@ export default function Header() {
                                                             target="_blank"
                                                         >
                                                             <i className="pr-2 fas fa-home"></i>
-                                                            Dashboard
+                                                            {t("Dashboard")}
                                                         </DropdownLink>
                                                         <hr />
                                                     </>
@@ -181,7 +183,7 @@ export default function Header() {
                                                     href={route("user.index")}
                                                 >
                                                     <i className="pr-2 fas fa-gauge"></i>
-                                                    User Panel
+                                                    {t("User Panel")}
                                                 </DropdownLink>
 
                                                 <DropdownLink
@@ -190,14 +192,14 @@ export default function Header() {
                                                     )}
                                                 >
                                                     <i className="pr-2 fas fa-shopping-cart"></i>
-                                                    Order
+                                                    {t("Order")}
                                                 </DropdownLink>
 
                                                 <DropdownLink
                                                     href={route("edit.profile")}
                                                 >
                                                     <i className="pr-2 fas fa-user"></i>
-                                                    Profile
+                                                    {t("Profile")}
                                                 </DropdownLink>
 
                                                 {/* Request Vendor / Reseller */}
@@ -215,7 +217,7 @@ export default function Header() {
                                                             )}
                                                         >
                                                             <i className="pr-2 fas fa-shop"></i>
-                                                            Request Vendor
+                                                            {t("Request Vendor")}
                                                         </DropdownLink>
 
                                                         <DropdownLink
@@ -228,7 +230,7 @@ export default function Header() {
                                                             )}
                                                         >
                                                             <i className="pr-2 fas fa-shop"></i>
-                                                            Request Reseller
+                                                            {t("Request Reseller")}
                                                         </DropdownLink>
 
                                                         <hr />
@@ -274,7 +276,7 @@ export default function Header() {
                                                     className="block w-full px-4 py-2 text-sm text-red-600 transition text-start hover:bg-gray-100"
                                                 >
                                                     <i className="pr-2 fas fa-sign-out"></i>
-                                                    Log Out
+                                                    {t("Log Out")}
                                                 </button>
                                             </Dropdown>
                                         </div>
@@ -286,7 +288,7 @@ export default function Header() {
                                     className="px-3 uppercase text-md"
                                 >
                                     <i className="pr-2 fas fa-sign-in"></i>
-                                    Login
+                                    {t("Login")}
                                 </NavLink>
                             )}
                         </div>
@@ -326,7 +328,7 @@ export default function Header() {
                         href={route("shops.reseller")}
                         className="flex items-center justify-between w-full p-3 py-4 mb-4 bg-indigo-200 border rounded"
                     >
-                        <span>Shops</span>
+                        <span>{t("Shops")}</span>
                         <i className="fas fa-caret-right"></i>
                     </Link>
 
@@ -338,7 +340,7 @@ export default function Header() {
                                 value={categoryQuery}
                                 onChange={(e) => setCategoryQuery(e.target.value)}
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                placeholder="Search categories..."
+                                placeholder={t("Search categories...")}
                             />
                         </div>
                         {filteredCategories?.map((item) => (
@@ -351,7 +353,7 @@ export default function Header() {
                         ))}
                         {!filteredCategories?.length ? (
                             <div className="px-4 py-2 text-sm text-slate-500">
-                                No category found
+                                {t("No category found")}
                             </div>
                         ) : null}
                     </div>

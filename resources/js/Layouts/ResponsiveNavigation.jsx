@@ -1,6 +1,7 @@
 import { usePage } from "@inertiajs/react";
 import Hr from "../components/Hr";
 import ResponsiveNavLink from "../components/ResponsiveNavLink";
+import useTranslation from "../hooks/useTranslation";
 
 export default function ResponsiveNavigation() {
     const { auth, permissions = [] } = usePage().props;
@@ -20,6 +21,7 @@ export default function ResponsiveNavigation() {
 
     const isSystem = roleNames.includes("admin") || roleNames.includes("system");
     const can = (p) => permissionNames.includes(p);
+    const { t } = useTranslation();
 
     if (!isSystem) {
         return null;
@@ -32,7 +34,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.users.view")}
                     active={route().current("system.users.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-users"></i> Users
+                    <i className="w-6 pr-2 fas fa-users"></i> {t("Users")}
                 </ResponsiveNavLink>
             )}
 
@@ -41,7 +43,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.admin")}
                     active={route().current("system.admin")}
                 >
-                    <i className="w-6 pr-2 fas fa-user-lock"></i> Admin
+                    <i className="w-6 pr-2 fas fa-user-lock"></i> {t("Admin")}
                 </ResponsiveNavLink>
             )}
 
@@ -50,7 +52,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.vendor.index")}
                     active={route().current("system.vendor.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-shop"></i> Vendor
+                    <i className="w-6 pr-2 fas fa-shop"></i> {t("Vendor")}
                 </ResponsiveNavLink>
             )}
 
@@ -59,7 +61,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.reseller.index")}
                     active={route().current("system.reseller.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-shop"></i> Reseller
+                    <i className="w-6 pr-2 fas fa-shop"></i> {t("Reseller")}
                 </ResponsiveNavLink>
             )}
 
@@ -68,7 +70,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.rider.index")}
                     active={route().current("system.rider.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-truck-fast"></i> Rider
+                    <i className="w-6 pr-2 fas fa-truck-fast"></i> {t("Rider")}
                 </ResponsiveNavLink>
             )}
 
@@ -77,7 +79,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.role.list")}
                     active={route().current("system.role.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-user-shield"></i> Role
+                    <i className="w-6 pr-2 fas fa-user-shield"></i> {t("Role")}
                 </ResponsiveNavLink>
             )}
 
@@ -85,7 +87,7 @@ export default function ResponsiveNavigation() {
                 href={route("system.consignment.index")}
                 active={route().current("system.consignment.*")}
             >
-                <i className="w-6 pr-2 fas fa-truck-fast"></i> Consignment
+                <i className="w-6 pr-2 fas fa-truck-fast"></i> {t("Consignment")}
             </ResponsiveNavLink>
 
             <Hr />
@@ -95,7 +97,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.products.index")}
                     active={route().current("system.products.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-layer-group"></i> Products
+                    <i className="w-6 pr-2 fas fa-layer-group"></i> {t("Products")}
                 </ResponsiveNavLink>
             )}
 
@@ -104,7 +106,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.categories.index")}
                     active={route().current("system.categories.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-table"></i> Categories
+                    <i className="w-6 pr-2 fas fa-table"></i> {t("Categories")}
                 </ResponsiveNavLink>
             )}
 
@@ -113,7 +115,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.orders.index")}
                     active={route().current("system.orders.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-cart-plus"></i> Orders
+                    <i className="w-6 pr-2 fas fa-cart-plus"></i> {t("Orders")}
                 </ResponsiveNavLink>
             )}
 
@@ -128,7 +130,7 @@ export default function ResponsiveNavigation() {
                             route().current("system.package.update")
                         }
                     >
-                        <i className="w-6 pr-2 fas fa-box-open"></i> ViP Package
+                        <i className="w-6 pr-2 fas fa-box-open"></i> {t("ViP Package")}
                     </ResponsiveNavLink>
 
                     <ResponsiveNavLink
@@ -139,7 +141,7 @@ export default function ResponsiveNavigation() {
                             route().current("system.vip.print-summery")
                         }
                     >
-                        <i className="w-6 pr-2 fas fa-user-tie"></i> ViP Users
+                        <i className="w-6 pr-2 fas fa-user-tie"></i> {t("ViP Users")}
                     </ResponsiveNavLink>
                 </>
             )}
@@ -150,14 +152,14 @@ export default function ResponsiveNavigation() {
                         href={route("system.slider.index")}
                         active={route().current("system.slider.*")}
                     >
-                        <i className="w-6 pr-2 fas fa-photo-film"></i> Carousel
+                        <i className="w-6 pr-2 fas fa-photo-film"></i> {t("Carousel")}
                     </ResponsiveNavLink>
 
                     <ResponsiveNavLink
                         href={route("system.static-slider.index")}
                         active={route().current("system.static-slider.*")}
                     >
-                        <i className="w-6 pr-2 fas fa-photo-film"></i> Static Slider
+                        <i className="w-6 pr-2 fas fa-photo-film"></i> {t("Static Slider")}
                     </ResponsiveNavLink>
                 </>
             )}
@@ -168,7 +170,14 @@ export default function ResponsiveNavigation() {
                 href={route("system.settings.index")}
                 active={route().current("system.settings.*")}
             >
-                <i className="w-6 pr-2 fas fa-gear"></i> Settings
+                <i className="w-6 pr-2 fas fa-gear"></i> {t("Settings")}
+            </ResponsiveNavLink>
+
+            <ResponsiveNavLink
+                href={route("system.languages.index")}
+                active={route().current("system.languages.*")}
+            >
+                <i className="w-6 pr-2 fas fa-language"></i> {t("Translations")}
             </ResponsiveNavLink>
 
             <Hr />
@@ -177,13 +186,13 @@ export default function ResponsiveNavigation() {
                 href={route("system.levels.index")}
                 active={route().current("system.levels.index")}
             >
-                <i className="w-6 pr-2 fas fa-star"></i> Star System
+                <i className="w-6 pr-2 fas fa-star"></i> {t("Star System")}
             </ResponsiveNavLink>
             <ResponsiveNavLink
                 href={route("system.levels.history")}
                 active={route().current("system.levels.history")}
             >
-                <i className="w-6 pr-2 fas fa-star"></i> Level-up History
+                <i className="w-6 pr-2 fas fa-star"></i> {t("Level-up History")}
             </ResponsiveNavLink>
 
 
@@ -193,7 +202,7 @@ export default function ResponsiveNavigation() {
                 href={route("system.partnership.developer")}
                 active={route().current("system.partnership.developer*")}
             >
-                <i className="w-6 pr-2 fas fa-handshake"></i> Developer
+                <i className="w-6 pr-2 fas fa-handshake"></i> {t("Developer")}
             </ResponsiveNavLink>
 
             <ResponsiveNavLink
@@ -203,7 +212,7 @@ export default function ResponsiveNavigation() {
                     route().current("system.partnership.management.*")
                 }
             >
-                <i className="w-6 pr-2 fas fa-handshake"></i> Management
+                <i className="w-6 pr-2 fas fa-handshake"></i> {t("Management")}
             </ResponsiveNavLink>
 
             <ResponsiveNavLink
@@ -213,7 +222,7 @@ export default function ResponsiveNavigation() {
                     route().current("system.partnership.management-team.*")
                 }
             >
-                <i className="w-6 pr-2 fas fa-users-cog"></i> Management TM
+                <i className="w-6 pr-2 fas fa-users-cog"></i> {t("Management TM")}
             </ResponsiveNavLink>
 
             <Hr />
@@ -223,7 +232,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.store.index")}
                     active={route().current("system.store.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-store"></i> Store
+                    <i className="w-6 pr-2 fas fa-store"></i> {t("Store")}
                 </ResponsiveNavLink>
             )}
 
@@ -234,7 +243,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.deposit.index")}
                     active={route().current("system.deposit.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-sign-in"></i> Deposit
+                    <i className="w-6 pr-2 fas fa-sign-in"></i> {t("Deposit")}
                 </ResponsiveNavLink>
             )}
 
@@ -244,14 +253,14 @@ export default function ResponsiveNavigation() {
                         href={route("system.earn.index")}
                         active={route().current("system.earn.*")}
                     >
-                        <i className="w-6 pr-2 fas fa-money-bill"></i> Sell
+                        <i className="w-6 pr-2 fas fa-money-bill"></i> {t("Sell")}
                     </ResponsiveNavLink>
 
                     <ResponsiveNavLink
                         href={route("system.comissions.index")}
                         active={route().current("system.comissions.*")}
                     >
-                        <i className="w-6 pr-2 fas fa-money-bill-transfer"></i> Comission
+                        <i className="w-6 pr-2 fas fa-money-bill-transfer"></i> {t("Comission")}
                     </ResponsiveNavLink>
                 </>
             )}
@@ -261,7 +270,7 @@ export default function ResponsiveNavigation() {
                     href={route("system.withdraw.index")}
                     active={route().current("*.withdraw.*")}
                 >
-                    <i className="w-6 pr-2 fas fa-arrow-up-from-bracket"></i> Withdraw
+                    <i className="w-6 pr-2 fas fa-arrow-up-from-bracket"></i> {t("Withdraw")}
                 </ResponsiveNavLink>
             )}
         </>

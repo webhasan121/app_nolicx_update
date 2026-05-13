@@ -1,5 +1,6 @@
 import { Link } from "@inertiajs/react";
 import { useEffect, useState } from "react";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function CatLoop({
     item,
@@ -19,9 +20,11 @@ export default function CatLoop({
     const isActive = active || cat === item.slug;
     const hasActiveChild = hasActiveDescendant(item);
     const [open, setOpen] = useState(isActive || hasActiveChild);
+    const { t } = useTranslation();
 
     const hasChildren = item.children && item.children.length > 0;
-    const label = item.name ? item.name.charAt(0).toUpperCase() + item.name.slice(1) : "";
+    const rawLabel = item.name ? item.name.charAt(0).toUpperCase() + item.name.slice(1) : "";
+    const label = t(rawLabel);
     const shouldHighlight = isActive || hasActiveChild;
 
     const isSidebar = variant === "sidebar";

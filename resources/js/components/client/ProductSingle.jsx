@@ -133,13 +133,14 @@ export default function ProductSingle({
             <style>{`
                 .product-zoom-wrapper {
                     display: flex;
-                    gap: 20px;
+                    flex-direction: column;
+                    gap: 10px;
                     align-items: flex-start;
                 }
 
                 .image-area {
                     position: relative;
-                    width: 420px;
+                    width: 100%;
                     border: 1px solid #eee;
                     background: #fff;
                 }
@@ -153,7 +154,7 @@ export default function ProductSingle({
 
             <div className="relative justify-start p-2 lg:flex item-start">
                 <div className="w-full p-3" style={{ maxWidth: "600px" }}>
-                    <div className="items-start rounded product-zoom-wrapper sm:flex sm:justify-start lg:block">
+                    <div className="items-start rounded product-zoom-wrapper">
                         <div
                             className="image-area shrink-0"
                             onMouseEnter={() => setIsZooming(true)}
@@ -193,12 +194,12 @@ export default function ProductSingle({
 
 
                         {gallery.length > 1 ? (
-                            <div className="flex flex-wrap items-center md:block lg:flex">
+                            <div className="flex flex-wrap items-center justify-center w-full gap-2">
                                 {gallery.map((item) => (
                                     <button
                                         key={`${item.type}-${item.value}`}
                                         type="button"
-                                        className="p-1 mb-1 rounded"
+                                        className="p-1 rounded"
                                         onClick={() => {
                                             if (item.type === "video") {
                                                 setShowVideoModal(true);

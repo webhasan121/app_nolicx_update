@@ -1,9 +1,11 @@
 import { useRef } from "react";
 import NavLink from "../NavLink";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function DisplayCategory({ categories = [] }) {
   const catDivRef = useRef(null);
   const catWrapRef = useRef(null);
+  const { t } = useTranslation();
 
 
 
@@ -23,7 +25,10 @@ export default function DisplayCategory({ categories = [] }) {
         >
           {categories
             .filter((item) => item.slug !== "default-category")
-            .map((item) => (
+            .map((item) => {
+              const label = t(item.name ?? "");
+
+              return (
               <div
                 key={item.id}
                 className="text-center bg-white rounded-md cat_item"
@@ -43,7 +48,7 @@ export default function DisplayCategory({ categories = [] }) {
                 >
                   <img
                     src={`/storage/${item.image}`}
-                    alt={item.name}
+                    alt={label}
                     className="rounded-md"
                     style={{
                       width: "100px",
@@ -58,13 +63,13 @@ export default function DisplayCategory({ categories = [] }) {
                       backdropFilter: "blur(6px)",
                     }}
                   >
-                    {item.name.length > 9
-                      ? item.name.substring(0, 9) + "..."
-                      : item.name}
+                    {label.length > 9
+                      ? label.substring(0, 9) + "..."
+                      : label}
                   </div>
                 </NavLink>
               </div>
-            ))}
+            )})}
         </div>
 
       </div>

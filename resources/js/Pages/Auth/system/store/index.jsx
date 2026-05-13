@@ -39,9 +39,12 @@ export default function Index() {
 
     const targetStore = storeMeta?.target ?? {};
     const canDistribute = Boolean(targetStore?.can_distribute);
+    const targetBalance = Number(targetStore?.current_balance ?? targetStore?.total_balance ?? 0);
     const distributionStatusLabel = Boolean(Number(targetStore.generate ?? 0))
         ? "Generated"
-        : "Available on 5th";
+        : targetBalance > 0
+            ? "Available on 5th"
+            : "No data to distribute";
     const [search, setSearch] = useState(filters.search ?? "");
     const [startDate, setStartDate] = useState(filters.start_date ?? "");
     const [endDate, setEndDate] = useState(filters.end_date ?? "");

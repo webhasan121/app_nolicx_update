@@ -11,6 +11,7 @@ use App\Http\Controllers\System\NavigationController;
 use App\Http\Controllers\System\OrdersController;
 use App\Http\Controllers\System\PageSettingsController;
 use App\Http\Controllers\System\LevelController;
+use App\Http\Controllers\System\LanguageController;
 use App\Http\Controllers\System\BranchController;
 use App\Http\Controllers\System\FooterBuilderController;
 use App\Http\Controllers\System\PartnershipController;
@@ -381,6 +382,14 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::post('/settings/developer-percentage', [SettingsController::class, 'updateDeveloperPercentage'])->name('settings.developer-percentage.update');
     Route::post('/settings/management-percentage', [SettingsController::class, 'updateManagementPercentage'])->name('settings.management-percentage.update');
     Route::post('/settings/management-team-percentage', [SettingsController::class, 'updateManagementTeamPercentage'])->name('settings.management-team-percentage.update');
+
+    Route::prefix('languages')->name('languages.')->group(function () {
+        Route::get('/', [LanguageController::class, 'index'])->name('index');
+        Route::get('/{locale}/edit', [LanguageController::class, 'edit'])->name('edit');
+        Route::post('/{locale}', [LanguageController::class, 'update'])->name('update');
+        Route::post('/{locale}/default', [LanguageController::class, 'setDefault'])->name('default');
+        Route::post('/{locale}/toggle', [LanguageController::class, 'toggle'])->name('toggle');
+    });
 
     Route::get('/pages', [PageSettingsController::class, 'indexReact'])->name('pages.index');
     Route::get('/pages/print', [PageSettingsController::class, 'printReact'])->name('pages.print');

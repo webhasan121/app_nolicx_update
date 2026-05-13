@@ -10,6 +10,8 @@ import ResponsiveNavigation from "./ResponsiveNavigation";
 import VendorResponsiveNavigation from "./VendorResponsiveNavigation";
 import ResellerResponsiveNavigation from "./ResellerResponsiveNavigation";
 import RiderResponsiveNavigation from "./RiderResponsiveNavigation";
+import LanguageSwitcher from "../components/LanguageSwitcher";
+import useTranslation from "../hooks/useTranslation";
 
 export default function Navigation() {
     const { auth, roles = [] } = usePage().props;
@@ -21,6 +23,7 @@ export default function Navigation() {
         : user?.roles?.map((role) => role.name) ?? [];
     const currentNav = user?.active_nav ?? roleNames[0] ?? "";
     const [open, setOpen] = useState(false);
+    const { t } = useTranslation();
 
     const goToDashboard = (name) => {
         router.post(route("dashboard.navigation"), { name });
@@ -54,12 +57,13 @@ export default function Navigation() {
                                 href={route("dashboard")}
                                 active={route().current("dashboard")}
                             >
-                                Dashboard
+                                {t("Dashboard")}
                             </NavLink>
                         </div>
                     </div>
 
                     <div className="hidden md:flex md:items-center md:ms-6">
+                        <LanguageSwitcher compact className="mr-3" />
                         <Dropdown
                             align="right"
                             width="48"
@@ -87,7 +91,7 @@ export default function Navigation() {
                         >
                             <div className="border-b border-gray-200 px-4 py-2">
                                 <div className="flex justify-between px-2 ">
-                                    <div>Wallet</div>
+                                    <div>{t("Wallet")}</div>
                                     <div>{formattedAvailableCoin}</div>
                                 </div>
 
@@ -97,7 +101,7 @@ export default function Navigation() {
                                         className="font-bold text-center uppercase text-orange-900"
                                     >
                                         <i className="pr-2 fas fa-plus"></i>
-                                        Add Balance
+                                        {t("Add Balance")}
                                     </DropdownLink>
                                 </div>
                             </div>
@@ -112,7 +116,7 @@ export default function Navigation() {
                                             <i className="mr-3 fas fa-check"></i>
                                         )}
                                         <i className="pr-2 fas fa-shop"></i>
-                                        Vendor Dashboard
+                                        {t("Vendor Dashboard")}
                                     </div>
                                 </button>
                             )}
@@ -127,7 +131,7 @@ export default function Navigation() {
                                             <i className="mr-3 fas fa-check"></i>
                                         )}
                                         <i className="pr-2 fas fa-shop"></i>
-                                        Reseller Dashboard
+                                        {t("Reseller Dashboard")}
                                     </div>
                                 </button>
                             )}
@@ -142,24 +146,24 @@ export default function Navigation() {
                                             <i className="mr-3 fas fa-check"></i>
                                         )}
                                         <i className="pr-2 fas fa-truck-fast"></i>
-                                        Rider Dashboard
+                                        {t("Rider Dashboard")}
                                     </div>
                                 </button>
                             )}
 
                             <DropdownLink href={route("profile")}>
                                 <i className="pr-2 fas fa-user"></i>
-                                Profile
+                                {t("Profile")}
                             </DropdownLink>
 
                             <div className="block w-full px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 transition duration-150 ease-in-out">
                                 <i className="pr-2 fas fa-gear"></i>
-                                Settings
+                                {t("Settings")}
                             </div>
 
                             <div className="block w-full px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 transition duration-150 ease-in-out">
                                 <i className="pr-2 fas fa-bell"></i>
-                                Notice
+                                {t("Notice")}
                             </div>
 
                             <Hr />
@@ -169,7 +173,7 @@ export default function Navigation() {
                                 target="_blank"
                             >
                                 <i className="pr-2 fas fa-gauge"></i>
-                                Back to User Panel
+                                {t("Back to User Panel")}
                             </DropdownLink>
 
                             <DropdownLink
@@ -177,7 +181,7 @@ export default function Navigation() {
                                 target="_blank"
                             >
                                 <i className="pr-2 fas fa-globe"></i>
-                                Visit Website
+                                {t("Visit Website")}
                             </DropdownLink>
 
                             <Hr />
@@ -185,7 +189,7 @@ export default function Navigation() {
                             <button onClick={logout} className="w-full text-start">
                                 <div className="block w-full px-4 py-2 text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100">
                                     <i className="pr-2 fas fa-sign-out"></i>
-                                    Log Out
+                                    {t("Log Out")}
                                 </div>
                             </button>
                         </Dropdown>
@@ -226,7 +230,7 @@ export default function Navigation() {
             <div className={`${open ? "block" : "hidden"} md:hidden`}>
                     <div className="pt-2 pb-3 space-y-1">
                         <div className="flex justify-between px-2 ">
-                            <div>Wallet</div>
+                            <div>{t("Wallet")}</div>
                             <div>{formattedAvailableCoin}</div>
                         </div>
 
@@ -236,7 +240,7 @@ export default function Navigation() {
                                 href={route("user.wallet.diposit")}
                             >
                                 <i className="pr-2 fas fa-plus"></i>
-                                Add Balance
+                                {t("Add Balance")}
                             </NavLink>
                         </div>
 
@@ -246,7 +250,7 @@ export default function Navigation() {
                             href={route("dashboard")}
                             active={route().current("dashboard")}
                         >
-                            <i className="fas fa-home pr-2"></i>Dashboard
+                            <i className="fas fa-home pr-2"></i>{t("Dashboard")}
                         </ResponsiveNavLink>
 
                         <ResponsiveNavigation />
@@ -284,7 +288,7 @@ export default function Navigation() {
                                         <i className="mr-3 fas fa-check"></i>
                                     )}
                                     <i className="pr-2 fas fa-shop"></i>
-                                    Vendor Dashboard
+                                    {t("Vendor Dashboard")}
                                 </div>
                             </button>
                         )}
@@ -299,7 +303,7 @@ export default function Navigation() {
                                         <i className="mr-3 fas fa-check"></i>
                                     )}
                                     <i className="pr-2 fas fa-shop"></i>
-                                    Reseller Dashboard
+                                    {t("Reseller Dashboard")}
                                 </div>
                             </button>
                         )}
@@ -314,7 +318,7 @@ export default function Navigation() {
                                         <i className="mr-3 fas fa-check"></i>
                                     )}
                                     <i className="pr-2 fas fa-truck-fast"></i>
-                                    Rider Dashboard
+                                    {t("Rider Dashboard")}
                                 </div>
                             </button>
                         )}
@@ -324,20 +328,18 @@ export default function Navigation() {
                                 href={route("user.dash")}
                                 target="_blank"
                             >
-                                <i className="fas fa-gauge pr-2"></i> Back to
-                                User Dash
+                                <i className="fas fa-gauge pr-2"></i> {t("Back to User Dash")}
                             </ResponsiveNavLink>
 
                             <ResponsiveNavLink
                                 href={route("home")}
                                 target="_blank"
                             >
-                                <i className="fas fa-globe pr-2"></i> Visit
-                                Website
+                                <i className="fas fa-globe pr-2"></i> {t("Visit Website")}
                             </ResponsiveNavLink>
 
                             <ResponsiveNavLink href={route("profile")}>
-                                <i className="fas fa-user pr-2"> </i> Profile
+                                <i className="fas fa-user pr-2"> </i> {t("Profile")}
                             </ResponsiveNavLink>
 
                             <button
@@ -346,7 +348,7 @@ export default function Navigation() {
                             >
                                 <div className="block w-full px-3 py-2 text-sm font-medium text-start text-gray-600 transition duration-150 ease-in-out border-l-4 border-transparent hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800">
                                     <i className="fas fa-sign-out pr-2"></i>{" "}
-                                    Log Out
+                                    {t("Log Out")}
                                 </div>
                             </button>
                         </div>

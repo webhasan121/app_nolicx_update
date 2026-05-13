@@ -2,10 +2,12 @@ import { Link, usePage } from "@inertiajs/react";
 import React from "react";
 import ApplicationName from "../ApplicationName";
 import NavLink from "../NavLink";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Footer() {
     const email = "support@example.com"; // config('app.support_mail')
     const { auth, global, appConfig } = usePage().props;
+    const { t } = useTranslation();
 
     const branches = global?.branches || [];
 
@@ -101,7 +103,7 @@ export default function Footer() {
                             <div key={index} className="block">
                                 {widget.head && (
                                     <h5 className="mb-4 text-lg font-bold border-b">
-                                        {widget.head}
+                                        {t(widget.head)}
                                     </h5>
                                 )}
 
@@ -112,7 +114,7 @@ export default function Footer() {
                                                 href={link.route}
                                                 className="block p-0 py-1 mb-1 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                                             >
-                                                {link.title}
+                                                {t(link.title)}
                                             </NavLink>
                                         </li>
                                     ))}
@@ -125,7 +127,7 @@ export default function Footer() {
                                         className="p-2 px-4 border-b-0 rounded-md btn_outline_secondary bold text-inherit hover:text-inherit hover:border-transparent"
                                     >
                                         <i className="mr-2 fa-solid fa-paper-plane"></i>
-                                        <span>Mail Us</span>
+                                        <span>{t("Mail Us")}</span>
                                     </NavLink>
                                 )}
                             </div>
@@ -134,16 +136,16 @@ export default function Footer() {
                         {/* Information Block */}
                         <div className="block">
                             <h5 className="mb-4 text-lg font-bold border-b">
-                                Information
+                                {t("Information")}
                             </h5>
 
                             <div className="space-y-4">
                                 <p>
-                                    <strong>DBID No</strong> :{" "}
+                                    <strong>{t("DBID No")}</strong> :{" "}
                                     <span>{dbid_no}</span>
                                 </p>
                                 <p>
-                                    <strong>Trade License</strong> :{" "}
+                                    <strong>{t("Trade License")}</strong> :{" "}
                                     <span>{trade_license}</span>
                                 </p>
                             </div>
@@ -188,7 +190,7 @@ export default function Footer() {
             {/* Bottom Copyright */}
             <section className="px-6 py-4 text-center bg-gray-800">
                 <p className="text-base text-white">
-                    © 2025 All Rights Reserved
+                    © 2025 {t("All Rights Reserved")}
                 </p>
             </section>
         </footer>

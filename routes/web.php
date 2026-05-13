@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\WelcomeController;
+use App\Support\TranslationManager;
 use App\Http\Controllers\ShopsController;
 use App\Http\Controllers\WebPageController;
 use App\Models\Category;
@@ -35,6 +36,19 @@ use Inertia\Inertia;
 
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
+Route::post('/language/switch', function (\Illuminate\Http\Request $request) {
+    $validated = $request->validate([
+        'locale' => ['required', 'string'],
+    ]);
+
+    $language = TranslationManager::findLanguage($validated['locale']);
+
+    abort_if(! $language || ! $language['is_active'], 404);
+
+    session(['locale' => $language['code']]);
+
+    return back();
+})->name('language.switch');
 Route::middleware('auth')->post('/cart/add', [CartController::class, 'store']);
 
 Route::get('dashboard', function () {
@@ -179,4 +193,3 @@ Route::get('/countries', function () {
     $countries = country::get();
     return response()->json($countries);
 })->name('countries');
-

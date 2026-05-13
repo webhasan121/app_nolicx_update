@@ -6,6 +6,7 @@ use App\Models\Branch;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Illuminate\Support\Str;
+use App\Support\TranslationManager;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -92,6 +93,26 @@ class HandleInertiaRequests extends Middleware
                 return $user
                     ? $user->getAllPermissions()->pluck('name')->values()->all()
                     : [];
+            },
+            'language' => function () {
+                TranslationManager::bootstrapDefaults();
+
+                $locale = app()->getLocale();
+
+                return [
+                    'current' => $locale,
+                    'messages' => TranslationManager::messages($locale),
+                    'available' => collect(TranslationManager::languages())
+                        ->filter(fn ($language) => $language['is_active'])
+                        ->map(fn ($language) => [
+                            'name' => $language['name'],
+                            'code' => $language['code'],
+                            'icon' => $language['icon'],
+                            'is_default' => $language['is_default'],
+                        ])
+                        ->values()
+                        ->all(),
+                ];
             },
 
             // Only for frontend routes

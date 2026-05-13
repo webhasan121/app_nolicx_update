@@ -46,6 +46,9 @@ class PermissionSeeder extends Seeder
             'sync_permission_to_role',
             'sync_permision_to_user',
             'sync_settings',
+            'language_navigation',
+            'language_view',
+            'language_update',
 
             /**
              * admin must have hold the access point permission 

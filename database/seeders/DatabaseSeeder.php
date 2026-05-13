@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
         // call PermissionSeeder here to create permission seeder
         $this->call(PermissionSeeder::class);
 
+        $this->call(LanguageSeeder::class);
+
         // call role seeder here to create role seeder
         $this->call(
             RoleSeeder::class

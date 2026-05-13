@@ -7,6 +7,7 @@ use App\Http\Middleware\CheckApiMasterKey;
 use App\Http\Middleware\CheckApiRequestIsGet;
 use App\Http\Middleware\CheckApiRequestIsPost;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackProductViewForReseller;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ]
         );
         $middleware->web(append: [
+            SetLocale::class,
             HandleInertiaRequests::class,
         ]);
         // $middleware->statefulApi();

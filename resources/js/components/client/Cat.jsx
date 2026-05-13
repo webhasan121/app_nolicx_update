@@ -1,6 +1,9 @@
 import NavLink from "../NavLink";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Cat({ cat, active = false, height = 160 }) {
+    const { t } = useTranslation();
+
     if (!cat) return null;
 
     return (
@@ -69,10 +72,10 @@ export default function Cat({ cat, active = false, height = 160 }) {
             <div className={`px-2 mb-2 cat_box ${active ? "shadow" : ""}`}>
                 <div className="cat_box border">
                     <NavLink className="" href={route("category.products", { cat: cat.slug || cat.name })}>
-                        <img src={`/storage/${cat.image}`} alt={cat.name} />
+                        <img src={`/storage/${cat.image}`} alt={t(cat.name)} />
                         <div className="detail-box">
                             <div className="w-full px-3 py-1 bold bg_primary text-center text-light product-title">
-                                {cat.name}
+                                {t(cat.name)}
                             </div>
                         </div>
                     </NavLink>
