@@ -227,16 +227,39 @@ export default function Index({
                                         <td>{item.created_at_diff}</td>
                                         <td>
                                             <div className="flex items-center gap-2 px-2 py-1">
-                                                <PrimaryButton
-                                                    type="button"
-                                                    onClick={() =>
-                                                        confirmDeposit(item.id)
-                                                    }
-                                                >
-                                                    <i className="fas fa-check"></i>
-                                                </PrimaryButton>
+                                                {item.confirmed ? (
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center justify-center w-8 h-8 text-xs font-semibold text-white bg-green-600 border border-transparent rounded-md cursor-default"
+                                                        disabled
+                                                        title="Confirmed"
+                                                    >
+                                                        <i className="fas fa-check-circle"></i>
+                                                    </button>
+                                                ) : (
+                                                    <PrimaryButton
+                                                        type="button"
+                                                        className="justify-center w-8 h-8 px-0 py-0"
+                                                        onClick={() =>
+                                                            confirmDeposit(item.id)
+                                                        }
+                                                    >
+                                                        <i className="fas fa-check"></i>
+                                                    </PrimaryButton>
+                                                )}
                                                 <DangerButton
                                                     type="button"
+                                                    className={`justify-center w-8 h-8 px-0 py-0 ${
+                                                        item.confirmed
+                                                            ? "opacity-50 cursor-not-allowed"
+                                                            : ""
+                                                    }`}
+                                                    disabled={item.confirmed}
+                                                    title={
+                                                        item.confirmed
+                                                            ? "Confirmed deposits cannot be deleted"
+                                                            : "Delete"
+                                                    }
                                                     onClick={() =>
                                                         denyDeposit(item.id)
                                                     }

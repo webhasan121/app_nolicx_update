@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -175,7 +176,7 @@ class ProductController extends Controller
             ...$this->productListPayload($product),
             'description' => $product->description,
             'video' => $product->video,
-            'video_url' => $product->video ? asset('storage/' . $product->video) : null,
+            'video_url' => $this->videoUrl($product->video),
             'brand' => $product->brand,
             'country' => $product->country,
             'state' => $product->state,
@@ -223,5 +224,16 @@ class ProductController extends Controller
                     ],
                 ]),
         ];
+    }
+
+    private function videoUrl(?string $video): ?string
+    {
+        if (empty($video)) {
+            return null;
+        }
+
+        return Str::startsWith($video, ['http://', 'https://'])
+            ? $video
+            : asset('storage/' . $video);
     }
 }

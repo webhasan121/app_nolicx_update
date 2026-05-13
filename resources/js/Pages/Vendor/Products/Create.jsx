@@ -40,14 +40,13 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         meta_description: "",
         meta_thumbnail: null,
         thumb: null,
-        video: null,
+        video: "",
         newImage: [],
         attr_name: "",
         attr_value: "",
     });
 
     const [thumbPreview, setThumbPreview] = useState(null);
-    const [videoPreview, setVideoPreview] = useState(null);
     const [metaThumbPreview, setMetaThumbPreview] = useState(null);
     const [newImagePreviews, setNewImagePreviews] = useState([]);
     const categoryItems = useMemo(() => flattenCategories(categories), [categories]);
@@ -128,16 +127,6 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         setThumbPreview(url);
         return () => URL.revokeObjectURL(url);
     }, [form.data.thumb]);
-
-    useEffect(() => {
-        if (!(form.data.video instanceof File)) {
-            setVideoPreview(null);
-            return undefined;
-        }
-        const url = URL.createObjectURL(form.data.video);
-        setVideoPreview(url);
-        return () => URL.revokeObjectURL(url);
-    }, [form.data.video]);
 
     useEffect(() => {
         if (!(form.data.meta_thumbnail instanceof File)) {
@@ -475,16 +464,24 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                             <SectionInner>
                                 <InputFile label="Thumbnail" className="md:flex" labelWidth="250px" error="thumb" errors={form.errors}>
                                     {thumbPreview ? (
-                                        <img src={thumbPreview} width="300px" height="300px" alt="" />
+                                        <img
+                                            src={thumbPreview}
+                                            className="w-full max-w-[300px] rounded border object-cover"
+                                            style={{ aspectRatio: "1 / 1" }}
+                                            alt=""
+                                        />
                                     ) : null}
-                                    <div className="relative">
+                                    <div className="relative mt-3">
                                         <input
                                             type="file"
                                             className="absolute hidden"
                                             id="prod_thumbnail"
                                             onChange={(e) => form.setData("thumb", e.target.files?.[0] ?? null)}
                                         />
-                                        <label htmlFor="prod_thumbnail" className="p-2 border rounded">
+                                        <label
+                                            htmlFor="prod_thumbnail"
+                                            className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
+                                        >
                                             <i className="fas fa-upload"></i>
                                         </label>
                                     </div>
@@ -495,27 +492,16 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                         <Section>
                             <SectionHeader
                                 title="Product Video"
-                                content="Upload an optional product video for the details page."
+                                content="Add an optional YouTube video URL for the details page."
                             />
                             <SectionInner>
-                                <InputFile label="Video" className="md:flex" labelWidth="250px" error="video" errors={form.errors}>
-                                    {videoPreview ? (
-                                        <video src={videoPreview} controls className="w-full mb-3 border rounded max-h-64" />
-                                    ) : null}
-                                    <div className="relative">
-                                        <input
-                                            type="file"
-                                            className="absolute hidden"
-                                            id="product_video"
-                                            accept="video/mp4,video/quicktime,video/x-msvideo,video/webm,video/x-matroska"
-                                            onChange={(e) => form.setData("video", e.target.files?.[0] ?? null)}
-                                        />
-                                        <label htmlFor="product_video" className="p-2 border rounded">
-                                            <i className="fas fa-upload"></i>
-                                        </label>
-                                        <p className="mt-2 text-xs">Allowed: mp4, mov, avi, webm, mkv. Max 50MB.</p>
-                                    </div>
-                                </InputFile>
+                                <InputField
+                                    label="YouTube URL"
+                                    name="video"
+                                    value={form.data.video}
+                                    onChange={(e) => form.setData("video", e.target.value)}
+                                    error={form.errors.video}
+                                />
                             </SectionInner>
                         </Section>
 
@@ -533,7 +519,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                     ))}
                                 </div>
 
-                                <div className="relative">
+                                <div className="relative flex flex-wrap items-center gap-3 mt-3">
                                     <input
                                         type="file"
                                         id="multi_prod_img"
@@ -544,12 +530,15 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             form.setData("newImage", Array.from(e.target.files ?? []))
                                         }
                                     />
-                                    <label htmlFor="multi_prod_img" className="p-2 border rounded">
+                                    <label
+                                        htmlFor="multi_prod_img"
+                                        className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
+                                    >
                                         <i className="fas fa-upload"></i>
                                     </label>
-                                </div>
-                                <div className="text-xs">
-                                    Please choose all image at once, if you plan to upload multiple image.
+                                    <div className="text-xs leading-5">
+                                        Please choose all image at once, if you plan to upload multiple image.
+                                    </div>
                                 </div>
                             </SectionInner>
                         </Section>

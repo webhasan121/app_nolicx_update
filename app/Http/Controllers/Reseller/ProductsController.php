@@ -11,6 +11,7 @@ use App\Models\product_has_image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\HandleImageUpload;
@@ -170,7 +171,7 @@ class ProductsController extends Controller
                 'thumbnail' => $data->thumbnail,
                 'thumbnail_url' => $data->thumbnail ? asset('storage/' . $data->thumbnail) : null,
                 'video' => $data->video,
-                'video_url' => $data->video ? asset('storage/' . $data->video) : null,
+                'video_url' => $this->videoUrl($data->video),
                 'meta_title' => $data->meta_title,
                 'meta_description' => $data->meta_description,
                 'keyword' => $data->keyword,
@@ -236,7 +237,8 @@ class ProductsController extends Controller
             'shipping_note' => ['nullable', 'string'],
             'attr_name' => ['nullable', 'string'],
             'attr_value' => ['nullable', 'string'],
-            'thumb' => ['nullable', 'file', 'image'],
+            'thumb' => [empty($data->thumbnail) ? 'required' : 'nullable', 'file', 'image'],
+            'video' => ['nullable', 'url', 'max:2048'],
             'newseothumb' => ['nullable', 'file', 'image'],
             'newImage.*' => ['nullable', 'file', 'image'],
         ]);
@@ -252,7 +254,7 @@ class ProductsController extends Controller
         $data->unit = $payload['unit'] ?? $data->unit;
         $data->description = $payload['description'] ?? $data->description;
         $data->thumbnail = $this->handleImageUpload($request->file('thumb'), 'products', $data->thumbnail);
-        $data->video = $this->handleImageUpload($request->file('video'), 'products-videos', $data->video);
+        $data->video = $payload['video'] ?? null;
         $data->meta_title = $payload['meta_title'] ?? $data->meta_title;
         $data->meta_description = $payload['meta_description'] ?? $data->meta_description;
         $data->keyword = $payload['keyword'] ?? $data->keyword;
@@ -330,5 +332,16 @@ class ProductsController extends Controller
         }
 
         return redirect()->back()->with('success', 'Image Deletd !');
+    }
+
+    private function videoUrl(?string $video): ?string
+    {
+        if (empty($video)) {
+            return null;
+        }
+
+        return Str::startsWith($video, ['http://', 'https://'])
+            ? $video
+            : asset('storage/' . $video);
     }
 }

@@ -84,11 +84,10 @@ export default function Edit() {
         attr_name: productData?.attr?.name ?? "",
         attr_value: productData?.attr?.value ?? "",
         thumb: null,
-        video: null,
+        video: productData?.video ?? "",
         newseothumb: null,
         newImage: [],
     });
-    const [videoPreview, setVideoPreview] = useState(null);
     useEffect(() => {
         let isMounted = true;
 
@@ -155,18 +154,6 @@ export default function Edit() {
             editor.removeEventListener("trix-change", handleChange);
         };
     }, [trixReady]);
-
-    useEffect(() => {
-        if (!(form.data.video instanceof File)) {
-            setVideoPreview(null);
-            return undefined;
-        }
-
-        const url = URL.createObjectURL(form.data.video);
-        setVideoPreview(url);
-
-        return () => URL.revokeObjectURL(url);
-    }, [form.data.video]);
 
     const save = (e) => {
         e.preventDefault();
@@ -743,8 +730,10 @@ export default function Edit() {
                                         your products. This image consider for
                                         the thumbnail for social media platform.
 
-                                        <div className="relative">
-                                            <p>600 x 600 image thumbnail</p>
+                                        <div className="relative mt-3">
+                                            <p className="mb-2 text-xs">
+                                                600 x 600 image thumbnail
+                                            </p>
                                             <input
                                                 id="prod_thumb"
                                                 type="file"
@@ -758,7 +747,7 @@ export default function Edit() {
                                             />
                                             <label
                                                 htmlFor="prod_thumb"
-                                                className="p-2 border rounded"
+                                                className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
                                             >
                                                 <i className="fas fa-upload"></i>
                                             </label>
@@ -786,53 +775,16 @@ export default function Edit() {
                     <SectionSection>
                         <SectionHeader
                             title="Product Video"
-                            content="Upload an optional product video for the details page."
+                            content="Add an optional YouTube video URL for the details page."
                         />
                         <SectionInner>
-                            <InputFile
-                                label="Video"
-                                className="md:flex"
-                                labelWidth="250px"
-                                error="video"
-                                errors={errors}
-                            >
-                                {videoPreview ? (
-                                    <video
-                                        src={videoPreview}
-                                        controls
-                                        className="mb-3 max-h-64 w-full rounded border"
-                                    />
-                                ) : productData.video_url ? (
-                                    <video
-                                        src={productData.video_url}
-                                        controls
-                                        className="mb-3 max-h-64 w-full rounded border"
-                                    />
-                                ) : null}
-                                <div className="relative">
-                                    <input
-                                        type="file"
-                                        id="product_video"
-                                        className="absolute hidden p-1 border"
-                                        accept="video/mp4,video/quicktime,video/x-msvideo,video/webm,video/x-matroska"
-                                        onChange={(e) =>
-                                            form.setData(
-                                                "video",
-                                                e.target.files?.[0] ?? null
-                                            )
-                                        }
-                                    />
-                                    <label
-                                        htmlFor="product_video"
-                                        className="p-2 border rounded"
-                                    >
-                                        <i className="fas fa-upload"></i>
-                                    </label>
-                                    <div className="mt-2 text-xs">
-                                        Allowed: mp4, mov, avi, webm, mkv. Max 50MB.
-                                    </div>
-                                </div>
-                            </InputFile>
+                            <InputField
+                                label="YouTube URL"
+                                name="video"
+                                value={form.data.video}
+                                onChange={(e) => form.setData("video", e.target.value)}
+                                error={errors.video}
+                            />
                         </SectionInner>
                     </SectionSection>
 
@@ -892,7 +844,7 @@ export default function Edit() {
                                 )}
                             </div>
 
-                            <div className="relative">
+                            <div className="relative flex flex-wrap items-center gap-3 mt-3">
                                 <input
                                     type="file"
                                     id="multi_prod_img"
@@ -907,14 +859,14 @@ export default function Edit() {
                                 />
                                 <label
                                     htmlFor="multi_prod_img"
-                                    className="p-2 border rounded"
+                                    className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
                                 >
                                     <i className="fas fa-upload"></i>
                                 </label>
-                            </div>
-                            <div className="text-xs">
-                                Please choose all image at once, if you plan to
-                                upload multiple image.
+                                <div className="text-xs leading-5">
+                                    Please choose all image at once, if you plan to
+                                    upload multiple image.
+                                </div>
                             </div>
                         </SectionInner>
                     </SectionSection>
