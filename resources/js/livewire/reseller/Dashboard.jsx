@@ -184,12 +184,19 @@ function ProductCard({ product }) {
 
                     <div className="flex items-center justify-center text-sm">
                         <Hr />
-                        <PrimaryButton
-                            type="button"
-                            className="flex justify-between w-full text-center "
+                        <NavLink
+                            href={route("reseller.resel-product.veiw", {
+                                pd: product?.id,
+                            })}
+                            className="w-full p-0 border-b-0 hover:border-transparent"
                         >
-                            Purchase <i className="pl-2 fas fa-angle-right"></i>
-                        </PrimaryButton>
+                            <PrimaryButton
+                                type="button"
+                                className="flex justify-between w-full text-center "
+                            >
+                                Purchase <i className="pl-2 fas fa-angle-right"></i>
+                            </PrimaryButton>
+                        </NavLink>
                     </div>
                 </div>
             </div>
@@ -273,12 +280,11 @@ export default function Dashboard({
                         </SectionInner>
                     </SectionSection>
 
-                    <SectionSection>
-                        <VendorOrdersIndex
-                            orderIndex={vendorOrdersIndex}
-                            activeNav={activeNav}
-                        />
-                    </SectionSection>
+                    <VendorOrdersIndex
+                        orderIndex={vendorOrdersIndex}
+                        activeNav={activeNav}
+                        embedded
+                    />
 
                     <Hr />
                     <SectionInner>
@@ -305,12 +311,12 @@ export default function Dashboard({
                         href={route("reseller.resel-product.index")}
                         active={route().current("reseller.resel-product.*")}
                     >
-                        <i className="fas fa-sync pr-2 w-6"></i> View All
+                        <i className="w-6 pr-2 fas fa-sync"></i> View All
                     </ResponsiveNavLink>
                 </div>
 
                 <Modal show={open} onClose={closeCategoryModal}>
-                    <div className="p-3 border-b flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 p-3 border-b sm:flex-row sm:items-center sm:justify-between">
                         <div>Explore Category</div>
                         <input
                             type="search"
@@ -319,7 +325,7 @@ export default function Dashboard({
                                 setCategorySearch(event.target.value)
                             }
                             placeholder="Search category"
-                            className="w-full sm:w-56 rounded border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500"
+                            className="w-full text-sm border-gray-300 rounded sm:w-56 focus:border-orange-500 focus:ring-orange-500"
                             autoComplete="off"
                         />
                     </div>
@@ -327,7 +333,7 @@ export default function Dashboard({
                         <div className="mb-2">
                             <NavLink
                                 href={route("reseller.resel-product.index")}
-                                className="text-sm border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                                className="p-0 text-sm border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                             >
                                 View All Products
                             </NavLink>
@@ -343,98 +349,13 @@ export default function Dashboard({
                         )}
                     </div>
                     <hr className="my-1" />
-                    <div className="flex justify-end items-center p-3">
+                    <div className="flex items-center justify-end p-3">
                         <DangerButton onClick={closeCategoryModal}>
                             close
                         </DangerButton>
                     </div>
                 </Modal>
             </div>
-            <Hr />
-
-            <SectionSection>
-                <SectionHeader
-                    title="Chose From Different Category"
-                    content={`We have ${category} categories, chose as you need from our different category.`}
-                />
-                <SectionInner>
-                    <PrimaryButton type="button" onClick={() => setOpen(true)}>
-                        categories
-                    </PrimaryButton>
-                </SectionInner>
-            </SectionSection>
-
-            <SectionSection>
-                <VendorOrdersIndex
-                    orderIndex={vendorOrdersIndex}
-                    activeNav={activeNav}
-                />
-            </SectionSection>
-
-            <Hr />
-            <SectionInner>
-                <p className="mb-2 text-xs">Resel Products from vendor</p>
-                <div
-                    style={{
-                        display: "grid",
-                        justifyContent: "start",
-                        gridTemplateColumns: "repeat(auto-fill, 170px)",
-                        gridGap: 10,
-                    }}
-                >
-                    {products.length > 0
-                        ? products.map((product) => (
-                              <ProductCard key={product.id} product={product} />
-                          ))
-                        : null}
-                </div>
-            </SectionInner>
-            <ResponsiveNavLink
-                href={route("reseller.resel-product.index")}
-                active={route().current("reseller.resel-product.*")}
-            >
-                <i className="w-6 pr-2 fas fa-sync"></i> View All
-            </ResponsiveNavLink>
-            <Modal show={open} onClose={closeCategoryModal}>
-                <div className="flex flex-col gap-3 p-3 border-b sm:flex-row sm:items-center sm:justify-between">
-                    <div>Explore Category</div>
-                    <input
-                        type="search"
-                        value={categorySearch}
-                        onChange={(event) =>
-                            setCategorySearch(event.target.value)
-                        }
-                        placeholder="Search category"
-                        className="w-full text-sm border-gray-300 rounded sm:w-56 focus:border-orange-500 focus:ring-orange-500"
-                        autoComplete="off"
-                    />
-                </div>
-                <div className="p-3 text-sm text-gray-600">
-                    <div className="mb-2">
-                        <NavLink
-                            href={route("reseller.resel-product.index")}
-                            className="p-0 text-sm border-b-0 text-inherit hover:text-inherit hover:border-transparent"
-                        >
-                            View All Products
-                        </NavLink>
-                    </div>
-                    {filteredCategories.length > 0 ? (
-                        filteredCategories.map((item) => (
-                            <CategoryItem key={item.id} item={item} />
-                        ))
-                    ) : (
-                        <div className="py-6 text-center text-gray-500">
-                            No category found.
-                        </div>
-                    )}
-                </div>
-                <hr className="my-1" />
-                <div className="flex items-center justify-end p-3">
-                    <DangerButton onClick={closeCategoryModal}>
-                        close
-                    </DangerButton>
-                </div>
-            </Modal>
         </div>
     );
 }
