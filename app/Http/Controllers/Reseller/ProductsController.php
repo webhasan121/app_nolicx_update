@@ -17,7 +17,6 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\HandleImageUpload;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductsController extends Controller
 {
@@ -123,15 +122,15 @@ class ProductsController extends Controller
         ]);
     }
 
-    private function buildIndexQuery(string $nav, string $pd, string $search): Builder|HasMany
+    private function buildIndexQuery(string $nav, string $pd, string $search): Builder
     {
         if ($nav === 'resel') {
             $ids = Reseller_resel_product::where(['user_id' => Auth::id()])->pluck('product_id');
             $query = Product::query()->whereIn('id', $ids)->latest('id');
         } elseif ($pd === 'Trash') {
-            $query = auth()->user()->myProducts()->onlyTrashed()->latest('id');
+            $query = $this->ownedProducts()->onlyTrashed()->latest('id');
         } else {
-            $query = auth()->user()->myProducts()->where(['status' => $pd])->latest('id');
+            $query = $this->ownedProducts()->where(['status' => $pd])->latest('id');
         }
 
         if ($search !== '') {
@@ -148,8 +147,7 @@ class ProductsController extends Controller
     public function edit(string $id): Response
     {
         $productId = decrypt($id);
-        $data = auth()->user()
-            ?->myProducts()
+        $data = $this->ownedProducts()
             ->withTrashed()
             ->with(['category', 'showcase', 'attr', 'isResel'])
             ->findOrFail($productId);
@@ -209,8 +207,7 @@ class ProductsController extends Controller
     public function update(Request $request, string $id)
     {
         $productId = decrypt($id);
-        $data = auth()->user()
-            ?->myProducts()
+        $data = $this->ownedProducts()
             ->withTrashed()
             ->with(['attr', 'showcase'])
             ->findOrFail($productId);
@@ -305,7 +302,7 @@ class ProductsController extends Controller
     public function restore(string $id)
     {
         $productId = decrypt($id);
-        $data = auth()->user()?->myProducts()->withTrashed()->findOrFail($productId);
+        $data = $this->ownedProducts()->withTrashed()->findOrFail($productId);
         $data->restore();
 
         return redirect()->back()->with('success', 'Restore From Trash');
@@ -314,7 +311,7 @@ class ProductsController extends Controller
     public function trash(string $id)
     {
         $productId = decrypt($id);
-        $data = auth()->user()?->myProducts()->findOrFail($productId);
+        $data = $this->ownedProducts()->findOrFail($productId);
         $data->delete();
 
         return redirect()->back()->with('success', 'Product moved to trashed');
@@ -323,7 +320,7 @@ class ProductsController extends Controller
     public function destroyImage(string $id, int $image)
     {
         $productId = decrypt($id);
-        $data = auth()->user()?->myProducts()->withTrashed()->with('showcase')->findOrFail($productId);
+        $data = $this->ownedProducts()->withTrashed()->with('showcase')->findOrFail($productId);
         $img = $data->showcase->find($image);
 
         if ($img) {
@@ -344,5 +341,12 @@ class ProductsController extends Controller
         return Str::startsWith($video, ['http://', 'https://'])
             ? $video
             : asset('storage/' . $video);
+    }
+
+    private function ownedProducts(): Builder
+    {
+        return Product::query()
+            ->where('user_id', Auth::id())
+            ->where('belongs_to_type', 'reseller');
     }
 }
