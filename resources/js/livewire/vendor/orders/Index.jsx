@@ -163,7 +163,7 @@ export default function Index({ orderIndex, activeNav }) {
                                         type="button"
                                         onClick={() => setFilterOpen(true)}
                                     >
-                                        <i className="fas fa-filter pr-2"></i> Filter
+                                        <i className="pr-2 fas fa-filter"></i> Filter
                                     </SecondaryButton>
                                     <Dropdown
                                         trigger={
@@ -196,15 +196,15 @@ export default function Index({ orderIndex, activeNav }) {
                                             </SecondaryButton>
                                         }
                                     >
-                                        <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                        <div className="flex items-center p-2 mb-2 text-sm border rounded-md">
                                             <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "all"} onChange={() => updateFilters({ area: "all" })} />
                                             <label className="p-0 m-0"> Both </label>
                                         </div>
-                                        <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                        <div className="flex items-center p-2 mb-2 text-sm border rounded-md">
                                             <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Dhaka"} onChange={() => updateFilters({ area: "Dhaka" })} />
                                             <label className="p-0 m-0"> Inside Dhaka </label>
                                         </div>
-                                        <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                        <div className="flex items-center p-2 mb-2 text-sm border rounded-md">
                                             <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Other"} onChange={() => updateFilters({ area: "Other" })} />
                                             <label className="p-0 m-0"> Outside of Dhaka </label>
                                         </div>
@@ -299,7 +299,7 @@ export default function Index({ orderIndex, activeNav }) {
                                             <td>{item.total ?? "N/A"} <br /> <span className="text-xs">+ {item.shipping}</span></td>
                                             <td><StatusBadge status={item.status} /></td>
                                             <td>
-                                                <div className="text-nowarp text-xs">
+                                                <div className="text-xs text-nowarp">
                                                     <div>{item.created_at_human}</div>
                                                     <div className="text-xs">{item.created_at_formatted}</div>
                                                 </div>
@@ -326,16 +326,16 @@ export default function Index({ orderIndex, activeNav }) {
 
                             {pagination.pages.length ? (
                                 <div className="w-full pt-4">
-                                    <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="flex items-center justify-between w-full gap-3">
                                         <div className="text-sm text-slate-700">
                                             {resultSummary}
                                         </div>
                                         <div className="flex items-center md:justify-end">
-                                            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                            <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                                 <button
                                                     type="button"
                                                     disabled={!pagination.prev?.url}
-                                                    className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
                                                 >
                                                     Previous
@@ -358,7 +358,7 @@ export default function Index({ orderIndex, activeNav }) {
                                                 <button
                                                     type="button"
                                                     disabled={!pagination.next?.url}
-                                                    className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
                                                 >
                                                     Next
@@ -377,7 +377,7 @@ export default function Index({ orderIndex, activeNav }) {
                 <div className="p-2">
                     <div>Filter</div>
                     <Hr />
-                    <div className="md:flex justify-between">
+                    <div className="justify-between md:flex">
                         <div>
                             <div>
                                 <div>Delevery Type</div>
@@ -394,9 +394,9 @@ export default function Index({ orderIndex, activeNav }) {
                             </div>
                         </div>
 
-                        <div className="mt-2 w-1/2">
-                            <div className=" border rounded-md">
-                                <div className=" p-2 ">
+                        <div className="w-1/2 mt-2">
+                            <div className="border rounded-md ">
+                                <div className="p-2 ">
                                     {[['all', 'All Time'], ['day', 'From First Date'], ['between', 'Between in Range']].map(([value, label]) => (
                                         <div key={value}>
                                             <div className="flex items-center w-full p-2 text-sm">
@@ -407,7 +407,7 @@ export default function Index({ orderIndex, activeNav }) {
                                     ))}
                                 </div>
 
-                                <div className="space-y-2 p-2 ">
+                                <div className="p-2 space-y-2 ">
                                     <div>
                                         First Date
                                         <input className="rounded-md" type="date" value={filters.start_date ?? ""} onChange={(e) => updateFilters({ start_date: e.target.value })} />

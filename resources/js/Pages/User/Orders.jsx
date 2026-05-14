@@ -100,7 +100,7 @@ export default function Orders() {
                         <SectionHeader
                             title=""
                             content={
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="flex flex-wrap items-center justify-end gap-2 mb-2">
                                     <TextInput
                                         type="search"
                                         value={search}
@@ -199,16 +199,16 @@ export default function Orders() {
 
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex items-center justify-between w-full gap-3">
                                     <div className="text-sm text-slate-700">
                                         {resultSummary}
                                     </div>
                                     <div className="flex items-center md:justify-end">
-                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                        <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                             <button
                                                 type="button"
                                                 disabled={!pagination.prev?.url}
-                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
                                             >
                                                 Previous
@@ -231,7 +231,7 @@ export default function Orders() {
                                             <button
                                                 type="button"
                                                 disabled={!pagination.next?.url}
-                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
                                             >
                                                 Next
