@@ -52,7 +52,7 @@ function StatusBadge({ status }) {
     return <span className={classes[status] ?? "text-xs p-1 border rounded-md bg-gray-200 text-gray-900"}>{status ?? "Unknown"}</span>;
 }
 
-export default function Index({ orderIndex, activeNav }) {
+export default function Index({ orderIndex, activeNav, embedded = false }) {
     const [filterOpen, setFilterOpen] = useState(false);
     const filters = orderIndex?.filters ?? {};
     const summary = orderIndex?.summary ?? {};
@@ -120,9 +120,12 @@ export default function Index({ orderIndex, activeNav }) {
             ? `Showing ${list?.from ?? 0}-${list?.to ?? 0} of ${list?.total ?? 0} orders`
             : "No orders found";
 
+    const Wrapper = ({ children }) =>
+        embedded ? <div className="mb-3">{children}</div> : <Container>{children}</Container>;
+
     return (
         <div>
-            <Container>
+            <Wrapper>
                 <PageHeader>
                     Orders
                     <br />
@@ -143,9 +146,9 @@ export default function Index({ orderIndex, activeNav }) {
                         </div>
                     ) : null}
                 </PageHeader>
-            </Container>
+            </Wrapper>
 
-            <Container>
+            <Wrapper>
                 <Section>
                     <Div title="Orders" content={summary.orders ?? 0} />
                     <Div title="Pending" content={summary.pending ?? 0} />
@@ -371,7 +374,7 @@ export default function Index({ orderIndex, activeNav }) {
                         </Foreach>
                     </SectionInner>
                 </SectionSection>
-            </Container>
+            </Wrapper>
 
             <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
                 <div className="p-2">
