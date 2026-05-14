@@ -43,8 +43,7 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [] 
                         gap: "1rem",
                     }}
                 >
-                    {orders.map((order) =>
-                        order.displayable ? (
+                    {orders.map((order) => (
                             <div
                                 key={order.id}
                                 className="bg-white rounded shadow text-center flex flex-col justify-between"
@@ -110,8 +109,7 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [] 
                                     </PrimaryButton>
                                 </div>
                             </div>
-                        ) : null,
-                    )}
+                    ))}
                 </div>
             </Container>
         </AppLayout>

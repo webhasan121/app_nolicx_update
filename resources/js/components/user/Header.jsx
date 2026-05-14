@@ -11,7 +11,6 @@ export default function Header() {
     const { auth, global, roles, activeNav } = usePage().props; // this global() load in AppServiceProvider
     const categories = global?.categories || [];
     const user = auth?.user;
-    console.log("roles", roles);
 
     const [open, setOpen] = useState(false);
     const [categoryQuery, setCategoryQuery] = useState("");

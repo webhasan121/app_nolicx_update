@@ -19,6 +19,7 @@ export default function CartCheckout({ carts = [], states = [] }) {
         area_condition: 'Dhaka',
         district: "",
         upozila: "",
+        targeted_area: "",
         delevery: "cash",
     });
 
@@ -533,6 +534,20 @@ export default function CartCheckout({ carts = [], states = [] }) {
                                         ))}
                                     </select>
                                 </InputFile>
+
+                                <Hr />
+
+                                <InputField
+                                    inputClass="w-full"
+                                    className="mb-1"
+                                    value={data.targeted_area}
+                                    onChange={(e) =>
+                                        setData("targeted_area", e.target.value)
+                                    }
+                                    label="Targeted Area"
+                                    error={errors?.targeted_area}
+                                    name="targeted_area"
+                                />
 
                                 <Hr />
 

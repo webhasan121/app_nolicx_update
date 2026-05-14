@@ -104,7 +104,7 @@ export default function Index() {
             <div>
                 <Container>
                     <SectionSection>
-                        <div className="grid grid-cols-6 gap-6">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                             {widgets.map((widget) => (
                                 <Div
                                     key={widget.head}

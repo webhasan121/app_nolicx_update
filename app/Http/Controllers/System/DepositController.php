@@ -74,6 +74,10 @@ class DepositController extends Controller
 
     public function confirm(userDeposit $deposit): RedirectResponse
     {
+        if ($deposit->confirmed) {
+            return redirect()->back()->with('success', 'Deposit already confirmed!');
+        }
+
         $deposit->user?->increment('coin', $deposit->amount);
         $deposit->confirmed = true;
         $deposit->save();

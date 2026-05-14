@@ -104,6 +104,8 @@ function OverviewDiv({ title, children }) {
     );
 }
 
+const money = (value) => `Tk ${Number(value ?? 0).toLocaleString()}`;
+
 function ProductCard({ product }) {
     const salePrice =
         product?.offer_type && product?.discount ? product.discount : product.price;
@@ -173,6 +175,7 @@ function ProductCard({ product }) {
 export default function Dashboard({
     tp,
     vendor,
+    dashboardOverview = {},
     category,
     categories = [],
     products = [],
@@ -196,18 +199,35 @@ export default function Dashboard({
             <div>
                 <div>
                     <div>
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns:
-                                    "repeat(auto-fill, minmax(150px, 1fr))",
-                                gridGap: 20,
-                            }}
-                        >
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                             <OverviewDiv title="Product">{tp}</OverviewDiv>
 
                             <OverviewDiv title="Vendor Shops">
                                 {vendor}
+                            </OverviewDiv>
+                            <OverviewDiv title="Today sell">
+                                {money(dashboardOverview?.today_sell)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Monthly sell">
+                                {money(dashboardOverview?.monthly_sell)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Product stock">
+                                {dashboardOverview?.product_stock ?? "0"}
+                            </OverviewDiv>
+                            <OverviewDiv title="Total product stock price">
+                                {money(dashboardOverview?.total_product_stock_price)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Yearly sell amount">
+                                {money(dashboardOverview?.yearly_sell_amount)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Total amount">
+                                {money(dashboardOverview?.total_amount)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Monthly profit">
+                                {money(dashboardOverview?.monthly_profit)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Daily profit">
+                                {money(dashboardOverview?.daily_profit)}
                             </OverviewDiv>
                         </div>
                     </div>

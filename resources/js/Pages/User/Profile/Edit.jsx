@@ -34,6 +34,7 @@ export default function ProfileEdit() {
         country: userProfile?.country || "",
         state: userProfile?.state || "",
         city: userProfile?.city || "",
+        targeted_area: userProfile?.targeted_area || "",
         line1: userProfile?.line1 || "",
         line2: userProfile?.line2 || "",
         zip: userProfile?.zip || "",
@@ -289,6 +290,17 @@ export default function ProfileEdit() {
                                                 ))}
                                             </select>
                                             <InputError className="mt-2" messages={profileForm.errors.city} />
+                                        </div>
+
+                                        <div className="relative">
+                                            <InputLabel htmlFor="targeted_area">Targeted Area</InputLabel>
+                                            <TextInput
+                                                value={profileForm.data.targeted_area}
+                                                onChange={(e) => profileForm.setData("targeted_area", e.target.value)}
+                                                type="text"
+                                                className="block w-full mt-1"
+                                            />
+                                            <InputError className="mt-2" messages={profileForm.errors.targeted_area} />
                                         </div>
 
                                         <div className="relative">

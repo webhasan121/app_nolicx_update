@@ -33,6 +33,7 @@ class ProfileEditController extends Controller
                 'country' => $countryId,
                 'state' => $stateId,
                 'city' => $this->resolveId(city::class, $user->city),
+                'targeted_area' => $user->requestsToBeRider()->where('status', 'Active')->value('targeted_area'),
                 'line1' => $user->line1,
                 'line2' => $user->line2,
                 'zip' => $user->zip,
@@ -98,12 +99,16 @@ class ProfileEditController extends Controller
             'country' => ['nullable', 'exists:countries,id'],
             'state' => ['nullable', 'exists:states,id'],
             'city' => ['nullable', 'exists:cities,id'],
+            'targeted_area' => ['nullable', 'string', 'max:255'],
             'line1' => ['nullable', 'string', 'max:255'],
             'line2' => ['nullable', 'string', 'max:255'],
             'zip' => ['nullable', 'string', 'max:20'],
         ]);
 
-        $user->fill($validated);
+        $profileData = $validated;
+        unset($profileData['targeted_area']);
+
+        $user->fill($profileData);
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -120,7 +125,7 @@ class ProfileEditController extends Controller
                 'country' => $countryName,
                 'district' => $stateName,
                 'city' => $cityName,
-                'targeted_area' => $cityName,
+                'targeted_area' => $validated['targeted_area'] ?: $cityName,
             ]);
         }
 

@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\state;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ProductOrderController extends Controller
@@ -43,7 +44,7 @@ class ProductOrderController extends Controller
                 'description' => $product->description,
                 'thumbnail' => $product->thumbnail,
                 'video' => $product->video,
-                'video_url' => $product->video ? asset('storage/' . $product->video) : null,
+                'video_url' => $this->videoUrl($product->video),
                 'offer_type' => $product->offer_type,
                 'discount' => $product->discount,
                 'price' => $product->price,
@@ -109,6 +110,7 @@ class ProductOrderController extends Controller
             'phone' => ['required'],
             'district' => ['required'],
             'upozila' => ['required'],
+            'targeted_area' => ['nullable', 'string', 'max:255'],
             'location' => ['required'],
             'delevery' => ['required'],
             'area_condition' => ['nullable'],
@@ -155,7 +157,7 @@ class ProductOrderController extends Controller
             'road_no' => $data['road_no'] ?? null,
             'house_no' => $data['house_no'] ?? null,
             'shipping' => $shipping,
-            'target_area' => $data['upozila'],
+            'target_area' => $data['targeted_area'] ?: $data['upozila'],
         ]);
 
         CartOrder::create([
@@ -175,5 +177,16 @@ class ProductOrderController extends Controller
         ProductComissionController::dispatchProductComissionsListeners($order->id);
 
         return redirect()->route('user.orders.view');
+    }
+
+    private function videoUrl(?string $video): ?string
+    {
+        if (empty($video)) {
+            return null;
+        }
+
+        return Str::startsWith($video, ['http://', 'https://'])
+            ? $video
+            : asset('storage/' . $video);
     }
 }

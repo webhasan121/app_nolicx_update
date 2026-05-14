@@ -245,7 +245,7 @@ class ProductsController extends Controller
             'buying_price' => 'required',
             'price' => 'required',
             'thumb' => 'required|image|max:4096',
-            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,webm,mkv', new MaxVideoDuration(15)],
+            'video' => ['nullable', 'url', 'max:2048'],
             'newImage.*' => 'image|max:2048',
         ]);
 
@@ -287,7 +287,7 @@ class ProductsController extends Controller
             'description' => $request->input('description'),
             'slug' => Str::slug($request->input('title')),
             'thumbnail' => $this->handleImageUpload($request->file('thumb'), 'products', null),
-            'video' => $this->handleImageUpload($request->file('video'), 'products-videos', null),
+            'video' => $request->input('video'),
             'belongs_to_type' => $belongsTo,
             'country' => Auth::user()->country ?? 'Bangladesh',
             'state' => Auth::user()->state ?? null,
@@ -359,7 +359,7 @@ class ProductsController extends Controller
                 'thumbnail' => $data->thumbnail,
                 'thumbnail_url' => $data->thumbnail ? asset('storage/' . $data->thumbnail) : null,
                 'video' => $data->video,
-                'video_url' => $data->video ? asset('storage/' . $data->video) : null,
+                'video_url' => $this->videoUrl($data->video),
                 'meta_title' => $data->meta_title,
                 'meta_description' => $data->meta_description,
                 'keyword' => $data->keyword,
@@ -425,8 +425,8 @@ class ProductsController extends Controller
             'shipping_note' => ['nullable', 'string'],
             'attr_name' => ['nullable', 'string'],
             'attr_value' => ['nullable', 'string'],
-            'thumb' => ['nullable', 'file', 'image'],
-            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,webm,mkv', new MaxVideoDuration(15)],
+            'thumb' => [empty($data->thumbnail) ? 'required' : 'nullable', 'file', 'image'],
+            'video' => ['nullable', 'url', 'max:2048'],
             'newseothumb' => ['nullable', 'file', 'image'],
             'newImage.*' => ['nullable', 'file', 'image'],
         ]);
@@ -442,7 +442,7 @@ class ProductsController extends Controller
         $data->unit = $payload['unit'] ?? $data->unit;
         $data->description = $payload['description'] ?? $data->description;
         $data->thumbnail = $this->handleImageUpload($request->file('thumb'), 'products', $data->thumbnail);
-        $data->video = $this->handleImageUpload($request->file('video'), 'products-videos', $data->video);
+        $data->video = $payload['video'] ?? null;
         $data->meta_title = $payload['meta_title'] ?? $data->meta_title;
         $data->meta_description = $payload['meta_description'] ?? $data->meta_description;
         $data->keyword = $payload['keyword'] ?? $data->keyword;
@@ -520,6 +520,17 @@ class ProductsController extends Controller
         }
 
         return redirect()->back()->with('success', 'Image Deletd !');
+    }
+
+    private function videoUrl(?string $video): ?string
+    {
+        if (empty($video)) {
+            return null;
+        }
+
+        return Str::startsWith($video, ['http://', 'https://'])
+            ? $video
+            : asset('storage/' . $video);
     }
 
     public function resell(Request $request): Response|RedirectResponse

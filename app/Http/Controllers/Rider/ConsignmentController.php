@@ -24,21 +24,19 @@ class ConsignmentController extends Controller
             $riderInfo = [
                 'id' => $rider?->id,
                 'targeted_area' => $rider?->targeted_area,
-                'targeted_area_name' => $rider?->targetedArea?->name ?? 'N/A',
+                'targeted_area_name' => $rider?->targetedArea?->name ?? $rider?->targeted_area ?? 'N/A',
                 'comission' => $rider?->comission ?? 0,
             ];
         }
 
-        if (!empty($riderInfo)) {
+        if (!empty($riderInfo) && trim((string) ($riderInfo['targeted_area'] ?? '')) !== '') {
+            $targetedArea = trim((string) ($riderInfo['targeted_area'] ?? ''));
+
             $orders = Order::query()
                 ->with(['cartOrders.product'])
-                ->where(function ($itm) use ($riderInfo) {
-                    $itm->where('target_area', 'like', '%' . ($riderInfo['targeted_area'] ?? '') . '%')
-                        ->whereIn('status', ['Accept']);
-                })
-                ->whereDoesntHave('hasRider', function ($query) {
-                    $query->where('rider_id', auth()->id());
-                })
+                ->where('status', 'Accept')
+                ->whereRaw('LOWER(TRIM(target_area)) = ?', [mb_strtolower($targetedArea)])
+                ->whereDoesntHave('hasRider')
                 ->get()
                 ->map(function ($order) use ($riderInfo) {
                     $totalForNotResel = 0;
@@ -81,6 +79,10 @@ class ConsignmentController extends Controller
     {
         if (!auth()?->user()?->isRider()) {
             return back()->with('error', 'Your are not a Rider !');
+        }
+
+        if (!$this->targetAreasMatch($order->target_area, auth()->user()?->isRider()?->targeted_area)) {
+            return back()->with('error', 'This order is outside your targeted area.');
         }
 
         if (
@@ -184,5 +186,10 @@ class ConsignmentController extends Controller
                 'phone' => $shop?->phone,
             ],
         ]);
+    }
+
+    private function targetAreasMatch(?string $orderArea, ?string $riderArea): bool
+    {
+        return mb_strtolower(trim((string) $orderArea)) === mb_strtolower(trim((string) $riderArea));
     }
 }

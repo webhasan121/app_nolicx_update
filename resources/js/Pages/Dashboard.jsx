@@ -75,6 +75,7 @@ export default function Dashboard() {
                             category={resellerOverview?.category}
                             products={resellerOverview?.products}
                             categories={resellerOverview?.categories}
+                            dashboardOverview={vendorOverview}
                             vendorOrdersIndex={vendorOrdersIndex}
                             activeNav={activeNav}
                         />

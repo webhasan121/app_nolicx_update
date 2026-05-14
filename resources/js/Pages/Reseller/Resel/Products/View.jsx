@@ -24,6 +24,28 @@ function renderCategoryOptions(categories = [], depth = 0) {
     ]);
 }
 
+function youtubeEmbedUrl(url) {
+    if (!url) return null;
+
+    try {
+        const parsed = new URL(url);
+
+        if (parsed.hostname.includes("youtu.be")) {
+            const id = parsed.pathname.replace("/", "");
+            return id ? `https://www.youtube.com/embed/${id}` : null;
+        }
+
+        if (parsed.hostname.includes("youtube.com")) {
+            const id = parsed.searchParams.get("v") || parsed.pathname.split("/").pop();
+            return id ? `https://www.youtube.com/embed/${id}` : null;
+        }
+    } catch {
+        return null;
+    }
+
+    return null;
+}
+
 export default function View({
     product,
     categories = [],
@@ -61,6 +83,8 @@ export default function View({
         return value.split(",").map((item) => item.trim()).filter(Boolean);
     }, [product]);
 
+    const videoEmbedUrl = youtubeEmbedUrl(product?.video_url);
+
     const gallery = useMemo(() => {
         const items = [];
 
@@ -82,7 +106,7 @@ export default function View({
             }
         });
 
-        if (product?.video_url) {
+        if (videoEmbedUrl) {
             items.push({
                 type: "video",
                 key: `video-${product.video_url}`,
@@ -98,7 +122,7 @@ export default function View({
                         candidate.value === item.value,
                 ) === index,
         );
-    }, [product]);
+    }, [product, videoEmbedUrl]);
 
     const handleMouseMove = (event) => {
         const image = imageRef.current;
@@ -305,11 +329,7 @@ export default function View({
                                                                 height: "60px",
                                                             }}
                                                         >
-                                                            <video
-                                                                src={item.value}
-                                                                muted
-                                                                className="absolute inset-0 object-cover w-full h-full rounded opacity-70"
-                                                            />
+                                                            <div className="absolute inset-0 bg-black/80" />
                                                             <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
                                                                 <i className="text-xs fas fa-play"></i>
                                                             </span>
@@ -757,7 +777,7 @@ export default function View({
                 </div>
             </Modal>
 
-            {showVideoModal && product?.video_url ? (
+            {showVideoModal && videoEmbedUrl ? (
                 <div
                     className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/70"
                     onClick={() => setShowVideoModal(false)}
@@ -774,12 +794,13 @@ export default function View({
                             <i className="fas fa-times"></i>
                         </button>
 
-                        <video
-                            key={product.video_url}
-                            src={product.video_url}
-                            controls
-                            autoPlay
-                            className="w-full rounded-lg max-h-[80vh] bg-black"
+                        <iframe
+                            key={videoEmbedUrl}
+                            src={`${videoEmbedUrl}?autoplay=1`}
+                            title={product.title}
+                            allow="autoplay; encrypted-media; picture-in-picture"
+                            allowFullScreen
+                            className="w-full rounded-lg aspect-video bg-black"
                         />
                     </div>
                 </div>

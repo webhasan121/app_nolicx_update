@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\UserHasRefs;
+use App\Models\Vip;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\View;
@@ -86,7 +87,10 @@ class SystemUsersController extends Controller
         $this->applyDateFilter($query, $sd, $ed);
 
         $users = $query->paginate(config('app.paginate'))->withQueryString();
-        $allUsers = User::get();
+        $totalUsers = User::query()->withoutAdmin()->count();
+        $todayUsers = User::query()->withoutAdmin()->whereDate('created_at', today())->count();
+        $totalVipAccounts = Vip::query()->count();
+        $todayVipAccounts = Vip::query()->whereDate('created_at', today())->count();
 
         return Inertia::render('Auth/system/users/index', [
             'filters' => [
@@ -95,9 +99,10 @@ class SystemUsersController extends Controller
                 'ed' => $ed,
             ],
             'widgets' => [
-                ['head' => 'Total', 'data' => $allUsers->count()],
-                ['head' => 'Today', 'data' => $allUsers->where('created_at', today())->count()],
-                ['head' => 'VIP', 'data' => $allUsers->where('vip', '!=', '0')->count()],
+                ['head' => 'Today Vip account', 'data' => $todayVipAccounts],
+                ['head' => 'Total Vip account', 'data' => $totalVipAccounts],
+                ['head' => 'Today user', 'data' => $todayUsers],
+                ['head' => 'Total user', 'data' => $totalUsers],
             ],
             'users' => [
                 'data' => $users->getCollection()->map(function ($user) {
