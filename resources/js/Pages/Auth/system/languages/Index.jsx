@@ -28,10 +28,6 @@ export default function Index() {
         router.post(route("system.languages.default", language.id), {}, { preserveScroll: true });
     };
 
-    const toggle = (language) => {
-        router.post(route("system.languages.toggle", language.id), {}, { preserveScroll: true });
-    };
-
     return (
         <AppLayout title={pageTitle} header={<PageHeader>{pageTitle}</PageHeader>}>
             <Container>
@@ -116,18 +112,6 @@ export default function Index() {
                                                     title="Set default"
                                                 >
                                                     <i className="fas fa-check text-xs"></i>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => toggle(language)}
-                                                    className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
-                                                        language.is_active
-                                                            ? "border-slate-200 bg-white text-slate-500 hover:text-amber-600"
-                                                            : "border-red-100 bg-red-50 text-red-500"
-                                                    }`}
-                                                    title="Enable or disable"
-                                                >
-                                                    <i className="fas fa-power-off text-xs"></i>
                                                 </button>
                                                 <Link
                                                     href={language.edit_url}

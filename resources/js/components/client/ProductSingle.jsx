@@ -7,6 +7,28 @@ import NavLink from "../NavLink";
 import ProductsLoop from "./ProductsLoop";
 import Swal from "sweetalert2";
 
+function youtubeEmbedUrl(url) {
+    if (!url) return null;
+
+    try {
+        const parsed = new URL(url);
+
+        if (parsed.hostname.includes("youtu.be")) {
+            const id = parsed.pathname.replace("/", "");
+            return id ? `https://www.youtube.com/embed/${id}` : null;
+        }
+
+        if (parsed.hostname.includes("youtube.com")) {
+            const id = parsed.searchParams.get("v") || parsed.pathname.split("/").pop();
+            return id ? `https://www.youtube.com/embed/${id}` : null;
+        }
+    } catch {
+        return null;
+    }
+
+    return null;
+}
+
 export default function ProductSingle({
     product,
     relatedProduct = [],
@@ -34,9 +56,10 @@ export default function ProductSingle({
         ...(product?.showcase?.map((image) => image?.image) ?? []),
     ].filter(Boolean))];
 
+    const videoEmbedUrl = youtubeEmbedUrl(product?.video_url);
     const gallery = [
         ...galleryImages.map((image) => ({ type: "image", value: image })),
-        ...(product?.video_url ? [{ type: "video", value: product.video_url }] : []),
+        ...(videoEmbedUrl ? [{ type: "video", value: product.video_url }] : []),
     ];
 
     const discountPercentage =
@@ -199,7 +222,7 @@ export default function ProductSingle({
                                     <button
                                         key={`${item.type}-${item.value}`}
                                         type="button"
-                                        className="p-1 rounded"
+                                        className="flex items-center justify-center w-16 h-16 p-1 bg-white border rounded"
                                         onClick={() => {
                                             if (item.type === "video") {
                                                 setShowVideoModal(true);
@@ -211,24 +234,17 @@ export default function ProductSingle({
                                     >
                                         {item.type === "video" ? (
                                             <div
-                                                className="relative flex items-center justify-center p-1 border rounded bg-slate-900"
-                                                style={{ width: "60px", height: "60px" }}
+                                                className="relative flex items-center justify-center w-full h-full overflow-hidden rounded bg-slate-900"
                                             >
-                                                <video
-                                                    src={item.value}
-                                                    muted
-                                                    className="absolute inset-0 object-cover w-full h-full rounded opacity-70"
-                                                />
+                                                <div className="absolute inset-0 bg-black/80" />
                                                 <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
                                                     <i className="text-xs fas fa-play"></i>
                                                 </span>
                                             </div>
                                         ) : (
                                             <img
-                                                className="p-1 border rounded"
+                                                className="object-cover w-full h-full rounded"
                                                 src={`/storage/${item.value}`}
-                                                width="60"
-                                                height="60"
                                                 alt={product.title}
                                             />
                                         )}
@@ -497,7 +513,7 @@ export default function ProductSingle({
                 </>
             )}
 
-            {showVideoModal && product?.video_url ? (
+            {showVideoModal && videoEmbedUrl ? (
                 <div
                     className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/70"
                     onClick={() => setShowVideoModal(false)}
@@ -514,12 +530,13 @@ export default function ProductSingle({
                             <i className="fas fa-times"></i>
                         </button>
 
-                        <video
-                            key={product.video_url}
-                            src={product.video_url}
-                            controls
-                            autoPlay
-                            className="w-full rounded-lg max-h-[80vh] bg-black"
+                        <iframe
+                            key={videoEmbedUrl}
+                            src={`${videoEmbedUrl}?autoplay=1`}
+                            title={product.title}
+                            allow="autoplay; encrypted-media; picture-in-picture"
+                            allowFullScreen
+                            className="w-full bg-black rounded-lg aspect-video"
                         />
                     </div>
                 </div>

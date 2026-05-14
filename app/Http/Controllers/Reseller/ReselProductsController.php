@@ -12,6 +12,7 @@ use App\Models\product_has_image;
 use App\Models\Reseller_resel_product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -225,7 +226,7 @@ class ReselProductsController extends Controller
                 'thumbnail' => $product->thumbnail,
                 'thumbnail_url' => $product->thumbnail ? asset('storage/' . $product->thumbnail) : null,
                 'video' => $product->video,
-                'video_url' => $product->video ? asset('storage/' . $product->video) : null,
+                'video_url' => $this->videoUrl($product->video),
                 'price' => $product->price,
                 'discount' => $product->discount,
                 'offer_type' => (bool) $product->offer_type,
@@ -352,6 +353,17 @@ class ReselProductsController extends Controller
         foreach ($category->children as $child) {
             $this->collectCategoryIds($child, $ids);
         }
+    }
+
+    private function videoUrl(?string $video): ?string
+    {
+        if (empty($video)) {
+            return null;
+        }
+
+        return Str::startsWith($video, ['http://', 'https://'])
+            ? $video
+            : asset('storage/' . $video);
     }
 
     private function buildCategoryTree(): array

@@ -7,6 +7,7 @@ use App\Models\UserTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ProductDetailsController extends Controller
@@ -81,7 +82,7 @@ class ProductDetailsController extends Controller
                 'description' => $product->description,
                 'thumbnail' => $product->thumbnail,
                 'video' => $product->video,
-                'video_url' => $product->video ? asset('storage/' . $product->video) : null,
+                'video_url' => $this->videoUrl($product->video),
                 'offer_type' => $product->offer_type,
                 'discount' => $product->discount,
                 'price' => $product->price,
@@ -246,5 +247,16 @@ class ProductDetailsController extends Controller
             'min' => '00',
             'sec' => '00',
         ];
+    }
+
+    private function videoUrl(?string $video): ?string
+    {
+        if (empty($video)) {
+            return null;
+        }
+
+        return Str::startsWith($video, ['http://', 'https://'])
+            ? $video
+            : asset('storage/' . $video);
     }
 }
