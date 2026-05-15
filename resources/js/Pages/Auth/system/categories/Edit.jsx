@@ -1,5 +1,5 @@
 import { Head, useForm } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Hr from "../../../../components/Hr";
 import InputLabel from "../../../../components/InputLabel";
@@ -15,6 +15,10 @@ import CreateCategory from "../../../../livewire/reseller/categories/Create";
 export default function Edit({ category, parentCategories = [] }) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const parentCategoryItems = useMemo(
+        () => flattenParentCategories(parentCategories, category?.id),
+        [parentCategories, category?.id]
+    );
 
     const form = useForm({
         name: category?.name ?? "",
@@ -89,6 +93,29 @@ export default function Edit({ category, parentCategories = [] }) {
                             className="space-y-4 p-3 border rounded-md"
                             style={{ maxWidth: 350, margin: "auto" }}
                         >
+                            <div className="mb-4">
+                                <InputLabel
+                                    htmlFor="parent_id"
+                                    className="block text-sm font-medium text-gray-700"
+                                >
+                                    Parent
+                                </InputLabel>
+                                <SearchableParentCategory
+                                    categories={parentCategoryItems}
+                                    value={form.data.belongs_to}
+                                    onChange={(categoryId) =>
+                                        form.setData("belongs_to", categoryId)
+                                    }
+                                />
+                                {form.errors.belongs_to ? (
+                                    <span className="text-red-500 text-sm">
+                                        {form.errors.belongs_to}
+                                    </span>
+                                ) : null}
+                            </div>
+
+                            <Hr />
+
                             <div className="mb-4">
                                 <InputLabel
                                     htmlFor="name"
@@ -181,32 +208,6 @@ export default function Edit({ category, parentCategories = [] }) {
 
                             <Hr />
 
-                            <div className="mb-4">
-                                <InputLabel
-                                    htmlFor="parent_id"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
-                                    Parent
-                                </InputLabel>
-                                <select
-                                    value={form.data.belongs_to}
-                                    onChange={(e) =>
-                                        form.setData("belongs_to", e.target.value)
-                                    }
-                                    id="parent_id"
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                >
-                                    <option value="">None</option>
-                                    {renderCategoryOptions(parentCategories)}
-                                </select>
-                                {form.errors.belongs_to ? (
-                                    <span className="text-red-500 text-sm">
-                                        {form.errors.belongs_to}
-                                    </span>
-                                ) : null}
-                            </div>
-                            <Hr />
-
                             <div className="flex justify-end">
                                 <PrimaryButton type="submit">
                                     <i className="fas fa-save pr-2"></i>Save Changes
@@ -234,13 +235,117 @@ export default function Edit({ category, parentCategories = [] }) {
     );
 }
 
-function renderCategoryOptions(categories = [], depth = 0) {
-    return categories.flatMap((item) => [
-        (
-            <option key={item.id} value={item.id}>
-                {`${depth === 0 ? "" : "-".repeat(depth * 2) + " "}${item.name}`}
-            </option>
-        ),
-        ...renderCategoryOptions(item.children ?? [], depth + 1),
-    ]);
+function SearchableParentCategory({ categories = [], value, onChange }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState("");
+    const selectedCategory = categories.find(
+        (category) => String(category.id) === String(value)
+    );
+    const normalizedSearch = search.trim().toLowerCase();
+    const visibleValue = isOpen ? search : selectedCategory?.label ?? "None";
+    const filteredCategories = categories.filter((category) =>
+        category.searchText.includes(normalizedSearch)
+    );
+
+    const selectCategory = (category) => {
+        if (category.disabled) {
+            return;
+        }
+
+        onChange(category.id);
+        setSearch("");
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative mt-1">
+            <input
+                type="text"
+                id="parent_id"
+                value={visibleValue}
+                onFocus={() => {
+                    setSearch("");
+                    setIsOpen(true);
+                }}
+                onChange={(event) => {
+                    setSearch(event.target.value);
+                    setIsOpen(true);
+                }}
+                onBlur={() => {
+                    window.setTimeout(() => {
+                        setSearch("");
+                        setIsOpen(false);
+                    }, 150);
+                }}
+                placeholder="Search parent category"
+                className="block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                autoComplete="off"
+            />
+            <i className="absolute text-gray-500 -translate-y-1/2 pointer-events-none fas fa-angle-down right-3 top-1/2"></i>
+
+            {isOpen ? (
+                <div className="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                    <button
+                        type="button"
+                        className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => {
+                            onChange("");
+                            setSearch("");
+                            setIsOpen(false);
+                        }}
+                    >
+                        None
+                    </button>
+
+                    {filteredCategories.length > 0 ? (
+                        filteredCategories.map((category) => (
+                            <button
+                                key={category.id}
+                                type="button"
+                                disabled={category.disabled}
+                                className={`block w-full px-3 py-2 text-left text-sm ${
+                                    category.disabled
+                                        ? "cursor-not-allowed text-gray-400"
+                                        : "hover:bg-gray-100 focus:bg-gray-100"
+                                }`}
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => selectCategory(category)}
+                            >
+                                {category.label}
+                            </button>
+                        ))
+                    ) : (
+                        <div className="px-3 py-4 text-center text-sm text-gray-500">
+                            No category found.
+                        </div>
+                    )}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
+function flattenParentCategories(categories = [], currentCategoryId = null, depth = 0, blocked = false) {
+    return categories.flatMap((item) => {
+        const isCurrentCategory = String(item.id) === String(currentCategoryId);
+        const isBlocked = blocked || isCurrentCategory;
+        const prefix = depth === 0 ? "" : `${"-".repeat(depth * 2)} `;
+        const current = {
+            id: item.id,
+            label: `${prefix}${item.name}`,
+            searchText: `${item.name ?? ""} ${prefix}${item.name ?? ""}`.toLowerCase(),
+            disabled: isBlocked,
+        };
+
+        return [
+            current,
+            ...flattenParentCategories(
+                item.children ?? [],
+                currentCategoryId,
+                depth + 1,
+                isBlocked
+            ),
+        ];
+    });
 }

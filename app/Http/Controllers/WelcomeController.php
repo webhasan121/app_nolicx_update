@@ -18,6 +18,7 @@ class WelcomeController extends Controller
     {
         $medicineCategoryIds = $this->categoryTreeIds('medicine', 'Medicine');
         $womenCategoryIds = $this->categoryTreeIds('womens-item', "Women's Item");
+        $groceryCategoryIds = $this->categoryTreeIds('grocery-item', 'Grocery Item');
         $foodCategoryIds = $this->categoryTreeIds('food-items', 'Food Items');
         $megaDealsCategoryIds = $this->categoryTreeIds('mega-deals', 'Mega Deals');
 
@@ -85,6 +86,13 @@ class WelcomeController extends Controller
                 ->reseller()
                 ->active()
                 ->whereIn('category_id', $womenCategoryIds ?: [0])
+                ->latest()
+                ->limit(20)
+                ->get(),
+            'groceryProducts' => Product::query()
+                ->reseller()
+                ->active()
+                ->whereIn('category_id', $groceryCategoryIds ?: [0])
                 ->latest()
                 ->limit(20)
                 ->get(),
