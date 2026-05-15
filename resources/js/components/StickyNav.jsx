@@ -116,7 +116,7 @@ export default function StickyNav({ open, setOpen }) {
                                         </button>
 
                                         {dropdownOpen && (
-                                            <div className="absolute right-0 z-50 w-48 mt-2 bg-white border rounded-md shadow-lg">
+                                            <div className="absolute right-0 top-full z-50 w-48 mt-2 bg-white border rounded-md shadow-lg">
                                                 <NavLink
                                                     href={route("user.index")}
                                                     className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
