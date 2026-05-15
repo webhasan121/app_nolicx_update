@@ -41,7 +41,7 @@ Route::get('dashboard', function () {
     if (auth()->user()->hasAnyRole(['system', 'admin']) || auth()->user()->can('access_vendor_dashboard') || auth()->user()->can('access_reseller_dashboard') || auth()->user()->can('access_rider_dashboard')) {
         return Inertia::render('Dashboard', [
             'systemOverview' => SystemDashboardOverview::get(),
-            'resellerOverview' => ResellerDashboardOverview::get(),
+            'resellerOverview' => ResellerDashboardOverview::get(auth()->user()),
             'riderConsignmentIndex' => RiderConsignmentIndexData::get(auth()->user(), request()->only([
                 'status',
                 'created_at',
@@ -179,4 +179,3 @@ Route::get('/countries', function () {
     $countries = country::get();
     return response()->json($countries);
 })->name('countries');
-

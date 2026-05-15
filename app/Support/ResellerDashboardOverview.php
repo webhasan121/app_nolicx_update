@@ -4,15 +4,22 @@ namespace App\Support;
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\Vendor;
+use App\Models\Reseller_resel_product;
+use App\Models\User;
 
 class ResellerDashboardOverview
 {
-    public static function get(): array
+    public static function get(User $user): array
     {
+        $myProducts = $user->myProducts();
+
         return [
-            'tp' => Product::where(['belongs_to_type' => 'vendor'])->count(),
-            'vendor' => Vendor::count(),
+            'tp' => (clone $myProducts)->count(),
+            'vendor' => Reseller_resel_product::query()
+                ->where('user_id', $user->id)
+                ->whereNotNull('belongs_to')
+                ->distinct('belongs_to')
+                ->count('belongs_to'),
             'category' => Category::count(),
             'products' => Product::where([
                 'belongs_to_type' => 'vendor',
