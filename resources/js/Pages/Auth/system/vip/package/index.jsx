@@ -67,6 +67,10 @@ export default function Index() {
     }, [search]);
 
     const handleTrash = (id) => {
+        if (!window.confirm("Are you sure you want to move this package to trash?")) {
+            return;
+        }
+
         router.post(route("system.vip.trash", { id }));
     };
 

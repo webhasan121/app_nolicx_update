@@ -167,6 +167,10 @@ export default function Edit() {
     };
 
     const moveToTrash = () => {
+        if (!window.confirm("Are you sure you want to move this product to trash?")) {
+            return;
+        }
+
         router.post(route("vendor.products.trash", { product: productData.encrypted_id }));
     };
 
@@ -175,6 +179,10 @@ export default function Edit() {
     };
 
     const eraseOldImage = (imageId) => {
+        if (!window.confirm("Are you sure you want to delete this image?")) {
+            return;
+        }
+
         router.delete(
             route("vendor.products.images.destroy", {
                 product: productData.encrypted_id,

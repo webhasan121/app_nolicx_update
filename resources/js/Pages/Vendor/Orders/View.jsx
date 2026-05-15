@@ -92,6 +92,10 @@ export default function View({ order }) {
     const canFinish = Boolean(order?.received_at);
 
     const removeRider = (codId) => {
+        if (!window.confirm("Are you sure you want to remove this rider?")) {
+            return;
+        }
+
         router.delete(route("vendor.orders.rider.remove", { order: order.id, cod: codId }));
     };
 

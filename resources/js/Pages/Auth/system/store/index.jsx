@@ -508,12 +508,13 @@ export default function Index() {
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.pay_by}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.status}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.requested_at}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-700">{withdraw.remarks}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">-</td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="9" className="px-4 py-6 text-center text-gray-500">
+                                                <td colSpan={columns2.length} className="px-4 py-6 text-center text-gray-500">
                                                     <span>No histories found.</span>
                                                 </td>
                                             </tr>
