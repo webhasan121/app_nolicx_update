@@ -16,6 +16,7 @@ class LanguageController extends Controller
 
         $search = trim((string) $request->query('search', ''));
         $total = TranslationManager::totalKeys();
+        $currentLocale = app()->getLocale();
 
         $languages = collect(TranslationManager::languages())
             ->filter(function ($language) use ($search) {
@@ -27,7 +28,7 @@ class LanguageController extends Controller
                     || str_contains(strtolower($language['code']), strtolower($search))
                     || str_contains(strtolower($language['icon']), strtolower($search));
             })
-            ->map(function ($language) use ($total) {
+            ->map(function ($language) use ($total, $currentLocale) {
                 $done = collect(TranslationManager::messages($language['code']))
                     ->filter(fn ($value) => trim((string) $value) !== '')
                     ->count();
@@ -41,7 +42,7 @@ class LanguageController extends Controller
                     'done' => $done,
                     'total' => $total,
                     'progress' => $total > 0 ? round(($done / $total) * 100) : 0,
-                    'is_default' => $language['is_default'],
+                    'is_default' => $language['code'] === $currentLocale,
                     'is_active' => $language['is_active'],
                     'edit_url' => route('system.languages.edit', $language['code']),
                 ];

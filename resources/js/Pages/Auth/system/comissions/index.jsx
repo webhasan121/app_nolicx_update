@@ -12,6 +12,7 @@ import Container from "../../../../components/dashboard/Container";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 function SummaryBadge({ value, className = "" }) {
     return (
@@ -24,6 +25,7 @@ function SummaryBadge({ value, className = "" }) {
 }
 
 export default function Index({ filters, comissions }) {
+    const { t } = useTranslation();
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [where, setWhere] = useState(filters?.where ?? "");
     const [confirm, setConfirm] = useState(filters?.confirm ?? "All");
@@ -122,16 +124,16 @@ export default function Index({ filters, comissions }) {
 
     return (
         <AppLayout
-            title="Comissions"
+            title={t("Comissions")}
             header={
                 <PageHeader>
                     <div className="flex justify-between">
-                        <div>Comissions</div>
+                        <div>{t("Comissions")}</div>
                     </div>
                 </PageHeader>
             }
         >
-            <Head title="Comissions" />
+            <Head title={t("Comissions")} />
 
             <Container>
                 <div className="flex justify-between items-end mb-4">
@@ -162,7 +164,7 @@ export default function Index({ filters, comissions }) {
                             <TextInput
                                 className="py-1 w-full"
                                 type="search"
-                                placeholder="Search comissions..."
+                                placeholder={t("Search comissions...")}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 onKeyDown={(e) => {
@@ -188,11 +190,11 @@ export default function Index({ filters, comissions }) {
                         <Table data={[comissions?.summary ?? {}]}>
                             <thead>
                                 <tr>
-                                    <th>Seller Total Profit</th>
-                                    <th>Cut comission</th>
-                                    <th>Distribute</th>
-                                    <th>Store</th>
-                                    <th>Return</th>
+                                    <th>{t("Seller Total Profit")}</th>
+                                    <th>{t("Cut comission")}</th>
+                                    <th>{t("Distribute")}</th>
+                                    <th>{t("Store")}</th>
+                                    <th>{t("Return")}</th>
                                 </tr>
                             </thead>
 
@@ -215,20 +217,20 @@ export default function Index({ filters, comissions }) {
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>DT</th>
-                                <th>ID</th>
-                                <th>Order</th>
-                                <th>Product</th>
-                                <th>Buy</th>
-                                <th>Sell</th>
-                                <th>Profit</th>
-                                <th>Rate</th>
-                                <th>Take</th>
-                                <th>Give</th>
-                                <th>Store</th>
-                                <th>Return</th>
-                                <th>Confirmed</th>
-                                <th>A/C</th>
+                                <th>{t("DT")}</th>
+                                <th>{t("ID")}</th>
+                                <th>{t("Order")}</th>
+                                <th>{t("Product")}</th>
+                                <th>{t("Buy")}</th>
+                                <th>{t("Sell")}</th>
+                                <th>{t("Profit")}</th>
+                                <th>{t("Rate")}</th>
+                                <th>{t("Take")}</th>
+                                <th>{t("Give")}</th>
+                                <th>{t("Store")}</th>
+                                <th>{t("Return")}</th>
+                                <th>{t("Confirmed")}</th>
+                                <th>{t("A/C")}</th>
                             </tr>
                         </thead>
 
@@ -251,28 +253,23 @@ export default function Index({ filters, comissions }) {
                                     <td>
                                         {item.confirmed ? (
                                             <>
-                                                <span className="p-1 px-2 rounded-xl bg-green-900 text-white">Confirmed</span>
+                                                <span className="p-1 px-2 rounded-xl bg-green-900 text-white">{t("Confirmed")}</span>
                                                 <NavLink href={route("system.comissions.take.refund", { id: item.id })}>
-                                                    {" "}Refund
-                                                </NavLink>
+                                                    {" "}{t("Refund")}</NavLink>
                                             </>
                                         ) : (
                                             <>
-                                                <span className="p-1 px-2 rounded-xl bg-gray-900 text-white">Pending</span>
+                                                <span className="p-1 px-2 rounded-xl bg-gray-900 text-white">{t("Pending")}</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => confirmTakeComission(item.id)}
-                                                >
-                                                    Confirm
-                                                </button>
+                                                >{t("Confirm")}</button>
                                             </>
                                         )}
                                     </td>
                                     <td>
                                         <div className="flex space-x-2">
-                                            <NavLink href={route("system.comissions.distributes", { id: item.id })}>
-                                                Details
-                                            </NavLink>
+                                            <NavLink href={route("system.comissions.distributes", { id: item.id })}>{t("Details")}</NavLink>
                                         </div>
                                     </td>
                                 </tr>
@@ -348,9 +345,7 @@ export default function Index({ filters, comissions }) {
                                             disabled={!pagination.prev?.url}
                                             className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                             onClick={() => goToPage(pagination.prev?.url)}
-                                        >
-                                            Previous
-                                        </button>
+                                        >{t("Previous")}</button>
                                         {pagination.pages.map((link, index) => (
                                             <button
                                                 key={`${link.label}-${index}`}
@@ -371,9 +366,7 @@ export default function Index({ filters, comissions }) {
                                             disabled={!pagination.next?.url}
                                             className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                             onClick={() => goToPage(pagination.next?.url)}
-                                        >
-                                            Next
-                                        </button>
+                                        >{t("Next")}</button>
                                     </div>
                                 </div>
                             </div>
@@ -383,7 +376,7 @@ export default function Index({ filters, comissions }) {
             </Container>
 
             <Modal show={showFilterModal} onClose={() => setShowFilterModal(false)}>
-                <div className="p-3">Filter Comissions</div>
+                <div className="p-3">{t("Filter Comissions")}</div>
                 <Hr className="my-1" />
 
                 <div className="p-3">
@@ -397,10 +390,10 @@ export default function Index({ filters, comissions }) {
                                 }}
                                 className="w-full rounded-md py-1"
                             >
-                                <option value="">-- Select -- </option>
-                                <option value="user_id">User</option>
-                                <option value="product_id">Product</option>
-                                <option value="order_id">Order</option>
+                                <option value="">{t("-- Select --")}</option>
+                                <option value="user_id">{t("User")}</option>
+                                <option value="product_id">{t("Product")}</option>
+                                <option value="order_id">{t("Order")}</option>
                             </select>
                         </div>
                         <div>
@@ -412,16 +405,16 @@ export default function Index({ filters, comissions }) {
                                 }}
                                 className="py-1 rounded-md"
                             >
-                                <option value="All">Both</option>
-                                <option value="true">Confirmed</option>
-                                <option value="false">Pending</option>
+                                <option value="All">{t("Both")}</option>
+                                <option value="true">{t("Confirmed")}</option>
+                                <option value="false">{t("Pending")}</option>
                             </select>
                         </div>
                     </div>
                     <div>
                         <TextInput
                             className="w-full"
-                            placeholder="Search By ID"
+                            placeholder={t("Search By ID")}
                             value={wid}
                             onChange={(e) => {
                                 setWid(e.target.value);
@@ -433,9 +426,7 @@ export default function Index({ filters, comissions }) {
                 <Hr className="my-1" />
                 <div className="p-3">
                     <div className="flex items-center justify-end w-full space-x-1">
-                        <SecondaryButton type="button" onClick={() => setShowFilterModal(false)}>
-                            Cancel
-                        </SecondaryButton>
+                        <SecondaryButton type="button" onClick={() => setShowFilterModal(false)}>{t("Cancel")}</SecondaryButton>
                     </div>
                 </div>
             </Modal>

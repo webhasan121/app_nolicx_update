@@ -5,8 +5,10 @@ import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function Index({ filters = {}, comissions = [] }) {
+    const { t } = useTranslation();
     useEffect(() => {
         const timer = window.setTimeout(() => {
             window.print();
@@ -20,34 +22,34 @@ export default function Index({ filters = {}, comissions = [] }) {
     const to = filters?.to_formatted ?? "";
 
     return (
-        <PrintLayout title="Comissions">
-            <Head title="Comissions" />
+        <PrintLayout title={t("Comissions")}>
+            <Head title={t("Comissions")} />
             <Container>
                 <div className="w-ful text-center">
                     <div className="tex-xl">
                         <ApplicationName />
                     </div>
                     <div>
-                        <p>Comisstion Summery form {from} to {to}</p>
+                        <p>{t("Comisstion Summery form")}{from}{t("to")}{to}</p>
                     </div>
                 </div>
                 <Section>
                     <Table data={comissions}>
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                {where === "user_id" ? <th>Seller</th> : null}
-                                {where === "order_id" ? <th>Order</th> : null}
-                                {where === "product_id" ? <th>Product</th> : null}
-                                <th>Buy</th>
-                                <th>Sell</th>
-                                <th>Profit</th>
-                                <th>Rate</th>
-                                <th>Take</th>
-                                <th>Give</th>
-                                <th>Store</th>
-                                <th>Date</th>
-                                <th>Confirmed</th>
+                                <th>{t("ID")}</th>
+                                {where === "user_id" ? <th>{t("Seller")}</th> : null}
+                                {where === "order_id" ? <th>{t("Order")}</th> : null}
+                                {where === "product_id" ? <th>{t("Product")}</th> : null}
+                                <th>{t("Buy")}</th>
+                                <th>{t("Sell")}</th>
+                                <th>{t("Profit")}</th>
+                                <th>{t("Rate")}</th>
+                                <th>{t("Take")}</th>
+                                <th>{t("Give")}</th>
+                                <th>{t("Store")}</th>
+                                <th>{t("Date")}</th>
+                                <th>{t("Confirmed")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,9 +69,9 @@ export default function Index({ filters = {}, comissions = [] }) {
                                     <td>{item.created_at_formatted}</td>
                                     <td>
                                         {item.confirmed ? (
-                                            <span className="p-1 px-2 rounded-xl bg-green-900 text-white">Confirmed</span>
+                                            <span className="p-1 px-2 rounded-xl bg-green-900 text-white">{t("Confirmed")}</span>
                                         ) : (
-                                            <span className="p-1 px-2 rounded-xl bg-gray-900 text-white">Pending</span>
+                                            <span className="p-1 px-2 rounded-xl bg-gray-900 text-white">{t("Pending")}</span>
                                         )}
                                     </td>
                                 </tr>

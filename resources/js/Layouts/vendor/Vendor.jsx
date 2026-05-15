@@ -9,6 +9,14 @@ export default function Vendor({ vendorOverview, vendorOrdersIndex, activeNav })
                 <Overview
                     products={vendorOverview?.products}
                     sales={vendorOverview?.sales}
+                    today_sell={vendorOverview?.today_sell}
+                    monthly_sell={vendorOverview?.monthly_sell}
+                    product_stock={vendorOverview?.product_stock}
+                    total_product_stock_price={vendorOverview?.total_product_stock_price}
+                    yearly_sell_amount={vendorOverview?.yearly_sell_amount}
+                    total_amount={vendorOverview?.total_amount}
+                    monthly_profit={vendorOverview?.monthly_profit}
+                    daily_profit={vendorOverview?.daily_profit}
                 />
             </Container>
 

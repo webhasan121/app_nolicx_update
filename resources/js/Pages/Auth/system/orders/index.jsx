@@ -15,8 +15,10 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index({ filters, stats, orders }) {
+    const { t } = useTranslation();
     const [searchValue, setSearchValue] = useState(filters?.search ?? "");
 
     const apply = (next = {}) => {
@@ -109,21 +111,19 @@ export default function Index({ filters, stats, orders }) {
 
     return (
         <AppLayout
-            title="Orders"
+            title={t("Orders")}
             header={
                 <PageHeader>
-                    <div className="flex items-center justify-between">
-                        Orders
-                    </div>
+                    <div className="flex items-center justify-between">{t("Orders")}</div>
                 </PageHeader>
             }
         >
-            <Head title="Orders" />
+            <Head title={t("Orders")} />
 
             <Container>
                 <OverviewSection>
-                    <OverviewDiv title="Orders" content={stats?.orders ?? 0} />
-                    <OverviewDiv title="Amount" content={`${stats?.amount ?? 0} TK`} />
+                    <OverviewDiv title={t("Orders")} content={stats?.orders ?? 0} />
+                    <OverviewDiv title={t("Amount")} content={`${stats?.amount ?? 0} TK`} />
                 </OverviewSection>
 
                 <Section>
@@ -132,37 +132,37 @@ export default function Index({ filters, stats, orders }) {
                             <div className="flex flex-wrap items-center gap-2">
                                 <div className="flex items-center gap-2">
                                     <select className="rounded-md border border-gray-300 shadow-sm" value={filters?.qf ?? "id"} onChange={(e) => apply({ qf: e.target.value })}>
-                                        <option value="id">Order</option>
-                                        <option value="user_id">Buyer</option>
-                                        <option value="belongs_to">Seller</option>
+                                        <option value="id">{t("Order")}</option>
+                                        <option value="user_id">{t("Buyer")}</option>
+                                        <option value="belongs_to">{t("Seller")}</option>
                                     </select>
-                                    <TextInput type="search" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} placeholder="Search" />
+                                    <TextInput type="search" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} placeholder={t("Search")} />
                                 </div>
 
                                 <select className="rounded-md border border-gray-300 shadow-sm" value={filters?.type ?? ""} onChange={(e) => apply({ type: e.target.value })}>
-                                    <option value="">Both ({stats?.orders ?? 0})</option>
-                                    <option value="user">U &gt; R ({stats?.user_to_reseller ?? 0})</option>
-                                    <option value="reseller">R &gt; V ({stats?.reseller_to_vendor ?? 0})</option>
+                                    <option value="">{t("Both (")}{stats?.orders ?? 0})</option>
+                                    <option value="user">{t("U > R (")}{stats?.user_to_reseller ?? 0})</option>
+                                    <option value="reseller">{t("R > V (")}{stats?.reseller_to_vendor ?? 0})</option>
                                 </select>
                                 <select className="rounded-md border border-gray-300 shadow-sm" value={filters?.status ?? ""} onChange={(e) => apply({ status: e.target.value })}>
-                                    <option value="">Any</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Accept">Accept</option>
-                                    <option value="Picked">Picked</option>
-                                    <option value="Delivery">Delivery</option>
-                                    <option value="Delivered">Delivered</option>
-                                    <option value="Confirm">Finished</option>
-                                    <option value="Cancel">Cancel</option>
-                                    <option value="Hold">Hold</option>
-                                    <option value="Cancelled">Buyer Cancel</option>
-                                    <option value="None">None</option>
+                                    <option value="">{t("Any")}</option>
+                                    <option value="Pending">{t("Pending")}</option>
+                                    <option value="Accept">{t("Accept")}</option>
+                                    <option value="Picked">{t("Picked")}</option>
+                                    <option value="Delivery">{t("Delivery")}</option>
+                                    <option value="Delivered">{t("Delivered")}</option>
+                                    <option value="Confirm">{t("Finished")}</option>
+                                    <option value="Cancel">{t("Cancel")}</option>
+                                    <option value="Hold">{t("Hold")}</option>
+                                    <option value="Cancelled">{t("Buyer Cancel")}</option>
+                                    <option value="None">{t("None")}</option>
                                 </select>
 
                                 <select value={filters?.date ?? ""} className="rounded-md border border-gray-300 bg-white shadow-sm" onChange={(e) => apply({ date: e.target.value })}>
-                                    <option value="">Null</option>
-                                    <option value="today">Today</option>
-                                    <option value="yesterday">Yesterday</option>
-                                    <option value="between">Custom</option>
+                                    <option value="">{t("Null")}</option>
+                                    <option value="today">{t("Today")}</option>
+                                    <option value="yesterday">{t("Yesterday")}</option>
+                                    <option value="between">{t("Custom")}</option>
                                 </select>
                                 <PrimaryButton type="button" onClick={print}>
                                     <i className="fas fa-print"></i>
@@ -197,15 +197,15 @@ export default function Index({ filters, stats, orders }) {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>ID</th>
-                                    <th>Buyer</th>
-                                    <th>Flow</th>
-                                    <th>Seller</th>
-                                    <th>Status</th>
-                                    <th>Amount</th>
-                                    <th>Comission</th>
-                                    <th>Date</th>
-                                    <th>A/C</th>
+                                    <th>{t("ID")}</th>
+                                    <th>{t("Buyer")}</th>
+                                    <th>{t("Flow")}</th>
+                                    <th>{t("Seller")}</th>
+                                    <th>{t("Status")}</th>
+                                    <th>{t("Amount")}</th>
+                                    <th>{t("Comission")}</th>
+                                    <th>{t("Date")}</th>
+                                    <th>{t("A/C")}</th>
                                 </tr>
                             </thead>
 
@@ -243,12 +243,12 @@ export default function Index({ filters, stats, orders }) {
                                         <td>
                                             <OrderStatus status={item.status} />
                                         </td>
-                                        <td>{item.total ?? 0} TK</td>
-                                        <td>{item.comission ?? 0} TK</td>
+                                        <td>{item.total ?? 0}{t("TK")}</td>
+                                        <td>{item.comission ?? 0}{t("TK")}</td>
                                         <td>{item.created_at_formatted}</td>
                                         <td>
                                             <div className="flex">
-                                                <NavLink href={route("system.orders.details", { id: item.id })}>Details</NavLink>
+                                                <NavLink href={route("system.orders.details", { id: item.id })}>{t("Details")}</NavLink>
                                                 <DangerButton type="button" onClick={() => destroy(item.id)}>
                                                     <i className="fas fa-trash"></i>
                                                 </DangerButton>
@@ -260,7 +260,7 @@ export default function Index({ filters, stats, orders }) {
 
                             <tfoot>
                                 <tr>
-                                    <td colSpan="6">{orders?.count ?? 0} Item</td>
+                                    <td colSpan="6">{orders?.count ?? 0}{t("Item")}</td>
                                     <td>{orders?.sum_total ?? 0}</td>
                                     <td>{orders?.sum_comission ?? 0}</td>
                                     <td></td>
@@ -280,9 +280,7 @@ export default function Index({ filters, stats, orders }) {
                                                 disabled={!pagination.prev?.url}
                                                 className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
-                                            >
-                                                Previous
-                                            </button>
+                                            >{t("Previous")}</button>
                                             {pagination.pages.map((link, index) => (
                                                 <button
                                                     key={`${link.label}-${index}`}
@@ -303,9 +301,7 @@ export default function Index({ filters, stats, orders }) {
                                                 disabled={!pagination.next?.url}
                                                 className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
-                                            >
-                                                Next
-                                            </button>
+                                            >{t("Next")}</button>
                                         </div>
                                     </div>
                                 </div>

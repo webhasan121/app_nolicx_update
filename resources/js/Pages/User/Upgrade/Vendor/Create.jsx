@@ -12,8 +12,10 @@ import NavLinkBtn from "../../../../components/NavLinkBtn";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import UserDash from "../../../../components/user/dash/UserDash";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function UpgradeVendorCreate() {
+    const { t } = useTranslation();
     const { upgrade = "vendor", defaults = {}, states = [] } = usePage().props;
     const [cities, setCities] = useState([]);
 
@@ -66,12 +68,9 @@ export default function UpgradeVendorCreate() {
                         <SectionHeader
                             title={
                                 <div className="flex justify-between">
-                                    <div>
-                                        Open{" "}
+                                    <div>{t("Open")}{" "}
                                         {upgrade.charAt(0).toUpperCase() +
-                                            upgrade.slice(1)}{" "}
-                                        Shop
-                                    </div>
+                                            upgrade.slice(1)}{" "}{t("Shop")}</div>
                                     <NavLinkBtn
                                         href={route("upgrade.vendor.index", {
                                             upgrade,
@@ -95,7 +94,7 @@ export default function UpgradeVendorCreate() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Your Shop Name"
+                                    label={t("Your Shop Name")}
                                     name="shop_name_en"
                                     error={errors.shop_name_en}
                                     value={data.shop_name_en}
@@ -107,11 +106,11 @@ export default function UpgradeVendorCreate() {
                                 <Hr />
 
                                 <InputFile
-                                    label="Logo (Max 1Mb)"
+                                    label={t("Logo (Max 1Mb)")}
                                     error="logo"
                                     errors={errors}
                                 >
-                                    <p>100x100 logo</p>
+                                    <p>{t("100x100 logo")}</p>
                                     <div
                                         style={{ width: "100px", height: "100px" }}
                                         className="border rounded"
@@ -147,11 +146,11 @@ export default function UpgradeVendorCreate() {
                                 </InputFile>
 
                                 <InputFile
-                                    label="Banner (Max 1Mb)"
+                                    label={t("Banner (Max 1Mb)")}
                                     error="banner"
                                     errors={errors}
                                 >
-                                    <p>100x300 banner image</p>
+                                    <p>{t("100x300 banner image")}</p>
                                     <div
                                         style={{ width: "300px", height: "100px" }}
                                         className="border rounded"
@@ -192,7 +191,7 @@ export default function UpgradeVendorCreate() {
                                 </InputFile>
 
                                 <InputFile
-                                    label="Description"
+                                    label={t("Description")}
                                     error="description"
                                     errors={errors}
                                 >
@@ -204,7 +203,7 @@ export default function UpgradeVendorCreate() {
                                         id="description"
                                         className="w-full border rounded"
                                         rows="5"
-                                        placeholder="Describe about your shop..."
+                                        placeholder={t("Describe about your shop...")}
                                     ></textarea>
                                 </InputFile>
                                 <Hr />
@@ -212,7 +211,7 @@ export default function UpgradeVendorCreate() {
                                     className="md:flex"
                                     inputClass="w-full"
                                     type="number"
-                                    label="Your Shop Phone"
+                                    label={t("Your Shop Phone")}
                                     name="phone"
                                     error={errors.phone}
                                     value={data.phone}
@@ -224,7 +223,7 @@ export default function UpgradeVendorCreate() {
                                     className="md:flex"
                                     inputClass="w-full"
                                     type="email"
-                                    label="Your Shop email"
+                                    label={t("Your Shop email")}
                                     name="email"
                                     error={errors.email}
                                     value={data.email}
@@ -237,7 +236,7 @@ export default function UpgradeVendorCreate() {
 
                         <SectionSection>
                             <SectionInner>
-                                <p className="my-1">Shop Location</p>
+                                <p className="my-1">{t("Shop Location")}</p>
 
                                 <div className="mt-4">
                                     <div style={{ width: "350px" }}>
@@ -256,7 +255,7 @@ export default function UpgradeVendorCreate() {
                                             }
                                             className="w-full rounded"
                                             rows="1"
-                                            placeholder="Full Address"
+                                            placeholder={t("Full Address")}
                                         ></textarea>
                                         {errors.address && (
                                             <div className="mt-2 text-sm text-red-600">
@@ -270,7 +269,7 @@ export default function UpgradeVendorCreate() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Village"
+                                    label={t("Village")}
                                     name="village"
                                     error={errors.village}
                                     value={data.village}
@@ -281,7 +280,7 @@ export default function UpgradeVendorCreate() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Zip Code"
+                                    label={t("Zip Code")}
                                     name="zip"
                                     error={errors.zip}
                                     value={data.zip}
@@ -292,7 +291,7 @@ export default function UpgradeVendorCreate() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Road No"
+                                    label={t("Road No")}
                                     name="road_no"
                                     error={errors.road_no}
                                     value={data.road_no}
@@ -303,7 +302,7 @@ export default function UpgradeVendorCreate() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="House No"
+                                    label={t("House No")}
                                     name="house_no"
                                     error={errors.house_no}
                                     value={data.house_no}
@@ -333,9 +332,7 @@ export default function UpgradeVendorCreate() {
                                             id="country"
                                             className="block w-full mt-1 border-0 rounded ring-1"
                                         >
-                                            <option value="Bangladesh">
-                                                Bangladesh
-                                            </option>
+                                            <option value="Bangladesh">{t("Bangladesh")}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -362,9 +359,7 @@ export default function UpgradeVendorCreate() {
                                         className="w-full rounded-md"
                                     >
                                         <option value="">
-                                            {" "}
-                                            -- Select Upozila --
-                                        </option>
+                                            {" "}{t("-- Select Upozila --")}</option>
                                         {states.map((state) => (
                                             <option
                                                 key={state.id}
@@ -398,9 +393,7 @@ export default function UpgradeVendorCreate() {
                                             className="w-full rounded-md"
                                         >
                                             <option value="">
-                                                {" "}
-                                                -- Select Upozila --
-                                            </option>
+                                                {" "}{t("-- Select Upozila --")}</option>
                                             {cities.map((item) => (
                                                 <option
                                                     key={item.id}
@@ -414,9 +407,7 @@ export default function UpgradeVendorCreate() {
                                 </div>
 
                                 <br />
-                                <PrimaryButton disabled={processing}>
-                                    Submit
-                                </PrimaryButton>
+                                <PrimaryButton disabled={processing}>{t("Submit")}</PrimaryButton>
                             </SectionInner>
                         </SectionSection>
                     </form>

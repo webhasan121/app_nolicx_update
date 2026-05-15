@@ -8,16 +8,18 @@ import SectionInner from "../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../components/dashboard/section/Section";
 import Table from "../../../../components/dashboard/table/Table";
 import NavLink from "../../../../components/NavLink";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index() {
+    const { t } = useTranslation();
     const { admins = [] } = usePage().props;
 
     return (
-        <AppLayout title="Admins" header={<PageHeader>Admins</PageHeader>}>
+        <AppLayout title={t("Admins")} header={<PageHeader>{t("Admins")}</PageHeader>}>
             <Container>
                 <SectionSection>
                     <SectionHeader
-                        title="Your system admins"
+                        title={t("Your system admins")}
                         content={`You have ${admins.length ?? "N/A"} admin with different permissions`}
                     />
 
@@ -26,10 +28,10 @@ export default function Index() {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Name</th>
-                                    <th>Permissions</th>
-                                    <th>Assign At</th>
-                                    <th>Action</th>
+                                    <th>{t("Name")}</th>
+                                    <th>{t("Permissions")}</th>
+                                    <th>{t("Assign At")}</th>
+                                    <th>{t("Action")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -52,9 +54,7 @@ export default function Index() {
                                                     },
                                                 )}
                                             >
-                                                <PrimaryButton type="button">
-                                                    Edit
-                                                </PrimaryButton>
+                                                <PrimaryButton type="button">{t("Edit")}</PrimaryButton>
                                             </NavLink>
                                         </td>
                                     </tr>

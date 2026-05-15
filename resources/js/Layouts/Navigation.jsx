@@ -11,6 +11,7 @@ import VendorResponsiveNavigation from "./VendorResponsiveNavigation";
 import ResellerResponsiveNavigation from "./ResellerResponsiveNavigation";
 import RiderResponsiveNavigation from "./RiderResponsiveNavigation";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import NoticeBell from "../components/NoticeBell";
 import useTranslation from "../hooks/useTranslation";
 
 export default function Navigation() {
@@ -63,6 +64,7 @@ export default function Navigation() {
                     </div>
 
                     <div className="hidden md:flex md:items-center md:ms-6">
+                        <NoticeBell className="mr-3" />
                         <LanguageSwitcher compact className="mr-3" />
                         <Dropdown
                             align="right"
@@ -161,10 +163,10 @@ export default function Navigation() {
                                 {t("Settings")}
                             </div>
 
-                            <div className="block w-full px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 transition duration-150 ease-in-out">
+                            <DropdownLink href={route("dashboard.notices.index")}>
                                 <i className="pr-2 fas fa-bell"></i>
                                 {t("Notice")}
-                            </div>
+                            </DropdownLink>
 
                             <Hr />
 
@@ -340,6 +342,10 @@ export default function Navigation() {
 
                             <ResponsiveNavLink href={route("profile")}>
                                 <i className="fas fa-user pr-2"> </i> {t("Profile")}
+                            </ResponsiveNavLink>
+
+                            <ResponsiveNavLink href={route("dashboard.notices.index")}>
+                                <i className="fas fa-bell pr-2"></i> {t("Notice")}
                             </ResponsiveNavLink>
 
                             <button

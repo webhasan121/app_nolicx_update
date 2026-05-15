@@ -10,6 +10,7 @@ import Container from "../../../../components/dashboard/Container";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 function buildParams(status, find, sdate, edate, page) {
     const params = { status, find, sdate, edate };
@@ -28,6 +29,7 @@ export default function Index({
     edate = "",
     history,
 }) {
+    const { t } = useTranslation();
     const [search, setSearch] = useState(find ?? "");
 
     const visit = (nextStatus, nextFind, nextSdate, nextEdate, page = null) => {
@@ -112,8 +114,8 @@ export default function Index({
             : "No deposits found";
 
     return (
-        <AppLayout title="Deposit" header={<PageHeader>Deposit</PageHeader>}>
-            <Head title="Deposit" />
+        <AppLayout title={t("Deposit")} header={<PageHeader>{t("Deposit")}</PageHeader>}>
+            <Head title={t("Deposit")} />
 
             <Container>
                 <Section>
@@ -129,9 +131,9 @@ export default function Index({
                                         }
                                         className="py-1 mb-1 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 focus:ring-1"
                                     >
-                                        <option value="*">All</option>
-                                        <option value="0">Pending</option>
-                                        <option value="1">Confirmed</option>
+                                        <option value="*">{t("All")}</option>
+                                        <option value="0">{t("Pending")}</option>
+                                        <option value="1">{t("Confirmed")}</option>
                                     </select>
                                     <TextInput
                                         type="date"
@@ -164,7 +166,7 @@ export default function Index({
                                             visit(status, search.trim(), sdate, edate);
                                         }}
                                         className="py-1"
-                                        placeholder="Search deposits..."
+                                        placeholder={t("Search deposits...")}
                                     />
                                 </div>
 
@@ -185,13 +187,13 @@ export default function Index({
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>User</th>
-                                    <th>Amount</th>
-                                    <th>Payment</th>
-                                    <th>Trx ID</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                    <th>A/C</th>
+                                    <th>{t("User")}</th>
+                                    <th>{t("Amount")}</th>
+                                    <th>{t("Payment")}</th>
+                                    <th>{t("Trx ID")}</th>
+                                    <th>{t("Status")}</th>
+                                    <th>{t("Date")}</th>
+                                    <th>{t("A/C")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -232,7 +234,7 @@ export default function Index({
                                                         type="button"
                                                         className="inline-flex items-center justify-center w-8 h-8 text-xs font-semibold text-white bg-green-600 border border-transparent rounded-md cursor-default"
                                                         disabled
-                                                        title="Confirmed"
+                                                        title={t("Confirmed")}
                                                     >
                                                         <i className="fas fa-check-circle"></i>
                                                     </button>
@@ -276,9 +278,7 @@ export default function Index({
                                     <td
                                         colSpan="2"
                                         className="font-bold text-right"
-                                    >
-                                        Total
-                                    </td>
+                                    >{t("Total")}</td>
                                     <td className="font-bold">
                                         {history?.sum}
                                     </td>
@@ -300,9 +300,7 @@ export default function Index({
                                                     disabled={!pagination.prev?.url}
                                                     className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
-                                                >
-                                                    Previous
-                                                </button>
+                                                >{t("Previous")}</button>
                                                 {pagination.pages.map((link, index) => (
                                                     <button
                                                         key={`${link.label}-${index}`}
@@ -323,9 +321,7 @@ export default function Index({
                                                     disabled={!pagination.next?.url}
                                                     className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
-                                                >
-                                                    Next
-                                                </button>
+                                                >{t("Next")}</button>
                                             </div>
                                         </div>
                                     </div>

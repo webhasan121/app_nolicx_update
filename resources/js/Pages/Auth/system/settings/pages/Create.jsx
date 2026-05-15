@@ -12,6 +12,7 @@ import PageHeader from "../../../../../components/dashboard/PageHeader";
 import Section from "../../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../../components/dashboard/section/Inner";
+import useTranslation from "../../../../../hooks/useTranslation";
 
 function slugify(value) {
     return String(value || "")
@@ -27,6 +28,7 @@ export default function Create({
     pageQuery = null,
     pageData = null,
 }) {
+    const { t } = useTranslation();
     const inputId = useId().replace(/:/g, "");
     const editorRef = useRef(null);
     const [trixReady, setTrixReady] = useState(typeof window !== "undefined" && !!window.Trix);
@@ -149,18 +151,15 @@ export default function Create({
 
     return (
         <AppLayout
-            title="Create A New Page"
+            title={t("Create A New Page")}
             header={
-                <PageHeader>
-                    Create A New Page
-                    <br />
+                <PageHeader>{t("Create A New Page")}<br />
                     <NavLink href={route("system.pages.index")} className="">
-                        <i className="fas fa-angle-left pr-2"></i> Back
-                    </NavLink>
+                        <i className="fas fa-angle-left pr-2"></i>{t("Back")}</NavLink>
                 </PageHeader>
             }
         >
-            <Head title="Create A New Page" />
+            <Head title={t("Create A New Page")} />
 
             <Container>
                 <form onSubmit={submit}>
@@ -169,15 +168,13 @@ export default function Create({
                             <Section className="w-full">
                                 <InputField
                                     inputClass="w-full"
-                                    label="Page Name"
+                                    label={t("Page Name")}
                                     name="name"
                                     error={form.errors.name}
                                     value={form.data.name}
                                     onChange={changeName}
                                 />
-                                <div className="flex items-center">
-                                    Page URL : https://nolicx.com/pages/
-                                    <TextInput
+                                <div className="flex items-center">{t("Page URL : https://nolicx.com/pages/")}<TextInput
                                         value={form.data.slug}
                                         name="slug"
                                         className="border-0"
@@ -189,7 +186,7 @@ export default function Create({
                             <Section>
                                 <InputField
                                     inputClass="w-full"
-                                    label="Page Title"
+                                    label={t("Page Title")}
                                     name="title"
                                     error={form.errors.title}
                                     value={form.data.title}
@@ -197,7 +194,7 @@ export default function Create({
                                 />
                                 <InputField
                                     inputClass="w-full"
-                                    label="Page Keyword"
+                                    label={t("Page Keyword")}
                                     name="keyword"
                                     error={form.errors.keyword}
                                     value={form.data.keyword}
@@ -206,7 +203,7 @@ export default function Create({
                                 <textarea
                                     name="description"
                                     id="description"
-                                    placeholder="Description "
+                                    placeholder={t("Description")}
                                     className="w-full rounded"
                                     rows="3"
                                     value={form.data.description}
@@ -225,7 +222,7 @@ export default function Create({
                                     )}
                                 </div>
                                 <div className="relative w-full">
-                                    <p className="text-xs"> 300 x 100 thumbnail for social media share </p>
+                                    <p className="text-xs">{t("300 x 100 thumbnail for social media share")}</p>
                                     <input
                                         type="file"
                                         name="thumbnail"
@@ -246,8 +243,8 @@ export default function Create({
 
                         <Section style={{ width: "300px" }}>
                             <SectionHeader
-                                title="Other Pages"
-                                content="Edit and Update other pages"
+                                title={t("Other Pages")}
+                                content={t("Edit and Update other pages")}
                             />
 
                             <SectionInner>
@@ -298,8 +295,7 @@ export default function Create({
                     </main>
                     <Hr />
                     <PrimaryButton type="submit" disabled={form.processing}>
-                        <i className="fas fa-save pr-2"></i> Save & Update
-                    </PrimaryButton>
+                        <i className="fas fa-save pr-2"></i>{t("Save & Update")}</PrimaryButton>
                 </form>
             </Container>
         </AppLayout>

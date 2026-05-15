@@ -17,8 +17,10 @@ import UpdateProfilePermission, {
 } from "../../../../livewire/system/users/partials/UpdateProfilePermission";
 import UpdateProfileRole from "../../../../livewire/system/users/partials/UpdateProfileRole";
 import VendorNavigation from "./_VendorNavigation";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Edit() {
+    const { t } = useTranslation();
     const {
         vendor,
         editUser,
@@ -129,7 +131,7 @@ export default function Edit() {
 
     return (
         <AppLayout
-            title="Vendor Edit"
+            title={t("Vendor Edit")}
             header={
                 <VendorNavigation
                     vendor={vendor}
@@ -177,7 +179,7 @@ export default function Edit() {
                                 />
 
                                 <Hr />
-                                <InputFile label="User Coin" error="coin" name="coin">
+                                <InputFile label={t("User Coin")} error="coin" name="coin">
                                     <div className="rounded-lg">
                                         <TextInput
                                             type="text"
@@ -186,7 +188,7 @@ export default function Edit() {
                                             value={editUser?.coin ?? 0}
                                         />
                                         <div className="p-2 bg-ref-900 rounded border inline-block">
-                                            <div className="text-xs">Recharge</div>
+                                            <div className="text-xs">{t("Recharge")}</div>
                                             <form onSubmit={openRechargeModal}>
                                                 <TextInput
                                                     type="number"
@@ -199,7 +201,7 @@ export default function Edit() {
                                                         )
                                                     }
                                                 />
-                                                <PrimaryButton>Apply</PrimaryButton>
+                                                <PrimaryButton>{t("Apply")}</PrimaryButton>
                                             </form>
                                         </div>
                                     </div>
@@ -247,7 +249,7 @@ export default function Edit() {
                 maxWidth="2xl"
             >
                 <div className="p-3">
-                    <p>Permissions</p>
+                    <p>{t("Permissions")}</p>
                     <Hr />
                     <div
                         style={{
@@ -272,9 +274,7 @@ export default function Edit() {
                         <DangerButton
                             type="button"
                             onClick={() => setShowViaRole(false)}
-                        >
-                            Close
-                        </DangerButton>
+                        >{t("Close")}</DangerButton>
                     </div>
                 </div>
             </Modal>
@@ -285,32 +285,24 @@ export default function Edit() {
                 maxWidth="xl"
             >
                 <div className="p-4">
-                    <div className="text-lg">Confirm Recharge</div>
+                    <div className="text-lg">{t("Confirm Recharge")}</div>
                     <Hr />
-                    <p className="py-5">
-                        Are you sure to add {profileForm.data.rechargeAmount} TK
-                        amount to {editUser?.name}, {editUser?.email}
+                    <p className="py-5">{t("Are you sure to add")}{profileForm.data.rechargeAmount}{t("TK amount to")}{editUser?.name}, {editUser?.email}
                     </p>
                     <Hr />
                     <div className="flex">
                         <SecondaryButton
                             type="button"
                             onClick={() => setShowRechargeModal(false)}
-                        >
-                            Cancel
-                        </SecondaryButton>
+                        >{t("Cancel")}</SecondaryButton>
                         <PrimaryButton
                             type="button"
                             onClick={submitRecharge}
-                        >
-                            Recharge
-                        </PrimaryButton>
+                        >{t("Recharge")}</PrimaryButton>
                         <DangerButton
                             type="button"
                             onClick={submitRefund}
-                        >
-                            Refund
-                        </DangerButton>
+                        >{t("Refund")}</DangerButton>
                     </div>
                 </div>
             </Modal>

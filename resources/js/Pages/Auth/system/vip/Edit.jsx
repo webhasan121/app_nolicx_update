@@ -13,8 +13,10 @@ import PageHeader from "../../../../components/dashboard/PageHeader";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Section from "../../../../components/dashboard/section/Section";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Edit() {
+    const { t } = useTranslation();
     const { vipData, vips = [] } = usePage().props;
     const [selectedPackage, setSelectedPackage] = useState(vipData?.package_id ?? null);
 
@@ -72,13 +74,10 @@ export default function Edit() {
 
     return (
         <AppLayout
-            title="Edit VIP Users"
+            title={t("Edit VIP Users")}
             header={
-                <PageHeader>
-                    Edit VIP Users
-                    <br />
-                    <NavLink href={route("system.vip.users")}>
-                        Index <i className="fa-solid fa-arrow-right ms-2"></i>
+                <PageHeader>{t("Edit VIP Users")}<br />
+                    <NavLink href={route("system.vip.users")}>{t("Index")}<i className="fa-solid fa-arrow-right ms-2"></i>
                     </NavLink>
                 </PageHeader>
             }
@@ -112,86 +111,74 @@ export default function Edit() {
                                     type="button"
                                     onClick={() => updateStatus("active")}
                                     className={`px-2 rounded cursor-pointer ${isActive ? "bg-indigo-800 text-white text-bold" : ""}`}
-                                >
-                                    Active
-                                </button>
+                                >{t("Active")}</button>
                                 <button
                                     type="button"
                                     onClick={() => updateStatus("pending")}
                                     className={`px-2 rounded cursor-pointer space-x-2 ${isPending ? "bg-indigo-800 text-white text-bold" : ""}`}
-                                >
-                                    Pending
-                                </button>
+                                >{t("Pending")}</button>
                                 <button
                                     type="button"
                                     onClick={() => updateStatus("reject")}
                                     className={`px-2 rounded cursor-pointer ${isTrash ? "bg-indigo-800 text-white text-bold" : ""}`}
-                                >
-                                    Trash
-                                </button>
+                                >{t("Trash")}</button>
                             </div>
                         }
                     />
                     <SectionInner>
                         {vipData?.expired ? (
-                            <div className="inline-flex px-1 text-xs bg-yellow-200 rounded">
-                                Expired
-                            </div>
+                            <div className="inline-flex px-1 text-xs bg-yellow-200 rounded">{t("Expired")}</div>
                         ) : null}
                     </SectionInner>
                     <hr />
                     <SectionInner>
                         <div className="flex items-center justify-end space-x-2">
-                            <SecondaryButton type="button" onClick={reCalculateComission}>
-                                Re-Calculate Comission
-                            </SecondaryButton>
-                            <SecondaryButton type="button" onClick={pushBackComission}>
-                                Push Back Comission
-                            </SecondaryButton>
+                            <SecondaryButton type="button" onClick={reCalculateComission}>{t("Re-Calculate Comission")}</SecondaryButton>
+                            <SecondaryButton type="button" onClick={pushBackComission}>{t("Push Back Comission")}</SecondaryButton>
                         </div>
                     </SectionInner>
                 </Section>
 
                 <Section>
                     <SectionHeader
-                        title="Users Payment and Package"
-                        content="view here vip users payment and packages informations."
+                        title={t("Users Payment and Package")}
+                        content={t("view here vip users payment and packages informations.")}
                     />
 
                     <SectionInner>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
                             <div className="py-2 border-b w-md">
-                                <div className="text-sm">Payment Method</div>
+                                <div className="text-sm">{t("Payment Method")}</div>
                                 <div className="text-md">{vipData?.payment_by ?? "N/A"}</div>
                             </div>
                             <div className="py-2 border-b w-md">
-                                <div className="text-sm">TRX ID</div>
+                                <div className="text-sm">{t("TRX ID")}</div>
                                 <div className="text-md">{vipData?.trx ?? "N/A"}</div>
                             </div>
                             <div className="py-2 border-b w-md">
-                                <div className="text-sm">NID</div>
+                                <div className="text-sm">{t("NID")}</div>
                                 <div className="text-md">{vipData?.nid ?? "N/A"}</div>
                             </div>
                             <div className="py-2 border-b w-md">
-                                <div className="text-sm">Phone</div>
+                                <div className="text-sm">{t("Phone")}</div>
                                 <div className="text-md">{vipData?.phone ?? "N/A"}</div>
                             </div>
                             <div className="py-2 border-b w-md">
-                                <div className="text-sm">Date</div>
+                                <div className="text-sm">{t("Date")}</div>
                                 <div className="text-md">{vipData?.created_at_formatted}</div>
                             </div>
                             <div className="py-2 border-b w-md">
-                                <div className="text-sm">Comission</div>
-                                <div className="text-md">{vipData?.comission ?? "N/A"} TK</div>
+                                <div className="text-sm">{t("Comission")}</div>
+                                <div className="text-md">{vipData?.comission ?? "N/A"}{t("TK")}</div>
                             </div>
                             <div className="py-2 border-b w-md">
-                                <div className="text-sm">Reffer By</div>
+                                <div className="text-sm">{t("Reffer By")}</div>
                                 <div className="text-md">
                                     {vipData?.refer_by_name ?? "N/A"} - {vipData?.refer_by_email ?? "N/A"}
                                 </div>
                             </div>
                             <div className="py-2 border-b w-md">
-                                <div className="text-sm">Ref Code</div>
+                                <div className="text-sm">{t("Ref Code")}</div>
                                 <div className="text-md">{vipData?.reference ?? "N/A"}</div>
                             </div>
                         </div>
@@ -222,7 +209,7 @@ export default function Edit() {
                 <div className="items-start justify-start md:flex">
                     <Section>
                         <SectionHeader
-                            title="User VIP Package Update"
+                            title={t("User VIP Package Update")}
                             content={
                                 <>
                                     currently user belongs to <strong>{vipData?.package_name ?? "N/A"}</strong> package.
@@ -245,22 +232,20 @@ export default function Edit() {
                                     <div className="flex items-center">
                                         <InputLabel htmlFor={`package_${item.id}`}>{item.name}</InputLabel>
                                         <i className="px-2 fa-solid fa-arrow-right"></i>
-                                        <div>{item.price} TK</div>
+                                        <div>{item.price}{t("TK")}</div>
                                     </div>
                                 </div>
                             ))}
                             <br />
                             <div className="text-end">
-                                <SecondaryButton type="button">
-                                    Procced to Migrate
-                                </SecondaryButton>
+                                <SecondaryButton type="button">{t("Procced to Migrate")}</SecondaryButton>
                             </div>
                         </SectionInner>
                     </Section>
 
                     <Section>
                         <SectionHeader
-                            title="Update Task Type"
+                            title={t("Update Task Type")}
                             content={
                                 <>
                                     user currentry use <strong>{vipData?.task_type}.</strong>
@@ -309,7 +294,7 @@ export default function Edit() {
                                 </div>
                                 <br />
                                 <div className="text-end">
-                                    <PrimaryButton type="submit">Update</PrimaryButton>
+                                    <PrimaryButton type="submit">{t("Update")}</PrimaryButton>
                                 </div>
                             </form>
                         </SectionInner>
@@ -319,15 +304,14 @@ export default function Edit() {
                 <div>
                     <Section>
                         <SectionHeader
-                            title="Update Validation"
-                            content="Update validation time for next 360 days, or your custom days. Give the valid day in input."
+                            title={t("Update Validation")}
+                            content={t("Update validation time for next 360 days, or your custom days. Give the valid day in input.")}
                         />
 
                         <SectionInner>
                             <form onSubmit={updateValidity}>
                                 <div className="w-full p-3 my-2 text-red-900 bg-red-100 rounded">
-                                    <div className="p-2 rounded">
-                                        Package will expire on <strong>{vipData?.valid_till_formatted}</strong>
+                                    <div className="p-2 rounded">{t("Package will expire on")}<strong>{vipData?.valid_till_formatted}</strong>
                                         {vipData?.valid_till_human ? ` (${vipData.valid_till_human})` : ""}
                                     </div>
 
@@ -342,7 +326,7 @@ export default function Edit() {
                                     </div>
                                 </div>
                                 <div className="text-end">
-                                    <PrimaryButton type="submit">Update Validation</PrimaryButton>
+                                    <PrimaryButton type="submit">{t("Update Validation")}</PrimaryButton>
                                 </div>
                             </form>
                         </SectionInner>
@@ -351,17 +335,13 @@ export default function Edit() {
                     {vipData?.deleted_at ? (
                         <Section>
                             <SectionHeader
-                                title={<div className="text-red-900">VIP in Trash</div>}
-                                content="trashed may be restored or deleted permanently."
+                                title={<div className="text-red-900">{t("VIP in Trash")}</div>}
+                                content={t("trashed may be restored or deleted permanently.")}
                             />
 
                             <SectionInner>
-                                <DangerButton className="mr-1" type="button" onClick={restore}>
-                                    Restore
-                                </DangerButton>
-                                <DangerButton type="button" onClick={destroy}>
-                                    Permanently Delete
-                                </DangerButton>
+                                <DangerButton className="mr-1" type="button" onClick={restore}>{t("Restore")}</DangerButton>
+                                <DangerButton type="button" onClick={destroy}>{t("Permanently Delete")}</DangerButton>
                             </SectionInner>
                         </Section>
                     ) : null}
@@ -371,10 +351,10 @@ export default function Edit() {
                     <SectionHeader
                         title={
                             <div className="flex items-center justify-between">
-                                <div>User Tasks</div>
+                                <div>{t("User Tasks")}</div>
                             </div>
                         }
-                        content="user tasks and earning against this packages."
+                        content={t("user tasks and earning against this packages.")}
                     />
 
                     <SectionInner>

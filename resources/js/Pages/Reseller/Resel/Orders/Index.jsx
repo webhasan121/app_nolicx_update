@@ -14,6 +14,7 @@ import SectionInner from "../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../components/dashboard/section/Section";
 import Table from "../../../../components/dashboard/table/Table";
 import PageHeader from "../../../../components/dashboard/PageHeader";
+import useTranslation from "../../../../hooks/useTranslation";
 
 function statusClass(status) {
     const classes = {
@@ -40,6 +41,7 @@ function buildQuery(filters, updates = {}) {
 }
 
 export default function Index({ activeNav, filters = {}, summary = {}, list = {} }) {
+    const { t } = useTranslation();
     const [filterOpen, setFilterOpen] = useState(false);
     const rows = list?.data ?? [];
 
@@ -53,33 +55,27 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
 
     return (
         <AppLayout
-            title="Resel Orders"
+            title={t("Resel Orders")}
             header={
-                <PageHeader>
-                    Resel Orders
-                    <br />
+                <PageHeader>{t("Resel Orders")}<br />
                     {activeNav === "reseller" ? (
                         <div>
-                            <NavLink href={route("vendor.orders.index")} active={route().current("vendor.orders.*")}>
-                                To Me
-                            </NavLink>
-                            <NavLink href={route("reseller.resel-order.index")} active={route().current("reseller.resel-order.*")}>
-                                Resel Order
-                            </NavLink>
+                            <NavLink href={route("vendor.orders.index")} active={route().current("vendor.orders.*")}>{t("To Me")}</NavLink>
+                            <NavLink href={route("reseller.resel-order.index")} active={route().current("reseller.resel-order.*")}>{t("Resel Order")}</NavLink>
                         </div>
                     ) : null}
                 </PageHeader>
             }
         >
-            <Head title="Resel Orders" />
+            <Head title={t("Resel Orders")} />
 
             <Container>
                 <OverviewSection>
-                    <Div title="Orders" content={summary.orders ?? 0} />
-                    <Div title="Pending" content={summary.pending ?? 0} />
-                    <Div title="Cancel" content={summary.cancel ?? 0} />
-                    <Div title="Cancel by User" content={summary.cancelled ?? 0} />
-                    <Div title="Accepted" content={summary.accept ?? 0} />
+                    <Div title={t("Orders")} content={summary.orders ?? 0} />
+                    <Div title={t("Pending")} content={summary.pending ?? 0} />
+                    <Div title={t("Cancel")} content={summary.cancel ?? 0} />
+                    <Div title={t("Cancel by User")} content={summary.cancelled ?? 0} />
+                    <Div title={t("Accepted")} content={summary.accept ?? 0} />
                 </OverviewSection>
 
                 <SectionSection>
@@ -87,8 +83,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                         title={
                             <div className="flex items-center justify-start space-x-2">
                                 <SecondaryButton type="button" onClick={() => setFilterOpen(true)}>
-                                    <i className="fas fa-filter pr-2"></i> Filter
-                                </SecondaryButton>
+                                    <i className="fas fa-filter pr-2"></i>{t("Filter")}</SecondaryButton>
 
                                 <select
                                     id="status"
@@ -96,15 +91,15 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                     onChange={(e) => updateFilters({ nav: e.target.value })}
                                     className="py-1 px-2 rounded-md border"
                                 >
-                                    <option value="All">Any</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Accept">Accept</option>
-                                    <option value="Picked">Picked</option>
-                                    <option value="Delivery">Delivery</option>
-                                    <option value="Delivered">Delivered</option>
-                                    <option value="Confirm">Confirm</option>
-                                    <option value="Reject">Reject</option>
-                                    <option value="Hold">Hold</option>
+                                    <option value="All">{t("Any")}</option>
+                                    <option value="Pending">{t("Pending")}</option>
+                                    <option value="Accept">{t("Accept")}</option>
+                                    <option value="Picked">{t("Picked")}</option>
+                                    <option value="Delivery">{t("Delivery")}</option>
+                                    <option value="Delivered">{t("Delivered")}</option>
+                                    <option value="Confirm">{t("Confirm")}</option>
+                                    <option value="Reject">{t("Reject")}</option>
+                                    <option value="Hold">{t("Hold")}</option>
                                 </select>
 
                                 <select
@@ -113,17 +108,14 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                     onChange={(e) => updateFilters({ type: e.target.value })}
                                     className="py-1 px-2 rounded-md border"
                                 >
-                                    <option value="All">All</option>
-                                    <option value="Resel">Resel</option>
-                                    <option value="Purchase">Purchase</option>
+                                    <option value="All">{t("All")}</option>
+                                    <option value="Resel">{t("Resel")}</option>
+                                    <option value="Purchase">{t("Purchase")}</option>
                                 </select>
                             </div>
                         }
                         content={
-                            <p>
-                                View your resel product, income and comission here. You might find the order that have
-                                already passed to the vendor for your resel product.
-                            </p>
+                            <p>{t("View your resel product, income and comission here. You might find the order that have already passed to the vendor for your resel product.")}</p>
                         }
                     />
 
@@ -133,15 +125,15 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                 <thead>
                                     <tr>
                                         <th> </th>
-                                        <th> ID </th>
-                                        <th> Shop </th>
-                                        <th> Sync</th>
-                                        <th> Total </th>
-                                        <th> Profit </th>
-                                        <th> Shipping </th>
-                                        <th> Date </th>
-                                        <th> Status </th>
-                                        <th> A/C </th>
+                                        <th>{t("ID")}</th>
+                                        <th>{t("Shop")}</th>
+                                        <th>{t("Sync")}</th>
+                                        <th>{t("Total")}</th>
+                                        <th>{t("Profit")}</th>
+                                        <th>{t("Shipping")}</th>
+                                        <th>{t("Date")}</th>
+                                        <th>{t("Status")}</th>
+                                        <th>{t("A/C")}</th>
                                     </tr>
                                 </thead>
 
@@ -170,10 +162,10 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                                         <div className="px-2 bg-gray-200 rounded shadow flex">
                                                             {item.sync.user_order_id}/{item.sync.user_cart_order_id}
                                                         </div>
-                                                        <NavLink href={item.sync.view_url}>view</NavLink>
+                                                        <NavLink href={item.sync.view_url}>{t("view")}</NavLink>
                                                     </div>
                                                 ) : (
-                                                    <div className="px-2 inline-flex rounded bg-indigo-900 text-white">Purchase</div>
+                                                    <div className="px-2 inline-flex rounded bg-indigo-900 text-white">{t("Purchase")}</div>
                                                 )}
                                             </td>
                                             <td>
@@ -193,8 +185,8 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                                 </span>
                                             </td>
                                             <td>
-                                                <NavLink href={item.view_url}>view</NavLink>
-                                                <NavLink href={item.print_url}>Print</NavLink>
+                                                <NavLink href={item.view_url}>{t("view")}</NavLink>
+                                                <NavLink href={item.print_url}>{t("Print")}</NavLink>
                                             </td>
                                         </tr>
                                     ))}
@@ -207,12 +199,12 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
 
             <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
                 <div className="p-2">
-                    <div>Filter</div>
+                    <div>{t("Filter")}</div>
                     <Hr />
                     <div className="md:flex justify-between">
                         <div>
                             <div>
-                                <div>Delevery Type</div>
+                                <div>{t("Delevery Type")}</div>
                                 <div className="px-2">
                                     <div className="flex items-center w-full p-2 text-sm">
                                         <input
@@ -221,9 +213,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                             className="mr-2"
                                             checked={(filters.delivery ?? "all") === "all"}
                                             onChange={() => updateFilters({ delivery: "all" })}
-                                        />{" "}
-                                        Not Defined
-                                    </div>
+                                        />{" "}{t("Not Defined")}</div>
                                     <hr />
                                     <div className="flex items-center w-full p-2 text-sm">
                                         <input
@@ -232,9 +222,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                             className="mr-2"
                                             checked={filters.delivery === "cash"}
                                             onChange={() => updateFilters({ delivery: "cash" })}
-                                        />{" "}
-                                        Home Delivery
-                                    </div>
+                                        />{" "}{t("Home Delivery")}</div>
                                     <hr />
                                     <div className="flex items-center w-full p-2 text-sm">
                                         <input
@@ -243,9 +231,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                             className="mr-2"
                                             checked={filters.delivery === "courier"}
                                             onChange={() => updateFilters({ delivery: "courier" })}
-                                        />{" "}
-                                        Courier Delivery
-                                    </div>
+                                        />{" "}{t("Courier Delivery")}</div>
                                     <hr />
                                     <div className="flex items-center w-full p-2 text-sm">
                                         <input
@@ -254,9 +240,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                             className="mr-2"
                                             checked={filters.delivery === "hand"}
                                             onChange={() => updateFilters({ delivery: "hand" })}
-                                        />
-                                        Hand-to-Hand
-                                    </div>
+                                        />{t("Hand-to-Hand")}</div>
                                 </div>
                             </div>
                         </div>
@@ -271,9 +255,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                             className="mr-2"
                                             checked={(filters.create ?? "all") === "all"}
                                             onChange={() => updateFilters({ create: "all" })}
-                                        />
-                                        All Time
-                                    </div>
+                                        />{t("All Time")}</div>
                                     <hr />
                                     <div className="flex items-center w-full p-2 text-sm">
                                         <input
@@ -282,9 +264,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                             className="mr-2"
                                             checked={filters.create === "day"}
                                             onChange={() => updateFilters({ create: "day" })}
-                                        />
-                                        From First Date
-                                    </div>
+                                        />{t("From First Date")}</div>
                                     <hr />
                                     <div className="flex items-center w-full p-2 text-sm">
                                         <input
@@ -293,24 +273,18 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                             className="mr-2"
                                             checked={filters.create === "between"}
                                             onChange={() => updateFilters({ create: "between" })}
-                                        />
-                                        Between in Range
-                                    </div>
+                                        />{t("Between in Range")}</div>
                                 </div>
 
                                 <div className="space-y-2 p-2 ">
-                                    <div>
-                                        First Date
-                                        <input
+                                    <div>{t("First Date")}<input
                                             className="rounded-md"
                                             type="date"
                                             value={filters.start_date ?? ""}
                                             onChange={(e) => updateFilters({ start_date: e.target.value })}
                                         />
                                     </div>
-                                    <div>
-                                        Last Date
-                                        <input
+                                    <div>{t("Last Date")}<input
                                             className="rounded-md"
                                             type="date"
                                             value={filters.end_date ?? ""}

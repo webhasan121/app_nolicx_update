@@ -10,8 +10,10 @@ import NavLinkBtn from "../../../components/NavLinkBtn";
 import DangerButton from "../../../components/DangerButton";
 import UserDash from "../../../components/user/dash/UserDash";
 import Table from "../../../components/dashboard/table/Table";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function Index({ carts }) {
+    const { t } = useTranslation();
     const remove = (id) => {
         if (!confirm("Are you sure?")) return;
         router.delete(route("user.carts.remove", id), {
@@ -29,7 +31,7 @@ export default function Index({ carts }) {
                     <Slot
                         title={
                             <>
-                                <b>Notice:</b> You're order from Multiple Shops
+                                <b>{t("Notice:")}</b> You're order from Multiple Shops
                             </>
                         }
                         content={
@@ -37,11 +39,11 @@ export default function Index({ carts }) {
                                 You have added product from more than one shop.
                                 Please note that, items from different shops are
                                 shipped separately, which will result in{" "}
-                                <strong>Multiple Shipping Charges.</strong>
+                                <strong>{t("Multiple Shipping Charges.")}</strong>
                                 <br />
                                 To reduce delivery cost and ensure a smoother
                                 experience, we recommend placing orders from{" "}
-                                <strong>a single shop at a time.</strong> Review
+                                <strong>{t("a single shop at a time.")}</strong> Review
                                 the shop name in your cart before placing
                                 orders.
                             </>
@@ -83,11 +85,11 @@ export default function Index({ carts }) {
                                         <tr>
                                             <th></th>
                                             <th></th>
-                                            <th>product</th>
-                                            <th>Shop</th>
-                                            <th>price</th>
-                                            <th>date</th>
-                                            <th>A/C</th>
+                                            <th>{t("product")}</th>
+                                            <th>{t("Shop")}</th>
+                                            <th>{t("price")}</th>
+                                            <th>{t("date")}</th>
+                                            <th>{t("A/C")}</th>
                                         </tr>
                                     </thead>
 
@@ -140,9 +142,7 @@ export default function Index({ carts }) {
                                                         onClick={() =>
                                                             remove(cart.id)
                                                         }
-                                                    >
-                                                        remove
-                                                    </DangerButton>
+                                                    >{t("remove")}</DangerButton>
                                                 </td>
                                             </tr>
                                         ))}
@@ -152,10 +152,10 @@ export default function Index({ carts }) {
                                         <tr>
                                             <td></td>
                                             <td></td>
-                                            <td>Total</td>
+                                            <td>{t("Total")}</td>
                                             <td></td>
                                             <td className="bold">
-                                                <strong>{total} TK</strong>
+                                                <strong>{total}{t("TK")}</strong>
                                             </td>
                                         </tr>
                                     </tfoot>

@@ -1,4 +1,4 @@
-import { Link, router } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import { useRef, useState } from "react";
 import axios from "axios";
 import SecondaryButton from "../SecondaryButton";
@@ -29,14 +29,41 @@ function youtubeEmbedUrl(url) {
     return null;
 }
 
+function RatingStars({ rating = 0 }) {
+    const roundedRating = Math.round(Number(rating || 0));
+
+    return (
+        <>
+            {[1, 2, 3, 4, 5].map((star) => (
+                <i
+                    key={star}
+                    className="fas fa-star"
+                    style={{
+                        color:
+                            roundedRating >= star
+                                ? "var(--brand-primary)"
+                                : "#737272",
+                    }}
+                ></i>
+            ))}
+        </>
+    );
+}
+
 export default function ProductSingle({
     product,
     relatedProduct = [],
     onBuyNowClick = null,
+    onSaveForLaterChange = null,
 }) {
+    const { auth } = usePage().props;
     const [copied, setCopied] = useState(false);
     const [previewImage, setPreviewImage] = useState(product?.thumbnail);
     const [showVideoModal, setShowVideoModal] = useState(false);
+    const [savedForLater, setSavedForLater] = useState(
+        Boolean(product?.is_saved_for_later),
+    );
+    const [savingForLater, setSavingForLater] = useState(false);
     const [isZooming, setIsZooming] = useState(false);
     const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
     const [bgPosition, setBgPosition] = useState("0px 0px");
@@ -104,6 +131,58 @@ export default function ProductSingle({
             if (error.response?.status === 401) {
                 window.location.href = route("login");
             }
+        }
+    };
+
+    const saveForLater = async () => {
+        if (!auth?.user) {
+            window.location.href = route("login");
+            return;
+        }
+
+        if (savingForLater) return;
+
+        setSavingForLater(true);
+
+        try {
+            const response = await axios.post(
+                route("products.save-for-later", {
+                    id: product.id,
+                    slug: product.slug,
+                }),
+            );
+
+            const isSaved = Boolean(response.data?.saved);
+            setSavedForLater(isSaved);
+            onSaveForLaterChange?.(product, isSaved);
+            Swal.fire({
+                icon: "success",
+                title:
+                    response.data?.message ||
+                    (response.data?.saved
+                        ? "Product saved for later"
+                        : "Product removed from saved list"),
+                toast: true,
+                timer: 1800,
+                showConfirmButton: false,
+                position: "bottom-start",
+            });
+        } catch (error) {
+            if (error.response?.status === 401) {
+                window.location.href = route("login");
+                return;
+            }
+
+            Swal.fire({
+                icon: "error",
+                title: "Unable to save product",
+                toast: true,
+                timer: 1800,
+                showConfirmButton: false,
+                position: "bottom-start",
+            });
+        } finally {
+            setSavingForLater(false);
         }
     };
 
@@ -319,30 +398,35 @@ export default function ProductSingle({
                         className="flex items-center justify-between py-2"
                         style={{ fontSize: "14px" }}
                     >
-                        <div className="flex items-center">
-                            <i className="fas fa-star text_primary"></i>
-                            <i className="fas fa-star text_primary"></i>
-                            <i className="fas fa-star text_primary"></i>
-                            <i
-                                style={{ color: "#737272" }}
-                                className="fas fa-star"
-                            ></i>
-                            <i
-                                style={{ color: "#737272" }}
-                                className="fas fa-star"
-                            ></i>
+                        <div className="flex items-center gap-1">
+                            <RatingStars rating={product?.rating?.average ?? 0} />
                             <div className="px-1" style={{ color: "#737272" }}>
-                                7/10
+                                {product?.rating?.average ?? 0}/5
                             </div>
                         </div>
 
-                        <div className="flex items-center cursor-pointer">
+                        <button
+                            type="button"
+                            className="flex items-center cursor-pointer disabled:cursor-not-allowed"
+                            onClick={saveForLater}
+                            disabled={savingForLater}
+                        >
                             <i
-                                style={{ color: "var(--brand-primary)" }}
-                                className="mr-2 fas fa-heart"
+                                style={{
+                                    color: savedForLater
+                                        ? "var(--brand-primary)"
+                                        : "#ff8a4c",
+                                }}
+                                className={`mr-2 ${savedForLater ? "fas" : "far"} fa-heart`}
                             ></i>
-                            <div>save for later</div>
-                        </div>
+                            <div>
+                                {savedForLater
+                                    ? "saved"
+                                    : savingForLater
+                                      ? "saving..."
+                                      : "save for later"}
+                            </div>
+                        </button>
                     </div>
 
                     <div className="flex items-center text-sm">
@@ -361,7 +445,7 @@ export default function ProductSingle({
                     <div className="bg-gray-50">
                         <Hr />
                         <i className="px-2 fas fa-comments"></i>
-                        {product?.comments?.length ?? 0} Reviews.
+                        {product?.rating?.count ?? product?.comments?.length ?? 0} Reviews.
                         <Hr />
                     </div>
 

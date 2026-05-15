@@ -3,8 +3,10 @@ import { Link, router, usePage } from "@inertiajs/react";
 import AppLayout from "../../../../Layouts/App";
 import Container from "../../../../components/dashboard/Container";
 import PageHeader from "../../../../components/dashboard/PageHeader";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index() {
+    const { t } = useTranslation();
     const { pageTitle = "Translations", languages = [], summary = {}, filters = {} } = usePage().props;
     const [search, setSearch] = useState(filters.search ?? "");
 
@@ -25,7 +27,10 @@ export default function Index() {
     }, [search]);
 
     const setDefault = (language) => {
-        router.post(route("system.languages.default", language.id), {}, { preserveScroll: true });
+        router.post(route("system.languages.default", language.id), {}, {
+            preserveScroll: true,
+            preserveState: false,
+        });
     };
 
     return (
@@ -38,10 +43,9 @@ export default function Index() {
                                 <i className="fas fa-language text-xl"></i>
                             </div>
                             <div>
-                                <h1 className="text-lg font-bold text-slate-950">Translations</h1>
+                                <h1 className="text-lg font-bold text-slate-950">{t("Translations")}</h1>
                                 <p className="text-sm text-slate-600">
-                                    {summary.count ?? languages.length} / {summary.count ?? languages.length} Languages
-                                </p>
+                                    {summary.count ?? languages.length} / {summary.count ?? languages.length}{t("Languages")}</p>
                             </div>
                         </div>
                         <div className="relative w-full md:w-80">
@@ -50,7 +54,7 @@ export default function Index() {
                                 type="search"
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
-                                placeholder="Search modules..."
+                                placeholder={t("Search modules...")}
                                 className="w-full rounded-xl border border-slate-200 py-3 pl-11 pr-4 text-sm shadow-sm focus:border-indigo-400 focus:ring-indigo-100"
                             />
                         </div>
@@ -60,12 +64,12 @@ export default function Index() {
                         <table className="min-w-full text-left text-sm">
                             <thead>
                                 <tr className="border-y border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                                    <th className="px-4 py-4">Icon</th>
-                                    <th className="px-4 py-4">Language</th>
-                                    <th className="px-4 py-4">Progress</th>
-                                    <th className="px-4 py-4">Done</th>
-                                    <th className="px-4 py-4">Total</th>
-                                    <th className="px-4 py-4 text-right">Actions</th>
+                                    <th className="px-4 py-4">{t("Icon")}</th>
+                                    <th className="px-4 py-4">{t("Language")}</th>
+                                    <th className="px-4 py-4">{t("Progress")}</th>
+                                    <th className="px-4 py-4">{t("Done")}</th>
+                                    <th className="px-4 py-4">{t("Total")}</th>
+                                    <th className="px-4 py-4 text-right">{t("Actions")}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -109,14 +113,14 @@ export default function Index() {
                                                             ? "border-indigo-500 bg-indigo-600 text-white"
                                                             : "border-slate-200 bg-white text-slate-400 hover:text-indigo-600"
                                                     }`}
-                                                    title="Set default"
+                                                    title={t("Set default")}
                                                 >
                                                     <i className="fas fa-check text-xs"></i>
                                                 </button>
                                                 <Link
                                                     href={language.edit_url}
                                                     className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white transition hover:bg-slate-700"
-                                                    title="Edit translations"
+                                                    title={t("Edit translations")}
                                                 >
                                                     <i className="fas fa-pen"></i>
                                                 </Link>

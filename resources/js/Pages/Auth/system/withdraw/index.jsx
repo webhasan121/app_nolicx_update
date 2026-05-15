@@ -14,8 +14,10 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import Table from "../../../../components/dashboard/table/Table";
 import AppLayout from "../../../../Layouts/App";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index({ filters, stats, withdraw }) {
+    const { t } = useTranslation();
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [queryValue, setQueryValue] = useState(filters?.q ?? "");
     const [modalWhere, setModalWhere] = useState(filters?.where ?? "find");
@@ -102,15 +104,15 @@ export default function Index({ filters, stats, withdraw }) {
             : "No withdraws found";
 
     return (
-        <AppLayout title="Withdraws" header={<PageHeader>Withdraws</PageHeader>}>
-            <Head title="Withdraws" />
+        <AppLayout title={t("Withdraws")} header={<PageHeader>{t("Withdraws")}</PageHeader>}>
+            <Head title={t("Withdraws")} />
 
             <Container>
                 <OverviewSection>
-                    <OverviewDiv title="Amount" content={stats?.amount ?? 0} />
-                    <OverviewDiv title="Payable" content={stats?.payable ?? 0} />
-                    <OverviewDiv title="Comission" content={`${stats?.server_fee ?? 0} | ${stats?.maintenance_fee ?? 0}`} />
-                    <OverviewDiv title="Paid" content={stats?.paid ?? 0} />
+                    <OverviewDiv title={t("Amount")} content={stats?.amount ?? 0} />
+                    <OverviewDiv title={t("Payable")} content={stats?.payable ?? 0} />
+                    <OverviewDiv title={t("Comission")} content={`${stats?.server_fee ?? 0} | ${stats?.maintenance_fee ?? 0}`} />
+                    <OverviewDiv title={t("Paid")} content={stats?.paid ?? 0} />
                 </OverviewSection>
 
                 <Section>
@@ -120,10 +122,10 @@ export default function Index({ filters, stats, withdraw }) {
                             <div className="flex items-center justify-between overflow-x-scroll" style={{ scrollBehavior: "smooth" }}>
                                 <div>
                                     <select value={filters?.fst ?? "All"} onChange={(e) => apply({ fst: e.target.value })} className="py-1 mb-2 border rounded" id="filter_status">
-                                        <option value="All">All {stats?.total ?? 0}</option>
-                                        <option value="Pending">Pending {stats?.pending ?? 0}</option>
-                                        <option value="Accept">Accepted {stats?.paid ?? 0}</option>
-                                        <option value="Reject">Rejected {stats?.reject ?? 0}</option>
+                                        <option value="All">{t("All")}{stats?.total ?? 0}</option>
+                                        <option value="Pending">{t("Pending")}{stats?.pending ?? 0}</option>
+                                        <option value="Accept">{t("Accepted")}{stats?.paid ?? 0}</option>
+                                        <option value="Reject">{t("Rejected")}{stats?.reject ?? 0}</option>
                                     </select>
                                 </div>
 
@@ -145,12 +147,12 @@ export default function Index({ filters, stats, withdraw }) {
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>ID</th>
-                                <th>User</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>A/C</th>
+                                <th>{t("ID")}</th>
+                                <th>{t("User")}</th>
+                                <th>{t("Amount")}</th>
+                                <th>{t("Status")}</th>
+                                <th>{t("Date")}</th>
+                                <th>{t("A/C")}</th>
                             </tr>
                         </thead>
 
@@ -164,9 +166,7 @@ export default function Index({ filters, stats, withdraw }) {
                                             <div className="flex">
                                                 {item.user?.name}
                                                 {item.user?.subscription ? (
-                                                    <span className="px-1 text-white bg-indigo-900 rounded ms-1">
-                                                        vip
-                                                    </span>
+                                                    <span className="px-1 text-white bg-indigo-900 rounded ms-1">{t("vip")}</span>
                                                 ) : null}
                                                 <span className="px-1 text-white bg-gray-900 rounded-full ms-1">
                                                     U
@@ -176,18 +176,18 @@ export default function Index({ filters, stats, withdraw }) {
                                             {item.user?.email}
                                         </div>
                                     </td>
-                                    <td>{item.amount ?? "0"} TK</td>
+                                    <td>{item.amount ?? "0"}{t("TK")}</td>
                                     <td>
                                         {!item.is_rejected ? (
                                             item.status ? "Accept" : "Pending"
                                         ) : (
-                                            <div className="p-1">Reject</div>
+                                            <div className="p-1">{t("Reject")}</div>
                                         )}
                                     </td>
                                     <td>{item.created_at_formatted}</td>
                                     <td>
                                         <div className="flex">
-                                            <NavLink href={route("system.withdraw.view", { id: item.id })}>Details</NavLink>
+                                            <NavLink href={route("system.withdraw.view", { id: item.id })}>{t("Details")}</NavLink>
                                         </div>
                                     </td>
                                 </tr>
@@ -195,7 +195,7 @@ export default function Index({ filters, stats, withdraw }) {
                         </tbody>
                         <tfoot>
                             <tr className="font-bold">
-                                <td colSpan="3" className="font-bold text-right">Total</td>
+                                <td colSpan="3" className="font-bold text-right">{t("Total")}</td>
                                 <td className="font-bold">{withdraw?.sum_amount ?? 0}</td>
                                 <td colSpan="3"></td>
                             </tr>
@@ -214,9 +214,7 @@ export default function Index({ filters, stats, withdraw }) {
                                             disabled={!pagination.prev?.url}
                                             className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                             onClick={() => goToPage(pagination.prev?.url)}
-                                        >
-                                            Previous
-                                        </button>
+                                        >{t("Previous")}</button>
                                         {pagination.pages.map((link, index) => (
                                             <button
                                                 key={`${link.label}-${index}`}
@@ -237,9 +235,7 @@ export default function Index({ filters, stats, withdraw }) {
                                             disabled={!pagination.next?.url}
                                             className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                             onClick={() => goToPage(pagination.next?.url)}
-                                        >
-                                            Next
-                                        </button>
+                                        >{t("Next")}</button>
                                     </div>
                                 </div>
                             </div>
@@ -250,33 +246,27 @@ export default function Index({ filters, stats, withdraw }) {
             </Container>
 
             <Modal show={showFilterModal} onClose={() => setShowFilterModal(false)} maxWidth="sm">
-                <div className="p-3">
-                    Filter
-                </div>
+                <div className="p-3">{t("Filter")}</div>
                 <Hr />
                 <div className="p-3">
                     <div>
-                        <p>
-                            Search Criteria
-                        </p>
+                        <p>{t("Search Criteria")}</p>
                         <select value={modalWhere} onChange={(e) => setModalWhere(e.target.value)} id="search_where" className="py-1 border-0 rounded-md shadow-none">
-                            <option value="find"> ID </option>
-                            <option value="query"> User </option>
+                            <option value="find">{t("ID")}</option>
+                            <option value="query">{t("User")}</option>
                         </select>
                         <br />
-                        <TextInput type="text" className="w-full" value={queryValue} onChange={(e) => setQueryValue(e.target.value)} placeholder="Search by User Name or ID" />
+                        <TextInput type="text" className="w-full" value={queryValue} onChange={(e) => setQueryValue(e.target.value)} placeholder={t("Search by User Name or ID")} />
                     </div>
                     <Hr className="my-2" />
                     <div className="flex items-center justify-between">
-                        <TextInput type="date" value={modalSdate} onChange={(e) => setModalSdate(e.target.value)} placeholder="From Date" />
-                        <TextInput type="date" value={modalEdate} onChange={(e) => setModalEdate(e.target.value)} placeholder="To Date" />
+                        <TextInput type="date" value={modalSdate} onChange={(e) => setModalSdate(e.target.value)} placeholder={t("From Date")} />
+                        <TextInput type="date" value={modalEdate} onChange={(e) => setModalEdate(e.target.value)} placeholder={t("To Date")} />
                     </div>
                 </div>
                 <Hr className="my-2" />
                 <div className="p-3">
-                    <SecondaryButton className="mr-1" onClick={() => setShowFilterModal(false)}>
-                        Close
-                    </SecondaryButton>
+                    <SecondaryButton className="mr-1" onClick={() => setShowFilterModal(false)}>{t("Close")}</SecondaryButton>
                     <PrimaryButton
                         type="button"
                         onClick={() => {
@@ -289,9 +279,7 @@ export default function Index({ filters, stats, withdraw }) {
                                 page: undefined,
                             });
                         }}
-                    >
-                        Filter
-                    </PrimaryButton>
+                    >{t("Filter")}</PrimaryButton>
                 </div>
             </Modal>
         </AppLayout>

@@ -1,4 +1,5 @@
-import { router, usePage } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
+import { useState } from "react";
 import Container from "../../../components/dashboard/Container";
 import SectionSection from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
@@ -7,6 +8,9 @@ import Table from "../../../components/dashboard/table/Table";
 import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
 import DangerButton from "../../../components/DangerButton";
+import SecondaryButton from "../../../components/SecondaryButton";
+import Modal from "../../../components/Modal";
+import InputError from "../../../components/InputError";
 import Hr from "../../../components/Hr";
 
 const activeStatuses = {
@@ -114,13 +118,34 @@ function buildOrderTimeline(order) {
 
 export default function OrderDetails() {
     const { order } = usePage().props;
+    const [showRatingModal, setShowRatingModal] = useState(false);
     const orderTotal = Number(order?.total ?? 0);
     const shippingTotal = Number(order?.shipping ?? 0);
     const payableTotal = orderTotal + shippingTotal;
     const orderTimeline = buildOrderTimeline(order);
+    const { data, setData, post, processing, errors } = useForm({
+        reviews: order.cart_orders.map((item) => ({
+            cart_order_id: item.id,
+            product_id: item.product?.id,
+            rating: item.review?.rating ?? 5,
+            comments: item.review?.comments ?? "",
+        })),
+    });
 
     const markAsReceived = () => {
-        router.post(route("user.orders.received", { id: order.id }));
+        post(route("user.orders.received", { id: order.id }), {
+            preserveScroll: true,
+            onSuccess: () => setShowRatingModal(false),
+        });
+    };
+
+    const updateReview = (index, field, value) => {
+        setData(
+            "reviews",
+            data.reviews.map((review, reviewIndex) =>
+                reviewIndex === index ? { ...review, [field]: value } : review,
+            ),
+        );
     };
 
     return (
@@ -190,7 +215,7 @@ export default function OrderDetails() {
                                                         <span>Already Received</span>
                                                     </div>
                                                 ) : (
-                                                    <PrimaryButton onClick={markAsReceived}>
+                                                    <PrimaryButton onClick={() => setShowRatingModal(true)}>
                                                         Mark as Received
                                                     </PrimaryButton>
                                                 ))}
@@ -351,6 +376,83 @@ export default function OrderDetails() {
                     </SectionSection>
                 </div>
             </Container>
+
+            <Modal show={showRatingModal} onClose={() => setShowRatingModal(false)} maxWidth="2xl">
+                <div className="p-6">
+                    <div className="mb-4">
+                        <h2 className="text-lg font-bold">Rate Your Order</h2>
+                        <p className="text-sm text-gray-500">
+                            Submit your product rating before marking this order as received.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        {order.cart_orders.map((item, index) => (
+                            <div key={item.id} className="p-4 border rounded-md">
+                                <div className="flex items-start gap-3">
+                                    {item.product?.thumbnail ? (
+                                        <img
+                                            width="48"
+                                            height="48"
+                                            className="object-cover border rounded"
+                                            src={`/storage/${item.product.thumbnail}`}
+                                            alt=""
+                                        />
+                                    ) : null}
+                                    <div className="flex-1">
+                                        <div className="font-semibold">{item.product?.name ?? "N/A"}</div>
+                                        <div className="flex items-center gap-1 py-2">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    className="text-xl"
+                                                    onClick={() => updateReview(index, "rating", star)}
+                                                    title={`${star} star`}
+                                                >
+                                                    <i
+                                                        className="fas fa-star"
+                                                        style={{
+                                                            color:
+                                                                Number(data.reviews[index]?.rating ?? 0) >= star
+                                                                    ? "var(--brand-primary)"
+                                                                    : "#9ca3af",
+                                                        }}
+                                                    ></i>
+                                                </button>
+                                            ))}
+                                            <span className="pl-2 text-sm text-gray-500">
+                                                {data.reviews[index]?.rating}/5
+                                            </span>
+                                        </div>
+                                        <InputError messages={errors[`reviews.${index}.rating`]} />
+                                        <textarea
+                                            className="w-full rounded-md border-gray-300 text-sm"
+                                            rows="3"
+                                            required
+                                            placeholder="Write your message"
+                                            value={data.reviews[index]?.comments ?? ""}
+                                            onChange={(event) =>
+                                                updateReview(index, "comments", event.target.value)
+                                            }
+                                        />
+                                        <InputError messages={errors[`reviews.${index}.comments`]} />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex justify-end gap-2 mt-6">
+                        <SecondaryButton onClick={() => setShowRatingModal(false)}>
+                            Cancel
+                        </SecondaryButton>
+                        <PrimaryButton onClick={markAsReceived} disabled={processing}>
+                            Submit Rating & Mark Received
+                        </PrimaryButton>
+                    </div>
+                </div>
+            </Modal>
         </UserDash>
     );
 }

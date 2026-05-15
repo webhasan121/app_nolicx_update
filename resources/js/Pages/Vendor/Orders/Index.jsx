@@ -17,6 +17,7 @@ import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
 import SecondaryButton from "../../../components/SecondaryButton";
 import TextInput from "../../../components/TextInput";
+import useTranslation from "../../../hooks/useTranslation";
 
 const navs = [
     "All",
@@ -56,6 +57,7 @@ function statusClass(status) {
 }
 
 export default function Index({ filters = {}, summary = {}, list = {}, activeNav, printUrl }) {
+    const { t } = useTranslation();
     const [filterOpen, setFilterOpen] = useState(false);
     const rows = list?.data ?? [];
     const isReseller = activeNav === "reseller";
@@ -163,32 +165,26 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
 
     return (
         <AppLayout
-            title="Orders"
+            title={t("Orders")}
             header={
-                <PageHeader>
-                    Orders
-                    <br />
+                <PageHeader>{t("Orders")}<br />
                     {isReseller ? (
                         <div>
-                            <NavLink href={route("vendor.orders.index")} active={route().current("vendor.orders.*")}>
-                                User Orders
-                            </NavLink>
-                            <NavLink href={route("reseller.resel-order.index")} active={route().current("reseller.resel-order.*")}>
-                                My Resel Order
-                            </NavLink>
+                            <NavLink href={route("vendor.orders.index")} active={route().current("vendor.orders.*")}>{t("User Orders")}</NavLink>
+                            <NavLink href={route("reseller.resel-order.index")} active={route().current("reseller.resel-order.*")}>{t("My Resel Order")}</NavLink>
                         </div>
                     ) : null}
                 </PageHeader>
             }
         >
-            <Head title="Orders" />
+            <Head title={t("Orders")} />
             <Container>
                     <OverviewSection>
-                        <Div title="Orders" content={summary.orders ?? 0} />
-                        <Div title="Pending" content={summary.pending ?? 0} />
-                        <Div title="Cancel" content={summary.cancel ?? 0} />
-                        <Div title="Cancel by User" content={summary.cancelled ?? 0} />
-                        <Div title="Accepted" content={summary.accept ?? 0} />
+                        <Div title={t("Orders")} content={summary.orders ?? 0} />
+                        <Div title={t("Pending")} content={summary.pending ?? 0} />
+                        <Div title={t("Cancel")} content={summary.cancel ?? 0} />
+                        <Div title={t("Cancel by User")} content={summary.cancelled ?? 0} />
+                        <Div title={t("Accepted")} content={summary.accept ?? 0} />
                     </OverviewSection>
 
                     <SectionSection>
@@ -197,50 +193,43 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex justify-start items-center space-x-2">
                                         <SecondaryButton type="button" onClick={() => setFilterOpen(true)}>
-                                            <i className="fas fa-filter pr-2"></i> Filter
-                                        </SecondaryButton>
+                                            <i className="fas fa-filter pr-2"></i>{t("Filter")}</SecondaryButton>
                                         <Dropdown
                                             trigger={
-                                                <SecondaryButton className="inline-flex items-center ">
-                                                    Delivery <i className="fas fa-angle-down ps-2"></i>
+                                                <SecondaryButton className="inline-flex items-center ">{t("Delivery")}<i className="fas fa-angle-down ps-2"></i>
                                                 </SecondaryButton>
                                             }
                                         >
                                             <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "all"} onChange={() => updateFilters({ delivery: "all" })} /> Not Defined
-                                            </div>
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "all"} onChange={() => updateFilters({ delivery: "all" })} />{t("Not Defined")}</div>
                                             <hr />
                                             <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "cash"} onChange={() => updateFilters({ delivery: "cash" })} /> Home Delivery
-                                            </div>
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "cash"} onChange={() => updateFilters({ delivery: "cash" })} />{t("Home Delivery")}</div>
                                             <hr />
                                             <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "courier"} onChange={() => updateFilters({ delivery: "courier" })} /> Courier Delivery
-                                            </div>
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "courier"} onChange={() => updateFilters({ delivery: "courier" })} />{t("Courier Delivery")}</div>
                                             <hr />
                                             <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "hand"} onChange={() => updateFilters({ delivery: "hand" })} /> Hand-to-Hand
-                                            </div>
+                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === "hand"} onChange={() => updateFilters({ delivery: "hand" })} />{t("Hand-to-Hand")}</div>
                                         </Dropdown>
 
                                         <Dropdown
                                             trigger={
-                                                <SecondaryButton>
-                                                    Area <i className="fas fa-angle-down ps-2"></i>
+                                                <SecondaryButton>{t("Area")}<i className="fas fa-angle-down ps-2"></i>
                                                 </SecondaryButton>
                                             }
                                         >
                                             <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
                                                 <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "all"} onChange={() => updateFilters({ area: "all" })} />
-                                                <label className="p-0 m-0"> Both </label>
+                                                <label className="p-0 m-0">{t("Both")}</label>
                                             </div>
                                             <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
                                                 <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Dhaka"} onChange={() => updateFilters({ area: "Dhaka" })} />
-                                                <label className="p-0 m-0"> Inside Dhaka </label>
+                                                <label className="p-0 m-0">{t("Inside Dhaka")}</label>
                                             </div>
                                             <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
                                                 <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Other"} onChange={() => updateFilters({ area: "Other" })} />
-                                                <label className="p-0 m-0"> Outside of Dhaka </label>
+                                                <label className="p-0 m-0">{t("Outside of Dhaka")}</label>
                                             </div>
                                         </Dropdown>
                                     </div>
@@ -259,7 +248,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                 updateFilters({ find: search.trim() });
                                             }}
                                             className="py-1"
-                                            placeholder="Search orders..."
+                                            placeholder={t("Search orders...")}
                                         />
                                         <PrimaryButton type="button" onClick={() => window.open(printUrl, "_blank")}>
                                             <i className="fas fa-print"></i>
@@ -284,9 +273,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                     <NavLink
                                         href={route("vendor.orders.index", buildQuery(filters, { nav: "Trash", page: 1 }))}
                                         active={filters.nav === "Trash"}
-                                    >
-                                        Trash
-                                    </NavLink>
+                                    >{t("Trash")}</NavLink>
                                 </div>
                             }
                         />
@@ -296,8 +283,8 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                 <Table data={rows}>
                                     <thead>
                                         <tr>
-                                            <th colSpan="3"> {rows.length} Products </th>
-                                            <th>{list.sum_total ?? 0} TK</th>
+                                            <th colSpan="3"> {rows.length}{t("Products")}</th>
+                                            <th>{list.sum_total ?? 0}{t("TK")}</th>
                                         </tr>
                                     </thead>
                                 </Table>
@@ -307,14 +294,14 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                         <tr>
                                             <th>#</th>
                                             <th></th>
-                                            <th>ID</th>
-                                            <th>Pd</th>
-                                            <th>Total</th>
-                                            <th>Status</th>
-                                            <th>Date</th>
-                                            <th>Shipping</th>
-                                            <th>Contact</th>
-                                            <th>Com</th>
+                                            <th>{t("ID")}</th>
+                                            <th>{t("Pd")}</th>
+                                            <th>{t("Total")}</th>
+                                            <th>{t("Status")}</th>
+                                            <th>{t("Date")}</th>
+                                            <th>{t("Shipping")}</th>
+                                            <th>{t("Contact")}</th>
+                                            <th>{t("Com")}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -322,8 +309,8 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                             <tr key={item.id}>
                                                 <td>{(list?.from ?? 1) + index}</td>
                                                 <td>
-                                                    <NavLink href={route("vendor.orders.view", { order: item.id })}>view</NavLink>
-                                                    <NavLink href={route("vendor.orders.cprint", { order: item.id })}>Print</NavLink>
+                                                    <NavLink href={route("vendor.orders.view", { order: item.id })}>{t("view")}</NavLink>
+                                                    <NavLink href={route("vendor.orders.cprint", { order: item.id })}>{t("Print")}</NavLink>
                                                 </td>
                                                 <td>{item.id ?? "N/A"}</td>
                                                 <td>{item.cart_orders_count ?? "N/A"} / {item.quantity ?? "N/A"}</td>
@@ -368,9 +355,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                         disabled={!pagination.prev?.url}
                                                         className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.prev?.url)}
-                                                    >
-                                                        Previous
-                                                    </button>
+                                                    >{t("Previous")}</button>
                                                     {pagination.pages.map((link, idx) => (
                                                         <button
                                                             key={`${link.label}-${idx}`}
@@ -391,9 +376,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                         disabled={!pagination.next?.url}
                                                         className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.next?.url)}
-                                                    >
-                                                        Next
-                                                    </button>
+                                                    >{t("Next")}</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -406,12 +389,12 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
 
             <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
                 <div className="p-2">
-                    <div>Filter</div>
+                    <div>{t("Filter")}</div>
                     <Hr />
                     <div className="md:flex justify-between">
                         <div>
                             <div>
-                                <div>Delevery Type</div>
+                                <div>{t("Delevery Type")}</div>
                                 <div className="px-2">
                                     {[['all', 'Not Defined'], ['cash', 'Home Delivery'], ['courier', 'Courier Delivery'], ['hand', 'Hand-to-Hand']].map(([value, label]) => (
                                         <div key={value}>
@@ -439,25 +422,17 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                 </div>
 
                                 <div className="space-y-2 p-2 ">
-                                    <div>
-                                        First Date
-                                        <input className="rounded-md" type="date" value={modalStartDate} onChange={(e) => setModalStartDate(e.target.value)} />
+                                    <div>{t("First Date")}<input className="rounded-md" type="date" value={modalStartDate} onChange={(e) => setModalStartDate(e.target.value)} />
                                     </div>
-                                    <div>
-                                        Last Date
-                                        <input className="rounded-md" type="date" value={modalEndDate} onChange={(e) => setModalEndDate(e.target.value)} />
+                                    <div>{t("Last Date")}<input className="rounded-md" type="date" value={modalEndDate} onChange={(e) => setModalEndDate(e.target.value)} />
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex items-end gap-2 mt-4 md:mt-0">
-                            <PrimaryButton type="button" onClick={resetModalFilters}>
-                                Reset
-                            </PrimaryButton>
-                            <PrimaryButton type="button" onClick={applyModalFilters}>
-                                Apply
-                            </PrimaryButton>
+                            <PrimaryButton type="button" onClick={resetModalFilters}>{t("Reset")}</PrimaryButton>
+                            <PrimaryButton type="button" onClick={applyModalFilters}>{t("Apply")}</PrimaryButton>
                         </div>
                     </div>
                 </div>

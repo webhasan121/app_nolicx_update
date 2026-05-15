@@ -7,8 +7,10 @@ import UserDash from "../../../../components/user/dash/UserDash";
 import Hr from "../../../../components/Hr";
 import NavLink from "../../../../components/NavLink";
 import NavLinkBtn from "../../../../components/NavLinkBtn";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function WithdrawIndex() {
+    const { t } = useTranslation();
     const { available_balance, withdraw } = usePage().props;
     const cancelWithdraw = (wid) => {
         router.post(route("user.withdraw.destroy"), { wid });
@@ -22,15 +24,13 @@ export default function WithdrawIndex() {
                         <SectionHeader
                             title={
                                 <div className="flex items-start justify-between">
-                                    <div>Your Wallet</div>
+                                    <div>{t("Your Wallet")}</div>
                                 </div>
                             }
                             content={
                                 <div className="flex items-center justify-between">
                                     <div className="text-2xl font-bold text-indigo-900">
-                                        {" "}
-                                        Available Balance {available_balance} TK
-                                    </div>
+                                        {" "}{t("Available Balance")}{available_balance}{t("TK")}</div>
                                 </div>
                             }
                         />
@@ -61,8 +61,8 @@ export default function WithdrawIndex() {
 
                     <SectionSection>
                         <div className="flex items-center justify-between">
-                            <div>Last Activity</div>
-                            <NavLink href="">History</NavLink>
+                            <div>{t("Last Activity")}</div>
+                            <NavLink href="">{t("History")}</NavLink>
                         </div>
 
                         <div className="mt-2">
@@ -73,20 +73,16 @@ export default function WithdrawIndex() {
                                             <div className="text-left border rounded">
                                                 <div className="px-3 py-2 border-bottom">
                                                     <h6>Status</h6>
-                                                    <p className="font-bold text-red-900">
-                                                        Pending
-                                                    </p>
+                                                    <p className="font-bold text-red-900">{t("Pending")}</p>
                                                 </div>
                                                 <div className="px-3 py-2 border-b">
                                                     <h6>Amount</h6>
                                                     <p className="font-bold">
-                                                        {wtd.amount} TK
-                                                    </p>
+                                                        {wtd.amount}{t("TK")}</p>
                                                 </div>
                                                 <div className="px-3 py-2 border-b">
                                                     <p>{wtd.pay_by}</p>
-                                                    <p className="font-bold">
-                                                        A/C: {wtd.pay_to}
+                                                    <p className="font-bold">{t("A/C:")}{wtd.pay_to}
                                                     </p>
                                                 </div>
                                                 <div className="p-3">
@@ -108,9 +104,7 @@ export default function WithdrawIndex() {
                                                         <button
                                                             type="submit"
                                                             className="px-2 bg-red-900 border rounded"
-                                                        >
-                                                            Cancel
-                                                        </button>
+                                                        >{t("Cancel")}</button>
                                                     </form>
                                                 </div>
                                             </div>

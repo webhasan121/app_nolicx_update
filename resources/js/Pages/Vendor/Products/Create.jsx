@@ -15,8 +15,10 @@ import {
     PRODUCT_VIDEO_DURATION_ERROR,
     validateProductVideoDuration,
 } from "../../../utils/videoValidation";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function Create({ categories = [], shop, ableToCreate = true }) {
+    const { t } = useTranslation();
     const inputId = useId().replace(/:/g, "");
     const editorRef = useRef(null);
     const [trixReady, setTrixReady] = useState(typeof window !== "undefined" && !!window.Trix);
@@ -184,25 +186,22 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
     };
 
     return (
-        <AppLayout title="Add Products" header={<PageHeader>Add Products</PageHeader>}>
-            <Head title="Add Products" />
+        <AppLayout title={t("Add Products")} header={<PageHeader>{t("Add Products")}</PageHeader>}>
+            <Head title={t("Add Products")} />
 
             <Container>
                 <Section>
                     <SectionHeader
-                        title="Product Create Form"
+                        title={t("Product Create Form")}
                         content={
                             <>
                                 Create new product to sell to a cheaf price. to make more profit, define your{" "}
-                                <strong>Bying Price</strong> and <strong>Selling Price</strong>. Keep it mind that,{" "}
-                                <b>Super Admin</b> takes <strong> {shop?.system_get_comission ?? "N/A"}% </strong> of
+                                <strong>{t("Bying Price")}</strong> and <strong>{t("Selling Price")}</strong>. Keep it mind that,{" "}
+                                <b>{t("Super Admin")}</b> takes <strong> {shop?.system_get_comission ?? "N/A"}% </strong> of
                                 comission from your profit.
                                 <br />
                                 {!ableToCreate && (
-                                    <span className="p-3 text-red-900 bg-red-200 rounded shadow-lg">
-                                        You have reached your maximum product upload limit ({shop?.max_product_upload ?? 0}
-                                        ). Please contact support to increase your limit.
-                                    </span>
+                                    <span className="p-3 text-red-900 bg-red-200 rounded shadow-lg">{t("You have reached your maximum product upload limit (")}{shop?.max_product_upload ?? 0}{t("). Please contact support to increase your limit.")}</span>
                                 )}
                             </>
                         }
@@ -213,14 +212,14 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                     <div className="justify-between md:flex">
                         <Section>
                             <SectionHeader
-                                title="Basic Information"
-                                content="Provide your products related basic infromation."
+                                title={t("Basic Information")}
+                                content={t("Provide your products related basic infromation.")}
                             />
                             <SectionInner>
                                 <InputField
                                     inputClass="w-full"
                                     labelWidth="250px"
-                                    label="Product Name"
+                                    label={t("Product Name")}
                                     name="name"
                                     error={form.errors.name}
                                     value={form.data.name}
@@ -228,7 +227,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 />
                                 <InputField
                                     inputClass="w-full"
-                                    label="Product Title"
+                                    label={t("Product Title")}
                                     name="title"
                                     error={form.errors.title}
                                     value={form.data.title}
@@ -236,7 +235,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 />
 
                                 <InputFile
-                                    label="Chose Category"
+                                    label={t("Chose Category")}
                                     name="category_id"
                                     error="category_id"
                                     errors={form.errors}
@@ -254,13 +253,13 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                         </Section>
 
                         <Section>
-                            <SectionHeader title="Product Price" content="" />
+                            <SectionHeader title={t("Product Price")} content="" />
                             <SectionInner>
                                 <div>
                                     <InputField
                                         className="mx-1"
                                         labelWidth="100px"
-                                        label="Product Buying Price"
+                                        label={t("Product Buying Price")}
                                         name="buying_price"
                                         error={form.errors.buying_price}
                                         value={form.data.buying_price}
@@ -269,7 +268,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                     <InputField
                                         className="mx-1"
                                         labelWidth="100px"
-                                        label="Product Sell Price"
+                                        label={t("Product Sell Price")}
                                         name="price"
                                         error={form.errors.price}
                                         value={form.data.price}
@@ -279,7 +278,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                         className="mx-1"
                                         labelWidth="100px"
                                         type="number"
-                                        label="Product Unit"
+                                        label={t("Product Unit")}
                                         name="unit"
                                         error={form.errors.unit}
                                         value={form.data.unit}
@@ -288,7 +287,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 </div>
                                 <Hr />
                                 <div>
-                                    <InputFile label="Wish to sell with Discount" name="offer_type" error="offer_type">
+                                    <InputFile label={t("Wish to sell with Discount")} name="offer_type" error="offer_type">
                                         <input
                                             type="checkbox"
                                             checked={!!form.data.offer_type}
@@ -300,7 +299,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                         <InputField
                                             className="md:flex"
                                             labelWidth="250px"
-                                            label="Product Discount Price"
+                                            label={t("Product Discount Price")}
                                             name="discount"
                                             error={form.errors.discount}
                                             value={form.data.discount}
@@ -310,7 +309,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 </div>
                                 <Hr />
                                 <div>
-                                    <InputFile label="Set to Recomended Products" name="display_at_home" error="display_at_home">
+                                    <InputFile label={t("Set to Recomended Products")} name="display_at_home" error="display_at_home">
                                         <input
                                             type="checkbox"
                                             checked={!!form.data.display_at_home}
@@ -326,13 +325,13 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                     <div>
                         <Section>
                             <SectionHeader
-                                title="Product Delevery"
-                                content="Define your product delevery option and charge from here."
+                                title={t("Product Delevery")}
+                                content={t("Define your product delevery option and charge from here.")}
                             />
                             <SectionInner>
                                 <div className="justify-between md:flex">
                                     <div>
-                                        <InputFile error="cod" label="Available Cash-On-Delevery" className="lg:flex" name="cod">
+                                        <InputFile error="cod" label={t("Available Cash-On-Delevery")} className="lg:flex" name="cod">
                                             <input
                                                 type="checkbox"
                                                 checked={!!form.data.cod}
@@ -341,7 +340,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             />
                                         </InputFile>
                                         <Hr />
-                                        <InputFile error="courier" label="Available Couried Delivery" className="lg:flex" name="courier">
+                                        <InputFile error="courier" label={t("Available Couried Delivery")} className="lg:flex" name="courier">
                                             <input
                                                 type="checkbox"
                                                 checked={!!form.data.courier}
@@ -350,7 +349,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             />
                                         </InputFile>
                                         <Hr />
-                                        <InputFile error="hand" label="Available Hand-To-Hand Delevery" className="lg:flex" name="hand">
+                                        <InputFile error="hand" label={t("Available Hand-To-Hand Delevery")} className="lg:flex" name="hand">
                                             <input
                                                 type="checkbox"
                                                 checked={!!form.data.hand}
@@ -361,7 +360,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                     </div>
                                     <div>
                                         <InputField
-                                            label="Delevery Amount Inside Dhaka"
+                                            label={t("Delevery Amount Inside Dhaka")}
                                             name="shipping_in_dhaka"
                                             className="lg:flex"
                                             labelWidth="250px"
@@ -371,7 +370,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                         />
                                         <Hr />
                                         <InputField
-                                            label="Normal Delevery Amount"
+                                            label={t("Normal Delevery Amount")}
                                             className="lg:flex"
                                             name="shipping_out_dhaka"
                                             labelWidth="250px"
@@ -380,11 +379,11 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             onChange={(e) => form.setData("shipping_out_dhaka", e.target.value)}
                                         />
                                         <Hr />
-                                        <InputFile label="Shipping Note" error="shipping_note" name="shipping_note">
+                                        <InputFile label={t("Shipping Note")} error="shipping_note" name="shipping_note">
                                             <textarea
                                                 rows="3"
                                                 className="w-full rounded"
-                                                placeholder="write your shipping note ... "
+                                                placeholder={t("write your shipping note ...")}
                                                 value={form.data.shipping_note}
                                                 onChange={(e) => form.setData("shipping_note", e.target.value)}
                                             ></textarea>
@@ -398,7 +397,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                             <SectionInner>
                                 <InputField
                                     error={form.errors.meta_keyword}
-                                    label="Meta Keyword"
+                                    label={t("Meta Keyword")}
                                     name="meta_keyword"
                                     className="lg:flex"
                                     inputClass="w-full"
@@ -407,7 +406,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 />
                                 <InputField
                                     error={form.errors.meta_title}
-                                    label="Meta Title"
+                                    label={t("Meta Title")}
                                     name="meta_title"
                                     className="lg:flex"
                                     inputClass="w-full"
@@ -416,31 +415,31 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 />
                                 <InputField
                                     error={form.errors.meta_tags}
-                                    label="Meta Tags"
+                                    label={t("Meta Tags")}
                                     name="meta_tags"
                                     className="lg:flex"
                                     inputClass="w-full"
                                     value={form.data.meta_tags}
                                     onChange={(e) => form.setData("meta_tags", e.target.value)}
                                 />
-                                <InputFile label="Meta Description" name="meta_description" error="meta_description" errors={form.errors}>
+                                <InputFile label={t("Meta Description")} name="meta_description" error="meta_description" errors={form.errors}>
                                     <textarea
                                         className="w-full p-2 rounded-md shadow"
                                         rows="4"
-                                        placeholder="Meta Description ...."
+                                        placeholder={t("Meta Description ....")}
                                         value={form.data.meta_description}
                                         onChange={(e) => form.setData("meta_description", e.target.value)}
                                     ></textarea>
                                 </InputFile>
 
-                                <InputFile label="Meta Thumbnail" name="meta_thumbnail" error="meta_thumbnail" errors={form.errors}>
+                                <InputFile label={t("Meta Thumbnail")} name="meta_thumbnail" error="meta_thumbnail" errors={form.errors}>
                                     <div>
                                         {metaThumbPreview ? (
                                             <img src={metaThumbPreview} width="100px" height="200px" alt="" />
                                         ) : null}
                                     </div>
                                     <div className="relative">
-                                        <p>100 x 200 meta thumbnail</p>
+                                        <p>{t("100 x 200 meta thumbnail")}</p>
                                         <input
                                             type="file"
                                             id="newseothumb"
@@ -459,20 +458,20 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
 
                         <Section>
                             <SectionHeader
-                                title="Products Attributes"
-                                content="Give your products attributes, product different types, different product color package and quantity."
+                                title={t("Products Attributes")}
+                                content={t("Give your products attributes, product different types, different product color package and quantity.")}
                             />
                             <SectionInner>
                                 <div className="md:flex">
                                     <TextInput
                                         value={form.data.attr_name}
                                         onChange={(e) => form.setData("attr_name", e.target.value)}
-                                        placeholder="Name"
+                                        placeholder={t("Name")}
                                     />
                                     <TextInput
                                         value={form.data.attr_value}
                                         onChange={(e) => form.setData("attr_value", e.target.value)}
-                                        placeholder="Value"
+                                        placeholder={t("Value")}
                                     />
                                 </div>
                             </SectionInner>
@@ -480,11 +479,11 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
 
                         <Section>
                             <SectionHeader
-                                title="Image Thumbnail"
-                                content="Provide a mendatory thumbnail image for your products. This image consider for the thumbnail for social media platform."
+                                title={t("Image Thumbnail")}
+                                content={t("Provide a mendatory thumbnail image for your products. This image consider for the thumbnail for social media platform.")}
                             />
                             <SectionInner>
-                                <InputFile label="Thumbnail" className="md:flex" labelWidth="250px" error="thumb" errors={form.errors}>
+                                <InputFile label={t("Thumbnail")} className="md:flex" labelWidth="250px" error="thumb" errors={form.errors}>
                                     {thumbPreview ? (
                                         <img
                                             src={thumbPreview}
@@ -513,12 +512,12 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
 
                         <Section>
                             <SectionHeader
-                                title="Product Video"
-                                content="Add an optional YouTube video URL for the details page."
+                                title={t("Product Video")}
+                                content={t("Add an optional YouTube video URL for the details page.")}
                             />
                             <SectionInner>
                                 <InputField
-                                    label="YouTube URL"
+                                    label={t("YouTube URL")}
                                     name="video"
                                     value={form.data.video}
                                     onChange={(e) => form.setData("video", e.target.value)}
@@ -529,8 +528,8 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
 
                         <Section>
                             <SectionHeader
-                                title="Other Image"
-                                content="Other product image that showcase your product. other image mainly display at product details page."
+                                title={t("Other Image")}
+                                content={t("Other product image that showcase your product. other image mainly display at product details page.")}
                             />
                             <SectionInner>
                                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,50px)", gridGap: "10px" }}>
@@ -558,21 +557,19 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                     >
                                         <i className="fas fa-upload"></i>
                                     </label>
-                                    <div className="text-xs leading-5">
-                                        Please choose all image at once, if you plan to upload multiple image.
-                                    </div>
+                                    <div className="text-xs leading-5">{t("Please choose all image at once, if you plan to upload multiple image.")}</div>
                                 </div>
                             </SectionInner>
                         </Section>
 
                         <Section>
                             <SectionHeader
-                                title="Description"
-                                content="Descrive your product as you need."
+                                title={t("Description")}
+                                content={t("Descrive your product as you need.")}
                             />
                             <SectionInner>
                                 <div className="flex flex-wrap items-center gap-2 p-3 border-b bg-gray-50"></div>
-                                <InputFile label="Description" className="md:flex" labelWidth="250px" error="description" errors={form.errors}>
+                                <InputFile label={t("Description")} className="md:flex" labelWidth="250px" error="description" errors={form.errors}>
                                     <hr />
                                     <main>
                                         {trixReady && <trix-toolbar id={`my_toolbar_${inputId}`}></trix-toolbar>}
@@ -600,9 +597,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                         )}
                                     </main>
                                     <br />
-                                    <PrimaryButton type="submit" className="block" disabled={form.processing}>
-                                        create
-                                    </PrimaryButton>
+                                    <PrimaryButton type="submit" className="block" disabled={form.processing}>{t("create")}</PrimaryButton>
                                 </InputFile>
                             </SectionInner>
                         </Section>
@@ -650,7 +645,7 @@ function SearchableCategorySelect({ categories = [], value, onChange }) {
                         setIsOpen(false);
                     }, 150);
                 }}
-                placeholder="-- Chose an category --"
+                placeholder={t("-- Chose an category --")}
                 className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 autoComplete="off"
             />
@@ -670,9 +665,7 @@ function SearchableCategorySelect({ categories = [], value, onChange }) {
                             </button>
                         ))
                     ) : (
-                        <div className="px-3 py-4 text-center text-sm text-gray-500">
-                            No category found.
-                        </div>
+                        <div className="px-3 py-4 text-center text-sm text-gray-500">{t("No category found.")}</div>
                     )}
                 </div>
             )}

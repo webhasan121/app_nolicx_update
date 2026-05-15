@@ -18,5 +18,6 @@ export default function useTranslation() {
         t,
         current: language?.current ?? "en",
         available: language?.available ?? [],
+        fixed: Boolean(language?.fixed),
     };
 }

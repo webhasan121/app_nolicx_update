@@ -6,14 +6,16 @@ import PageHeader from "../../../../components/dashboard/PageHeader";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index() {
+    const { t } = useTranslation();
     return (
         <AppLayout
-            title="Grolocations"
-            header={<PageHeader>Grolocations</PageHeader>}
+            title={t("Grolocations")}
+            header={<PageHeader>{t("Grolocations")}</PageHeader>}
         >
-            <Head title="Grolocations" />
+            <Head title={t("Grolocations")} />
 
             <Container>
                 <div className="flex items-center gap-2">
@@ -27,8 +29,8 @@ export default function Index() {
             <Container>
                 <Section>
                     <SectionHeader
-                        title="Targeted Area"
-                        content="Manage your targeted area from here. You can add, edit and delete countries, states and cities."
+                        title={t("Targeted Area")}
+                        content={t("Manage your targeted area from here. You can add, edit and delete countries, states and cities.")}
                     />
                     <SectionInner></SectionInner>
                 </Section>

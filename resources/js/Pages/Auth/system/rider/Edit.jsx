@@ -19,8 +19,10 @@ import UpdateProfilePermission, {
     PermissionGroup,
 } from "../../../../livewire/system/users/partials/UpdateProfilePermission";
 import UpdateProfileRole from "../../../../livewire/system/users/partials/UpdateProfileRole";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Edit() {
+    const { t } = useTranslation();
     const {
         rider,
         nav = "user",
@@ -131,26 +133,24 @@ export default function Edit() {
 
     return (
         <AppLayout
-            title="Riders"
+            title={t("Riders")}
             header={
-                <PageHeader>
-                    Riders - {rider?.user?.name ?? "N/A"}
+                <PageHeader>{t("Riders -")}{rider?.user?.name ?? "N/A"}
                     <br />
-                    <div className="text-sm my-2">
-                        Area - {rider?.area_condition}, {rider?.targeted_area ?? ""}
+                    <div className="text-sm my-2">{t("Area -")}{rider?.area_condition}, {rider?.targeted_area ?? ""}
                     </div>
                     <div className="text-xs">{rider?.status}</div>
                     <div className="text-red">{rider?.rejected_for}</div>
-                    <NavLink active={nav === "user"} href={route("system.rider.edit", { id: rider?.id, nav: "user" })}>User</NavLink>
-                    <NavLink active={nav === "document"} href={route("system.rider.edit", { id: rider?.id, nav: "document" })}>Documents</NavLink>
-                    <NavLink active={nav === "delevary"} href={route("system.rider.edit", { id: rider?.id, nav: "delevary" })}>Delevary</NavLink>
+                    <NavLink active={nav === "user"} href={route("system.rider.edit", { id: rider?.id, nav: "user" })}>{t("User")}</NavLink>
+                    <NavLink active={nav === "document"} href={route("system.rider.edit", { id: rider?.id, nav: "document" })}>{t("Documents")}</NavLink>
+                    <NavLink active={nav === "delevary"} href={route("system.rider.edit", { id: rider?.id, nav: "delevary" })}>{t("Delevary")}</NavLink>
                 </PageHeader>
             }
         >
             <Container>
                 <SectionSection>
                     <SectionHeader
-                        title="Rider Upate - Delevary Man"
+                        title={t("Rider Upate - Delevary Man")}
                         content={
                             <>
                                 <Hr />
@@ -158,15 +158,15 @@ export default function Edit() {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <div>
-                                                <p className="text-sm">update : {rider?.updated_at_human}</p>
+                                                <p className="text-sm">{t("update :")}{rider?.updated_at_human}</p>
                                             </div>
-                                            <p className="text-sm">Current Status is : <strong> {rider?.status} </strong>. Change status to - </p>
+                                            <p className="text-sm">{t("Current Status is :")}<strong> {rider?.status} </strong>{t(". Change status to -")}</p>
                                             <select className="rounded-lg py-1" value={statusForm.data.status} onChange={(e) => statusForm.setData("status", e.target.value)}>
-                                                <option value="Select Status">-- Select -- </option>
-                                                <option value="Active">Active</option>
-                                                <option value="Pending">Pending</option>
-                                                <option value="Disabled">Disabled</option>
-                                                <option value="Suspended">Suspended</option>
+                                                <option value="Select Status">{t("-- Select --")}</option>
+                                                <option value="Active">{t("Active")}</option>
+                                                <option value="Pending">{t("Pending")}</option>
+                                                <option value="Disabled">{t("Disabled")}</option>
+                                                <option value="Suspended">{t("Suspended")}</option>
                                             </select>
 
                                             <div className="mt-1">
@@ -176,11 +176,11 @@ export default function Edit() {
                                     </div>
                                     <Hr />
                                     <div className="flex justify-between items-center">
-                                        <div className="text-md">Comission (%)</div>
+                                        <div className="text-md">{t("Comission (%)")}</div>
                                         <TextInput value={statusForm.data.comission} onChange={(e) => statusForm.setData("comission", e.target.value)} placeholder="" />
                                     </div>
                                     <Hr />
-                                    <PrimaryButton className="ml-2"><i className="fas fa-sync pr-2"></i> Update </PrimaryButton>
+                                    <PrimaryButton className="ml-2"><i className="fas fa-sync pr-2"></i>{t("Update")}</PrimaryButton>
                                 </form>
                             </>
                         }
@@ -190,22 +190,22 @@ export default function Edit() {
                 {nav === "document" ? (
                     <>
                         <SectionSection>
-                            <SectionHeader title="Submitted Documents" content="" />
+                            <SectionHeader title={t("Submitted Documents")} content="" />
                             <SectionInner>
                                 <Hr />
-                                <InputFile label="Rider Phone" name="phone" error="phone">
+                                <InputFile label={t("Rider Phone")} name="phone" error="phone">
                                     <TextInput type="text" name="phone" value={rider?.phone ?? ""} onChange={() => {}} />
                                 </InputFile>
                                 <Hr />
-                                <InputFile label="Rider Email" name="email" error="email">
+                                <InputFile label={t("Rider Email")} name="email" error="email">
                                     <TextInput type="text" name="email" value={rider?.email ?? ""} onChange={() => {}} />
                                 </InputFile>
                                 <Hr />
-                                <InputFile label="Rider NID" name="nid" error="nid">
+                                <InputFile label={t("Rider NID")} name="nid" error="nid">
                                     <TextInput type="text" name="nid" value={rider?.nid ?? ""} onChange={() => {}} />
                                 </InputFile>
                                 <Hr />
-                                <InputFile label="Rider Photo Front" name="nid_photo_front" error="nid_photo_front">
+                                <InputFile label={t("Rider Photo Front")} name="nid_photo_front" error="nid_photo_front">
                                     <div className="flex">
                                         {rider?.nid_photo_front_url ? <img src={rider.nid_photo_front_url} alt="nid_photo_front" /> : null}
                                         {rider?.nid_photo_back_url ? <img src={rider.nid_photo_back_url} alt="nid_photo_back" /> : null}
@@ -215,17 +215,17 @@ export default function Edit() {
                         </SectionSection>
 
                         <SectionSection>
-                            <SectionHeader title="Rider Address and Area" content="See the rider areas about the rider address" />
+                            <SectionHeader title={t("Rider Address and Area")} content={t("See the rider areas about the rider address")} />
                             <SectionInner>
-                                <InputFile label="Rider Present Address" name="nid" error="nid">
+                                <InputFile label={t("Rider Present Address")} name="nid" error="nid">
                                     <div>{rider?.current_address ?? ""}</div>
                                 </InputFile>
                                 <Hr />
-                                <InputFile label="Rider Permanent Address" name="nid" error="nid">
+                                <InputFile label={t("Rider Permanent Address")} name="nid" error="nid">
                                     <div>{rider?.fixed_address ?? ""}</div>
                                 </InputFile>
                                 <Hr />
-                                <InputFile label="Rider Targetted Area" name="nid" error="nid">
+                                <InputFile label={t("Rider Targetted Area")} name="nid" error="nid">
                                     <div>{rider?.area_condition}, {rider?.targeted_area ?? ""}</div>
                                 </InputFile>
                                 <Hr />
@@ -243,8 +243,8 @@ export default function Edit() {
                                 title={editUser?.name}
                                 content={
                                     <div>
-                                        <NavLink href="#" active={userNav === "profile"} className={userNav === "profile" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("profile"); }}>Profile</NavLink>
-                                        <NavLink href="#" active={userNav === "role"} className={userNav === "role" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("role"); }}>Permission</NavLink>
+                                        <NavLink href="#" active={userNav === "profile"} className={userNav === "profile" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("profile"); }}>{t("Profile")}</NavLink>
+                                        <NavLink href="#" active={userNav === "role"} className={userNav === "role" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("role"); }}>{t("Permission")}</NavLink>
                                     </div>
                                 }
                             />
@@ -255,14 +255,14 @@ export default function Edit() {
                                 <SectionInner>
                                     <UpdateProfileInformation editUser={editUser} defaultAdminRef={defaultAdminRef} profileForm={profileForm} onSubmit={submitProfile} />
                                     <Hr />
-                                    <InputFile label="User Coin" error="coin" name="coin">
+                                    <InputFile label={t("User Coin")} error="coin" name="coin">
                                         <div className="rounded-lg">
                                             <TextInput type="text" className=" border-0 w-32" disabled value={editUser?.coin ?? 0} />
                                             <div className="p-2 bg-ref-900 rounded border inline-block">
-                                                <div className="text-xs">Recharge</div>
+                                                <div className="text-xs">{t("Recharge")}</div>
                                                 <form onSubmit={openRechargeModal}>
                                                     <TextInput type="number" className="py-1 w-32 mr-1" value={profileForm.data.rechargeAmount} onChange={(e) => profileForm.setData("rechargeAmount", e.target.value)} />
-                                                    <PrimaryButton>Apply</PrimaryButton>
+                                                    <PrimaryButton>{t("Apply")}</PrimaryButton>
                                                 </form>
                                             </div>
                                         </div>
@@ -287,7 +287,7 @@ export default function Edit() {
 
             <Modal show={showViaRole} onClose={() => setShowViaRole(false)} maxWidth="2xl">
                 <div className="p-3">
-                    <p>Permissions</p>
+                    <p>{t("Permissions")}</p>
                     <Hr />
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10 }}>
                         {groupedPermissions.map(([title, items]) => (
@@ -295,21 +295,21 @@ export default function Edit() {
                         ))}
                     </div>
                     <div className="mt-4">
-                        <DangerButton type="button" onClick={() => setShowViaRole(false)}>Close</DangerButton>
+                        <DangerButton type="button" onClick={() => setShowViaRole(false)}>{t("Close")}</DangerButton>
                     </div>
                 </div>
             </Modal>
 
             <Modal show={showRechargeModal} onClose={() => setShowRechargeModal(false)} maxWidth="xl">
                 <div className="p-4">
-                    <div className="text-lg">Confirm Recharge</div>
+                    <div className="text-lg">{t("Confirm Recharge")}</div>
                     <Hr />
-                    <p className="py-5">Are you sure to add {profileForm.data.rechargeAmount} TK amount to {editUser?.name}, {editUser?.email}</p>
+                    <p className="py-5">{t("Are you sure to add")}{profileForm.data.rechargeAmount}{t("TK amount to")}{editUser?.name}, {editUser?.email}</p>
                     <Hr />
                     <div className="flex">
-                        <SecondaryButton type="button" onClick={() => setShowRechargeModal(false)}>Cancel</SecondaryButton>
-                        <PrimaryButton type="button" onClick={submitRecharge}>Recharge</PrimaryButton>
-                        <DangerButton type="button" onClick={submitRefund}>Refund</DangerButton>
+                        <SecondaryButton type="button" onClick={() => setShowRechargeModal(false)}>{t("Cancel")}</SecondaryButton>
+                        <PrimaryButton type="button" onClick={submitRecharge}>{t("Recharge")}</PrimaryButton>
+                        <DangerButton type="button" onClick={submitRefund}>{t("Refund")}</DangerButton>
                     </div>
                 </div>
             </Modal>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
@@ -101,6 +102,14 @@ Route::middleware('auth')->group(function () {
     Route::get('logout', [AuthenticatedSessionController::class, 'logoutPage'])->name('logout');
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout.perform');
 
+    Route::get('/dashboard/notices', [NoticeController::class, 'index'])->name('dashboard.notices.index');
+    Route::get('/dashboard/notices/feed', [NoticeController::class, 'feed'])->name('dashboard.notices.feed');
+    Route::post('/dashboard/notices/read-all', [NoticeController::class, 'markAllRead'])->name('dashboard.notices.read-all');
+    Route::post('/dashboard/notices/{notice}/read', [NoticeController::class, 'markRead'])->name('dashboard.notices.read');
+    Route::post('/dashboard/notices', [NoticeController::class, 'store'])->name('dashboard.notices.store');
+    Route::put('/dashboard/notices/{notice}', [NoticeController::class, 'update'])->name('dashboard.notices.update');
+    Route::delete('/dashboard/notices/{notice}', [NoticeController::class, 'destroy'])->name('dashboard.notices.destroy');
+
 
 
 
@@ -194,6 +203,7 @@ Route::middleware('auth')->group(function () {
 
 
         Route::get('/ref', [RefController::class, 'index'])->name('user.ref.view');
+        Route::get('/ref/print', [RefController::class, 'print'])->name('user.ref.print');
 
         // user wallet
         Route::get('/wallet', [WalletController::class, 'index'])->name('user.wallet.index');

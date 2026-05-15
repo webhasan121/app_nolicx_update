@@ -10,8 +10,10 @@ import TextInput from "../../../../components/TextInput";
 import UserDash from "../../../../components/user/dash/UserDash";
 import UpgradeStatus from "../../../../components/client/UpgradeStatus";
 import Hr from "../../../../components/Hr";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function UpgradeVendorEdit() {
+    const { t } = useTranslation();
     const {
         id,
         upgrade = "vendor",
@@ -74,17 +76,13 @@ export default function UpgradeVendorEdit() {
                     <SectionHeader
                         title={`${upgrade.charAt(0).toUpperCase() + upgrade.slice(1)} Shop Request`}
                         content={
-                            <div>
-                                Edit and Upgrade Your{" "}
-                                {upgrade.charAt(0).toUpperCase() + upgrade.slice(1)}{" "}
-                                Request Form{" "}
+                            <div>{t("Edit and Upgrade Your")}{" "}
+                                {upgrade.charAt(0).toUpperCase() + upgrade.slice(1)}{" "}{t("Request Form")}{" "}
                                 <NavLink
                                     href={route("upgrade.vendor.index", {
                                         upgrade,
                                     })}
-                                >
-                                    Previous Request
-                                </NavLink>
+                                >{t("Previous Request")}</NavLink>
                                 <br />
                                 <UpgradeStatus authRequest={authRequest} />
                             </div>
@@ -101,9 +99,7 @@ export default function UpgradeVendorEdit() {
                                         upgrade,
                                         nav: "basic",
                                     })}
-                                >
-                                    Basic
-                                </NavLink>
+                                >{t("Basic")}</NavLink>
                                 <NavLink
                                     active={nav === "document"}
                                     href={route("upgrade.vendor.edit", {
@@ -111,9 +107,7 @@ export default function UpgradeVendorEdit() {
                                         upgrade,
                                         nav: "document",
                                     })}
-                                >
-                                    Document
-                                </NavLink>
+                                >{t("Document")}</NavLink>
                             </div>
 
                             <div>
@@ -121,9 +115,7 @@ export default function UpgradeVendorEdit() {
                                     href={route("upgrade.vendor.create", {
                                         upgrade,
                                     })}
-                                >
-                                    New Request
-                                </NavLink>
+                                >{t("New Request")}</NavLink>
                             </div>
                         </div>
                     </SectionInner>
@@ -136,7 +128,7 @@ export default function UpgradeVendorEdit() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Your Shop Name"
+                                    label={t("Your Shop Name")}
                                     name="shop_name_en"
                                     error={basicForm.errors.shop_name_en}
                                     value={basicForm.data.shop_name_en}
@@ -149,11 +141,11 @@ export default function UpgradeVendorEdit() {
                                 />
 
                                 <InputFile
-                                    label="Logo"
+                                    label={t("Logo")}
                                     error="newLogo"
                                     errors={basicForm.errors}
                                 >
-                                    <p>100x100 logo</p>
+                                    <p>{t("100x100 logo")}</p>
                                     <div
                                         style={{ width: "100px", height: "100px" }}
                                         className="border rounded"
@@ -206,11 +198,11 @@ export default function UpgradeVendorEdit() {
                                 </InputFile>
 
                                 <InputFile
-                                    label="Banner"
+                                    label={t("Banner")}
                                     error="newBanner"
                                     errors={basicForm.errors}
                                 >
-                                    <p>100x300 banner image</p>
+                                    <p>{t("100x300 banner image")}</p>
                                     <div
                                         style={{ width: "300px", height: "100px" }}
                                         className="border rounded"
@@ -266,7 +258,7 @@ export default function UpgradeVendorEdit() {
                                     className="md:flex"
                                     inputClass="w-full"
                                     type="number"
-                                    label="Your Shop Phone"
+                                    label={t("Your Shop Phone")}
                                     name="phone"
                                     error={basicForm.errors.phone}
                                     value={basicForm.data.phone}
@@ -278,7 +270,7 @@ export default function UpgradeVendorEdit() {
                                     className="md:flex"
                                     inputClass="w-full"
                                     type="email"
-                                    label="Your Shop email"
+                                    label={t("Your Shop email")}
                                     name="email"
                                     error={basicForm.errors.email}
                                     value={basicForm.data.email}
@@ -294,7 +286,7 @@ export default function UpgradeVendorEdit() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Your Country"
+                                    label={t("Your Country")}
                                     name="country"
                                     error={basicForm.errors.country}
                                     value={basicForm.data.country}
@@ -308,7 +300,7 @@ export default function UpgradeVendorEdit() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="District/State"
+                                    label={t("District/State")}
                                     name="district"
                                     error={basicForm.errors.district}
                                     value={basicForm.data.district}
@@ -322,7 +314,7 @@ export default function UpgradeVendorEdit() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Upozila/ City"
+                                    label={t("Upozila/ City")}
                                     name="upozila"
                                     error={basicForm.errors.upozila}
                                     value={basicForm.data.upozila}
@@ -336,7 +328,7 @@ export default function UpgradeVendorEdit() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Village"
+                                    label={t("Village")}
                                     name="village"
                                     error={basicForm.errors.village}
                                     value={basicForm.data.village}
@@ -350,7 +342,7 @@ export default function UpgradeVendorEdit() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Zip Code"
+                                    label={t("Zip Code")}
                                     name="zip"
                                     error={basicForm.errors.zip}
                                     value={basicForm.data.zip}
@@ -361,7 +353,7 @@ export default function UpgradeVendorEdit() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="Road No"
+                                    label={t("Road No")}
                                     name="road_no"
                                     error={basicForm.errors.road_no}
                                     value={basicForm.data.road_no}
@@ -375,7 +367,7 @@ export default function UpgradeVendorEdit() {
                                 <InputField
                                     className="md:flex"
                                     inputClass="w-full"
-                                    label="House No"
+                                    label={t("House No")}
                                     name="house_no"
                                     error={basicForm.errors.house_no}
                                     value={basicForm.data.house_no}
@@ -387,9 +379,7 @@ export default function UpgradeVendorEdit() {
                                     }
                                 />
 
-                                <PrimaryButton disabled={basicForm.processing}>
-                                    Submit
-                                </PrimaryButton>
+                                <PrimaryButton disabled={basicForm.processing}>{t("Submit")}</PrimaryButton>
                             </SectionInner>
                         </SectionSection>
                     </form>
@@ -401,7 +391,7 @@ export default function UpgradeVendorEdit() {
                             <SectionInner>
                                 <InputField
                                     className="md:flex"
-                                    label="Your NID No"
+                                    label={t("Your NID No")}
                                     name="nid"
                                     error={documentForm.errors.nid}
                                     value={documentForm.data.nid}
@@ -414,7 +404,7 @@ export default function UpgradeVendorEdit() {
                                 />
 
                                 <InputFile
-                                    label="Your NID Image (front side)"
+                                    label={t("Your NID Image (front side)")}
                                     error="nid_front"
                                     errors={documentForm.errors}
                                 >
@@ -446,7 +436,7 @@ export default function UpgradeVendorEdit() {
                                 </InputFile>
 
                                 <InputFile
-                                    label="Your NID Image (back side)"
+                                    label={t("Your NID Image (back side)")}
                                     error="nid_back"
                                     errors={documentForm.errors}
                                 >
@@ -477,7 +467,7 @@ export default function UpgradeVendorEdit() {
                                 </InputFile>
                                 <Hr />
                                 <InputFile
-                                    label="Your TIN No"
+                                    label={t("Your TIN No")}
                                     error="shop_tin"
                                     errors={documentForm.errors}
                                 >
@@ -492,12 +482,12 @@ export default function UpgradeVendorEdit() {
                                         }
                                         type="text"
                                         name="nid"
-                                        placeholder="Your Business TIN"
+                                        placeholder={t("Your Business TIN")}
                                     />
                                 </InputFile>
 
                                 <InputFile
-                                    label="Your TIN Image (front side)"
+                                    label={t("Your TIN Image (front side)")}
                                     error="shop_tin_image"
                                     errors={documentForm.errors}
                                 >
@@ -533,7 +523,7 @@ export default function UpgradeVendorEdit() {
                                 <Hr />
                                 <InputField
                                     className="md:flex"
-                                    label="Your business Trade Number"
+                                    label={t("Your business Trade Number")}
                                     name="shop_trade"
                                     error={documentForm.errors.shop_trade}
                                     value={documentForm.data.shop_trade}
@@ -545,7 +535,7 @@ export default function UpgradeVendorEdit() {
                                     }
                                 />
                                 <InputFile
-                                    label="Your Trade License Image (front side)"
+                                    label={t("Your Trade License Image (front side)")}
                                     error="shop_trade_image"
                                     errors={documentForm.errors}
                                 >
@@ -581,9 +571,7 @@ export default function UpgradeVendorEdit() {
                                 <Hr />
                                 <PrimaryButton
                                     disabled={documentForm.processing}
-                                >
-                                    submit
-                                </PrimaryButton>
+                                >{t("submit")}</PrimaryButton>
                             </SectionInner>
                         </SectionSection>
                     </form>

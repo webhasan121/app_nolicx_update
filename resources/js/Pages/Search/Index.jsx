@@ -6,8 +6,10 @@ import ShopsCart from "../../components/client/ShopsCart";
 import Hr from "../../components/Hr";
 import Container from "../../components/dashboard/Container";
 import UserLayout from "../../Layouts/User/App";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Index({ q = "", product = {}, shop = [], category = [] }) {
+    const { t } = useTranslation();
     const rows = product?.data ?? [];
 
     const pagination = useMemo(() => {
@@ -42,11 +44,11 @@ export default function Index({ q = "", product = {}, shop = [], category = [] }
     };
 
     return (
-        <UserLayout title="Search">
+        <UserLayout title={t("Search")}>
             <Container>
                 <div className="flex items-center justify-start py-3 mb-3">
                     <i className="fas fa-home pe-2"></i>
-                    <div>search</div>
+                    <div>{t("search")}</div>
                     <div className="px-2">{q}</div>
                 </div>
 
@@ -75,9 +77,7 @@ export default function Index({ q = "", product = {}, shop = [], category = [] }
                                         disabled={!pagination.prev?.url}
                                         className="px-3 py-1 bg-white border rounded disabled:opacity-50"
                                         onClick={() => goToPage(pagination.prev?.url)}
-                                    >
-                                        Previous
-                                    </button>
+                                    >{t("Previous")}</button>
 
                                     {pagination.pages.map((link, index) => (
                                         <button
@@ -98,15 +98,13 @@ export default function Index({ q = "", product = {}, shop = [], category = [] }
                                         disabled={!pagination.next?.url}
                                         className="px-3 py-1 bg-white border rounded disabled:opacity-50"
                                         onClick={() => goToPage(pagination.next?.url)}
-                                    >
-                                        Next
-                                    </button>
+                                    >{t("Next")}</button>
                                 </div>
                             </div>
                         ) : null}
                     </>
                 ) : (
-                    <p>No products found.</p>
+                    <p>{t("No products found.")}</p>
                 )}
             </Container>
 
@@ -136,7 +134,7 @@ export default function Index({ q = "", product = {}, shop = [], category = [] }
             <Container>
                 {category?.length > 0 ? (
                     <div>
-                        <div>Categories</div>
+                        <div>{t("Categories")}</div>
                         <DisplayCategory categories={category} />
                     </div>
                 ) : null}

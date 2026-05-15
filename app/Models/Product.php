@@ -239,6 +239,11 @@ class Product extends Model
         return $this->hasMany(Products_has_comments::class);
     }
 
+    public function savedForLater()
+    {
+        return $this->hasMany(ProductSaveForLater::class);
+    }
+
 
     public function syncOrder()
     {

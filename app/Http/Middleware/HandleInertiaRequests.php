@@ -101,6 +101,7 @@ class HandleInertiaRequests extends Middleware
 
                 return [
                     'current' => $locale,
+                    'fixed' => false,
                     'messages' => TranslationManager::messages($locale),
                     'available' => collect(TranslationManager::languages())
                         ->filter(fn ($language) => $language['is_active'])

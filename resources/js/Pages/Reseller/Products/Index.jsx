@@ -11,8 +11,10 @@ import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function Index({ products, filters, printUrl }) {
+    const { t } = useTranslation();
     const [nav, setNav] = useState(filters?.nav ?? "own");
     const [pd, setPd] = useState(filters?.pd ?? "Active");
     const [search, setSearch] = useState(filters?.search ?? "");
@@ -98,13 +100,10 @@ export default function Index({ products, filters, printUrl }) {
 
     return (
         <AppLayout
-            title="Products"
+            title={t("Products")}
             header={
                 <PageHeader>
-                    <div className="flex items-start justify-between">
-                        Products
-
-                        <div className="flex space-x-1">
+                    <div className="flex items-start justify-between">{t("Products")}<div className="flex space-x-1">
                             <NavLinkBtn href={route("vendor.products.create")}>
                                 <i className="pr-2 fas fa-plus"></i> New
                             </NavLinkBtn>
@@ -118,19 +117,15 @@ export default function Index({ products, filters, printUrl }) {
                     <NavLink
                         href={route("reseller.products.list", { nav: "own" })}
                         active={nav === "own"}
-                    >
-                        Your Product
-                    </NavLink>
+                    >{t("Your Product")}</NavLink>
                     <NavLink
                         href={route("reseller.products.list", { nav: "resel" })}
                         active={nav === "resel"}
-                    >
-                        Resel Product
-                    </NavLink>
+                    >{t("Resel Product")}</NavLink>
                 </PageHeader>
             }
         >
-            <Head title="Products" />
+            <Head title={t("Products")} />
 
             <Container>
                 <Section>
@@ -149,7 +144,7 @@ export default function Index({ products, filters, printUrl }) {
                                         e.preventDefault();
                                         requestProducts({ search: search.trim() });
                                     }}
-                                    placeholder="Search products..."
+                                    placeholder={t("Search products...")}
                                     className="py-1"
                                     />
                                 <PrimaryButton
@@ -179,9 +174,7 @@ export default function Index({ products, filters, printUrl }) {
                                                 page: undefined,
                                             });
                                         }}
-                                    >
-                                        Active
-                                    </NavLink>
+                                    >{t("Active")}</NavLink>
                                     <NavLink
                                         href={route("reseller.products.list", {
                                             nav,
@@ -198,9 +191,7 @@ export default function Index({ products, filters, printUrl }) {
                                                 page: undefined,
                                             });
                                         }}
-                                    >
-                                        Trash
-                                    </NavLink>
+                                    >{t("Trash")}</NavLink>
                                 </div>
                             </div>
                         }
@@ -211,16 +202,16 @@ export default function Index({ products, filters, printUrl }) {
                                 <tr>
                                     <th></th>
                                     <th>#</th>
-                                    <th>Product</th>
-                                    <th>In Stock</th>
-                                    <th>Name</th>
-                                    <th>Status</th>
-                                    <th>Order</th>
-                                    <th>Cost</th>
-                                    <th>Price</th>
-                                    <th>Sel Price</th>
-                                    <th>Insert At</th>
-                                    <th>A/C</th>
+                                    <th>{t("Product")}</th>
+                                    <th>{t("In Stock")}</th>
+                                    <th>{t("Name")}</th>
+                                    <th>{t("Status")}</th>
+                                    <th>{t("Order")}</th>
+                                    <th>{t("Cost")}</th>
+                                    <th>{t("Price")}</th>
+                                    <th>{t("Sel Price")}</th>
+                                    <th>{t("Insert At")}</th>
+                                    <th>{t("A/C")}</th>
                                 </tr>
                             </thead>
 
@@ -277,9 +268,7 @@ export default function Index({ products, filters, printUrl }) {
                                                 href={route("reseller.products.edit", {
                                                     id: product.encrypted_id,
                                                 })}
-                                            >
-                                                edit
-                                            </NavLink>
+                                            >{t("edit")}</NavLink>
                                         </td>
                                     </tr>
                                 ))}
@@ -298,9 +287,7 @@ export default function Index({ products, filters, printUrl }) {
                                                 disabled={!pagination.prev?.url}
                                                 className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
-                                            >
-                                                Previous
-                                            </button>
+                                            >{t("Previous")}</button>
                                             {pagination.pages.map((link, index) => (
                                                 <button
                                                     key={`${link.label}-${index}`}
@@ -321,9 +308,7 @@ export default function Index({ products, filters, printUrl }) {
                                                 disabled={!pagination.next?.url}
                                                 className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
-                                            >
-                                                Next
-                                            </button>
+                                            >{t("Next")}</button>
                                         </div>
                                     </div>
                                 </div>

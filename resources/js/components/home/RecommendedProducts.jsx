@@ -1,7 +1,9 @@
-import { Link } from "@inertiajs/react";
 import ProductsLoop from "../client/ProductsLoop";
 
-export default function RecommendedProducts({ products = [] }) {
+export default function RecommendedProducts({
+    products = [],
+    onSaveForLaterChange = null,
+}) {
     if (!products.length) return null;
 
     return (
@@ -14,7 +16,12 @@ export default function RecommendedProducts({ products = [] }) {
             </div>
 
             <div className="transition-all duration-300 product_section">
-                <ProductsLoop products={products} />
+                <ProductsLoop
+                    products={products}
+                    showSaveForLater
+                    savedForLater
+                    onSaveForLaterChange={onSaveForLaterChange}
+                />
             </div>
         </div>
     );

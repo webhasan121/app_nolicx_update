@@ -11,8 +11,10 @@ import Section from "../../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../../components/dashboard/section/Inner";
 import Table from "../../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../../hooks/useTranslation";
 
 export default function Index({ branches = {}, filters = {}, printUrl }) {
+    const { t } = useTranslation();
     const rows = branches.data ?? [];
     const [search, setSearch] = useState(filters.find ?? "");
 
@@ -89,17 +91,17 @@ export default function Index({ branches = {}, filters = {}, printUrl }) {
 
     return (
         <AppLayout
-            title="Settings"
-            header={<PageHeader>Settings</PageHeader>}
+            title={t("Settings")}
+            header={<PageHeader>{t("Settings")}</PageHeader>}
         >
-            <Head title="Settings" />
+            <Head title={t("Settings")} />
 
             <Container>
                 <Section>
                     <SectionHeader
                         title={
                             <div className="flex items-center justify-between">
-                                <div>Branch Management</div>
+                                <div>{t("Branch Management")}</div>
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                     <TextInput
                                         type="search"
@@ -122,7 +124,7 @@ export default function Index({ branches = {}, filters = {}, printUrl }) {
                                             );
                                         }}
                                         className="py-1"
-                                        placeholder="Search branches..."
+                                        placeholder={t("Search branches...")}
                                     />
                                     <PrimaryButton
                                         type="button"
@@ -132,12 +134,12 @@ export default function Index({ branches = {}, filters = {}, printUrl }) {
                                     </PrimaryButton>
                                     <NavLinkBtn href={route("system.branches.create")}>
                                         <i className="fas fa-plus pr-2"></i>
-                                        <span>Branch</span>
+                                        <span>{t("Branch")}</span>
                                     </NavLinkBtn>
                                 </div>
                             </div>
                         }
-                        content="Setup your necessary branches from here. add, edit and delete."
+                        content={t("Setup your necessary branches from here. add, edit and delete.")}
                     />
 
                     <SectionInner>
@@ -146,11 +148,11 @@ export default function Index({ branches = {}, filters = {}, printUrl }) {
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Type</th>
-                                        <th>Created</th>
-                                        <th width="60">Action</th>
+                                        <th>{t("Name")}</th>
+                                        <th>{t("Email")}</th>
+                                        <th>{t("Type")}</th>
+                                        <th>{t("Created")}</th>
+                                        <th width="60">{t("Action")}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -189,9 +191,7 @@ export default function Index({ branches = {}, filters = {}, printUrl }) {
                                                     disabled={!pagination.prev?.url}
                                                     className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
-                                                >
-                                                    Previous
-                                                </button>
+                                                >{t("Previous")}</button>
                                                 {pagination.pages.map((link, index) => (
                                                     <button
                                                         key={`${link.label}-${index}`}
@@ -212,9 +212,7 @@ export default function Index({ branches = {}, filters = {}, printUrl }) {
                                                     disabled={!pagination.next?.url}
                                                     className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
-                                                >
-                                                    Next
-                                                </button>
+                                                >{t("Next")}</button>
                                             </div>
                                         </div>
                                     </div>

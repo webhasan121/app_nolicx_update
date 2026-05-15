@@ -9,6 +9,7 @@ import Container from "../../../../../components/dashboard/Container";
 import PageHeader from "../../../../../components/dashboard/PageHeader";
 import Section from "../../../../../components/dashboard/section/Section";
 import NavLinkBtn from "../../../../../components/NavLinkBtn";
+import useTranslation from "../../../../../hooks/useTranslation";
 
 function slugify(value) {
     return String(value || "")
@@ -20,6 +21,7 @@ function slugify(value) {
 }
 
 export default function Create() {
+    const { t } = useTranslation();
     const form = useForm({
         name: "",
         email: "",
@@ -41,19 +43,17 @@ export default function Create() {
 
     return (
         <AppLayout
-            title="Create A New Branch"
+            title={t("Create A New Branch")}
             header={
-                <PageHeader>
-                    Create A New Branch
-                    <br />
+                <PageHeader>{t("Create A New Branch")}<br />
                     <NavLink href={route("system.branches.index")} className="">
                         <i className="pr-2 fas fa-angle-left"></i>
-                        <span>Back</span>
+                        <span>{t("Back")}</span>
                     </NavLink>
                 </PageHeader>
             }
         >
-            <Head title="Create A New Branch" />
+            <Head title={t("Create A New Branch")} />
 
             <Container>
                 <form onSubmit={submit} className="space-y-6">
@@ -70,7 +70,7 @@ export default function Create() {
                                             id="name"
                                             type="text"
                                             className="w-full"
-                                            placeholder="Test Branch"
+                                            placeholder={t("Test Branch")}
                                             value={form.data.name}
                                             onChange={updateName}
                                         />
@@ -90,7 +90,7 @@ export default function Create() {
                                             id="slug"
                                             type="text"
                                             className="w-full"
-                                            placeholder="test-branch"
+                                            placeholder={t("test-branch")}
                                             value={form.data.slug}
                                             onChange={(e) =>
                                                 form.setData(
@@ -121,7 +121,7 @@ export default function Create() {
                                                 id="email"
                                                 type="email"
                                                 className="w-full"
-                                                placeholder="branch@example.com"
+                                                placeholder={t("branch@example.com")}
                                                 value={form.data.email}
                                                 onChange={(e) =>
                                                     form.setData(
@@ -146,7 +146,7 @@ export default function Create() {
                                                 id="phone"
                                                 type="text"
                                                 className="w-full"
-                                                placeholder="+8801XXXXXXXXX"
+                                                placeholder={t("+8801XXXXXXXXX")}
                                                 value={form.data.phone}
                                                 onChange={(e) =>
                                                     form.setData(
@@ -172,7 +172,7 @@ export default function Create() {
                                             id="address"
                                             type="text"
                                             className="w-full"
-                                            placeholder="123 Main Street, Dhaka"
+                                            placeholder={t("123 Main Street, Dhaka")}
                                             value={form.data.address}
                                             onChange={(e) =>
                                                 form.setData(
@@ -201,7 +201,7 @@ export default function Create() {
                         </SecondaryButton> */}
 
                         <NavLinkBtn href={route("system.branches.index")}>
-                            <span>Cancel</span>
+                            <span>{t("Cancel")}</span>
                         </NavLinkBtn>
 
                         <PrimaryButton type="submit" disabled={form.processing}>

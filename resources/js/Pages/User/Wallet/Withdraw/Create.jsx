@@ -7,8 +7,10 @@ import UserDash from "../../../../components/user/dash/UserDash";
 import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import Hr from "../../../../components/Hr";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function WithdrawCreate() {
+    const { t } = useTranslation();
     const {
         available_balance,
         phone,
@@ -37,29 +39,21 @@ export default function WithdrawCreate() {
     return (
         <UserDash>
             <div>
-                <div className="mb-2 text-xl font-semibold">
-                    Request For A Withdraw
-                </div>
+                <div className="mb-2 text-xl font-semibold">{t("Request For A Withdraw")}</div>
 
                 <Container>
                     <SectionSection>
                         <SectionHeader
-                            title="Withdraw Request"
+                            title={t("Withdraw Request")}
                             content={
                                 available_balance > 1 ? (
-                                    <div>
-                                        Able to Withdraw : {available_balance}
+                                    <div>{t("Able to Withdraw :")}{available_balance}
                                     </div>
                                 ) : (
-                                    <span>
-                                        You need to meet minimum balance to make
-                                        a successful withdraw. Withdrawable
-                                        balance :{" "}
+                                    <span>{t("You need to meet minimum balance to make a successful withdraw. Withdrawable balance :")}{" "}
                                         <strong className="text-red-900">
                                             {available_balance}
-                                        </strong>{" "}
-                                        TK
-                                    </span>
+                                        </strong>{" "}{t("TK")}</span>
                                 )
                             }
                         />
@@ -68,9 +62,7 @@ export default function WithdrawCreate() {
                             <form onSubmit={submit}>
                                 <div className="mb-3 grid gap-4 md:grid-cols-2">
                                     <div className="md:col-span-2">
-                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                            Payment Method
-                                        </label>
+                                        <label className="block mb-1 text-sm font-medium text-gray-700">{t("Payment Method")}</label>
                                         <select
                                             name="pay_by"
                                             id="bank_name"
@@ -83,12 +75,10 @@ export default function WithdrawCreate() {
                                             }
                                             className="border-0 rounded ring-1 shadow-0 form-control form-select"
                                         >
-                                            <option value="">
-                                                Payment Method
-                                            </option>
-                                            <option value="bkash">Bkash</option>
-                                            <option value="nogod">Nogod</option>
-                                            <option value="roket">Roket</option>
+                                            <option value="">{t("Payment Method")}</option>
+                                            <option value="bkash">{t("Bkash")}</option>
+                                            <option value="nogod">{t("Nogod")}</option>
+                                            <option value="roket">{t("Roket")}</option>
                                         </select>
                                         {payByError && (
                                             <div className="block text-xs text-red-900">
@@ -98,9 +88,7 @@ export default function WithdrawCreate() {
                                     </div>
 
                                     <div>
-                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                            Amount
-                                        </label>
+                                        <label className="block mb-1 text-sm font-medium text-gray-700">{t("Amount")}</label>
                                         <input
                                             type="number"
                                             name="amount"
@@ -111,7 +99,7 @@ export default function WithdrawCreate() {
                                                     e.target.value,
                                                 )
                                             }
-                                            placeholder="Amount"
+                                            placeholder={t("Amount")}
                                             className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         />
                                         {amountError && (
@@ -122,9 +110,7 @@ export default function WithdrawCreate() {
                                     </div>
 
                                     <div>
-                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                            Payment Number
-                                        </label>
+                                        <label className="block mb-1 text-sm font-medium text-gray-700">{t("Payment Number")}</label>
                                         <input
                                             type="number"
                                             name="pay_to"
@@ -136,7 +122,7 @@ export default function WithdrawCreate() {
                                                     e.target.value,
                                                 )
                                             }
-                                            placeholder="Enter Payment Number"
+                                            placeholder={t("Enter Payment Number")}
                                             className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         />
                                         {payToError && (
@@ -147,9 +133,7 @@ export default function WithdrawCreate() {
                                     </div>
 
                                     <div>
-                                        <label className="block mb-1 text-sm font-medium text-gray-700">
-                                            Contact Number
-                                        </label>
+                                        <label className="block mb-1 text-sm font-medium text-gray-700">{t("Contact Number")}</label>
                                         <input
                                             type="number"
                                             name="phone"
@@ -157,7 +141,7 @@ export default function WithdrawCreate() {
                                             onChange={(e) =>
                                                 setData("phone", e.target.value)
                                             }
-                                            placeholder="Your Contact Number"
+                                            placeholder={t("Your Contact Number")}
                                             className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         />
                                         {phoneError && (
@@ -173,12 +157,8 @@ export default function WithdrawCreate() {
                                     <NavLink
                                         href={route("user.wallet.withdraw")}
                                     >
-                                        <i className="mr-2 fas fa-arrow-left"></i>{" "}
-                                        Back
-                                    </NavLink>
-                                    <PrimaryButton disabled={processing}>
-                                        Submit
-                                    </PrimaryButton>
+                                        <i className="mr-2 fas fa-arrow-left"></i>{" "}{t("Back")}</NavLink>
+                                    <PrimaryButton disabled={processing}>{t("Submit")}</PrimaryButton>
                                 </div>
                             </form>
                         </SectionInner>

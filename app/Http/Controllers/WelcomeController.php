@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Support\SystemSettings;
 use App\Models\Product;
+use App\Models\ProductSaveForLater;
 use App\Models\Category;
 use App\Models\productSalesIndex;
 use App\Models\Static_slider;
@@ -67,38 +68,32 @@ class WelcomeController extends Controller
                 ->orderBy('vc')
                 ->limit(20)
                 ->get(),
-            'recommended' => Product::query()
-                ->reseller()
-                ->active()
-                ->home()
-                ->orderBy('vc')
-                ->limit(20)
-                ->get(),
+            'recommended' => $this->forYouProducts(),
             'medicineProducts' => Product::query()
                 ->reseller()
                 ->active()
-                ->when($medicineCategoryIds, fn($query) => $query->whereIn('category_id', $medicineCategoryIds))
+                ->whereIn('category_id', $medicineCategoryIds ?: [0])
                 ->latest()
                 ->limit(20)
                 ->get(),
             'womenProducts' => Product::query()
                 ->reseller()
                 ->active()
-                ->when($womenCategoryIds, fn($query) => $query->whereIn('category_id', $womenCategoryIds))
+                ->whereIn('category_id', $womenCategoryIds ?: [0])
                 ->latest()
                 ->limit(20)
                 ->get(),
             'foodProducts' => Product::query()
                 ->reseller()
                 ->active()
-                ->when($foodCategoryIds, fn($query) => $query->whereIn('category_id', $foodCategoryIds))
+                ->whereIn('category_id', $foodCategoryIds ?: [0])
                 ->latest()
                 ->limit(20)
                 ->get(),
             'megaDealsProducts' => Product::query()
                 ->reseller()
                 ->active()
-                ->when($megaDealsCategoryIds, fn($query) => $query->whereIn('category_id', $megaDealsCategoryIds))
+                ->whereIn('category_id', $megaDealsCategoryIds ?: [0])
                 ->latest()
                 ->limit(20)
                 ->get(),
@@ -124,6 +119,62 @@ class WelcomeController extends Controller
         $this->collectCategoryIds($category, $ids);
 
         return $ids;
+    }
+
+    private function forYouProducts()
+    {
+        $columns = [
+            'id',
+            'name',
+            'title',
+            'slug',
+            'thumbnail',
+            'offer_type',
+            'discount',
+            'price',
+            'unit',
+        ];
+
+        $savedIds = auth()->user()
+            ? ProductSaveForLater::query()
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->limit(20)
+                ->pluck('product_id')
+                ->values()
+                ->all()
+            : [];
+
+        if (auth()->user() && !$savedIds) {
+            return collect();
+        }
+
+        $savedProducts = collect();
+
+        if ($savedIds) {
+            $savedProducts = Product::query()
+                ->reseller()
+                ->active()
+                ->whereIn('id', $savedIds)
+                ->get($columns)
+                ->sortBy(fn($product) => array_search($product->id, $savedIds, true))
+                ->values();
+        }
+
+        if (auth()->user()) {
+            return $savedProducts->take(20)->values();
+        }
+
+        $fallback = Product::query()
+            ->reseller()
+            ->active()
+            ->home()
+            ->when($savedProducts->isNotEmpty(), fn($query) => $query->whereNotIn('id', $savedProducts->pluck('id')))
+            ->orderBy('vc')
+            ->limit(max(0, 20 - $savedProducts->count()))
+            ->get($columns);
+
+        return $savedProducts->merge($fallback)->take(20)->values();
     }
 
     private function collectCategoryIds(Category $category, array &$ids): void

@@ -3,6 +3,7 @@ import AppLayout from "../../../../Layouts/App";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import SecondaryButton from "../../../../components/SecondaryButton";
+import useTranslation from "../../../../hooks/useTranslation";
 
 function normalizeWidget(widget = {}) {
     return {
@@ -51,6 +52,7 @@ function normalizeLayout(layoutData) {
 }
 
 export default function Index({ layoutData }) {
+    const { t } = useTranslation();
     const form = useForm({
         layout: normalizeLayout(layoutData),
     });
@@ -150,15 +152,13 @@ export default function Index({ layoutData }) {
 
     return (
         <AppLayout
-            title="Footer Builder"
-            header={<PageHeader>Footer Builder</PageHeader>}
+            title={t("Footer Builder")}
+            header={<PageHeader>{t("Footer Builder")}</PageHeader>}
         >
-            <Head title="Footer Builder" />
+            <Head title={t("Footer Builder")} />
 
             <div>
-                <SecondaryButton type="button" onClick={addSection}>
-                    + Add Section
-                </SecondaryButton>
+                <SecondaryButton type="button" onClick={addSection}>{t("+ Add Section")}</SecondaryButton>
 
                 <div className="space-y-6">
                     {(form.data.layout?.sections ?? []).map((section, sIndex) => (
@@ -168,7 +168,7 @@ export default function Index({ layoutData }) {
                                 value={section.title}
                                 onChange={(e) => updateSectionTitle(sIndex, e.target.value)}
                                 className="w-full px-2 py-1 mb-2 border"
-                                placeholder="Section Title"
+                                placeholder={t("Section Title")}
                             />
 
                             <div
@@ -179,7 +179,7 @@ export default function Index({ layoutData }) {
                             >
                                 {section.columns.map((col, cIndex) => (
                                     <div key={cIndex} className="p-2 bg-white border rounded">
-                                        <h4 className="mb-2 font-semibold">Column {cIndex + 1}</h4>
+                                        <h4 className="mb-2 font-semibold">{t("Column")}{cIndex + 1}</h4>
 
                                         {col.widgets.map((widget, wIndex) => (
                                             <div key={wIndex} className="p-2 mb-2 border rounded">
@@ -190,7 +190,7 @@ export default function Index({ layoutData }) {
                                                             updateWidget(sIndex, cIndex, wIndex, "content", e.target.value)
                                                         }
                                                         className="w-full px-2 py-1 border"
-                                                        placeholder="Text..."
+                                                        placeholder={t("Text...")}
                                                     ></textarea>
                                                 )}
                                                 {widget.type === "link" && (
@@ -200,7 +200,7 @@ export default function Index({ layoutData }) {
                                                             onChange={(e) =>
                                                                 updateWidget(sIndex, cIndex, wIndex, "label", e.target.value)
                                                             }
-                                                            placeholder="Link Label"
+                                                            placeholder={t("Link Label")}
                                                             className="w-full px-2 py-1 mb-1 border"
                                                         />
                                                         <input
@@ -208,7 +208,7 @@ export default function Index({ layoutData }) {
                                                             onChange={(e) =>
                                                                 updateWidget(sIndex, cIndex, wIndex, "url", e.target.value)
                                                             }
-                                                            placeholder="Link URL"
+                                                            placeholder={t("Link URL")}
                                                             className="w-full px-2 py-1 border"
                                                         />
                                                     </>
@@ -220,7 +220,7 @@ export default function Index({ layoutData }) {
                                                             onChange={(e) =>
                                                                 updateWidget(sIndex, cIndex, wIndex, "icon", e.target.value)
                                                             }
-                                                            placeholder="Icon name (e.g., facebook)"
+                                                            placeholder={t("Icon name (e.g., facebook)")}
                                                             className="w-full px-2 py-1 mb-1 border"
                                                         />
                                                         <input
@@ -228,7 +228,7 @@ export default function Index({ layoutData }) {
                                                             onChange={(e) =>
                                                                 updateWidget(sIndex, cIndex, wIndex, "url", e.target.value)
                                                             }
-                                                            placeholder="Icon URL"
+                                                            placeholder={t("Icon URL")}
                                                             className="w-full px-2 py-1 border"
                                                         />
                                                     </>
@@ -237,24 +237,20 @@ export default function Index({ layoutData }) {
                                         ))}
 
                                         <div className="space-x-2">
-                                            <button type="button" onClick={() => addWidget(sIndex, cIndex, "text")} className="text-sm text-blue-500">+ Text</button>
-                                            <button type="button" onClick={() => addWidget(sIndex, cIndex, "link")} className="text-sm text-green-500">+ Link</button>
-                                            <button type="button" onClick={() => addWidget(sIndex, cIndex, "icon")} className="text-sm text-purple-500">+ Icon</button>
+                                            <button type="button" onClick={() => addWidget(sIndex, cIndex, "text")} className="text-sm text-blue-500">{t("+ Text")}</button>
+                                            <button type="button" onClick={() => addWidget(sIndex, cIndex, "link")} className="text-sm text-green-500">{t("+ Link")}</button>
+                                            <button type="button" onClick={() => addWidget(sIndex, cIndex, "icon")} className="text-sm text-purple-500">{t("+ Icon")}</button>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <SecondaryButton type="button" onClick={() => addColumn(sIndex)} className="mt-2 text-green-600">
-                                + Add Column
-                            </SecondaryButton>
+                            <SecondaryButton type="button" onClick={() => addColumn(sIndex)} className="mt-2 text-green-600">{t("+ Add Column")}</SecondaryButton>
                         </div>
                     ))}
                 </div>
 
-                <PrimaryButton type="button" onClick={save} className="px-4 py-2 mt-4 text-white bg-green-600 rounded">
-                    Save Footer
-                </PrimaryButton>
+                <PrimaryButton type="button" onClick={save} className="px-4 py-2 mt-4 text-white bg-green-600 rounded">{t("Save Footer")}</PrimaryButton>
             </div>
         </AppLayout>
     );

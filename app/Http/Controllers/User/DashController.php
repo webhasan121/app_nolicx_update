@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Level;
+use App\Models\LevelHistory;
 use App\Models\User;
 use App\Models\UserHasRefs;
 use Illuminate\Http\Request;
@@ -15,24 +16,52 @@ class DashController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $currentLevel = $user->currentLevel;
         $myRef = $user->myRef;
+        $reqUsers = !empty($myRef?->ref) ? User::where('reference', $myRef->ref)->count() : 0;
+        $vipUsers = $user->getMyvipRef()?->count() ?? 0;
+        $levels = Level::query()
+            ->where('status', true)
+            ->orderBy('req_users')
+            ->orderBy('vip_users')
+            ->orderBy('id')
+            ->get();
+        $matchedLevel = $levels
+            ->filter(fn(Level $level) => $reqUsers >= (int) $level->req_users && $vipUsers >= (int) $level->vip_users)
+            ->sortByDesc('id')
+            ->first();
+
+        if (!$matchedLevel) {
+            $matchedLevel = $levels->first();
+        }
+
+        if ($matchedLevel && (int) $user->current_level_id !== (int) $matchedLevel->id) {
+            LevelHistory::create([
+                'user_id' => $user->id,
+                'from_level_id' => $user->current_level_id,
+                'to_level_id' => $matchedLevel->id,
+            ]);
+
+            $user->forceFill(['current_level_id' => $matchedLevel->id])->save();
+            $user->setRelation('currentLevel', $matchedLevel);
+        }
+
+        $upcomingLevel = $matchedLevel
+            ? $levels->first(fn(Level $level) => (int) $level->id > (int) $matchedLevel->id)
+            : null;
 
         $current = [
-            'name' => $currentLevel?->name ?? 'Level 0',
-            'req_users' => !empty($myRef?->ref) ? User::where('reference', $myRef->ref)->count() : 0,
-            'vip_users' => $user->getMyvipRef()?->count() ?? 0,
+            'name' => $matchedLevel?->name ?? 'Star-0',
+            'req_users' => $reqUsers,
+            'vip_users' => $vipUsers,
             'rewards' => null,
         ];
 
-        $level = Level::where('id', ($user->current_level_id + 1))->first();
-
-        if ($level) {
+        if ($upcomingLevel) {
             $upcoming = [
-                'name' => $level->name,
-                'req_users' => $level->req_users,
-                'vip_users' => $level->vip_users,
-                'rewards' => $level->rewards,
+                'name' => $upcomingLevel->name,
+                'req_users' => $upcomingLevel->req_users,
+                'vip_users' => $upcomingLevel->vip_users,
+                'rewards' => $upcomingLevel->rewards,
             ];
         } else {
             $upcoming = [

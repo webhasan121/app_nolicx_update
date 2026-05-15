@@ -3,8 +3,10 @@ import AppLayout from "../../../Layouts/App";
 import Container from "../../../components/dashboard/Container";
 import Hr from "../../../components/Hr";
 import PrimaryButton from "../../../components/PrimaryButton";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [] }) {
+    const { t } = useTranslation();
     const confirmOrder = (orderId) => {
         router.post(
             route("rider.consignment.confirm", { order: orderId }),
@@ -16,7 +18,7 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [] 
     };
 
     return (
-        <AppLayout title="Consignments">
+        <AppLayout title={t("Consignments")}>
             <Container>
                 <div className="flex justify-between items-center p-2">
                     <div>
@@ -43,16 +45,13 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [] 
                         gap: "1rem",
                     }}
                 >
-                    {orders.map((order) =>
-                        order.displayable ? (
+                    {orders.map((order) => (
                             <div
                                 key={order.id}
                                 className="bg-white rounded shadow text-center flex flex-col justify-between"
                             >
                                 <div className="py-2 bg-gray-200">
-                                    <h3 className="text-xs text-gray-500">
-                                        Order ID
-                                    </h3>
+                                    <h3 className="text-xs text-gray-500">{t("Order ID")}</h3>
                                     <div className="font-bold">{order.id}</div>
                                 </div>
 
@@ -102,16 +101,13 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [] 
                                 <div className="p-1">
                                     <PrimaryButton
                                         onClick={() => confirmOrder(order.id)}
-                                    >
-                                        pick{" "}
+                                    >{t("pick")}{" "}
                                         <div className="px-2 text-xs">
-                                            ({order.shipping}TK)
-                                        </div>
+                                            ({order.shipping}{t("TK)")}</div>
                                     </PrimaryButton>
                                 </div>
                             </div>
-                        ) : null,
-                    )}
+                    ))}
                 </div>
             </Container>
         </AppLayout>

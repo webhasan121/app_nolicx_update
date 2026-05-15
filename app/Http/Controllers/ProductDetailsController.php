@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductSaveForLater;
 use App\Models\UserTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -52,26 +53,15 @@ class ProductDetailsController extends Controller
                 'unit',
             ]);
 
-        $recommendedProducts = Product::query()
-            ->reseller()
-            ->active()
-            ->home()
-            ->orderBy('vc')
-            ->limit(20)
-            ->get([
-                'id',
-                'name',
-                'title',
-                'slug',
-                'thumbnail',
-                'offer_type',
-                'discount',
-                'price',
-                'unit',
-            ]);
+        $recommendedProducts = $this->forYouProducts($request);
 
 
 
+
+        $ratingCount = $product->comments->whereNotNull('rating')->count();
+        $averageRating = $ratingCount
+            ? round((float) $product->comments->whereNotNull('rating')->avg('rating'), 1)
+            : 0;
 
         return Inertia::render('Products/Details', [
             'product' => [
@@ -93,6 +83,11 @@ class ProductDetailsController extends Controller
                 'meta_description' => $product->meta_description,
                 'keyword' => $product->keyword,
                 'meta_thumbnail' => $product->meta_thumbnail,
+                'rating' => [
+                    'average' => $averageRating,
+                    'out_of_10' => $averageRating ? round($averageRating * 2, 1) : 0,
+                    'count' => $ratingCount,
+                ],
                 'category' => $product->category ? [
                     'id' => $product->category->id,
                     'name' => $product->category->name,
@@ -116,22 +111,72 @@ class ProductDetailsController extends Controller
                         'phone' => $ownerShop->phone,
                     ] : null,
                 ],
+                'is_saved_for_later' => $request->user()
+                    ? ProductSaveForLater::query()
+                        ->where('user_id', $request->user()->id)
+                        ->where('product_id', $product->id)
+                        ->exists()
+                    : false,
                 'comments' => $product->comments
                     ->sortByDesc('created_at')
                     ->values()
-                    ->map(fn($comment) => [
-                        'id' => $comment->id,
-                        'user_id' => $comment->user_id,
-                        'comments' => $comment->comments,
-                        'created_at_human' => $comment->created_at?->diffForHumans(),
-                        'user' => [
-                            'name' => $comment->user?->name,
-                        ],
-                    ]),
+                    ->map(function ($comment) {
+                        $message = trim((string) ($comment->review ?: $comment->comments));
+
+                        if ($comment->rating && $message === (string) $comment->rating) {
+                            $message = '';
+                        }
+
+                        return [
+                            'id' => $comment->id,
+                            'user_id' => $comment->user_id,
+                            'comments' => $message,
+                            'rating' => $comment->rating,
+                            'created_at_human' => $comment->created_at?->diffForHumans(),
+                            'user' => [
+                                'name' => $comment->user?->name,
+                            ],
+                        ];
+                    }),
             ],
             'relatedProducts' => $relatedProducts,
             'recommendedProducts' => $recommendedProducts,
             'task' => $this->getTaskData($request),
+        ]);
+    }
+
+    public function saveForLater(Request $request, $id, $slug)
+    {
+        $product = Product::query()
+            ->where([
+                'id' => (int) $id,
+                'status' => 'Active',
+                'belongs_to_type' => 'reseller',
+            ])
+            ->firstOrFail();
+
+        $saved = ProductSaveForLater::query()->where([
+            'user_id' => $request->user()->id,
+            'product_id' => $product->id,
+        ])->first();
+
+        if ($saved) {
+            $saved->delete();
+
+            return response()->json([
+                'saved' => false,
+                'message' => 'Product removed from saved list',
+            ]);
+        }
+
+        ProductSaveForLater::create([
+            'user_id' => $request->user()->id,
+            'product_id' => $product->id,
+        ]);
+
+        return response()->json([
+            'saved' => true,
+            'message' => 'Product saved for later',
         ]);
     }
 
@@ -247,6 +292,62 @@ class ProductDetailsController extends Controller
             'min' => '00',
             'sec' => '00',
         ];
+    }
+
+    private function forYouProducts(Request $request)
+    {
+        $columns = [
+            'id',
+            'name',
+            'title',
+            'slug',
+            'thumbnail',
+            'offer_type',
+            'discount',
+            'price',
+            'unit',
+        ];
+
+        $savedIds = $request->user()
+            ? ProductSaveForLater::query()
+                ->where('user_id', $request->user()->id)
+                ->latest()
+                ->limit(20)
+                ->pluck('product_id')
+                ->values()
+                ->all()
+            : [];
+
+        if ($request->user() && !$savedIds) {
+            return collect();
+        }
+
+        $savedProducts = collect();
+
+        if ($savedIds) {
+            $savedProducts = Product::query()
+                ->reseller()
+                ->active()
+                ->whereIn('id', $savedIds)
+                ->get($columns)
+                ->sortBy(fn($product) => array_search($product->id, $savedIds, true))
+                ->values();
+        }
+
+        if ($request->user()) {
+            return $savedProducts->take(20)->values();
+        }
+
+        $fallback = Product::query()
+            ->reseller()
+            ->active()
+            ->home()
+            ->when($savedProducts->isNotEmpty(), fn($query) => $query->whereNotIn('id', $savedProducts->pluck('id')))
+            ->orderBy('vc')
+            ->limit(max(0, 20 - $savedProducts->count()))
+            ->get($columns);
+
+        return $savedProducts->merge($fallback)->take(20)->values();
     }
 
     private function videoUrl(?string $video): ?string

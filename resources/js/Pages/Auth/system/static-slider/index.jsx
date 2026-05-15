@@ -12,6 +12,7 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Slider from "../../../../livewire/system/static-slider/Slider";
 import { useState } from "react";
+import useTranslation from "../../../../hooks/useTranslation";
 
 function checkboxRow(id, checked, onChange, label, text, border = "border-b") {
     return (
@@ -35,6 +36,7 @@ function checkboxRow(id, checked, onChange, label, text, border = "border-b") {
 }
 
 export default function Index({ slider = [] }) {
+    const { t } = useTranslation();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const form = useForm({
         sliderName: "",
@@ -64,10 +66,10 @@ export default function Index({ slider = [] }) {
 
     return (
         <AppLayout
-            title="Static Slider"
-            header={<PageHeader>Static Slider</PageHeader>}
+            title={t("Static Slider")}
+            header={<PageHeader>{t("Static Slider")}</PageHeader>}
         >
-            <Head title="Static Slider" />
+            <Head title={t("Static Slider")} />
 
             <Container>
                 <Section>
@@ -75,8 +77,7 @@ export default function Index({ slider = [] }) {
                         title={
                             <div className="flex items-center justify-between">
                                 <PrimaryButton onClick={() => setShowCreateModal(true)}>
-                                    <i className="pr-2 fas fa-plus"></i> Add
-                                </PrimaryButton>
+                                    <i className="pr-2 fas fa-plus"></i>{t("Add")}</PrimaryButton>
                             </div>
                         }
                         content=""
@@ -91,7 +92,7 @@ export default function Index({ slider = [] }) {
             </Container>
 
             <Modal show={showCreateModal} onClose={() => setShowCreateModal(false)}>
-                <div className="p-3">Slider Modal</div>
+                <div className="p-3">{t("Slider Modal")}</div>
                 <hr />
                 <div className="p-3">
                     <strong></strong>
@@ -101,7 +102,7 @@ export default function Index({ slider = [] }) {
                                 value={form.data.sliderName}
                                 onChange={(e) => form.setData("sliderName", e.target.value)}
                                 className="w-full py-1 rounded-0"
-                                placeholder="Give Slider Name"
+                                placeholder={t("Give Slider Name")}
                             />
                         </div>
                         {form.errors.sliderName ? (
@@ -116,7 +117,7 @@ export default function Index({ slider = [] }) {
                                     (e) => form.setData("home", e.target.checked),
                                     "Home Page",
                                     <>
-                                        If checked, Banner will display on <strong>Home Page</strong>.
+                                        If checked, Banner will display on <strong>{t("Home Page")}</strong>.
                                     </>
                                 )}
                                 {checkboxRow(
@@ -125,7 +126,7 @@ export default function Index({ slider = [] }) {
                                     (e) => form.setData("about", e.target.checked),
                                     "About Page",
                                     <>
-                                        If checked, Banner will display on <strong>About-Us Page</strong>.
+                                        If checked, Banner will display on <strong>{t("About-Us Page")}</strong>.
                                     </>
                                 )}
                                 {checkboxRow(
@@ -134,7 +135,7 @@ export default function Index({ slider = [] }) {
                                     (e) => form.setData("order", e.target.checked),
                                     "Order Page",
                                     <>
-                                        If checked, Banner will display on <strong>Order Page</strong>.
+                                        If checked, Banner will display on <strong>{t("Order Page")}</strong>.
                                     </>
                                 )}
                                 {checkboxRow(
@@ -143,7 +144,7 @@ export default function Index({ slider = [] }) {
                                     (e) => form.setData("product_details", e.target.checked),
                                     "Product Details Page",
                                     <>
-                                        If checked, Banner will display on <strong>Product Details Page</strong>.
+                                        If checked, Banner will display on <strong>{t("Product Details Page")}</strong>.
                                     </>
                                 )}
                                 {checkboxRow(
@@ -152,7 +153,7 @@ export default function Index({ slider = [] }) {
                                     (e) => form.setData("categories_product", e.target.checked),
                                     "Categories Product Page",
                                     <>
-                                        If checked, Banner will display on <strong>Categories Product Page</strong>.
+                                        If checked, Banner will display on <strong>{t("Categories Product Page")}</strong>.
                                     </>
                                 )}
                             </div>
@@ -165,7 +166,7 @@ export default function Index({ slider = [] }) {
                                     (e) => form.setData("top", e.target.checked),
                                     "Top",
                                     <>
-                                        If checked, Banner will display on <strong>Top Of The Page</strong>.
+                                        If checked, Banner will display on <strong>{t("Top Of The Page")}</strong>.
                                     </>
                                 )}
                                 {checkboxRow(
@@ -174,7 +175,7 @@ export default function Index({ slider = [] }) {
                                     (e) => form.setData("middle", e.target.checked),
                                     "Middle",
                                     <>
-                                        If checked, Banner will display on <strong>Middle Of The Page</strong>.
+                                        If checked, Banner will display on <strong>{t("Middle Of The Page")}</strong>.
                                     </>
                                 )}
                                 {checkboxRow(
@@ -183,7 +184,7 @@ export default function Index({ slider = [] }) {
                                     (e) => form.setData("bottom", e.target.checked),
                                     "Bottom",
                                     <>
-                                        If checked, Banner will display on <strong>Bottom Of The Page</strong>.
+                                        If checked, Banner will display on <strong>{t("Bottom Of The Page")}</strong>.
                                     </>,
                                     "border-"
                                 )}
@@ -211,12 +212,9 @@ export default function Index({ slider = [] }) {
                                 type="button"
                                 className="mt-2"
                                 onClick={() => setShowCreateModal(false)}
-                            >
-                                Cancel
-                            </SecondaryButton>
+                            >{t("Cancel")}</SecondaryButton>
                             <PrimaryButton className="mt-2">
-                                <i className="pr-2 fas fa-plus"></i> Add
-                            </PrimaryButton>
+                                <i className="pr-2 fas fa-plus"></i>{t("Add")}</PrimaryButton>
                         </div>
                     </form>
                 </div>

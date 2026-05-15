@@ -1,6 +1,11 @@
 import ProductCard from "../home/ProductCard";
 
-export default function ProductsLoop({ products = [] }) {
+export default function ProductsLoop({
+    products = [],
+    showSaveForLater = false,
+    savedForLater = false,
+    onSaveForLaterChange = null,
+}) {
     if (!products.length) return null;
 
     return (
@@ -16,7 +21,12 @@ export default function ProductsLoop({ products = [] }) {
             >
                 {products.map((product) => (
                     <div key={product.id} className="">
-                        <ProductCard product={product} />
+                        <ProductCard
+                            product={product}
+                            showSaveForLater={showSaveForLater}
+                            savedForLater={savedForLater}
+                            onSaveForLaterChange={onSaveForLaterChange}
+                        />
                     </div>
                 ))}
             </div>

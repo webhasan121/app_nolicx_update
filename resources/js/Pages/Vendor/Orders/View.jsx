@@ -61,6 +61,28 @@ export default function View({ order }) {
 
     const currentFlowIndex = progressFlow.indexOf(order?.status);
     const flowLabel = ["Placed", "Accept", "Picked", "Delivery", "Delivered", "Confirm"];
+    const canFinish = Boolean(order?.received_at);
+    const nextStatus = {
+        Pending: "Accept",
+        Hold: "Accept",
+        Accept: "Picked",
+        Picked: "Delivery",
+        Delivery: "Delivered",
+        Delivered: canFinish ? "Confirm" : "",
+    }[order?.status] ?? "";
+
+    const handleStepClick = (step) => {
+        if (step !== nextStatus) {
+            return;
+        }
+
+        if (step === "Accept") {
+            setAcceptOpen(true);
+            return;
+        }
+
+        submitStatus(step);
+    };
 
     const statusMessage = () => {
         switch (order?.status) {
@@ -88,8 +110,6 @@ export default function View({ order }) {
                 return "";
         }
     };
-
-    const canFinish = Boolean(order?.received_at);
 
     const removeRider = (codId) => {
         router.delete(route("vendor.orders.rider.remove", { order: order.id, cod: codId }));
@@ -140,29 +160,43 @@ export default function View({ order }) {
                                 {progressFlow.map((step, idx) => {
                                     const done = currentFlowIndex >= idx;
                                     return (
-                                        <div
+                                        <button
+                                            type="button"
                                             key={step}
-                                            className={`p-2 px-3 rounded-md cursor-pointer text-center ${
-                                                done ? "bg-indigo-900 text-white" : "bg-gray-100 text-gray-600"
+                                            onClick={() => handleStepClick(step)}
+                                            disabled={step !== nextStatus}
+                                            title={step === nextStatus ? `Move order to ${step}` : ""}
+                                            className={`p-2 px-3 rounded-md text-center transition ${
+                                                done
+                                                    ? "bg-indigo-900 text-white"
+                                                    : step === nextStatus
+                                                        ? "bg-orange-500 text-white hover:bg-orange-600"
+                                                        : "bg-gray-100 text-gray-600"
+                                            } ${
+                                                step === nextStatus ? "cursor-pointer" : "cursor-not-allowed opacity-80"
                                             }`}
                                         >
                                             {flowLabel[idx]}
                                             <br />
                                             {done ? <i className="fas fa-check-circle"></i> : null}
-                                        </div>
+                                            {!done && step === nextStatus ? <i className="fas fa-arrow-right"></i> : null}
+                                        </button>
                                     );
                                 })}
                                 {quickStatus.map((step) => (
-                                    <div
+                                    <button
+                                        type="button"
                                         key={step}
-                                        className={`p-2 px-3 rounded-md cursor-pointer text-center ${
+                                        onClick={() => submitStatus(step)}
+                                        disabled={order?.status === "Confirm" || order?.status === step}
+                                        className={`p-2 px-3 rounded-md text-center transition ${
                                             order?.status === step ? "bg-indigo-900 text-white" : "bg-gray-100 text-gray-600"
-                                        }`}
+                                        } ${order?.status !== "Confirm" && order?.status !== step ? "cursor-pointer hover:bg-gray-200" : "cursor-not-allowed opacity-80"}`}
                                     >
                                         {step}
                                         <br />
                                         {order?.status === step ? <i className="fas fa-check-circle"></i> : null}
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         </div>

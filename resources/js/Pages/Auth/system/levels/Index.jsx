@@ -11,6 +11,7 @@ import PageHeader from "../../../../components/dashboard/PageHeader";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
+import useTranslation from "../../../../hooks/useTranslation";
 
 const emptyForm = {
     name: "",
@@ -21,6 +22,7 @@ const emptyForm = {
 };
 
 export default function Index({ columns = [], levels = {}, filters = {}, printUrl }) {
+    const { t } = useTranslation();
     const levelRows = levels?.data ?? [];
     const [search, setSearch] = useState(filters.search ?? "");
     const [showModal, setShowModal] = useState(false);
@@ -137,8 +139,8 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
 
     return (
         <AppLayout
-            title="Star System - Levels"
-            header={<PageHeader>Star System - Levels</PageHeader>}
+            title={t("Star System - Levels")}
+            header={<PageHeader>{t("Star System - Levels")}</PageHeader>}
         >
             <Container>
                 <div className="flex items-center gap-2">
@@ -152,7 +154,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                     <SectionHeader
                         title={
                             <div className="flex items-center justify-between">
-                                <h2>Levels</h2>
+                                <h2>{t("Levels")}</h2>
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                     <form
                                         onSubmit={(e) => {
@@ -162,7 +164,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                     >
                                         <TextInput
                                             type="search"
-                                            placeholder="Search levels..."
+                                            placeholder={t("Search levels...")}
                                             className="py-1"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -176,7 +178,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                     </PrimaryButton>
                                     <PrimaryButton type="button" onClick={openCreateModal}>
                                         <i className="mr-2 fas fa-plus"></i>
-                                        <span>Add New</span>
+                                        <span>{t("Add New")}</span>
                                     </PrimaryButton>
                                 </div>
                             </div>
@@ -212,11 +214,11 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                                 </td>
                                                 <td className="px-4 py-3 font-medium text-gray-700">
                                                     <p className="flex items-center gap-2">
-                                                        <strong>N. Users :</strong>
+                                                        <strong>{t("N. Users :")}</strong>
                                                         <span>{Number(level.req_users ?? 0).toLocaleString()}</span>
                                                     </p>
                                                     <p className="flex items-center gap-2">
-                                                        <strong>VIP Users :</strong>
+                                                        <strong>{t("VIP Users :")}</strong>
                                                         <span>{Number(level.vip_users ?? 0).toLocaleString()}</span>
                                                     </p>
                                                 </td>
@@ -248,7 +250,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                     ) : (
                                         <tr>
                                             <td colSpan={columns.length} className="px-4 py-6 text-center text-gray-500">
-                                                <span>No levels found.</span>
+                                                <span>{t("No levels found.")}</span>
                                             </td>
                                         </tr>
                                     )}
@@ -267,9 +269,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                                 disabled={!pagination.prev?.url}
                                                 className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
-                                            >
-                                                Previous
-                                            </button>
+                                            >{t("Previous")}</button>
                                             {pagination.pages.map((link, index) => (
                                                 <button
                                                     key={`${link.label}-${index}`}
@@ -290,9 +290,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                                 disabled={!pagination.next?.url}
                                                 className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
-                                            >
-                                                Next
-                                            </button>
+                                            >{t("Next")}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -314,7 +312,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                 className="w-full"
                                 value={form.data.name}
                                 onChange={(e) => form.setData("name", e.target.value)}
-                                placeholder="Enter Level Name"
+                                placeholder={t("Enter Level Name")}
                             />
                             {form.errors.name ? (
                                 <div className="mt-1 text-sm text-red-500">{form.errors.name}</div>
@@ -329,7 +327,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                     className="w-full"
                                     value={form.data.req_users}
                                     onChange={(e) => form.setData("req_users", e.target.value)}
-                                    placeholder="Required normal users"
+                                    placeholder={t("Required normal users")}
                                 />
                                 {form.errors.req_users ? (
                                     <div className="mt-1 text-sm text-red-500">{form.errors.req_users}</div>
@@ -343,7 +341,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                     className="w-full"
                                     value={form.data.vip_users}
                                     onChange={(e) => form.setData("vip_users", e.target.value)}
-                                    placeholder="Required vip users"
+                                    placeholder={t("Required vip users")}
                                 />
                                 {form.errors.vip_users ? (
                                     <div className="mt-1 text-sm text-red-500">{form.errors.vip_users}</div>
@@ -358,7 +356,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                     className="w-full"
                                     value={form.data.bonus}
                                     onChange={(e) => form.setData("bonus", e.target.value)}
-                                    placeholder="Enter commission"
+                                    placeholder={t("Enter commission")}
                                 />
                                 {form.errors.bonus ? (
                                     <div className="mt-1 text-sm text-red-500">{form.errors.bonus}</div>
@@ -373,7 +371,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                 className="w-full"
                                 value={form.data.rewards}
                                 onChange={(e) => form.setData("rewards", e.target.value)}
-                                placeholder="Enter level rewards"
+                                placeholder={t("Enter level rewards")}
                             />
                             {form.errors.rewards ? (
                                 <div className="mt-1 text-sm text-red-500">{form.errors.rewards}</div>
@@ -381,9 +379,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                         </div>
 
                         <div className="flex justify-end">
-                            <PrimaryButton type="submit" disabled={form.processing}>
-                                Save Level
-                            </PrimaryButton>
+                            <PrimaryButton type="submit" disabled={form.processing}>{t("Save Level")}</PrimaryButton>
                         </div>
                     </form>
                 </div>

@@ -13,8 +13,10 @@ import PageHeader from "../../../../../components/dashboard/PageHeader";
 import SectionHeader from "../../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../../components/dashboard/section/Section";
+import useTranslation from "../../../../../hooks/useTranslation";
 
 export default function Create() {
+    const { t } = useTranslation();
     const { paymentOptions = [] } = usePage().props;
     const inputId = useId().replace(/:/g, "");
     const editorRef = useRef(null);
@@ -130,11 +132,9 @@ export default function Create() {
 
     return (
         <AppLayout
-            title="VIP"
+            title={t("VIP")}
             header={
-                <PageHeader>
-                    VIP
-                    <br />
+                <PageHeader>{t("VIP")}<br />
                     <div>
                         <NavLink
                             href={route("system.vip.index")}
@@ -143,15 +143,11 @@ export default function Create() {
                                 route().current("system.vip.crate") ||
                                 route().current("system.package.edit")
                             }
-                        >
-                            Package
-                        </NavLink>
+                        >{t("Package")}</NavLink>
                         <NavLink
                             href={route("system.vip.users")}
                             active={route().current("system.vip.users")}
-                        >
-                            User
-                        </NavLink>
+                        >{t("User")}</NavLink>
                     </div>
                 </PageHeader>
             }
@@ -159,15 +155,15 @@ export default function Create() {
             <Container>
                 <SectionSection>
                     <SectionHeader
-                        title="Add VIP Package"
-                        content="add more vip package to your system with specific condition."
+                        title={t("Add VIP Package")}
+                        content={t("add more vip package to your system with specific condition.")}
                     />
 
                     <SectionInner>
                         <form onSubmit={submit}>
                             <div>
                                 <InputField
-                                    label="Package Name"
+                                    label={t("Package Name")}
                                     name="name"
                                     className="md:flex"
                                     inputClass="w-full"
@@ -178,7 +174,7 @@ export default function Create() {
 
                                 <div className="md:flex">
                                     <InputField
-                                        label="Package Price"
+                                        label={t("Package Price")}
                                         name="price"
                                         type="number"
                                         error={form.errors.price}
@@ -186,7 +182,7 @@ export default function Create() {
                                         onChange={(e) => form.setData("price", e.target.value)}
                                     />
                                     <InputField
-                                        label="Duration (Minute)"
+                                        label={t("Duration (Minute)")}
                                         name="countdown"
                                         error={form.errors.countdown}
                                         value={form.data.countdown}
@@ -195,14 +191,14 @@ export default function Create() {
                                 </div>
                                 <div className="md:flex">
                                     <InputField
-                                        label="Daily Reward"
+                                        label={t("Daily Reward")}
                                         name="coin"
                                         error={form.errors.coin}
                                         value={form.data.coin}
                                         onChange={(e) => form.setData("coin", e.target.value)}
                                     />
                                     <InputField
-                                        label="Monthly Reward"
+                                        label={t("Monthly Reward")}
                                         name="m_coin"
                                         error={form.errors.m_coin}
                                         value={form.data.m_coin}
@@ -212,7 +208,7 @@ export default function Create() {
                                 <Hr />
                                 <div className="md:flex">
                                     <InputField
-                                        label="By Referred Reward"
+                                        label={t("By Referred Reward")}
                                         name="ref_owner_get_coin"
                                         error={form.errors.ref_owner_get_coin}
                                         value={form.data.ref_owner_get_coin}
@@ -226,7 +222,7 @@ export default function Create() {
 
                             <div className="p-0 my-4 mx-0 border p-2">
                                 <div className="flex justify-between items-center">
-                                    <h4>Payment Option</h4>
+                                    <h4>{t("Payment Option")}</h4>
                                     <SecondaryButton
                                         type="button"
                                         onClick={addPaymentOption}
@@ -247,13 +243,11 @@ export default function Create() {
                                                     <label
                                                         className="py-1"
                                                         htmlFor={`pay_type_${index}`}
-                                                    >
-                                                        Payment Method
-                                                    </label>
+                                                    >{t("Payment Method")}</label>
                                                     <input
                                                         type="text"
                                                         className="form-control"
-                                                        placeholder="Payment Method"
+                                                        placeholder={t("Payment Method")}
                                                         value={option.pay_type}
                                                         onChange={(e) =>
                                                             updatePaymentOption(
@@ -269,13 +263,11 @@ export default function Create() {
                                                     <label
                                                         className="py-1"
                                                         htmlFor={`pay_to_${index}`}
-                                                    >
-                                                        Payment Number/AC
-                                                    </label>
+                                                    >{t("Payment Number/AC")}</label>
                                                     <input
                                                         type="text"
                                                         className="form-control"
-                                                        placeholder="Payment To"
+                                                        placeholder={t("Payment To")}
                                                         value={option.pay_to}
                                                         onChange={(e) =>
                                                             updatePaymentOption(
@@ -343,7 +335,7 @@ export default function Create() {
                             </div>
 
                             <Hr />
-                            <PrimaryButton>save</PrimaryButton>
+                            <PrimaryButton>{t("save")}</PrimaryButton>
                         </form>
                     </SectionInner>
                 </SectionSection>

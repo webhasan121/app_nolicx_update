@@ -11,6 +11,7 @@ import OverviewSection from "../../../components/dashboard/overview/Section";
 import OverviewDiv from "../../../components/dashboard/overview/Div";
 import Table from "../../../components/dashboard/table/Table";
 import NavLink from "../../../components/NavLink";
+import useTranslation from "../../../hooks/useTranslation";
 
 function statusClass(status) {
     switch (status) {
@@ -43,6 +44,7 @@ export default function Index({
     counts = {},
     printUrl,
 }) {
+    const { t } = useTranslation();
     const [nav, setNav] = useState(filters.nav ?? "sold");
     const [fd, setFd] = useState(filters.fd ?? "");
     const [lastDate, setLastDate] = useState(filters.lastDate ?? "");
@@ -174,27 +176,27 @@ export default function Index({
     };
 
     return (
-        <AppLayout title="Sell and Profit">
-            <Head title="Sell and Profit" />
+        <AppLayout title={t("Sell and Profit")}>
+            <Head title={t("Sell and Profit")} />
 
             <Container>
-                <p className="text-xl">Sell and Profit</p>
+                <p className="text-xl">{t("Sell and Profit")}</p>
 
                 <OverviewSection>
                     <OverviewDiv
-                        title="Total Sell"
+                        title={t("Total Sell")}
                         content={`${overview.totalSell ?? 0} TK`}
                     />
                     <OverviewDiv
-                        title="Profit"
+                        title={t("Profit")}
                         content={`${overview.tp ?? 0} TK`}
                     />
                     <OverviewDiv
-                        title="Neet"
+                        title={t("Neet")}
                         content={`${overview.tn ?? 0} TK`}
                     />
                     <OverviewDiv
-                        title="Shop"
+                        title={t("Shop")}
                         content={`${overview.shop ?? 0}`}
                     />
                 </OverviewSection>
@@ -211,11 +213,9 @@ export default function Index({
                                         }
                                         className="rounded py-1"
                                     >
-                                        <option value="all">Both</option>
-                                        <option value="sold">Sold</option>
-                                        <option value="selling">
-                                            On-Selling
-                                        </option>
+                                        <option value="all">{t("Both")}</option>
+                                        <option value="sold">{t("Sold")}</option>
+                                        <option value="selling">{t("On-Selling")}</option>
                                     </select>
                                 </div>
                                 <div className="flex flex-wrap items-center justify-end gap-2">
@@ -245,9 +245,7 @@ export default function Index({
                                         type="button"
                                         className="rounded border px-3 py-1 text-sm text-slate-700"
                                         onClick={resetFilters}
-                                    >
-                                        Reset
-                                    </button>
+                                    >{t("Reset")}</button>
                                     <TextInput
                                         type="search"
                                         value={search}
@@ -263,7 +261,7 @@ export default function Index({
                                             });
                                         }}
                                         className="py-1"
-                                        placeholder="Search products..."
+                                        placeholder={t("Search products...")}
                                     />
                                     <PrimaryButton
                                         type="button"
@@ -281,13 +279,13 @@ export default function Index({
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>ID</th>
-                                    <th>Product</th>
-                                    <th>Flow</th>
-                                    <th>Owner</th>
-                                    <th>Price</th>
-                                    <th>Created</th>
-                                    <th>Action</th>
+                                    <th>{t("ID")}</th>
+                                    <th>{t("Product")}</th>
+                                    <th>{t("Flow")}</th>
+                                    <th>{t("Owner")}</th>
+                                    <th>{t("Price")}</th>
+                                    <th>{t("Created")}</th>
+                                    <th>{t("Action")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -355,12 +353,9 @@ export default function Index({
                                             </div>
                                         </td>
                                         <td>
-                                            {item.product_price ?? 0} TK
-                                            {item.offer_type ? (
-                                                <div className="flex items-center text-center p-1 rounded bg-gray-100 text-xs">
-                                                    D: {item.discount} |{" "}
-                                                    {item.discount_percent}% off
-                                                </div>
+                                            {item.product_price ?? 0}{t("TK")}{item.offer_type ? (
+                                                <div className="flex items-center text-center p-1 rounded bg-gray-100 text-xs">{t("D:")}{item.discount} |{" "}
+                                                    {item.discount_percent}{t("% off")}</div>
                                             ) : null}
                                         </td>
                                         <td>
@@ -392,9 +387,7 @@ export default function Index({
                                                 disabled={!pagination.prev?.url}
                                                 className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
-                                            >
-                                                Previous
-                                            </button>
+                                            >{t("Previous")}</button>
                                             {pagination.pages.map((link, idx) => (
                                                 <button
                                                     key={`${link.label}-${idx}`}
@@ -415,9 +408,7 @@ export default function Index({
                                                 disabled={!pagination.next?.url}
                                                 className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
-                                            >
-                                                Next
-                                            </button>
+                                            >{t("Next")}</button>
                                         </div>
                                     </div>
                                 </div>

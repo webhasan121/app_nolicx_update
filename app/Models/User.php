@@ -366,17 +366,14 @@ class User extends Authenticatable
 
     public function account_type()
     {
-        $account = '';
-        $roles = auth()->user()->getRoleNames();
-        // dd($roles);
-        if (count($roles) > 2) {
-            $account = auth()->user()->active_nav;
-        } else {
+        $roles = $this->getRoleNames();
+        $activeNav = $this->active_nav;
 
-            $account = auth()->user()->isVendor() ? 'vendor' : 'reseller';
+        if (in_array($activeNav, ['vendor', 'reseller'], true) && $roles->contains($activeNav)) {
+            return $activeNav;
         }
 
-        return $account;
+        return $this->isVendor() ? 'vendor' : 'reseller';
     }
 
 
@@ -457,7 +454,7 @@ class User extends Authenticatable
     public function orderToMe()
     {
         // return $this->hasMany(Order::class);
-        return Order::where(['belongs_to' => auth()->user()->id]);
+        return Order::where(['belongs_to' => $this->id]);
     }
 
 
@@ -497,6 +494,11 @@ class User extends Authenticatable
 
     public function currentLevel() {
         return $this->belongsTo(Level::class, 'current_level_id', 'id')->withTrashed();
+    }
+
+    public function savedProducts()
+    {
+        return $this->hasMany(ProductSaveForLater::class);
     }
 
     public function levelHistory() {

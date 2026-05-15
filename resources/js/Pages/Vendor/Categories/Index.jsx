@@ -12,8 +12,10 @@ import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import SectionSection from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function Index({ categories = [] }) {
+    const { t } = useTranslation();
     const form = useForm({
         name: "",
         image: null,
@@ -35,34 +37,34 @@ export default function Index({ categories = [] }) {
     };
 
     return (
-        <AppLayout title="Categories" header={<PageHeader>Categories</PageHeader>}>
-            <Head title="Categories" />
+        <AppLayout title={t("Categories")} header={<PageHeader>{t("Categories")}</PageHeader>}>
+            <Head title={t("Categories")} />
 
             <form onSubmit={save}>
                 <Container>
                     <SectionSection>
                         <SectionHeader
-                            title="Category"
-                            content="Get a new category."
+                            title={t("Category")}
+                            content={t("Get a new category.")}
                         />
                         <SectionInner>
                             <InputField
                                 name="name"
                                 className="md:flex"
                                 labelWidth="250px"
-                                label="Your Category Name"
+                                label={t("Your Category Name")}
                                 value={form.data.name}
                                 onChange={(e) => form.setData("name", e.target.value)}
                                 error={form.errors.name}
                             />
                             <Hr />
-                            <InputFile label="Category Image" error="image" errors={form.errors}>
+                            <InputFile label={t("Category Image")} error="image" errors={form.errors}>
                                 <input
                                     type="file"
                                     onChange={(e) => form.setData("image", e.target.files?.[0] ?? null)}
                                 />
                             </InputFile>
-                            <PrimaryButton disabled={form.processing}>save</PrimaryButton>
+                            <PrimaryButton disabled={form.processing}>{t("save")}</PrimaryButton>
                         </SectionInner>
                     </SectionSection>
                 </Container>
@@ -71,18 +73,18 @@ export default function Index({ categories = [] }) {
             <Container>
                 <SectionSection>
                     <SectionHeader
-                        title="Categories List"
-                        content="View and Edit your listed categories"
+                        title={t("Categories List")}
+                        content={t("View and Edit your listed categories")}
                     />
                     <SectionInner>
                         <Table data={categories}>
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Name</th>
-                                    <th>Owner</th>
-                                    <th>Product</th>
-                                    <th>Created</th>
+                                    <th>{t("Name")}</th>
+                                    <th>{t("Owner")}</th>
+                                    <th>{t("Product")}</th>
+                                    <th>{t("Created")}</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -112,14 +114,12 @@ export default function Index({ categories = [] }) {
                                         </td>
                                         <td>
                                             <NavLink href={route("vendor.category.edit", { cat: item.id })}>
-                                                <PrimaryButton type="button">edit</PrimaryButton>
+                                                <PrimaryButton type="button">{t("edit")}</PrimaryButton>
                                             </NavLink>
                                             <DangerButton
                                                 type="button"
                                                 onClick={() => remove(item.id)}
-                                            >
-                                                delete
-                                            </DangerButton>
+                                            >{t("delete")}</DangerButton>
                                         </td>
                                     </tr>
                                 ))}

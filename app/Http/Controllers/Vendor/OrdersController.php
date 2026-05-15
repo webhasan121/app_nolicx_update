@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\rider;
 use App\Models\syncOrder;
+use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -285,6 +286,14 @@ class OrdersController extends Controller
             return redirect()->back()->with('error', 'Invalid status');
         }
 
+        if (! $this->canMoveToStatus($data, $status)) {
+            return redirect()->back()->with('error', 'Please complete the order steps one by one.');
+        }
+
+        if ($status === 'Confirm' && ! $data->received_at) {
+            return redirect()->back()->with('error', 'Customer must mark the order as received before finish.');
+        }
+
         if ($status === 'Accept' && array_key_exists('shipping', $payload) && $payload['shipping'] !== null) {
             $data->shipping = $payload['shipping'];
         }
@@ -298,6 +307,7 @@ class OrdersController extends Controller
 
         $data->status = $status;
         $data->save();
+        OrderNotice::statusChanged($data, $status, auth()->id());
 
         if ($status === 'Confirm') {
             $ct = new ProductComissionController();
@@ -442,6 +452,8 @@ class OrdersController extends Controller
 
         $data->status = 'Picked';
         $data->save();
+        OrderNotice::riderAssigned($data, $rdr->user?->name ?? 'Selected rider', auth()->id());
+        OrderNotice::statusChanged($data, 'Picked', auth()->id());
 
         return redirect()->back()->with('success', 'Rider assigned successfully');
     }
@@ -620,5 +632,26 @@ class OrdersController extends Controller
         }
 
         return $query->findOrFail($orderId);
+    }
+
+    private function canMoveToStatus(Order $order, string $nextStatus): bool
+    {
+        if ($nextStatus === $order->status) {
+            return true;
+        }
+
+        if (in_array($nextStatus, ['Hold', 'Cancelled', 'Cancel', 'Reject'], true)) {
+            return $order->status !== 'Confirm';
+        }
+
+        if ($order->status === 'Hold') {
+            return $nextStatus === 'Accept';
+        }
+
+        $flow = ['Pending', 'Accept', 'Picked', 'Delivery', 'Delivered', 'Confirm'];
+        $currentIndex = array_search($order->status, $flow, true);
+        $nextIndex = array_search($nextStatus, $flow, true);
+
+        return $currentIndex !== false && $nextIndex !== false && $nextIndex === $currentIndex + 1;
     }
 }

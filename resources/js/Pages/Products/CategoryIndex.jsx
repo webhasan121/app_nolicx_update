@@ -93,7 +93,7 @@ export default function CategoryIndex({
                     <div className="items-start justify-start lg:flex">
                         <div
                             style={{ width: "300px" }}
-                            className="hidden bg-white rounded-lg md:block"
+                            className="hidden bg-white rounded-lg md:block max-h-[calc(100vh-110px)] overflow-y-auto"
                         >
                             <div className="py-3">
                                 <div className="px-3">

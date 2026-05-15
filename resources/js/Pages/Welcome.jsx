@@ -1,4 +1,5 @@
 import { Link } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 import DisplayCategory from "../components/client/DisplayCategory";
 import ProductsLoop from "../components/client/ProductsLoop";
 import Container from "../components/dashboard/Container";
@@ -31,7 +32,11 @@ export default function Welcome({
     todaysProducts = [],
     developer_percentage = 0
 }) {
-console.log('developer_percentage', developer_percentage);
+    const [forYouProducts, setForYouProducts] = useState(recommended);
+
+    useEffect(() => {
+        setForYouProducts(recommended);
+    }, [recommended]);
 
     return (
         <UserLayout>
@@ -220,7 +225,20 @@ console.log('developer_percentage', developer_percentage);
             <StaticSlider sliders={ss} />
 
             <Container>
-                <RecommendedProducts products={recommended} />
+                <RecommendedProducts
+                    products={forYouProducts}
+                    onSaveForLaterChange={(product, isSaved) => {
+                        setForYouProducts((items) => {
+                            const withoutProduct = items.filter(
+                                (item) => item.id !== product.id,
+                            );
+
+                            return isSaved
+                                ? [product, ...withoutProduct]
+                                : withoutProduct;
+                        });
+                    }}
+                />
             </Container>
         </UserLayout>
     );

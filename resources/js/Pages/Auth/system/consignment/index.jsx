@@ -11,8 +11,10 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
+    const { t } = useTranslation();
     const [search, setSearch] = useState(filters.find ?? "");
     const [sdate, setSdate] = useState(filters.sdate ?? "");
     const [edate, setEdate] = useState(filters.edate ?? "");
@@ -100,10 +102,10 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
 
     return (
         <AppLayout
-            title="Consignment"
-            header={<PageHeader>Consignment</PageHeader>}
+            title={t("Consignment")}
+            header={<PageHeader>{t("Consignment")}</PageHeader>}
         >
-            <Head title="Consignment" />
+            <Head title={t("Consignment")} />
 
             <Container>
                 <Section>
@@ -137,11 +139,11 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                         }
                                         className="rounded-md border-gray-300 shadow-sm"
                                     >
-                                        <option value="All">All</option>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Received">Received</option>
-                                        <option value="Completed">Complete</option>
-                                        <option value="Returned">Returned</option>
+                                        <option value="All">{t("All")}</option>
+                                        <option value="Pending">{t("Pending")}</option>
+                                        <option value="Received">{t("Received")}</option>
+                                        <option value="Completed">{t("Complete")}</option>
+                                        <option value="Returned">{t("Returned")}</option>
                                     </select>
                                 </div>
 
@@ -177,7 +179,7 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                     <TextInput
                                         type="search"
                                         value={search}
-                                        placeholder="Search consignment..."
+                                        placeholder={t("Search consignment...")}
                                         onChange={(e) => setSearch(e.target.value)}
                                         onKeyDown={(e) => {
                                             if (e.key !== "Enter") {
@@ -205,17 +207,17 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>ID</th>
-                                    <th>Order ID</th>
-                                    <th>Rider</th>
-                                    <th>Amount</th>
-                                    <th>Rider Amount</th>
-                                    <th>Total</th>
-                                    <th>Comission</th>
-                                    <th>C Rate</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                    <th>A/C</th>
+                                    <th>{t("ID")}</th>
+                                    <th>{t("Order ID")}</th>
+                                    <th>{t("Rider")}</th>
+                                    <th>{t("Amount")}</th>
+                                    <th>{t("Rider Amount")}</th>
+                                    <th>{t("Total")}</th>
+                                    <th>{t("Comission")}</th>
+                                    <th>{t("C Rate")}</th>
+                                    <th>{t("Status")}</th>
+                                    <th>{t("Date")}</th>
+                                    <th>{t("A/C")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -272,9 +274,7 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                                 disabled={!pagination.prev?.url}
                                                 className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
-                                            >
-                                                Previous
-                                            </button>
+                                            >{t("Previous")}</button>
                                             {pagination.pages.map((link, index) => (
                                                 <button
                                                     key={`${link.label}-${index}`}
@@ -295,9 +295,7 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                                 disabled={!pagination.next?.url}
                                                 className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
-                                            >
-                                                Next
-                                            </button>
+                                            >{t("Next")}</button>
                                         </div>
                                     </div>
                                 </div>

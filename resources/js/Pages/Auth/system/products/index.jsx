@@ -9,8 +9,10 @@ import SectionSection from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index() {
+    const { t } = useTranslation();
     const {
         filters = {
             filter: "Active",
@@ -122,16 +124,12 @@ export default function Index() {
 
     return (
         <AppLayout
-            title="Products"
+            title={t("Products")}
             header={
                 <PageHeader>
                     <div className="flex justify-between items-center">
-                        <div>
-                            Products
-                            <br />
-                            <NavLink href={route("reseller.resel-product.index")}>
-                                Browse
-                            </NavLink>
+                        <div>{t("Products")}<br />
+                            <NavLink href={route("reseller.resel-product.index")}>{t("Browse")}</NavLink>
                         </div>
                     </div>
                 </PageHeader>
@@ -157,9 +155,9 @@ export default function Index() {
                                         }
                                         className="rounded-md border-gray-300 shadow-sm"
                                     >
-                                        <option value="Active">Active</option>
-                                        <option value="Disable">Disable</option>
-                                        <option value="both">Both</option>
+                                        <option value="Active">{t("Active")}</option>
+                                        <option value="Disable">{t("Disable")}</option>
+                                        <option value="both">{t("Both")}</option>
                                     </select>
                                     <select
                                         value={from}
@@ -177,9 +175,9 @@ export default function Index() {
                                         }}
                                         className="rounded-md border-gray-300 shadow-sm"
                                     >
-                                        <option value="all">All</option>
-                                        <option value="vendor">Vendor</option>
-                                        <option value="reseller">Reseller</option>
+                                        <option value="all">{t("All")}</option>
+                                        <option value="vendor">{t("Vendor")}</option>
+                                        <option value="reseller">{t("Reseller")}</option>
                                     </select>
                                     {from === "reseller" ? (
                                         <label className="flex items-center gap-2 text-sm text-slate-700">
@@ -196,9 +194,7 @@ export default function Index() {
                                                         nextIsIncludeResel: e.target.checked,
                                                     })
                                                 }
-                                            />
-                                            Include Resel
-                                        </label>
+                                            />{t("Include Resel")}</label>
                                     ) : null}
                                 </div>
 
@@ -239,7 +235,7 @@ export default function Index() {
                                     />
                                     <TextInput
                                         type="search"
-                                        placeholder="Search products..."
+                                        placeholder={t("Search products...")}
                                         className="py-1"
                                         value={find}
                                         onChange={(e) => setFind(e.target.value)}
@@ -269,12 +265,12 @@ export default function Index() {
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>ID</th>
-                                            <th>Product</th>
-                                            <th>Owner</th>
-                                            <th>Price</th>
-                                            <th>Created</th>
-                                            <th>Action</th>
+                                            <th>{t("ID")}</th>
+                                            <th>{t("Product")}</th>
+                                            <th>{t("Owner")}</th>
+                                            <th>{t("Price")}</th>
+                                            <th>{t("Created")}</th>
+                                            <th>{t("Action")}</th>
                                         </tr>
                                     </thead>
 
@@ -346,10 +342,8 @@ export default function Index() {
                                                 </td>
 
                                                 <td>
-                                                    {item.price ?? 0} TK
-                                                    {item.discount_meta ? (
-                                                        <div className="flex items-center text-center p-1 rounded bg-gray-100 text-xs">
-                                                            D:{" "}
+                                                    {item.price ?? 0}{t("TK")}{item.discount_meta ? (
+                                                        <div className="flex items-center text-center p-1 rounded bg-gray-100 text-xs">{t("D:")}{" "}
                                                             {
                                                                 item
                                                                     .discount_meta
@@ -360,9 +354,7 @@ export default function Index() {
                                                                 item
                                                                     .discount_meta
                                                                     .off_percent
-                                                            }
-                                                            % off
-                                                        </div>
+                                                            }{t("% off")}</div>
                                                     ) : null}
                                                 </td>
                                                 <td>
@@ -380,9 +372,7 @@ export default function Index() {
                                                                         item.id,
                                                                 }
                                                             )}
-                                                        >
-                                                            View
-                                                        </NavLink>
+                                                        >{t("View")}</NavLink>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -403,9 +393,7 @@ export default function Index() {
                                                 disabled={!pagination.prev?.url}
                                                 className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
-                                            >
-                                                Previous
-                                            </button>
+                                            >{t("Previous")}</button>
                                             {pagination.pages.map((link, index) => (
                                                 <button
                                                     key={`${link.label}-${index}`}
@@ -426,9 +414,7 @@ export default function Index() {
                                                 disabled={!pagination.next?.url}
                                                 className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
-                                            >
-                                                Next
-                                            </button>
+                                            >{t("Next")}</button>
                                         </div>
                                     </div>
                                 </div>

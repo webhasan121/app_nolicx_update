@@ -19,8 +19,10 @@ import UpdateProfilePermission, {
     PermissionGroup,
 } from "../../../../livewire/system/users/partials/UpdateProfilePermission";
 import UpdateProfileRole from "../../../../livewire/system/users/partials/UpdateProfileRole";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Edit() {
+    const { t } = useTranslation();
     const {
         reseller,
         nav = "documents",
@@ -149,11 +151,9 @@ export default function Edit() {
 
     return (
         <AppLayout
-            title="Resellers"
+            title={t("Resellers")}
             header={
-                <PageHeader>
-                    Resellers
-                    <br />
+                <PageHeader>{t("Resellers")}<br />
                     <NavLink href={route("system.users.edit", { id: reseller?.user?.id ?? "" })}>
                         {reseller?.user?.name ?? "N/A"}
                     </NavLink>
@@ -163,11 +163,11 @@ export default function Edit() {
                     <span className="text-xs">{reseller?.status ?? "Pending"}</span>
                     <br />
                     <div>
-                        <NavLink active={nav === "user"} href={route("system.reseller.edit", { id: reseller?.id, nav: "user" })}>user</NavLink>
-                        <NavLink active={nav === "documents"} href={route("system.reseller.edit", { id: reseller?.id, nav: "documents" })}>Documents</NavLink>
-                        <NavLink active={nav === "products"} href={route("system.reseller.edit", { id: reseller?.id, nav: "products" })}>Products</NavLink>
-                        <NavLink active={nav === "categories"} href={route("system.reseller.edit", { id: reseller?.id, nav: "categories" })}>Categories</NavLink>
-                        <NavLink active={nav === "orders"} href={route("system.reseller.edit", { id: reseller?.id, nav: "orders" })}>Orders</NavLink>
+                        <NavLink active={nav === "user"} href={route("system.reseller.edit", { id: reseller?.id, nav: "user" })}>{t("user")}</NavLink>
+                        <NavLink active={nav === "documents"} href={route("system.reseller.edit", { id: reseller?.id, nav: "documents" })}>{t("Documents")}</NavLink>
+                        <NavLink active={nav === "products"} href={route("system.reseller.edit", { id: reseller?.id, nav: "products" })}>{t("Products")}</NavLink>
+                        <NavLink active={nav === "categories"} href={route("system.reseller.edit", { id: reseller?.id, nav: "categories" })}>{t("Categories")}</NavLink>
+                        <NavLink active={nav === "orders"} href={route("system.reseller.edit", { id: reseller?.id, nav: "orders" })}>{t("Orders")}</NavLink>
                     </div>
                 </PageHeader>
             }
@@ -176,23 +176,23 @@ export default function Edit() {
                 <Container>
                     <SectionSection>
                         <SectionHeader
-                            title="Reseller and Shops"
+                            title={t("Reseller and Shops")}
                             content={
                                 <div className="md:flex w-full flex-1 gap-10">
                                     <div className="p-3 bg-gray-100 rounded-md shadow-sm w-full">
                                         <hr />
-                                        <div className="text-md border-b w-full p-3"><div className="font-bold">Reseller ID: </div><div>{reseller?.id ?? "N/A"}</div></div>
-                                        <div className="text-md border-b w-full p-3"><div className="font-bold">Reseller Name: </div><div>{reseller?.user?.name ?? "N/A"}</div></div>
-                                        <div className="text-md border-b w-full p-3"><div className="font-bold">Reseller Email: </div><div>{reseller?.user?.email ?? "N/A"}</div></div>
-                                        <div className="text-md border-b w-full p-3"><div className="font-bold">Reseller Phone: </div><div>{reseller?.user?.phone ?? "N/A"}</div></div>
-                                        <div className="text-md  w-full p-3"><div className="font-bold">Shop Name: </div><div>{reseller?.shop_name_en ?? "N/A"}</div></div>
+                                        <div className="text-md border-b w-full p-3"><div className="font-bold">{t("Reseller ID:")}</div><div>{reseller?.id ?? "N/A"}</div></div>
+                                        <div className="text-md border-b w-full p-3"><div className="font-bold">{t("Reseller Name:")}</div><div>{reseller?.user?.name ?? "N/A"}</div></div>
+                                        <div className="text-md border-b w-full p-3"><div className="font-bold">{t("Reseller Email:")}</div><div>{reseller?.user?.email ?? "N/A"}</div></div>
+                                        <div className="text-md border-b w-full p-3"><div className="font-bold">{t("Reseller Phone:")}</div><div>{reseller?.user?.phone ?? "N/A"}</div></div>
+                                        <div className="text-md  w-full p-3"><div className="font-bold">{t("Shop Name:")}</div><div>{reseller?.shop_name_en ?? "N/A"}</div></div>
                                     </div>
                                     <div className="p-3 bg-gray-100 rounded-md shadow-sm w-full">
                                         <hr />
-                                        <div className="text-md border-b w-full p-3"><div className="font-bold">Shop Email: </div><div>{reseller?.email ?? "N/A"}</div></div>
-                                        <div className="text-md border-b w-full p-3"><div className="font-bold">Shop Phone: </div><div>{reseller?.phone ?? "N/A"}</div></div>
-                                        <div className="text-md border-b w-full p-3"><div className="font-bold">Shop Address: </div><div>{reseller?.address ?? "N/A"}</div></div>
-                                        <div className="text-md border-b w-full p-3"><div className="font-bold">Shop Location: </div><div>{reseller?.upazila ?? "N/A"}, {reseller?.district ?? "N/A"}, {reseller?.country ?? "N/A"}</div></div>
+                                        <div className="text-md border-b w-full p-3"><div className="font-bold">{t("Shop Email:")}</div><div>{reseller?.email ?? "N/A"}</div></div>
+                                        <div className="text-md border-b w-full p-3"><div className="font-bold">{t("Shop Phone:")}</div><div>{reseller?.phone ?? "N/A"}</div></div>
+                                        <div className="text-md border-b w-full p-3"><div className="font-bold">{t("Shop Address:")}</div><div>{reseller?.address ?? "N/A"}</div></div>
+                                        <div className="text-md border-b w-full p-3"><div className="font-bold">{t("Shop Location:")}</div><div>{reseller?.upazila ?? "N/A"}, {reseller?.district ?? "N/A"}, {reseller?.country ?? "N/A"}</div></div>
                                     </div>
                                 </div>
                             }
@@ -202,36 +202,36 @@ export default function Edit() {
                             <form onSubmit={submitStatus}>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm">Current Status is : <strong>{reseller?.status}</strong>. Change status to - </p>
+                                        <p className="text-sm">{t("Current Status is :")}<strong>{reseller?.status}</strong>{t(". Change status to -")}</p>
                                         <select id="resStatus" className="rounded-lg py-1" value={statusForm.data.status} onChange={(e) => statusForm.setData("status", e.target.value)}>
-                                            <option value="Select Status">-- Select -- </option>
-                                            <option value="Pending">Pending</option>
-                                            <option value="Disabled">Disabled</option>
-                                            <option value="Suspended">Suspended</option>
-                                            <option value="Active">Active</option>
+                                            <option value="Select Status">{t("-- Select --")}</option>
+                                            <option value="Pending">{t("Pending")}</option>
+                                            <option value="Disabled">{t("Disabled")}</option>
+                                            <option value="Suspended">{t("Suspended")}</option>
+                                            <option value="Active">{t("Active")}</option>
                                         </select>
                                     </div>
                                     <div className="text-end">
-                                        <p className="text-sm">update : {reseller?.updated_at_human ?? ""}</p>
-                                        <PrimaryButton className="ml-2">set</PrimaryButton>
+                                        <p className="text-sm">{t("update :")}{reseller?.updated_at_human ?? ""}</p>
+                                        <PrimaryButton className="ml-2">{t("set")}</PrimaryButton>
                                     </div>
                                 </div>
                             </form>
                             <Hr />
                             <form onSubmit={submitComission}>
-                                <div className="flex justify-between items-start"><div><input type="text" className="rounded shadow" value={comissionForm.data.comission} onChange={(e) => comissionForm.setData("comission", e.target.value)} /><div className="text-xs">You take {reseller?.system_get_comission ?? "0"}% profit from this vendor revinew.</div></div></div>
+                                <div className="flex justify-between items-start"><div><input type="text" className="rounded shadow" value={comissionForm.data.comission} onChange={(e) => comissionForm.setData("comission", e.target.value)} /><div className="text-xs">{t("You take")}{reseller?.system_get_comission ?? "0"}{t("% profit from this vendor revinew.")}</div></div></div>
                                 <div className="my-2 rounded bg-gray-50 border-gray-200 p-3">
-                                    <div className="p-3 w-full flex justify-between items-center"><div className="font-bold">Prevent adding unlimited product  : </div><div className="flex gap-10"><div className="flex items-center"><input type="radio" name="allow_max_product_upload" value="1" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_product_upload === "1"} onChange={(e) => comissionForm.setData("allow_max_product_upload", e.target.value)} /><div className="px-2">Yes</div></div><div className="flex items-center"><input type="radio" name="allow_max_product_upload" value="0" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_product_upload === "0"} onChange={(e) => comissionForm.setData("allow_max_product_upload", e.target.value)} /><div className="px-2">No</div></div></div></div>
-                                    <div className="px-3 w-full flex justify-between items-center"><div className="font-bold">Maximum Product : </div><div><TextInput type="number" placeholder="100" className="w-20" value={comissionForm.data.max_product_upload} onChange={(e) => comissionForm.setData("max_product_upload", e.target.value)} /></div></div>
-                                    <div className="text-xs text-gray-500 px-3">If you set the maximum product, then the vendor will not be able to upload more than this number of products.</div>
+                                    <div className="p-3 w-full flex justify-between items-center"><div className="font-bold">{t("Prevent adding unlimited product :")}</div><div className="flex gap-10"><div className="flex items-center"><input type="radio" name="allow_max_product_upload" value="1" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_product_upload === "1"} onChange={(e) => comissionForm.setData("allow_max_product_upload", e.target.value)} /><div className="px-2">{t("Yes")}</div></div><div className="flex items-center"><input type="radio" name="allow_max_product_upload" value="0" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_product_upload === "0"} onChange={(e) => comissionForm.setData("allow_max_product_upload", e.target.value)} /><div className="px-2">{t("No")}</div></div></div></div>
+                                    <div className="px-3 w-full flex justify-between items-center"><div className="font-bold">{t("Maximum Product :")}</div><div><TextInput type="number" placeholder="100" className="w-20" value={comissionForm.data.max_product_upload} onChange={(e) => comissionForm.setData("max_product_upload", e.target.value)} /></div></div>
+                                    <div className="text-xs text-gray-500 px-3">{t("If you set the maximum product, then the vendor will not be able to upload more than this number of products.")}</div>
                                 </div>
                                 <div className="my-2 bg-gray-50 p-3">
-                                    <div className="px-3 w-full flex justify-between items-center"><div className="font-bold">Allow to resell products : </div><div className="flex gap-10"><div className="flex items-center"><input type="radio" name="allow_max_resell_product" value="1" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_resell_product === "1"} onChange={(e) => comissionForm.setData("allow_max_resell_product", e.target.value)} /><div className="px-2">Yes</div></div><div className="flex items-center"><input type="radio" name="allow_max_resell_product" value="0" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_resell_product === "0"} onChange={(e) => comissionForm.setData("allow_max_resell_product", e.target.value)} /><div className="px-2">No</div></div></div></div>
-                                    <div className="px-3 w-full flex justify-between items-center"><div className="font-bold">Maximum Resel Product : </div><div><TextInput type="number" placeholder="100" className="w-20" value={comissionForm.data.max_resell_product} onChange={(e) => comissionForm.setData("max_resell_product", e.target.value)} /></div></div>
-                                    <div className="text-xs text-gray-500 px-3">If you allow the vendor to resell products, then the vendor will be able to resell products from other resellers.</div>
+                                    <div className="px-3 w-full flex justify-between items-center"><div className="font-bold">{t("Allow to resell products :")}</div><div className="flex gap-10"><div className="flex items-center"><input type="radio" name="allow_max_resell_product" value="1" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_resell_product === "1"} onChange={(e) => comissionForm.setData("allow_max_resell_product", e.target.value)} /><div className="px-2">{t("Yes")}</div></div><div className="flex items-center"><input type="radio" name="allow_max_resell_product" value="0" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_resell_product === "0"} onChange={(e) => comissionForm.setData("allow_max_resell_product", e.target.value)} /><div className="px-2">{t("No")}</div></div></div></div>
+                                    <div className="px-3 w-full flex justify-between items-center"><div className="font-bold">{t("Maximum Resel Product :")}</div><div><TextInput type="number" placeholder="100" className="w-20" value={comissionForm.data.max_resell_product} onChange={(e) => comissionForm.setData("max_resell_product", e.target.value)} /></div></div>
+                                    <div className="text-xs text-gray-500 px-3">{t("If you allow the vendor to resell products, then the vendor will be able to resell products from other resellers.")}</div>
                                 </div>
-                                <div className="my-2 bg-gray-50 p-3"><div className="px-3 w-full flex justify-between items-center"><div className="font-bold">Define Fixed Amount : </div><div><TextInput type="number" placeholder="100" className="w-20" value={comissionForm.data.fixed_amount} onChange={(e) => comissionForm.setData("fixed_amount", e.target.value)} /></div></div></div>
-                                <div><PrimaryButton>Update</PrimaryButton></div>
+                                <div className="my-2 bg-gray-50 p-3"><div className="px-3 w-full flex justify-between items-center"><div className="font-bold">{t("Define Fixed Amount :")}</div><div><TextInput type="number" placeholder="100" className="w-20" value={comissionForm.data.fixed_amount} onChange={(e) => comissionForm.setData("fixed_amount", e.target.value)} /></div></div></div>
+                                <div><PrimaryButton>{t("Update")}</PrimaryButton></div>
                             </form>
                         </SectionInner>
                     </SectionSection>
@@ -239,9 +239,9 @@ export default function Edit() {
                     {nav === "documents" ? (
                         <>
                             <SectionSection>
-                                <SectionHeader title="Documents" content="See the listed document submitted by the user" />
+                                <SectionHeader title={t("Documents")} content={t("See the listed document submitted by the user")} />
                                 <SectionInner>
-                                    <InputFile label="Document Submited Last Date" error="deatline">
+                                    <InputFile label={t("Document Submited Last Date")} error="deatline">
                                         <div className="border px-2 rounded shadow-sm">
                                             {reseller?.documents?.deatline_formatted}
                                             {reseller?.documents?.deatline_human ? ` - ${reseller.documents.deatline_human}` : ""}
@@ -249,45 +249,45 @@ export default function Edit() {
                                     </InputFile>
                                     <Hr />
                                     <form onSubmit={submitDeadline}>
-                                        <InputFile label="set New Date" error="deatline">
+                                        <InputFile label={t("set New Date")} error="deatline">
                                             <div className="flex">
                                                 <TextInput type="date" className="py-1" value={deadlineForm.data.deatline} onChange={(e) => deadlineForm.setData("deatline", e.target.value)} />
-                                                <PrimaryButton className="ms-2 py-1">set</PrimaryButton>
+                                                <PrimaryButton className="ms-2 py-1">{t("set")}</PrimaryButton>
                                             </div>
                                         </InputFile>
                                     </form>
                                 </SectionInner>
                             </SectionSection>
                             <SectionSection>
-                                <InputFile label="Nid" error="nid">
-                                    <TextInput type="number" className="form-control py-1" value={reseller?.documents?.nid ?? ""} label="NID No" name="nid" error="nid" onChange={() => {}} />
+                                <InputFile label={t("Nid")} error="nid">
+                                    <TextInput type="number" className="form-control py-1" value={reseller?.documents?.nid ?? ""} label={t("NID No")} name="nid" error="nid" onChange={() => {}} />
                                 </InputFile>
                                 <Hr />
-                                <InputFile label="NID Image (front side)" error="nid_front">
-                                    {reseller?.documents?.nid_front_url ? <img width="300px" height="200px" src={reseller.documents.nid_front_url} alt="" /> : <div>N/A</div>}
+                                <InputFile label={t("NID Image (front side)")} error="nid_front">
+                                    {reseller?.documents?.nid_front_url ? <img width="300px" height="200px" src={reseller.documents.nid_front_url} alt="" /> : <div>{t("N/A")}</div>}
                                 </InputFile>
                                 <Hr />
-                                <InputFile label="NID Image (back side)" error="nid_back">
-                                    {reseller?.documents?.nid_back_url ? <img width="300px" height="200px" src={reseller.documents.nid_back_url} alt="" /> : <div>N/A</div>}
+                                <InputFile label={t("NID Image (back side)")} error="nid_back">
+                                    {reseller?.documents?.nid_back_url ? <img width="300px" height="200px" src={reseller.documents.nid_back_url} alt="" /> : <div>{t("N/A")}</div>}
                                 </InputFile>
                                 <Hr />
                             </SectionSection>
                             <SectionSection>
-                                <InputFile label="TIN No" error="tin">
+                                <InputFile label={t("TIN No")} error="tin">
                                     <TextInput type="text" name="" value={reseller?.documents?.shop_tin ?? ""} id="" onChange={() => {}} />
                                 </InputFile>
                                 <Hr />
-                                <InputFile label="TIN Image" error="shop_tin">
-                                    {reseller?.documents?.shop_tin_image_url ? <img width="300px" height="200px" src={reseller.documents.shop_tin_image_url} alt="" /> : <div>N/A</div>}
+                                <InputFile label={t("TIN Image")} error="shop_tin">
+                                    {reseller?.documents?.shop_tin_image_url ? <img width="300px" height="200px" src={reseller.documents.shop_tin_image_url} alt="" /> : <div>{t("N/A")}</div>}
                                 </InputFile>
                             </SectionSection>
                             <SectionSection>
-                                <InputFile label="Shop Trade" error="shop_trade">
+                                <InputFile label={t("Shop Trade")} error="shop_trade">
                                     <TextInput type="text" name="" value={reseller?.documents?.shop_trade ?? ""} id="" onChange={() => {}} />
                                 </InputFile>
                                 <Hr />
-                                <InputFile label="Trade License Image" error="shop_trade_image">
-                                    {reseller?.documents?.shop_trade_image_url ? <img width="300px" height="200px" src={reseller.documents.shop_trade_image_url} alt="" /> : <div>N/A</div>}
+                                <InputFile label={t("Trade License Image")} error="shop_trade_image">
+                                    {reseller?.documents?.shop_trade_image_url ? <img width="300px" height="200px" src={reseller.documents.shop_trade_image_url} alt="" /> : <div>{t("N/A")}</div>}
                                 </InputFile>
                             </SectionSection>
                         </>
@@ -305,8 +305,8 @@ export default function Edit() {
                                     title={editUser?.name}
                                     content={
                                         <div>
-                                            <NavLink href="#" active={userNav === "profile"} className={userNav === "profile" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("profile"); }}>Profile</NavLink>
-                                            <NavLink href="#" active={userNav === "role"} className={userNav === "role" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("role"); }}>Permission</NavLink>
+                                            <NavLink href="#" active={userNav === "profile"} className={userNav === "profile" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("profile"); }}>{t("Profile")}</NavLink>
+                                            <NavLink href="#" active={userNav === "role"} className={userNav === "role" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("role"); }}>{t("Permission")}</NavLink>
                                         </div>
                                     }
                                 />
@@ -317,14 +317,14 @@ export default function Edit() {
                                     <SectionInner>
                                         <UpdateProfileInformation editUser={editUser} defaultAdminRef={defaultAdminRef} profileForm={profileForm} onSubmit={submitProfile} />
                                         <Hr />
-                                        <InputFile label="User Coin" error="coin" name="coin">
+                                        <InputFile label={t("User Coin")} error="coin" name="coin">
                                             <div className="rounded-lg">
                                                 <TextInput type="text" className=" border-0 w-32" disabled value={editUser?.coin ?? 0} />
                                                 <div className="p-2 bg-ref-900 rounded border inline-block">
-                                                    <div className="text-xs">Recharge</div>
+                                                    <div className="text-xs">{t("Recharge")}</div>
                                                     <form onSubmit={openRechargeModal}>
                                                         <TextInput type="number" className="py-1 w-32 mr-1" value={profileForm.data.rechargeAmount} onChange={(e) => profileForm.setData("rechargeAmount", e.target.value)} />
-                                                        <PrimaryButton>Apply</PrimaryButton>
+                                                        <PrimaryButton>{t("Apply")}</PrimaryButton>
                                                     </form>
                                                 </div>
                                             </div>
@@ -350,7 +350,7 @@ export default function Edit() {
 
             <Modal show={showViaRole} onClose={() => setShowViaRole(false)} maxWidth="2xl">
                 <div className="p-3">
-                    <p>Permissions</p>
+                    <p>{t("Permissions")}</p>
                     <Hr />
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10 }}>
                         {groupedPermissions.map(([title, items]) => (
@@ -358,21 +358,21 @@ export default function Edit() {
                         ))}
                     </div>
                     <div className="mt-4">
-                        <DangerButton type="button" onClick={() => setShowViaRole(false)}>Close</DangerButton>
+                        <DangerButton type="button" onClick={() => setShowViaRole(false)}>{t("Close")}</DangerButton>
                     </div>
                 </div>
             </Modal>
 
             <Modal show={showRechargeModal} onClose={() => setShowRechargeModal(false)} maxWidth="xl">
                 <div className="p-4">
-                    <div className="text-lg">Confirm Recharge</div>
+                    <div className="text-lg">{t("Confirm Recharge")}</div>
                     <Hr />
-                    <p className="py-5">Are you sure to add {profileForm.data.rechargeAmount} TK amount to {editUser?.name}, {editUser?.email}</p>
+                    <p className="py-5">{t("Are you sure to add")}{profileForm.data.rechargeAmount}{t("TK amount to")}{editUser?.name}, {editUser?.email}</p>
                     <Hr />
                     <div className="flex">
-                        <SecondaryButton type="button" onClick={() => setShowRechargeModal(false)}>Cancel</SecondaryButton>
-                        <PrimaryButton type="button" onClick={submitRecharge}>Recharge</PrimaryButton>
-                        <DangerButton type="button" onClick={submitRefund}>Refund</DangerButton>
+                        <SecondaryButton type="button" onClick={() => setShowRechargeModal(false)}>{t("Cancel")}</SecondaryButton>
+                        <PrimaryButton type="button" onClick={submitRecharge}>{t("Recharge")}</PrimaryButton>
+                        <DangerButton type="button" onClick={submitRefund}>{t("Refund")}</DangerButton>
                     </div>
                 </div>
             </Modal>

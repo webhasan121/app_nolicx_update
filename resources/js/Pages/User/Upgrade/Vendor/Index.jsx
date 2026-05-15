@@ -10,8 +10,10 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import MembershipActivateBox from "../../../../components/client/MembershipActivateBox";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function UpgradeVendorIndex() {
+    const { t } = useTranslation();
     const {
         upgrade = "vendor",
         vendor_requests = [],
@@ -31,13 +33,9 @@ export default function UpgradeVendorIndex() {
                     content={
                         <>
                             <div className="flex justify-between">
-                                <div>
-                                    Upgrade your account to revenew money. To make a new request , click the
-                                </div>
+                                <div>{t("Upgrade your account to revenew money. To make a new request , click the")}</div>
                             </div>
-                            <PrimaryButton type="button" onClick={() => setShowCreateModal(true)}>
-                                NEW REQUEST
-                            </PrimaryButton>
+                            <PrimaryButton type="button" onClick={() => setShowCreateModal(true)}>{t("NEW REQUEST")}</PrimaryButton>
                             <Hr />
                             <MembershipActivateBox
                                 vendorActive={vendor_active}
@@ -52,21 +50,15 @@ export default function UpgradeVendorIndex() {
                     <NavLink
                         active={upgrade === "vendor"}
                         href={route("upgrade.vendor.index", { upgrade: "vendor" })}
-                    >
-                        Vendor
-                    </NavLink>
+                    >{t("Vendor")}</NavLink>
                     <NavLink
                         active={upgrade === "reseller"}
                         href={route("upgrade.vendor.index", { upgrade: "reseller" })}
-                    >
-                        Reseller
-                    </NavLink>
+                    >{t("Reseller")}</NavLink>
                     <NavLink
                         active={upgrade === "rider"}
                         href={route("upgrade.rider.index")}
-                    >
-                        Rider
-                    </NavLink>
+                    >{t("Rider")}</NavLink>
                 </div>
 
                 <SectionInner>
@@ -76,9 +68,9 @@ export default function UpgradeVendorIndex() {
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Name</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
+                                        <th>{t("Name")}</th>
+                                        <th>{t("Date")}</th>
+                                        <th>{t("Status")}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -103,9 +95,7 @@ export default function UpgradeVendorIndex() {
                             </Table>
                         </SectionInner>
                     ) : (
-                        <div className="alert alert-info">
-                            No Previous request found! Make a new request, instead.
-                        </div>
+                        <div className="alert alert-info">{t("No Previous request found! Make a new request, instead.")}</div>
                     )}
                 </SectionInner>
             </SectionSection>
@@ -113,20 +103,20 @@ export default function UpgradeVendorIndex() {
             <Modal show={showCreateModal} onClose={() => setShowCreateModal(false)} maxWidth="sm">
                 <SectionSection>
                     <SectionHeader
-                        title="Make sure your request"
-                        content="please choose your expected link to reqeust."
+                        title={t("Make sure your request")}
+                        content={t("please choose your expected link to reqeust.")}
                     />
                     <SectionInner>
                         <NavLink href={route("upgrade.vendor.create", { upgrade: "vendor" })}>
-                            <PrimaryButton>Request for Vendor</PrimaryButton>
+                            <PrimaryButton>{t("Request for Vendor")}</PrimaryButton>
                         </NavLink>
                         <br />
                         <NavLink href={route("upgrade.vendor.create", { upgrade: "reseller" })}>
-                            <PrimaryButton>Request for Reseller</PrimaryButton>
+                            <PrimaryButton>{t("Request for Reseller")}</PrimaryButton>
                         </NavLink>
                         <br />
                         <NavLink href={route("upgrade.rider.create")}>
-                            <PrimaryButton>Request for Rider (Delevary Man)</PrimaryButton>
+                            <PrimaryButton>{t("Request for Rider (Delevary Man)")}</PrimaryButton>
                         </NavLink>
                     </SectionInner>
                 </SectionSection>

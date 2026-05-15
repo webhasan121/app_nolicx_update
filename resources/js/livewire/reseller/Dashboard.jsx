@@ -9,6 +9,7 @@ import SectionHeader from "../../components/dashboard/section/Header";
 import SectionInner from "../../components/dashboard/section/Inner";
 import SectionSection from "../../components/dashboard/section/Section";
 import VendorOrdersIndex from "../vendor/orders/Index";
+import Container from "../../components/dashboard/Container";
 
 function CategoryItem({ item, depth = 0 }) {
     if (!item || item.slug === "default-category") {
@@ -16,18 +17,26 @@ function CategoryItem({ item, depth = 0 }) {
     }
 
     return (
-        <div className={`${depth === 0 ? "p-2 border-b border-gray-200 hover:bg-gray-50" : "py-1"} cursor-pointer`}>
+        <div
+            className={`${depth === 0 ? "p-2 border-b border-gray-200 hover:bg-gray-50" : "py-1"} cursor-pointer`}
+        >
             <NavLink
                 href={route("reseller.resel-product.index", { cat: item.id })}
-                className="text-sm border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                className="p-0 text-sm border-b-0 text-inherit hover:text-inherit hover:border-transparent"
             >
                 {item.name}
             </NavLink>
 
             {Array.isArray(item.children) && item.children.length > 0 ? (
-                <div className={`${depth === 0 ? "px-2 py-1 border-l" : "ps-2"}`}>
+                <div
+                    className={`${depth === 0 ? "px-2 py-1 border-l" : "ps-2"}`}
+                >
                     {item.children.map((child) => (
-                        <CategoryItem key={child.id} item={child} depth={depth + 1} />
+                        <CategoryItem
+                            key={child.id}
+                            item={child}
+                            depth={depth + 1}
+                        />
                     ))}
                 </div>
             ) : null}
@@ -36,7 +45,9 @@ function CategoryItem({ item, depth = 0 }) {
 }
 
 function categoryMatches(item, query) {
-    return String(item?.name ?? "").toLowerCase().includes(query);
+    return String(item?.name ?? "")
+        .toLowerCase()
+        .includes(query);
 }
 
 function filterCategories(items, query) {
@@ -48,7 +59,10 @@ function filterCategories(items, query) {
 
     return (items ?? [])
         .map((item) => {
-            const children = filterCategories(item.children ?? [], normalizedQuery);
+            const children = filterCategories(
+                item.children ?? [],
+                normalizedQuery,
+            );
 
             if (categoryMatches(item, normalizedQuery) || children.length > 0) {
                 return {
@@ -65,7 +79,7 @@ function filterCategories(items, query) {
 function OverviewDiv({ title, children }) {
     return (
         <div
-            className="rounded d-block shadow p-3 relative overflow-hidden"
+            className="relative p-3 overflow-hidden rounded shadow d-block"
             style={{ backgroundColor: "orange", zIndex: 1, color: "white" }}
         >
             <style
@@ -97,72 +111,92 @@ function OverviewDiv({ title, children }) {
                 }}
             />
 
-            <div className="text-md mb-3">{title}</div>
-            <div className="text-end text-2xl">{children}</div>
+            <div className="mb-3 text-md">{title}</div>
+            <div className="text-2xl text-end">{children}</div>
             <div className="div_wrapper"></div>
         </div>
     );
 }
 
+const money = (value) => `Tk ${Number(value ?? 0).toLocaleString()}`;
+
 function ProductCard({ product }) {
     const salePrice =
-        product?.offer_type && product?.discount ? product.discount : product.price;
+        product?.offer_type && product?.discount
+            ? product.discount
+            : product.price;
 
     return (
-        <div className="bg-white rounded shadow overflow-hidden relative">
+        <div className="relative overflow-hidden bg-white rounded shadow">
             {product?.offer_type ? (
-                <div className="discount-badge bg-orange-600 ">
+                <div className="bg-orange-600 discount-badge ">
                     {product?.price
                         ? Math.round(
-                              (((product.price - product.discount) / product.price) *
+                              (((product.price - product.discount) /
+                                  product.price) *
                                   100 +
                                   Number.EPSILON) *
-                                  10
+                                  10,
                           ) / 10
                         : 0}
                     %
                 </div>
             ) : null}
 
-            <div className="overflow-hidden shadow-md p-1">
+            <div className="p-1 overflow-hidden shadow-md">
                 <img
                     style={{ height: 120 }}
                     src={`/storage/${product?.thumbnail}`}
-                    className="w-full object-cover"
+                    className="object-cover w-full"
                     alt="image"
                 />
             </div>
 
-            <div className="p-2 bg-white h-34 flex flex-col justify-between">
+            <div className="flex flex-col justify-between p-2 bg-white h-34">
                 <NavLink
-                    href={route("reseller.resel-product.veiw", { pd: product?.id })}
-                    className="border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                    href={route("reseller.resel-product.veiw", {
+                        pd: product?.id,
+                    })}
+                    className="p-0 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                 >
-                    <div className="text-sm text-start">{product?.name ?? "N/A"}</div>
+                    <div className="text-sm text-start">
+                        {product?.name ?? "N/A"}
+                    </div>
                 </NavLink>
 
                 <div>
-                    <div className="text-md mb-3">
+                    <div className="mb-3 text-md">
                         {product?.offer_type ? (
                             <>
-                                <div className="bold">{salePrice ?? "0"} TK</div>
+                                <div className="bold">
+                                    {salePrice ?? "0"} TK
+                                </div>
                                 <div className="text-xs">
                                     <del>{product?.price ?? "0"} TK</del>
                                 </div>
                             </>
                         ) : (
-                            <div className="bold">{product?.price ?? "0"} TK</div>
+                            <div className="bold">
+                                {product?.price ?? "0"} TK
+                            </div>
                         )}
                     </div>
 
-                    <div className="flex justify-center items-center text-sm">
+                    <div className="flex items-center justify-center text-sm">
                         <Hr />
-                        <PrimaryButton
-                            type="button"
-                            className=" text-center w-full flex justify-between "
+                        <NavLink
+                            href={route("reseller.resel-product.veiw", {
+                                pd: product?.id,
+                            })}
+                            className="w-full p-0 border-b-0 hover:border-transparent"
                         >
-                            Purchase <i className="fas fa-angle-right pl-2"></i>
-                        </PrimaryButton>
+                            <PrimaryButton
+                                type="button"
+                                className="flex justify-between w-full text-center "
+                            >
+                                Purchase <i className="pl-2 fas fa-angle-right"></i>
+                            </PrimaryButton>
+                        </NavLink>
                     </div>
                 </div>
             </div>
@@ -173,6 +207,7 @@ function ProductCard({ product }) {
 export default function Dashboard({
     tp,
     vendor,
+    dashboardOverview = {},
     category,
     categories = [],
     products = [],
@@ -183,7 +218,7 @@ export default function Dashboard({
     const [categorySearch, setCategorySearch] = useState("");
     const filteredCategories = useMemo(
         () => filterCategories(categories, categorySearch),
-        [categories, categorySearch]
+        [categories, categorySearch],
     );
 
     const closeCategoryModal = () => {
@@ -196,18 +231,35 @@ export default function Dashboard({
             <div>
                 <div>
                     <div>
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns:
-                                    "repeat(auto-fill, minmax(150px, 1fr))",
-                                gridGap: 20,
-                            }}
-                        >
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                             <OverviewDiv title="Product">{tp}</OverviewDiv>
 
                             <OverviewDiv title="Vendor Shops">
                                 {vendor}
+                            </OverviewDiv>
+                            <OverviewDiv title="Today sell">
+                                {money(dashboardOverview?.today_sell)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Monthly sell">
+                                {money(dashboardOverview?.monthly_sell)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Product stock">
+                                {dashboardOverview?.product_stock ?? "0"}
+                            </OverviewDiv>
+                            <OverviewDiv title="Total product stock price">
+                                {money(dashboardOverview?.total_product_stock_price)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Yearly sell amount">
+                                {money(dashboardOverview?.yearly_sell_amount)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Total amount">
+                                {money(dashboardOverview?.total_amount)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Monthly profit">
+                                {money(dashboardOverview?.monthly_profit)}
+                            </OverviewDiv>
+                            <OverviewDiv title="Daily profit">
+                                {money(dashboardOverview?.daily_profit)}
                             </OverviewDiv>
                         </div>
                     </div>
@@ -228,12 +280,11 @@ export default function Dashboard({
                         </SectionInner>
                     </SectionSection>
 
-                    <SectionSection>
-                        <VendorOrdersIndex
-                            orderIndex={vendorOrdersIndex}
-                            activeNav={activeNav}
-                        />
-                    </SectionSection>
+                    <VendorOrdersIndex
+                        orderIndex={vendorOrdersIndex}
+                        activeNav={activeNav}
+                        embedded
+                    />
 
                     <Hr />
                     <SectionInner>
@@ -260,12 +311,12 @@ export default function Dashboard({
                         href={route("reseller.resel-product.index")}
                         active={route().current("reseller.resel-product.*")}
                     >
-                        <i className="fas fa-sync pr-2 w-6"></i> View All
+                        <i className="w-6 pr-2 fas fa-sync"></i> View All
                     </ResponsiveNavLink>
                 </div>
 
                 <Modal show={open} onClose={closeCategoryModal}>
-                    <div className="p-3 border-b flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 p-3 border-b sm:flex-row sm:items-center sm:justify-between">
                         <div>Explore Category</div>
                         <input
                             type="search"
@@ -274,7 +325,7 @@ export default function Dashboard({
                                 setCategorySearch(event.target.value)
                             }
                             placeholder="Search category"
-                            className="w-full sm:w-56 rounded border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500"
+                            className="w-full text-sm border-gray-300 rounded sm:w-56 focus:border-orange-500 focus:ring-orange-500"
                             autoComplete="off"
                         />
                     </div>
@@ -282,7 +333,7 @@ export default function Dashboard({
                         <div className="mb-2">
                             <NavLink
                                 href={route("reseller.resel-product.index")}
-                                className="text-sm border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                                className="p-0 text-sm border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                             >
                                 View All Products
                             </NavLink>
@@ -298,7 +349,7 @@ export default function Dashboard({
                         )}
                     </div>
                     <hr className="my-1" />
-                    <div className="flex justify-end items-center p-3">
+                    <div className="flex items-center justify-end p-3">
                         <DangerButton onClick={closeCategoryModal}>
                             close
                         </DangerButton>

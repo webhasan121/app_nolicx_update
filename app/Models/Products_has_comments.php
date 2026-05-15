@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Products_has_comments extends Model
 {
     //
+    protected $casts = [
+        'rating' => 'integer',
+        'approved' => 'boolean',
+    ];
 
 
     public function product()

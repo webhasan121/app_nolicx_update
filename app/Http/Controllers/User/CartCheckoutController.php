@@ -107,6 +107,7 @@ class CartCheckoutController extends Controller
             'area_condition' => 'required',
             'district' => 'required',
             'upozila' => 'required',
+            'targeted_area' => 'nullable|string|max:255',
             'location' => 'required',
         ]);
 
@@ -149,7 +150,7 @@ class CartCheckoutController extends Controller
                     'district' => $request->district,
                     'upozila' => $request->upozila,
                     'location' => $request->location,
-                    'target_area' => $request->upozila,
+                    'target_area' => $request->targeted_area ?: $request->upozila,
                     'road_no' => $request->road_no,
                     'house_no' => $request->house_no,
                     'shipping' => $shipping,

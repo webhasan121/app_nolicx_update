@@ -11,6 +11,27 @@ import ProductSingle from "../../components/client/ProductSingle";
 import RecommendedProducts from "../../components/home/RecommendedProducts";
 import UserLayout from "../../Layouts/User/App";
 
+function RatingStars({ rating = 0 }) {
+    const roundedRating = Math.round(Number(rating || 0));
+
+    return (
+        <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+                <i
+                    key={star}
+                    className="fas fa-star"
+                    style={{
+                        color:
+                            roundedRating >= star
+                                ? "var(--brand-primary)"
+                                : "#737272",
+                    }}
+                ></i>
+            ))}
+        </div>
+    );
+}
+
 function TaskCounter({ task, product }) {
     const [taskState, setTaskState] = useState(task);
     const inFlight = useRef(false);
@@ -118,6 +139,8 @@ export default function Details({
     task,
 }) {
     const { auth, permissions = [] } = usePage().props;
+    const [visibleComments, setVisibleComments] = useState(10);
+    const [forYouProducts, setForYouProducts] = useState(recommendedProducts);
     const { data, setData, post, processing, errors, reset } = useForm({
         comments: "",
         product_id: product.id,
@@ -130,6 +153,13 @@ export default function Details({
     const canDeleteComment = (comment) =>
         permissions.includes("users_manage") ||
         auth?.user?.id === comment.user_id;
+    const comments = product.comments ?? [];
+    const displayedComments = comments.slice(0, visibleComments);
+    const hasMoreComments = visibleComments < comments.length;
+
+    useEffect(() => {
+        setForYouProducts(recommendedProducts);
+    }, [recommendedProducts]);
 
     const submitComment = (e) => {
         e.preventDefault();
@@ -188,6 +218,17 @@ export default function Details({
                 <ProductSingle
                     product={product}
                     relatedProduct={relatedProducts}
+                    onSaveForLaterChange={(savedProduct, isSaved) => {
+                        setForYouProducts((items) => {
+                            const withoutProduct = items.filter(
+                                (item) => item.id !== savedProduct.id,
+                            );
+
+                            return isSaved
+                                ? [savedProduct, ...withoutProduct]
+                                : withoutProduct;
+                        });
+                    }}
                 />
 
                 <SectionSection>
@@ -272,8 +313,41 @@ export default function Details({
                 <SectionSection>
                     <SectionHeader title="Comments" content="" />
 
+                    {auth?.user ? (
+                        <SectionInner>
+                            <form onSubmit={submitComment} className="w-full md:w-1/2">
+                                <div className="text-xs text-red-600">
+                                    {errors.comments}
+                                </div>
+                                <textarea
+                                    cols={4}
+                                    className="w-full rounded"
+                                    name="comments"
+                                    placeholder="write your comments"
+                                    value={data.comments}
+                                    onChange={(e) =>
+                                        setData("comments", e.target.value)
+                                    }
+                                />
+                                <PrimaryButton disabled={processing}>
+                                    submit
+                                </PrimaryButton>
+                            </form>
+                        </SectionInner>
+                    ) : (
+                        <SectionInner>
+                            <div>
+                                <Link href={route("login")}>
+                                    Log In to add comment
+                                </Link>
+                            </div>
+                        </SectionInner>
+                    )}
+
+                    <Hr />
+
                     <SectionInner>
-                        {product.comments?.map((item) => (
+                        {displayedComments.map((item) => (
                             <div
                                 key={item.id}
                                 className="px-2 py-3 mb-1 bg-gray-100"
@@ -298,47 +372,34 @@ export default function Details({
                                         </button>
                                     ) : null}
                                 </div>
-                                <div className="text-md ps-2">
-                                    {item.comments}
+                                <div className="mt-2 ps-2">
+                                    {item.rating ? (
+                                        <RatingStars rating={item.rating} />
+                                    ) : null}
+                                    {item.comments ? (
+                                        <div className="mt-2 text-md">
+                                            {item.comments}
+                                        </div>
+                                    ) : null}
                                 </div>
                             </div>
                         ))}
-                    </SectionInner>
-
-                    <Hr />
-
-                    {auth?.user ? (
-                        <SectionInner>
-                            <form onSubmit={submitComment}>
-                                <div className="text-xs text-red-600">
-                                    {errors.comments}
-                                </div>
-                                <input
-                                    className="w-full rounded"
-                                    name="comments"
-                                    placeholder="write your comments"
-                                    value={data.comments}
-                                    onChange={(e) =>
-                                        setData("comments", e.target.value)
+                        {hasMoreComments ? (
+                            <div className="flex justify-center mt-4">
+                                <PrimaryButton
+                                    type="button"
+                                    onClick={() =>
+                                        setVisibleComments((count) => count + 10)
                                     }
-                                />
-                                <PrimaryButton disabled={processing}>
-                                    submit
+                                >
+                                    Load More
                                 </PrimaryButton>
-                            </form>
-                        </SectionInner>
-                    ) : (
-                        <SectionInner>
-                            <div>
-                                <Link href={route("login")}>
-                                    Log In to add comment
-                                </Link>
                             </div>
-                        </SectionInner>
-                    )}
+                        ) : null}
+                    </SectionInner>
                 </SectionSection>
 
-                <RecommendedProducts products={recommendedProducts} />
+                <RecommendedProducts products={forYouProducts} />
             </Container>
 
             <TaskCounter task={task} product={product} />

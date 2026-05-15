@@ -14,8 +14,10 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index({ nav = "web", slider = {}, filters = {}, updateable = null }) {
+    const { t } = useTranslation();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(Boolean(updateable));
     const [search, setSearch] = useState(filters.find ?? "");
@@ -160,10 +162,10 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
             : "No sliders found";
 
     return (
-        <AppLayout title="Slider">
-            <Head title="Slider" />
+        <AppLayout title={t("Slider")}>
+            <Head title={t("Slider")} />
 
-            <PageHeader>Slider</PageHeader>
+            <PageHeader>{t("Slider")}</PageHeader>
 
             <Container>
                 <Section>
@@ -178,9 +180,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                             e.preventDefault();
                                             changeNav("web");
                                         }}
-                                    >
-                                        Web
-                                    </NavLink>
+                                    >{t("Web")}</NavLink>
                                     <NavLink
                                         href={`?nav=apps`}
                                         active={nav === "apps"}
@@ -188,9 +188,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                             e.preventDefault();
                                             changeNav("apps");
                                         }}
-                                    >
-                                        App
-                                    </NavLink>
+                                    >{t("App")}</NavLink>
                                     <NavLink
                                         href={`?nav=both`}
                                         active={nav === "both"}
@@ -198,9 +196,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                             e.preventDefault();
                                             changeNav("both");
                                         }}
-                                    >
-                                        Both
-                                    </NavLink>
+                                    >{t("Both")}</NavLink>
                                 </div>
 
                                 <div className="flex items-center gap-2">
@@ -225,11 +221,10 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                             );
                                         }}
                                         className="py-1"
-                                        placeholder="Search sliders..."
+                                        placeholder={t("Search sliders...")}
                                     />
                                     <SecondaryButton onClick={() => setShowCreateModal(true)}>
-                                        <i className="fas fa-plus pr-2"></i> Add
-                                    </SecondaryButton>
+                                        <i className="fas fa-plus pr-2"></i>{t("Add")}</SecondaryButton>
                                 </div>
                             </div>
                         }
@@ -242,11 +237,11 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Name</th>
-                                        <th>Placement</th>
-                                        <th>Slides</th>
+                                        <th>{t("Name")}</th>
+                                        <th>{t("Placement")}</th>
+                                        <th>{t("Slides")}</th>
                                         <th></th>
-                                        <th>A/C</th>
+                                        <th>{t("A/C")}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -255,7 +250,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                             <td>{(slider?.from ?? 1) + index}</td>
                                             <td>{item.name}</td>
                                             <td>{item.placement}</td>
-                                            <td>{item.slides_count ?? 0} Slides</td>
+                                            <td>{item.slides_count ?? 0}{t("Slides")}</td>
                                             <td>
                                                 <input
                                                     type="checkbox"
@@ -274,9 +269,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                                     <PrimaryButton onClick={() => openUpdateModal(item)}>
                                                         <i className="fas fa-edit"></i>
                                                     </PrimaryButton>
-                                                    <NavLink href={route("system.slider.slides", { id: item.id })}>
-                                                        slides
-                                                    </NavLink>
+                                                    <NavLink href={route("system.slider.slides", { id: item.id })}>{t("slides")}</NavLink>
                                                 </div>
                                             </td>
                                         </tr>
@@ -297,9 +290,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                                     disabled={!pagination.prev?.url}
                                                     className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
-                                                >
-                                                    Previous
-                                                </button>
+                                                >{t("Previous")}</button>
                                                 {pagination.pages.map((link, index) => (
                                                     <button
                                                         key={`${link.label}-${index}`}
@@ -320,9 +311,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                                     disabled={!pagination.next?.url}
                                                     className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
-                                                >
-                                                    Next
-                                                </button>
+                                                >{t("Next")}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -334,7 +323,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
             </Container>
 
             <Modal show={showCreateModal} onClose={() => setShowCreateModal(false)} maxWidth="sm">
-                <div className="px-2 py-2">Slider Modal</div>
+                <div className="px-2 py-2">{t("Slider Modal")}</div>
                 <div className="p-3">
                     <strong></strong>
                     <form onSubmit={submitCreate}>
@@ -343,16 +332,16 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                 value={createForm.data.sliderName}
                                 onChange={(e) => createForm.setData("sliderName", e.target.value)}
                                 className="rounded-0 py-1 w-full"
-                                placeholder="Give Slider Name"
+                                placeholder={t("Give Slider Name")}
                             />
                             <select
                                 className="py-1 rounded shadow"
                                 value={createForm.data.sliderPlacement}
                                 onChange={(e) => createForm.setData("sliderPlacement", e.target.value)}
                             >
-                                <option value="web">Web</option>
-                                <option value="apps">Apps</option>
-                                <option value="both">Both</option>
+                                <option value="web">{t("Web")}</option>
+                                <option value="apps">{t("Apps")}</option>
+                                <option value="both">{t("Both")}</option>
                             </select>
                         </div>
                         {createForm.errors.sliderName ? (
@@ -381,10 +370,8 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                 type="button"
                                 className="mt-2"
                                 onClick={() => setShowCreateModal(false)}
-                            >
-                                Cancel
-                            </SecondaryButton>
-                            <PrimaryButton className="mt-2">Add</PrimaryButton>
+                            >{t("Cancel")}</SecondaryButton>
+                            <PrimaryButton className="mt-2">{t("Add")}</PrimaryButton>
                         </div>
                     </form>
                 </div>
@@ -398,7 +385,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                 }}
                 maxWidth="sm"
             >
-                <div className="px-3 py-2">Edit Slider</div>
+                <div className="px-3 py-2">{t("Edit Slider")}</div>
                 <div className="p-3">
                     <form onSubmit={submitUpdate}>
                         <div>
@@ -407,7 +394,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                 value={updateForm.data.name}
                                 onChange={(e) => updateForm.setData("name", e.target.value)}
                                 className="rounded-0 py-1 w-full"
-                                placeholder="Give Slider Name"
+                                placeholder={t("Give Slider Name")}
                             />
                         </div>
 
@@ -421,7 +408,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                     className="h-5 w-5 me-3"
                                     id="web"
                                 />
-                                <label htmlFor="Web">For Web</label>
+                                <label htmlFor="Web">{t("For Web")}</label>
                             </div>
                             <div className="flex py-1 border rounded px-2 mb-1">
                                 <input
@@ -432,7 +419,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                     className="h-5 w-5 me-3"
                                     id="apps"
                                 />
-                                <label htmlFor="Web">For Apps</label>
+                                <label htmlFor="Web">{t("For Apps")}</label>
                             </div>
                             <div className="flex py-1 border rounded px-2 mb-1">
                                 <input
@@ -443,7 +430,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                     className="h-5 w-5 me-3"
                                     id="both"
                                 />
-                                <label htmlFor="Web">Both (Web & Apps) </label>
+                                <label htmlFor="Web">{t("Both (Web & Apps)")}</label>
                             </div>
                         </div>
 
@@ -455,10 +442,8 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                     setShowEditModal(false);
                                     router.get(route("system.slider.index"), { nav, find: search.trim() }, { preserveScroll: true });
                                 }}
-                            >
-                                Cancel
-                            </SecondaryButton>
-                            <PrimaryButton className="mt-2">Update</PrimaryButton>
+                            >{t("Cancel")}</SecondaryButton>
+                            <PrimaryButton className="mt-2">{t("Update")}</PrimaryButton>
                         </div>
                     </form>
                 </div>

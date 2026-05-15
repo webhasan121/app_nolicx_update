@@ -13,10 +13,12 @@ import SectionSection from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 const FILTERS = ["*", "Active", "Pending", "Disabled", "Suspended"];
 
 export default function Index() {
+    const { t } = useTranslation();
     const { widgets = [], resellers = {}, filters = {}, printUrl } = usePage().props;
     const [search, setSearch] = useState(filters.find ?? "");
     const [sd, setSd] = useState(filters.sd ?? "");
@@ -105,7 +107,7 @@ export default function Index() {
             : "No resellers found";
 
     return (
-        <AppLayout title="Resellers" header={<PageHeader>Resellers</PageHeader>}>
+        <AppLayout title={t("Resellers")} header={<PageHeader>{t("Resellers")}</PageHeader>}>
             <div>
                 <Container>
                     <SectionSection>
@@ -180,7 +182,7 @@ export default function Index() {
                                         />
                                         <TextInput
                                             type="search"
-                                            placeholder="Search resellers..."
+                                            placeholder={t("Search resellers...")}
                                             className="my-1 py-1"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -210,14 +212,14 @@ export default function Index() {
                                     <Table data={rows}>
                                         <thead>
                                             <tr>
-                                                <th>SL</th>
-                                                <th>Name</th>
-                                                <th>Status</th>
-                                                <th>Commission</th>
-                                                <th>Category</th>
-                                                <th>Product</th>
-                                                <th>Join</th>
-                                                <th>Action</th>
+                                                <th>{t("SL")}</th>
+                                                <th>{t("Name")}</th>
+                                                <th>{t("Status")}</th>
+                                                <th>{t("Commission")}</th>
+                                                <th>{t("Category")}</th>
+                                                <th>{t("Product")}</th>
+                                                <th>{t("Join")}</th>
+                                                <th>{t("Action")}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -248,9 +250,7 @@ export default function Index() {
                                                                 id: item.id,
                                                                 filter: filters.filter ?? "Active",
                                                             })}
-                                                        >
-                                                            edit
-                                                        </NavLink>
+                                                        >{t("edit")}</NavLink>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -270,9 +270,7 @@ export default function Index() {
                                                             disabled={!pagination.prev?.url}
                                                             className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                             onClick={() => goToPage(pagination.prev?.url)}
-                                                        >
-                                                            Previous
-                                                        </button>
+                                                        >{t("Previous")}</button>
                                                         {pagination.pages.map((link, index) => (
                                                             <button
                                                                 key={`${link.label}-${index}`}
@@ -293,9 +291,7 @@ export default function Index() {
                                                             disabled={!pagination.next?.url}
                                                             className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                             onClick={() => goToPage(pagination.next?.url)}
-                                                        >
-                                                            Next
-                                                        </button>
+                                                        >{t("Next")}</button>
                                                     </div>
                                                 </div>
                                             </div>

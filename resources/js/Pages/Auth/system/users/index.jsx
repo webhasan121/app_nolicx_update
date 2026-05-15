@@ -12,8 +12,10 @@ import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index() {
+    const { t } = useTranslation();
     const { widgets = [], users, filters = {}, printUrl } = usePage().props;
     const [search, setSearch] = useState(filters.search ?? "");
     const [sd, setSd] = useState(filters.sd ?? "");
@@ -98,13 +100,13 @@ export default function Index() {
 
     return (
         <AppLayout
-            title="Users"
-            header={<PageHeader>Users</PageHeader>}
+            title={t("Users")}
+            header={<PageHeader>{t("Users")}</PageHeader>}
         >
             <div>
                 <Container>
                     <SectionSection>
-                        <div className="grid grid-cols-6 gap-6">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                             {widgets.map((widget) => (
                                 <Div
                                     key={widget.head}
@@ -161,7 +163,7 @@ export default function Index() {
                                         />
                                         <TextInput
                                             type="search"
-                                            placeholder="Search users..."
+                                            placeholder={t("Search users...")}
                                             className="py-1"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -192,16 +194,16 @@ export default function Index() {
                                         <thead>
                                             <tr>
                                                 <th>#</th>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Ref & Reference</th>
-                                                <th>Role</th>
-                                                <th>Permissions</th>
-                                                <th>VIP</th>
-                                                <th>Order</th>
-                                                <th>Wallet</th>
-                                                <th>Created</th>
-                                                <th>A/C</th>
+                                                <th>{t("ID")}</th>
+                                                <th>{t("Name")}</th>
+                                                <th>{t("Ref & Reference")}</th>
+                                                <th>{t("Role")}</th>
+                                                <th>{t("Permissions")}</th>
+                                                <th>{t("VIP")}</th>
+                                                <th>{t("Order")}</th>
+                                                <th>{t("Wallet")}</th>
+                                                <th>{t("Created")}</th>
+                                                <th>{t("A/C")}</th>
                                             </tr>
                                         </thead>
 
@@ -256,11 +258,9 @@ export default function Index() {
                                                                     }
                                                                 )}
                                                             >
-                                                                <i className="fa-solid fa-pen mr-2"></i> Edit
-                                                            </NavLink>
+                                                                <i className="fa-solid fa-pen mr-2"></i>{t("Edit")}</NavLink>
                                                             <NavLink href="#">
-                                                                <i className="fa-solid fa-eye mr-2"></i> view
-                                                            </NavLink>
+                                                                <i className="fa-solid fa-eye mr-2"></i>{t("view")}</NavLink>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -281,9 +281,7 @@ export default function Index() {
                                                             disabled={!pagination.prev?.url}
                                                             className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                             onClick={() => goToPage(pagination.prev?.url)}
-                                                        >
-                                                            Previous
-                                                        </button>
+                                                        >{t("Previous")}</button>
                                                         {pagination.pages.map((link, index) => (
                                                             <button
                                                                 key={`${link.label}-${index}`}
@@ -304,9 +302,7 @@ export default function Index() {
                                                             disabled={!pagination.next?.url}
                                                             className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                             onClick={() => goToPage(pagination.next?.url)}
-                                                        >
-                                                            Next
-                                                        </button>
+                                                        >{t("Next")}</button>
                                                     </div>
                                                 </div>
                                             </div>

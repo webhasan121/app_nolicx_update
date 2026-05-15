@@ -11,8 +11,10 @@ import NavLinkBtn from "../../../../components/NavLinkBtn";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import UserDash from "../../../../components/user/dash/UserDash";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function UpgradeRiderCreate() {
+    const { t } = useTranslation();
     const { defaults = {}, states = [] } = usePage().props;
 
     const { data, setData, post, processing, errors } = useForm({
@@ -82,7 +84,7 @@ export default function UpgradeRiderCreate() {
                 <div>
                     <SectionSection>
                         <SectionHeader
-                            title="Rider Request Form"
+                            title={t("Rider Request Form")}
                             content={
                                 <NavLinkBtn href={route("upgrade.rider.index")}>
                                     previous request
@@ -100,48 +102,48 @@ export default function UpgradeRiderCreate() {
                             <SectionSection>
                                 <SectionInner>
                                     <div className="flex-1 p-2">
-                                        <InputFile label="Your Phone No" name="phone" error="phone" errors={errors}>
+                                        <InputFile label={t("Your Phone No")} name="phone" error="phone" errors={errors}>
                                             <TextInput
                                                 name="phone"
                                                 value={data.phone}
                                                 onChange={(e) => setData("phone", e.target.value)}
-                                                placeholder="Your phone No"
+                                                placeholder={t("Your phone No")}
                                                 className="w-full"
                                             />
                                         </InputFile>
-                                        <InputFile label="Your Email" name="email" error="email" errors={errors}>
+                                        <InputFile label={t("Your Email")} name="email" error="email" errors={errors}>
                                             <TextInput
                                                 type="email"
                                                 name="email"
                                                 value={data.email}
                                                 onChange={(e) => setData("email", e.target.value)}
-                                                placeholder="Your email"
+                                                placeholder={t("Your email")}
                                                 className="w-full"
                                             />
                                         </InputFile>
 
                                         <Hr />
-                                        <InputFile label="Your Family Phone No" name="otherPhone" error="otherPhone" errors={errors}>
+                                        <InputFile label={t("Your Family Phone No")} name="otherPhone" error="otherPhone" errors={errors}>
                                             <TextInput
                                                 name="otherPhone"
                                                 value={data.otherPhone}
                                                 onChange={(e) => setData("otherPhone", e.target.value)}
-                                                placeholder="Your Family phone No"
+                                                placeholder={t("Your Family phone No")}
                                                 className="w-full"
                                             />
                                         </InputFile>
 
-                                        <InputFile label="Your NID No" name="nid" error="nid" errors={errors}>
+                                        <InputFile label={t("Your NID No")} name="nid" error="nid" errors={errors}>
                                             <TextInput
                                                 name="nid"
                                                 value={data.nid}
                                                 onChange={(e) => setData("nid", e.target.value)}
-                                                placeholder="Your NID No"
+                                                placeholder={t("Your NID No")}
                                                 className="w-full"
                                             />
                                         </InputFile>
 
-                                        <InputFile label="You NID Front Image (max 1Mb)" name="nid_photo_front" error="nid_photo_front" errors={errors}>
+                                        <InputFile label={t("You NID Front Image (max 1Mb)")} name="nid_photo_front" error="nid_photo_front" errors={errors}>
                                             <div>
                                                 {data.nid_photo_front && (
                                                     <img
@@ -162,7 +164,7 @@ export default function UpgradeRiderCreate() {
                                             </div>
                                         </InputFile>
 
-                                        <InputFile label="You NID Back Image (max 1Mb)" name="nid_photo_back" error="nid_photo_back" errors={errors}>
+                                        <InputFile label={t("You NID Back Image (max 1Mb)")} name="nid_photo_back" error="nid_photo_back" errors={errors}>
                                             <div>
                                                 {data.nid_photo_back && (
                                                     <img
@@ -191,18 +193,18 @@ export default function UpgradeRiderCreate() {
                                     <div className="flex-1 p-2">
                                         <div className="p-2 rounded bg-gray-50">
                                             <div>
-                                                <InputFile label="Country" name="country" error="country" errors={errors}>
+                                                <InputFile label={t("Country")} name="country" error="country" errors={errors}>
                                                     <select
                                                         value={data.country}
                                                         onChange={(e) => setData("country", e.target.value)}
                                                         id="country"
                                                         className="w-full rounded-md "
                                                     >
-                                                        <option value="Bangladesh">Bangladesh</option>
+                                                        <option value="Bangladesh">{t("Bangladesh")}</option>
                                                     </select>
                                                 </InputFile>
                                                 <Hr />
-                                                <InputFile label="State" name="state_name" error="state_name" errors={errors}>
+                                                <InputFile label={t("State")} name="state_name" error="state_name" errors={errors}>
                                                     <select
                                                         value={data.state_name}
                                                         onChange={(e) => {
@@ -213,7 +215,7 @@ export default function UpgradeRiderCreate() {
                                                         id="states"
                                                         className="w-full rounded-md "
                                                     >
-                                                        <option value=""> -- Select State --</option>
+                                                        <option value="">{t("-- Select State --")}</option>
                                                         {states.map((state) => (
                                                             <option key={state.id} value={state.name}>
                                                                 {state.name}
@@ -222,7 +224,7 @@ export default function UpgradeRiderCreate() {
                                                     </select>
                                                 </InputFile>
                                                 <Hr />
-                                        <InputFile label="City" name="city_name" error="city_name" errors={errors}>
+                                        <InputFile label={t("City")} name="city_name" error="city_name" errors={errors}>
                                             <select
                                                 value={data.city_name}
                                                 onChange={(e) => {
@@ -232,7 +234,7 @@ export default function UpgradeRiderCreate() {
                                                 id="city"
                                                 className="w-full rounded-md "
                                             >
-                                                <option value=""> -- Select City --</option>
+                                                <option value="">{t("-- Select City --")}</option>
                                                 {cities.map((item) => (
                                                     <option key={item.id} value={item.name}>
                                                         {item.name}
@@ -241,14 +243,14 @@ export default function UpgradeRiderCreate() {
                                                     </select>
                                                 </InputFile>
                                                 <Hr />
-                                                <InputFile label="Area" name="area_name" error="area_name" errors={errors}>
+                                                <InputFile label={t("Area")} name="area_name" error="area_name" errors={errors}>
                                             <select
                                                 value={data.area_name}
                                                 onChange={(e) => setData("area_name", e.target.value)}
                                                 id="area"
                                                 className="w-full rounded-md "
                                             >
-                                                <option value=""> -- Select Area --</option>
+                                                <option value="">{t("-- Select Area --")}</option>
                                                 {areas.map((item) => (
                                                     <option key={item.id} value={item.name}>
                                                         {item.name}
@@ -258,7 +260,7 @@ export default function UpgradeRiderCreate() {
                                                 </InputFile>
                                                 <Hr />
                                             </div>
-                                            <InputFile label="Chose Your Area" name="area_condition" error="area_condition" errors={errors}>
+                                            <InputFile label={t("Chose Your Area")} name="area_condition" error="area_condition" errors={errors}>
                                                 <div className="w-48 space-y-2">
                                                     <div className="flex items-center justify-start px-3 py-2 border rounded-lg shadow-sm">
                                                         <TextInput
@@ -294,35 +296,35 @@ export default function UpgradeRiderCreate() {
                                             </InputFile>
                                         </div>
 
-                                        <InputFile label="Vehicle Type" name="vehicle_type" error="vehicle_type" errors={errors}>
+                                        <InputFile label={t("Vehicle Type")} name="vehicle_type" error="vehicle_type" errors={errors}>
                                             <TextInput
                                                 value={data.vehicle_type}
                                                 onChange={(e) => setData("vehicle_type", e.target.value)}
-                                                placeholder="e.g. Bike, Car"
+                                                placeholder={t("e.g. Bike, Car")}
                                                 className="w-full"
                                             />
                                         </InputFile>
-                                        <InputFile label="Vehicle Number" name="vehicle_number" error="vehicle_number" errors={errors}>
+                                        <InputFile label={t("Vehicle Number")} name="vehicle_number" error="vehicle_number" errors={errors}>
                                             <TextInput
                                                 value={data.vehicle_number}
                                                 onChange={(e) => setData("vehicle_number", e.target.value)}
-                                                placeholder="e.g. Dhaka Metro 1234"
+                                                placeholder={t("e.g. Dhaka Metro 1234")}
                                                 className="w-full"
                                             />
                                         </InputFile>
-                                        <InputFile label="Vehicle Model" name="vehicle_model" error="vehicle_model" errors={errors}>
+                                        <InputFile label={t("Vehicle Model")} name="vehicle_model" error="vehicle_model" errors={errors}>
                                             <TextInput
                                                 value={data.vehicle_model}
                                                 onChange={(e) => setData("vehicle_model", e.target.value)}
-                                                placeholder="e.g. Yamaha YZF-R3"
+                                                placeholder={t("e.g. Yamaha YZF-R3")}
                                                 className="w-full"
                                             />
                                         </InputFile>
-                                        <InputFile label="Vehicle Color" name="vehicle_color" error="vehicle_color" errors={errors}>
+                                        <InputFile label={t("Vehicle Color")} name="vehicle_color" error="vehicle_color" errors={errors}>
                                             <TextInput
                                                 value={data.vehicle_color}
                                                 onChange={(e) => setData("vehicle_color", e.target.value)}
-                                                placeholder="e.g. Red"
+                                                placeholder={t("e.g. Red")}
                                                 className="w-full"
                                             />
                                         </InputFile>
@@ -334,7 +336,7 @@ export default function UpgradeRiderCreate() {
                         <SectionSection>
                             <SectionInner>
                                 <div>
-                                    <InputFile label="You Fixed Address" name="fixed_address" error="fixed_address" errors={errors} className="block">
+                                    <InputFile label={t("You Fixed Address")} name="fixed_address" error="fixed_address" errors={errors} className="block">
                                         <p className="text-xs">
                                             Your permanent address based on NID. This address will be used for verification purposes. We use this address to verify your location and provide better service.
                                         </p>
@@ -342,29 +344,23 @@ export default function UpgradeRiderCreate() {
                                             value={data.fixed_address}
                                             onChange={(e) => setData("fixed_address", e.target.value)}
                                             className="w-full rounded-md"
-                                            placeholder="Your Permanent Address based on NID "
+                                            placeholder={t("Your Permanent Address based on NID")}
                                         ></textarea>
                                     </InputFile>
-                                    <InputFile label="You Current Address" name="current_address" error="current_address" errors={errors}>
-                                        <p className="text-xs">
-                                            Your current address where you are living now. You will receive the parcel from this address.
-                                        </p>
-                                        <p className="text-xs">
-                                            Please provide any additional information about your current address that may help us verify your location.
-                                        </p>
+                                    <InputFile label={t("You Current Address")} name="current_address" error="current_address" errors={errors}>
+                                        <p className="text-xs">{t("Your current address where you are living now. You will receive the parcel from this address.")}</p>
+                                        <p className="text-xs">{t("Please provide any additional information about your current address that may help us verify your location.")}</p>
                                         <textarea
                                             value={data.current_address}
                                             onChange={(e) => setData("current_address", e.target.value)}
                                             className="w-full rounded-md"
-                                            placeholder="Your Current Address"
+                                            placeholder={t("Your Current Address")}
                                         ></textarea>
                                     </InputFile>
                                 </div>
                                 <Hr />
                                 <PrimaryButton disabled={processing}>
-                                    <i className="pr-2 fas fa-file-alt"></i>{" "}
-                                    Confirm
-                                </PrimaryButton>
+                                    <i className="pr-2 fas fa-file-alt"></i>{" "}{t("Confirm")}</PrimaryButton>
                             </SectionInner>
                         </SectionSection>
                     </form>

@@ -7,19 +7,21 @@ import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
 import CreateCategory from "../../../livewire/vendor/categories/Create";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function Index({ categories = [] }) {
+    const { t } = useTranslation();
     return (
-        <AppLayout title="Categories" header={<PageHeader>Categories</PageHeader>}>
-            <Head title="Categories" />
+        <AppLayout title={t("Categories")} header={<PageHeader>{t("Categories")}</PageHeader>}>
+            <Head title={t("Categories")} />
 
             <CreateCategory action={route("reseller.categories.store")} />
 
             <Container>
                 <Section>
                     <SectionHeader
-                        title="Categories List"
-                        content="View and Edit your listed categories"
+                        title={t("Categories List")}
+                        content={t("View and Edit your listed categories")}
                     />
 
                     <SectionInner>
@@ -27,10 +29,10 @@ export default function Index({ categories = [] }) {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Name</th>
-                                    <th>Owner</th>
-                                    <th>Product</th>
-                                    <th>Created</th>
+                                    <th>{t("Name")}</th>
+                                    <th>{t("Owner")}</th>
+                                    <th>{t("Product")}</th>
+                                    <th>{t("Created")}</th>
                                 </tr>
                             </thead>
                             <tbody>

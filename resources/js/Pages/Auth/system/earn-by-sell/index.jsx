@@ -13,6 +13,7 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 const statusClass = {
     Pending: "text-xs p-1 border rounded-md bg-yellow-200 text-yellow-900",
@@ -43,6 +44,7 @@ function buildParams(filters, page = null) {
 }
 
 export default function Index({ filters, overview, products, printUrl }) {
+    const { t } = useTranslation();
     const [fd, setFd] = useState(filters?.fd_value ?? "");
     const [lastDate, setLastDate] = useState(filters?.lastDate_value ?? "");
     const [search, setSearch] = useState(filters?.find ?? "");
@@ -109,18 +111,18 @@ export default function Index({ filters, overview, products, printUrl }) {
     }, [products?.links]);
 
     return (
-        <AppLayout title="Earn By Sell" header={<PageHeader>Earn By Sell</PageHeader>}>
-            <Head title="Earn By Sell" />
+        <AppLayout title={t("Earn By Sell")} header={<PageHeader>{t("Earn By Sell")}</PageHeader>}>
+            <Head title={t("Earn By Sell")} />
             <Hr />
             <Container>
-                <p className="text-xl">Sell and Profit</p>
+                <p className="text-xl">{t("Sell and Profit")}</p>
                 <OverviewSection>
-                    <OverviewDiv title="Total Sell" content={`${overview?.totalSell ?? 0} TK`} />
-                    <OverviewDiv title="Profit" content={`${overview?.tp ?? 0} TK`} />
-                    <OverviewDiv title="Neet" content={`${overview?.tn ?? 0} TK`} />
-                    <OverviewDiv title="Shop" content={overview?.shop ?? 0} />
-                    <OverviewDiv title="Vendor Shop" content={overview?.tpr ?? 0} />
-                    <OverviewDiv title="Reseller Shop" content={overview?.tprr ?? 0} />
+                    <OverviewDiv title={t("Total Sell")} content={`${overview?.totalSell ?? 0} TK`} />
+                    <OverviewDiv title={t("Profit")} content={`${overview?.tp ?? 0} TK`} />
+                    <OverviewDiv title={t("Neet")} content={`${overview?.tn ?? 0} TK`} />
+                    <OverviewDiv title={t("Shop")} content={overview?.shop ?? 0} />
+                    <OverviewDiv title={t("Vendor Shop")} content={overview?.tpr ?? 0} />
+                    <OverviewDiv title={t("Reseller Shop")} content={overview?.tprr ?? 0} />
                 </OverviewSection>
 
                 <Section>
@@ -141,9 +143,9 @@ export default function Index({ filters, overview, products, printUrl }) {
                                         }
                                         className="rounded py-1"
                                     >
-                                        <option value="all">Both</option>
-                                        <option value="sold">Sold</option>
-                                        <option value="selling">On-Selling</option>
+                                        <option value="all">{t("Both")}</option>
+                                        <option value="sold">{t("Sold")}</option>
+                                        <option value="selling">{t("On-Selling")}</option>
                                     </select>
 
                                     <TextInput
@@ -180,7 +182,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                     />
                                     <TextInput
                                         type="search"
-                                        placeholder="Search products..."
+                                        placeholder={t("Search products...")}
                                         className="py-1"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
@@ -219,9 +221,9 @@ export default function Index({ filters, overview, products, printUrl }) {
                                         }
                                         className="rounded py-1"
                                     >
-                                        <option value="all">Both</option>
-                                        <option value="user">Reseller Shop</option>
-                                        <option value="reseller">Vendor Shop</option>
+                                        <option value="all">{t("Both")}</option>
+                                        <option value="user">{t("Reseller Shop")}</option>
+                                        <option value="reseller">{t("Vendor Shop")}</option>
                                     </select>
                                 </div>
                             </div>
@@ -234,13 +236,13 @@ export default function Index({ filters, overview, products, printUrl }) {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>ID</th>
-                                    <th>Product</th>
-                                    <th>Flow</th>
-                                    <th>Owner</th>
-                                    <th>Price</th>
-                                    <th>Created</th>
-                                    <th>Action</th>
+                                    <th>{t("ID")}</th>
+                                    <th>{t("Product")}</th>
+                                    <th>{t("Flow")}</th>
+                                    <th>{t("Owner")}</th>
+                                    <th>{t("Price")}</th>
+                                    <th>{t("Created")}</th>
+                                    <th>{t("Action")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -295,11 +297,8 @@ export default function Index({ filters, overview, products, printUrl }) {
                                             </div>
                                         </td>
                                         <td>
-                                            {item.product_price ?? 0} TK
-                                            {item.offer_type ? (
-                                                <div className="flex items-center text-center p-1 rounded bg-gray-100 text-xs">
-                                                    D: {item.discount ?? 0} | {item.discount_percent ?? 0}% off
-                                                </div>
+                                            {item.product_price ?? 0}{t("TK")}{item.offer_type ? (
+                                                <div className="flex items-center text-center p-1 rounded bg-gray-100 text-xs">{t("D:")}{item.discount ?? 0} | {item.discount_percent ?? 0}{t("% off")}</div>
                                             ) : null}
                                         </td>
                                         <td>{item.product_created_at ?? "N/A"}</td>
@@ -326,9 +325,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                                 disabled={!pagination.prev?.url}
                                                 className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
-                                            >
-                                                Previous
-                                            </button>
+                                            >{t("Previous")}</button>
                                             {pagination.pages.map((link, index) => (
                                                 <button
                                                     key={`${link.label}-${index}`}
@@ -349,9 +346,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                                 disabled={!pagination.next?.url}
                                                 className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
-                                            >
-                                                Next
-                                            </button>
+                                            >{t("Next")}</button>
                                         </div>
                                     </div>
                                 </div>

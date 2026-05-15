@@ -13,6 +13,7 @@ import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
+import useTranslation from "../../../hooks/useTranslation";
 
 function buildQuery(filters, updates = {}) {
     return Object.fromEntries(
@@ -23,6 +24,7 @@ function buildQuery(filters, updates = {}) {
 }
 
 export default function Index({ filters = {}, products = { data: [], links: [] }, isReseller = false, printUrl }) {
+    const { t } = useTranslation();
     const [filterOpen, setFilterOpen] = useState(false);
     const [selectedModel, setSelectedModel] = useState([]);
     const [searchTerm, setSearchTerm] = useState(filters.search ?? "");
@@ -127,32 +129,26 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
 
     return (
         <AppLayout
-            title="Products"
+            title={t("Products")}
             header={
-                <PageHeader>
-                    Products
-                    <br />
+                <PageHeader>{t("Products")}<br />
                     <div>
-                        <NavLink href={route("vendor.products.view")} active={route().current("vendor.products.*")}>
-                            Your Product
-                        </NavLink>
+                        <NavLink href={route("vendor.products.view")} active={route().current("vendor.products.*")}>{t("Your Product")}</NavLink>
                         {isReseller ? (
                             <NavLink
                                 href={route("reseller.resel-product.index")}
                                 active={route().current("reseller.resel-product.*")}
-                            >
-                                Reseller Product
-                            </NavLink>
+                            >{t("Reseller Product")}</NavLink>
                         ) : null}
                     </div>
                 </PageHeader>
             }
         >
-            <Head title="Products" />
+            <Head title={t("Products")} />
 
             <Container>
                 <Section>
-                    <SectionHeader title="Your Products" content="Your have product to resel" />
+                    <SectionHeader title={t("Your Products")} content={t("Your have product to resel")} />
                     <SectionInner>
                         <NavLinkBtn href={route("vendor.products.create")}>
                             Add Product
@@ -169,21 +165,13 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                 <div>
                                     {selectedModel.length < 1 ? (
                                         <div>
-                                            <NavLink href={route("vendor.products.view", buildQuery(filters, { nav: "Active", take: "" }))} active={(filters.nav ?? "Active") === "Active" && !filters.take}>
-                                                Active
-                                            </NavLink>
-                                            <NavLink href={route("vendor.products.view", buildQuery(filters, { take: "trash", nav: "" }))} active={isTrash}>
-                                                Trash
-                                            </NavLink>
+                                            <NavLink href={route("vendor.products.view", buildQuery(filters, { nav: "Active", take: "" }))} active={(filters.nav ?? "Active") === "Active" && !filters.take}>{t("Active")}</NavLink>
+                                            <NavLink href={route("vendor.products.view", buildQuery(filters, { take: "trash", nav: "" }))} active={isTrash}>{t("Trash")}</NavLink>
                                         </div>
                                     ) : isTrash ? (
-                                        <PrimaryButton type="button" onClick={() => postBulkAction("vendor.products.bulk-restore")}>
-                                            Restore
-                                        </PrimaryButton>
+                                        <PrimaryButton type="button" onClick={() => postBulkAction("vendor.products.bulk-restore")}>{t("Restore")}</PrimaryButton>
                                     ) : (
-                                        <PrimaryButton type="button" onClick={() => postBulkAction("vendor.products.bulk-trash")}>
-                                            Move to Trash
-                                        </PrimaryButton>
+                                        <PrimaryButton type="button" onClick={() => postBulkAction("vendor.products.bulk-trash")}>{t("Move to Trash")}</PrimaryButton>
                                     )}
                                 </div>
 
@@ -192,15 +180,13 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                         type="search"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Search by name"
+                                        placeholder={t("Search by name")}
                                         className="mx-2 hidden lg:block py-1"
                                     />
                                     <PrimaryButton type="button" className="mr-2" onClick={() => window.open(printUrl, "_blank")}>
                                         <i className="fas fa-print"></i>
                                     </PrimaryButton>
-                                    <PrimaryButton type="button" onClick={() => setFilterOpen(true)}>
-                                        Filter
-                                    </PrimaryButton>
+                                    <PrimaryButton type="button" onClick={() => setFilterOpen(true)}>{t("Filter")}</PrimaryButton>
                                 </div>
                             </div>
                         }
@@ -213,14 +199,14 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                     <tr>
                                         <th></th>
                                         <th>#</th>
-                                        <th>Product</th>
-                                        <th>Stock</th>
-                                        <th>Build Cost</th>
-                                        <th>Price</th>
-                                        <th>Discount</th>
-                                        <th>Status</th>
-                                        <th>Insert At</th>
-                                        <th>A/C</th>
+                                        <th>{t("Product")}</th>
+                                        <th>{t("Stock")}</th>
+                                        <th>{t("Build Cost")}</th>
+                                        <th>{t("Price")}</th>
+                                        <th>{t("Discount")}</th>
+                                        <th>{t("Status")}</th>
+                                        <th>{t("Insert At")}</th>
+                                        <th>{t("A/C")}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -272,9 +258,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                                     disabled={!pagination.prev?.url}
                                                     className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
-                                                >
-                                                    Previous
-                                                </button>
+                                                >{t("Previous")}</button>
                                                 {pagination.pages.map((link, index) => (
                                                     <button
                                                         key={`${link.label}-${index}`}
@@ -295,9 +279,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                                     disabled={!pagination.next?.url}
                                                     className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
-                                                >
-                                                    Next
-                                                </button>
+                                                >{t("Next")}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -310,11 +292,11 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
 
             <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
                 <div className="p-3">
-                    <SectionHeader title="Filter Your Own" content="" />
+                    <SectionHeader title={t("Filter Your Own")} content="" />
                     <SectionInner>
                         <div className="flex justify-between items-start gap-6">
                             <div>
-                                <h3>Filter by Create date</h3>
+                                <h3>{t("Filter by Create date")}</h3>
                                 <ul className="ms-4 mt-2">
                                     <li>
                                         <div className="flex items-center mb-2">
@@ -324,13 +306,13 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                                 checked={modalCreated === "today"}
                                                 onChange={() => setModalCreated("today")}
                                             />
-                                            <label className="p-0 m-0">Today</label>
+                                            <label className="p-0 m-0">{t("Today")}</label>
                                         </div>
                                     </li>
                                 </ul>
                             </div>
                             <div>
-                                <h3>Filter by Status</h3>
+                                <h3>{t("Filter by Status")}</h3>
                                 <ul className="ms-4 mt-2">
                                     <li>
                                         <div className="flex items-center mb-2">
@@ -340,7 +322,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                                 checked={modalStatus === "Active"}
                                                 onChange={() => setModalStatus("Active")}
                                             />
-                                            <label className="p-0 m-0">Active</label>
+                                            <label className="p-0 m-0">{t("Active")}</label>
                                         </div>
                                         <div className="flex items-center mb-2">
                                             <input
@@ -349,7 +331,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                                 checked={modalStatus === "In Active"}
                                                 onChange={() => setModalStatus("In Active")}
                                             />
-                                            <label className="p-0 m-0">Disable</label>
+                                            <label className="p-0 m-0">{t("Disable")}</label>
                                         </div>
                                         <div className="flex items-center mb-2">
                                             <input
@@ -358,18 +340,14 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                                 checked={modalStatus === "trash"}
                                                 onChange={() => setModalStatus("trash")}
                                             />
-                                            <label className="p-0 m-0">Trash</label>
+                                            <label className="p-0 m-0">{t("Trash")}</label>
                                         </div>
                                     </li>
                                 </ul>
                             </div>
                             <div className="flex items-end gap-2 pt-7">
-                                <PrimaryButton type="button" onClick={resetModalFilters}>
-                                    Reset
-                                </PrimaryButton>
-                                <PrimaryButton type="button" onClick={applyModalFilters}>
-                                    Apply
-                                </PrimaryButton>
+                                <PrimaryButton type="button" onClick={resetModalFilters}>{t("Reset")}</PrimaryButton>
+                                <PrimaryButton type="button" onClick={applyModalFilters}>{t("Apply")}</PrimaryButton>
                             </div>
                         </div>
                     </SectionInner>

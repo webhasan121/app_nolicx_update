@@ -6,16 +6,17 @@ import ProductCard from "../../components/home/ProductCard";
 import TextInput from "../../components/TextInput";
 import CatLoop from "../../components/client/CatLoop";
 import UserLayout from "../../Layouts/User/App";
+import useTranslation from "../../hooks/useTranslation";
 
 function Heading() {
+    const { t } = useTranslation();
+
     return (
         <div>
             <div className="w-full mb-3 text-3xl text-center heading_center">
                 <h2 className="flex justify-center gap-3">
                     <ApplicationName />
-                    <span className="font-bold text-green-900">
-                        Marketplace
-                    </span>
+                    <span className="font-bold text-green-900">{t("Marketplace")}</span>
                 </h2>
             </div>
         </div>
@@ -44,6 +45,7 @@ export default function Index({
     filters = {},
     loadMore = false,
 }) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState(filters.search || "");
 
@@ -92,7 +94,7 @@ export default function Index({
     }, [search, filters.search, filters.sort]);
 
     return (
-        <UserLayout title="Products">
+        <UserLayout title={t("Products")}>
             <div className="py-4">
                 <Heading />
 
@@ -100,7 +102,7 @@ export default function Index({
                     <div className="items-start justify-start lg:flex">
                         <div
                             style={{ width: "300px" }}
-                            className="hidden bg-white rounded-lg md:block"
+                            className="hidden bg-white rounded-lg md:block max-h-[calc(100vh-110px)] overflow-y-auto"
                         >
                             <CategoriesPanel categories={categories} />
                         </div>
@@ -110,7 +112,7 @@ export default function Index({
                                 onClick={() => setOpen((v) => !v)}
                                 className="flex items-center justify-between cursor-pointer"
                             >
-                                <div>Categories</div>
+                                <div>{t("Categories")}</div>
                                 <div>
                                     {open ? (
                                         <i className="fas fa-chevron-down"></i>
@@ -120,7 +122,7 @@ export default function Index({
                                 </div>
                             </div>
                             {open ? (
-                                <div className="mt-2 overflow-x-scroll border-t">
+                                <div className="mt-2 overflow-y-auto border-t max-h-[calc(100vh-180px)]">
                                     <CategoriesPanel categories={categories} />
                                 </div>
                             ) : null}
@@ -131,7 +133,7 @@ export default function Index({
                                 <div>
                                     <TextInput
                                         type="search"
-                                        placeholder="Search ...."
+                                        placeholder={t("Search ....")}
                                         className="py-1 mb-0"
                                         value={search}
                                         onChange={(e) =>
@@ -149,8 +151,8 @@ export default function Index({
                                             id="sort_by"
                                             className="w-32 py-2 pl-4 pr-10 text-sm text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm appearance-none focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                                         >
-                                            <option value="desc">Newest</option>
-                                            <option value="asc">Oldest</option>
+                                            <option value="desc">{t("Newest")}</option>
+                                            <option value="asc">{t("Oldest")}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -182,9 +184,7 @@ export default function Index({
                                             onClick={handleLoadMore}
                                             className="px-6 py-2 mt-4 font-semibold text-white transition bg-green-600 rounded-md hover:bg-green-700"
                                             type="button"
-                                        >
-                                            Load More
-                                        </button>
+                                        >{t("Load More")}</button>
                                     </div>
                                 ) : null}
                             </div>

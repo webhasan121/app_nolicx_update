@@ -27,8 +27,17 @@ class Category extends Model
     {
         return self::whereNull('belongs_to')->orWhere('belongs_to', false)
             ->with(['children' => function ($query) {
-                $query->orderBy('name');
+                $query
+                    ->with(['children' => function ($childQuery) {
+                        $childQuery
+                            ->with(['children' => function ($grandChildQuery) {
+                                $grandChildQuery->orderBy('name');
+                            }])
+                            ->orderBy('name');
+                    }])
+                    ->orderBy('name');
             }, 'user'])
+            ->orderBy('name')
             ->get();
     }
 

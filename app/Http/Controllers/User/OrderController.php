@@ -5,6 +5,8 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use App\Models\Order;
+use App\Models\Products_has_comments;
+use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -163,6 +165,11 @@ class OrderController extends Controller
             ->findOrFail($id);
 
         $riderAssignment = $order->hasRider()->latest()->first();
+        $reviews = Products_has_comments::query()
+            ->where('user_id', $request->user()->id)
+            ->where('order_id', $order->id)
+            ->get()
+            ->keyBy('cart_order_id');
 
         return Inertia::render('User/Orders/Details', [
             'order' => [
@@ -177,7 +184,7 @@ class OrderController extends Controller
                 'area_condition' => $order->area_condition,
                 'location' => $order->location,
                 'number' => $order->number,
-                'cart_orders' => $order->cartOrders->map(function ($item) {
+                'cart_orders' => $order->cartOrders->map(function ($item) use ($reviews) {
                     return [
                         'id' => $item->id,
                         'quantity' => (int) ($item->quantity ?? 0),
@@ -190,6 +197,11 @@ class OrderController extends Controller
                             'slug' => $item->product?->slug ?? '',
                             'thumbnail' => $item->product?->thumbnail,
                         ],
+                        'review' => ($review = $reviews->get($item->id)) ? [
+                            'id' => $review->id,
+                            'rating' => (int) $review->rating,
+                            'comments' => $review->comments,
+                        ] : null,
                     ];
                 })->values(),
                 'assigned_rider' => $riderAssignment ? [
@@ -202,12 +214,51 @@ class OrderController extends Controller
 
     public function markReceived(Request $request, $id)
     {
-        $order = Order::where('user_id', $request->user()->id)->findOrFail($id);
+        $order = Order::with('cartOrders')
+            ->where('user_id', $request->user()->id)
+            ->findOrFail($id);
+
+        $validated = $request->validate([
+            'reviews' => ['required', 'array', 'min:1'],
+            'reviews.*.cart_order_id' => ['required', 'integer'],
+            'reviews.*.product_id' => ['required', 'integer'],
+            'reviews.*.rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'reviews.*.comments' => ['required', 'string', 'max:500'],
+        ]);
+
+        $cartOrders = $order->cartOrders->keyBy('id');
+
+        foreach ($validated['reviews'] as $reviewData) {
+            $cartOrder = $cartOrders->get((int) $reviewData['cart_order_id']);
+
+            if (! $cartOrder || (int) $cartOrder->product_id !== (int) $reviewData['product_id']) {
+                continue;
+            }
+
+            $review = Products_has_comments::query()
+                ->where('user_id', $request->user()->id)
+                ->where('order_id', $order->id)
+                ->where('cart_order_id', $cartOrder->id)
+                ->first() ?? new Products_has_comments();
+
+            $review->forceFill([
+                'product_id' => $cartOrder->product_id,
+                'user_id' => $request->user()->id,
+                'order_id' => $order->id,
+                'cart_order_id' => $cartOrder->id,
+                'is_verified_user' => 1,
+                'rating' => (int) $reviewData['rating'],
+                'comments' => trim($reviewData['comments']),
+                'review' => trim($reviewData['comments']),
+                'approved' => true,
+            ])->save();
+        }
 
         if (!$order->received_at) {
             $order->update([
                 'received_at' => Carbon::now(),
             ]);
+            OrderNotice::customerReceived($order, $request->user()->id);
         }
 
         return back()->with('success', 'Order successfully marked as received.');

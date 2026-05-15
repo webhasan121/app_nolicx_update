@@ -13,12 +13,14 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index({
     menus = [],
     selectedMenu = null,
     selectedMenuItems = [],
 }) {
+    const { t } = useTranslation();
     const [isOpenAddMenuForm, setIsOpenAddMenuForm] = useState(false);
     const [showMenuModal, setShowMenuModal] = useState(Boolean(selectedMenu));
     const [activeMenu, setActiveMenu] = useState(selectedMenu);
@@ -100,20 +102,19 @@ export default function Index({
     };
 
     return (
-        <AppLayout title="Navigations">
-            <Head title="Navigations" />
+        <AppLayout title={t("Navigations")}>
+            <Head title={t("Navigations")} />
 
-            <PageHeader>Navigations</PageHeader>
+            <PageHeader>{t("Navigations")}</PageHeader>
 
             <Container>
                 <Section>
                     <SectionHeader
                         title={
                             <div className="flex items-center justify-between">
-                                <div>Menus</div>
+                                <div>{t("Menus")}</div>
                                 <SecondaryButton onClick={() => setIsOpenAddMenuForm((v) => !v)}>
-                                    <i className="fa-solid fa-plus pe-2"></i> New
-                                </SecondaryButton>
+                                    <i className="fa-solid fa-plus pe-2"></i>{t("New")}</SecondaryButton>
                             </div>
                         }
                         content=""
@@ -127,10 +128,10 @@ export default function Index({
                                         <TextInput
                                             value={addMenuForm.data.name}
                                             onChange={(e) => addMenuForm.setData("name", e.target.value)}
-                                            placeholder="Menu Name"
+                                            placeholder={t("Menu Name")}
                                             className="py-1"
                                         />
-                                        <PrimaryButton className="m-1">Save</PrimaryButton>
+                                        <PrimaryButton className="m-1">{t("Save")}</PrimaryButton>
                                     </div>
                                 </form>
                             </div>
@@ -143,9 +144,9 @@ export default function Index({
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Menu</th>
-                                <th>Items</th>
-                                <th>A/C</th>
+                                <th>{t("Menu")}</th>
+                                <th>{t("Items")}</th>
+                                <th>{t("A/C")}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -159,9 +160,7 @@ export default function Index({
                                             <DangerButton onClick={() => destroyMenu(item.id)}>
                                                 <i className="fas fa-trash"></i>
                                             </DangerButton>
-                                            <SecondaryButton onClick={() => openMenu(item)}>
-                                                View
-                                            </SecondaryButton>
+                                            <SecondaryButton onClick={() => openMenu(item)}>{t("View")}</SecondaryButton>
                                         </div>
                                     </td>
                                 </tr>
@@ -185,7 +184,7 @@ export default function Index({
                                 value={renameForm.data.name}
                                 onChange={(e) => renameForm.setData("name", e.target.value)}
                             />
-                            <button type="submit">Update</button>
+                            <button type="submit">{t("Update")}</button>
                         </form>
                     </div>
                     <div className="py-2">
@@ -194,7 +193,7 @@ export default function Index({
                             {menuItems.map((item, key) => (
                                 <div key={item.id ?? key} className="p-2 space-y-2 rounded shadow">
                                     <TextInput
-                                        placeholder="Menu Item Name"
+                                        placeholder={t("Menu Item Name")}
                                         value={item.name ?? ""}
                                         onChange={(e) =>
                                             updateMenuItemField(key, "name", e.target.value)
@@ -203,7 +202,7 @@ export default function Index({
                                     />
                                     <div>
                                         <TextInput
-                                            placeholder="Menu Item URL"
+                                            placeholder={t("Menu Item URL")}
                                             value={item.url ?? ""}
                                             onChange={(e) =>
                                                 updateMenuItemField(key, "url", e.target.value)
@@ -224,17 +223,13 @@ export default function Index({
                                     setShowMenuModal(false);
                                     router.get(route("system.navigations.index"));
                                 }}
-                            >
-                                close
-                            </SecondaryButton>
+                            >{t("close")}</SecondaryButton>
 
                             <div>
                                 <PrimaryButton className="mr-1" type="button" onClick={addNewMenuItem}>
                                     <i className="fas fa-plus"></i>
                                 </PrimaryButton>
-                                <PrimaryButton type="button" onClick={updateMenuItems}>
-                                    update
-                                </PrimaryButton>
+                                <PrimaryButton type="button" onClick={updateMenuItems}>{t("update")}</PrimaryButton>
                             </div>
                         </div>
                     </div>

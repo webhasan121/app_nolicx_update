@@ -15,6 +15,7 @@ import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
+import useTranslation from "../../../hooks/useTranslation";
 
 const statusItems = [
     ["Pending", "Pending"],
@@ -34,6 +35,7 @@ export default function Index({
     summary = {},
     orders = {},
 }) {
+    const { t } = useTranslation();
     const [filterOpen, setFilterOpen] = useState(false);
     const rows = orders?.data ?? [];
     const nav = filters.nav ?? "Pending";
@@ -58,40 +60,34 @@ export default function Index({
 
     return (
         <AppLayout
-            title="Orders"
+            title={t("Orders")}
             header={
-                <PageHeader>
-                    Orders
-                    <br />
+                <PageHeader>{t("Orders")}<br />
 
                     {activeNav === "reseller" ? (
                         <div>
                             <NavLink
                                 href={route("vendor.orders.index")}
                                 active={route().current("vendor.orders.*")}
-                            >
-                                User Orders
-                            </NavLink>
+                            >{t("User Orders")}</NavLink>
                             <NavLink
                                 href={route("reseller.resel-order.index")}
                                 active={route().current("reseller.resel-order.*")}
-                            >
-                                My Resel Order
-                            </NavLink>
+                            >{t("My Resel Order")}</NavLink>
                         </div>
                     ) : null}
                 </PageHeader>
             }
         >
-            <Head title="Orders" />
+            <Head title={t("Orders")} />
 
             <Container>
                 <OverviewSection>
-                    <Div title="Orders" content={summary.orders ?? 0} />
-                    <Div title="Pending" content={summary.pending ?? 0} />
-                    <Div title="Cancel" content={summary.cancel ?? 0} />
-                    <Div title="Cancel by User" content={summary.cancelled ?? 0} />
-                    <Div title="Accepted" content={summary.accept ?? 0} />
+                    <Div title={t("Orders")} content={summary.orders ?? 0} />
+                    <Div title={t("Pending")} content={summary.pending ?? 0} />
+                    <Div title={t("Cancel")} content={summary.cancel ?? 0} />
+                    <Div title={t("Cancel by User")} content={summary.cancelled ?? 0} />
+                    <Div title={t("Accepted")} content={summary.accept ?? 0} />
                     <Div />
                 </OverviewSection>
 
@@ -124,9 +120,7 @@ export default function Index({
                                 <NavLink
                                     href={route("reseller.order.index", { nav: "Trash" })}
                                     active={nav === "Trash"}
-                                >
-                                    Trash
-                                </NavLink>
+                                >{t("Trash")}</NavLink>
                             </div>
                         }
                     />
@@ -140,9 +134,7 @@ export default function Index({
                                         disabled={!pagination.prev?.url}
                                         className="px-3 py-1 border rounded disabled:opacity-50"
                                         onClick={() => goToPage(pagination.prev?.url)}
-                                    >
-                                        Previous
-                                    </button>
+                                    >{t("Previous")}</button>
                                     {pagination.pages.map((link, index) => (
                                         <button
                                             key={`${link.label}-${index}`}
@@ -159,9 +151,7 @@ export default function Index({
                                         disabled={!pagination.next?.url}
                                         className="px-3 py-1 border rounded disabled:opacity-50"
                                         onClick={() => goToPage(pagination.next?.url)}
-                                    >
-                                        Next
-                                    </button>
+                                    >{t("Next")}</button>
                                 </div>
                             ) : null}
 
@@ -170,14 +160,14 @@ export default function Index({
                                     <tr>
                                         <th>#</th>
                                         <th></th>
-                                        <th>ID</th>
-                                        <th>Pd</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                        <th>Shipping</th>
-                                        <th>Contact</th>
-                                        <th>Com</th>
+                                        <th>{t("ID")}</th>
+                                        <th>{t("Pd")}</th>
+                                        <th>{t("Total")}</th>
+                                        <th>{t("Status")}</th>
+                                        <th>{t("Date")}</th>
+                                        <th>{t("Shipping")}</th>
+                                        <th>{t("Contact")}</th>
+                                        <th>{t("Com")}</th>
                                     </tr>
                                 </thead>
 
@@ -189,9 +179,7 @@ export default function Index({
                                                 <NavLinkBtn href={item.view_url}>
                                                     view
                                                 </NavLinkBtn>
-                                                <NavLink href={item.print_url}>
-                                                    Pint
-                                                </NavLink>
+                                                <NavLink href={item.print_url}>{t("Pint")}</NavLink>
                                             </td>
                                             <td>{item.id ?? "N/A"}</td>
                                             <td>
@@ -236,38 +224,38 @@ export default function Index({
 
             <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
                 <div className="p-2">
-                    <div>Filter</div>
+                    <div>{t("Filter")}</div>
                     <Hr />
                     <div className="md:flex">
                         <div>
                             <div>
-                                <div>Delevery Type</div>
+                                <div>{t("Delevery Type")}</div>
                                 <div className="px-2">
                                     <div className="flex items-center mb-2 rounded-md border p-2">
                                         <input id="home_del" value="Home" type="radio" className="w-5 h-5 p-0 m-0 mr-3" />
-                                        <label htmlFor="home_del" className="p-0 m-0"> Home Delebery </label>
+                                        <label htmlFor="home_del" className="p-0 m-0">{t("Home Delebery")}</label>
                                     </div>
                                     <div className="flex items-center mb-2 rounded-md border p-2">
                                         <input id="courier_del" value="Courier" type="radio" className="w-5 h-5 p-0 m-0 mr-3" />
-                                        <label htmlFor="courier_del" className="p-0 m-0"> Courier Delebery </label>
+                                        <label htmlFor="courier_del" className="p-0 m-0">{t("Courier Delebery")}</label>
                                     </div>
                                     <div className="flex items-center mb-2 rounded-md border p-2">
                                         <input id="shop_del" value="Shop" type="radio" className="w-5 h-5 p-0 m-0 mr-3" />
-                                        <label htmlFor="shop_del" className="p-0 m-0"> Hand To Hand from shop </label>
+                                        <label htmlFor="shop_del" className="p-0 m-0">{t("Hand To Hand from shop")}</label>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="mt-2">
-                                <div>Delevery Area</div>
+                                <div>{t("Delevery Area")}</div>
                                 <div className="px-2">
                                     <div className="flex items-center mb-2 rounded-md border p-2">
                                         <input id="inside_dhaka" value="Dhaka" type="radio" className="w-5 h-5 p-0 m-0 mr-3" />
-                                        <label htmlFor="inside_dhaka" className="p-0 m-0"> Inside Dhaka </label>
+                                        <label htmlFor="inside_dhaka" className="p-0 m-0">{t("Inside Dhaka")}</label>
                                     </div>
                                     <div className="flex items-center mb-2 rounded-md border p-2">
                                         <input id="outside_dhaka" value="Other" type="radio" className="w-5 h-5 p-0 m-0 mr-3" />
-                                        <label htmlFor="outside_dhaka" className="p-0 m-0"> Outside of Dhaka </label>
+                                        <label htmlFor="outside_dhaka" className="p-0 m-0">{t("Outside of Dhaka")}</label>
                                     </div>
                                 </div>
                             </div>
@@ -278,22 +266,18 @@ export default function Index({
                                 <div className="p-2">
                                     <div className="flex items-center p-2">
                                         <input id="filter_date" value="date" type="radio" className="w-5 h-5 p-0 m-0 mr-3" />
-                                        <label htmlFor="filter_date" className="p-0 m-0"> Date </label>
+                                        <label htmlFor="filter_date" className="p-0 m-0">{t("Date")}</label>
                                     </div>
                                     <div className="flex items-center p-2">
                                         <input id="filter_between" value="between" type="radio" className="w-5 h-5 p-0 m-0 mr-3" />
-                                        <label htmlFor="filter_between" className="p-0 m-0"> Date Between </label>
+                                        <label htmlFor="filter_between" className="p-0 m-0">{t("Date Between")}</label>
                                     </div>
                                 </div>
 
                                 <div className="flex justify-between items-center p-2">
-                                    <div>
-                                        Start
-                                        <input className="rounded-md" type="date" name="start_date" />
+                                    <div>{t("Start")}<input className="rounded-md" type="date" name="start_date" />
                                     </div>
-                                    <div>
-                                        End
-                                        <input className="rounded-md" type="date" name="end_date" />
+                                    <div>{t("End")}<input className="rounded-md" type="date" name="end_date" />
                                     </div>
                                 </div>
                             </div>

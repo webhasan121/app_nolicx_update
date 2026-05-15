@@ -10,8 +10,10 @@ import TextInput from "../../../components/TextInput";
 import InputError from "../../../components/InputError";
 import PrimaryButton from "../../../components/PrimaryButton";
 import Hr from "../../../components/Hr";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function ProfileEdit() {
+    const { t } = useTranslation();
     const {
         userProfile,
         countries = [],
@@ -34,6 +36,7 @@ export default function ProfileEdit() {
         country: userProfile?.country || "",
         state: userProfile?.state || "",
         city: userProfile?.city || "",
+        targeted_area: userProfile?.targeted_area || "",
         line1: userProfile?.line1 || "",
         line2: userProfile?.line2 || "",
         zip: userProfile?.zip || "",
@@ -98,12 +101,9 @@ export default function ProfileEdit() {
             <Container>
                 <SectionSection>
                     <SectionHeader
-                        title="Profile Update"
+                        title={t("Profile Update")}
                         content={
-                            <p className="text-sm md:text-base">
-                                Update your account&apos;s profile information and
-                                email address.
-                            </p>
+                            <p className="text-sm md:text-base">{t("Update your account's profile information and email address.")}</p>
                         }
                     />
 
@@ -112,12 +112,8 @@ export default function ProfileEdit() {
                             <div className="flex flex-col justify-between gap-8 lg:flex-row">
                                 <div className="relative w-full p-4 space-y-4 bg-green-50 rounded-md shadow-md lg:w-1/3 lg:space-y-6">
                                     <div className="pb-2 mb-4 border-b border-gray-200">
-                                        <h3 className="text-lg font-semibold text-gray-700">
-                                            Personal Information
-                                        </h3>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                            Update your basic profile details.
-                                        </p>
+                                        <h3 className="text-lg font-semibold text-gray-700">{t("Personal Information")}</h3>
+                                        <p className="mt-1 text-sm text-gray-500">{t("Update your basic profile details.")}</p>
                                     </div>
 
                                     <div className="relative">
@@ -146,14 +142,12 @@ export default function ProfileEdit() {
                                         {userProfile?.must_verify_email && !userProfile?.email_verified && (
                                             <div>
                                                 <p className="mt-2 text-sm text-gray-800">
-                                                    <span>Your email address is unverified.</span>
+                                                    <span>{t("Your email address is unverified.")}</span>
                                                     <button
                                                         type="button"
                                                         onClick={sendVerification}
                                                         className="text-sm text-gray-600 underline rounded-md hover:text-gray-900"
-                                                    >
-                                                        Click here to re-send the verification email.
-                                                    </button>
+                                                    >{t("Click here to re-send the verification email.")}</button>
                                                 </p>
                                             </div>
                                         )}
@@ -188,7 +182,7 @@ export default function ProfileEdit() {
                                             onChange={(e) => profileForm.setData("gender", e.target.value)}
                                             className="block w-full mt-1 border-0 rounded ring-1"
                                         >
-                                            <option value="">Select Gender</option>
+                                            <option value="">{t("Select Gender")}</option>
                                             {Object.entries(genders).map(([key, value]) => (
                                                 <option key={key} value={key}>
                                                     {value}
@@ -207,7 +201,7 @@ export default function ProfileEdit() {
                                             onChange={(e) => profileForm.setData("bio", e.target.value)}
                                             rows="6"
                                             className="block w-full mt-1 border-0 rounded ring-1 ring-gray-300 resize-none"
-                                            placeholder="Write something about yourself..."
+                                            placeholder={t("Write something about yourself...")}
                                         ></textarea>
                                         <InputError className="mt-2" messages={profileForm.errors.bio} />
                                     </div>
@@ -244,7 +238,7 @@ export default function ProfileEdit() {
                                                 }}
                                                 className="block w-full mt-1 border-0 rounded ring-1"
                                             >
-                                                <option value="">Select Country</option>
+                                                <option value="">{t("Select Country")}</option>
                                                 {countries.map((country) => (
                                                     <option key={country.id} value={country.id}>
                                                         {country.name}
@@ -264,7 +258,7 @@ export default function ProfileEdit() {
                                                 }}
                                                 className="block w-full mt-1 border-0 rounded ring-1"
                                             >
-                                                <option value="">Select State</option>
+                                                <option value="">{t("Select State")}</option>
                                                 {states.map((stateItem) => (
                                                     <option key={stateItem.id} value={stateItem.id}>
                                                         {stateItem.name}
@@ -281,7 +275,7 @@ export default function ProfileEdit() {
                                                 onChange={(e) => profileForm.setData("city", e.target.value)}
                                                 className="block w-full mt-1 border-0 rounded ring-1"
                                             >
-                                                <option value="">Select City</option>
+                                                <option value="">{t("Select City")}</option>
                                                 {cities.map((city) => (
                                                     <option key={city.id} value={city.id}>
                                                         {city.name}
@@ -289,6 +283,17 @@ export default function ProfileEdit() {
                                                 ))}
                                             </select>
                                             <InputError className="mt-2" messages={profileForm.errors.city} />
+                                        </div>
+
+                                        <div className="relative">
+                                            <InputLabel htmlFor="targeted_area">Targeted Area</InputLabel>
+                                            <TextInput
+                                                value={profileForm.data.targeted_area}
+                                                onChange={(e) => profileForm.setData("targeted_area", e.target.value)}
+                                                type="text"
+                                                className="block w-full mt-1"
+                                            />
+                                            <InputError className="mt-2" messages={profileForm.errors.targeted_area} />
                                         </div>
 
                                         <div className="relative">
@@ -306,7 +311,7 @@ export default function ProfileEdit() {
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <PrimaryButton disabled={profileForm.processing}>Save</PrimaryButton>
+                                <PrimaryButton disabled={profileForm.processing}>{t("Save")}</PrimaryButton>
                             </div>
                         </form>
                     </SectionInner>
@@ -314,11 +319,9 @@ export default function ProfileEdit() {
 
                 <SectionSection>
                     <SectionHeader
-                        title="Update Password"
+                        title={t("Update Password")}
                         content={
-                            <p className="text-sm md:text-base">
-                                Ensure your account is using a long, random password to stay secure.
-                            </p>
+                            <p className="text-sm md:text-base">{t("Ensure your account is using a long, random password to stay secure.")}</p>
                         }
                     />
 
@@ -360,7 +363,7 @@ export default function ProfileEdit() {
                                     </div>
 
                                     <div className="flex items-center gap-4">
-                                        <PrimaryButton disabled={passwordForm.processing}>Save</PrimaryButton>
+                                        <PrimaryButton disabled={passwordForm.processing}>{t("Save")}</PrimaryButton>
                                     </div>
                                 </form>
                             </div>
@@ -368,14 +371,12 @@ export default function ProfileEdit() {
                             <div className="relative">
                                 <div className="p-4 space-y-6 bg-red-50 rounded-md shadow-md">
                                     <div className="pb-2 mb-2 border-b border-blue-200">
-                                        <h3 className="text-lg font-semibold text-blue-700">Password Rules</h3>
-                                        <p className="text-sm text-blue-600">
-                                            Follow these rules when setting a new password.
-                                        </p>
+                                        <h3 className="text-lg font-semibold text-blue-700">{t("Password Rules")}</h3>
+                                        <p className="text-sm text-blue-600">{t("Follow these rules when setting a new password.")}</p>
                                     </div>
 
                                     <div className="mt-4">
-                                        <h3 className="mb-2 font-medium text-gray-700">Password Requirements:</h3>
+                                        <h3 className="mb-2 font-medium text-gray-700">{t("Password Requirements:")}</h3>
                                         <ul className="space-y-3 text-sm text-gray-600 list-disc list-inside lg:text-base">
                                             {passwordRules.map((rule) => (
                                                 <li key={rule}>{rule}</li>
@@ -390,11 +391,9 @@ export default function ProfileEdit() {
 
                 <SectionSection>
                     <SectionHeader
-                        title="Delete Account"
+                        title={t("Delete Account")}
                         content={
-                            <p className="text-sm md:text-base">
-                                Once your account is deleted, all of its resources and data will be permanently deleted.
-                            </p>
+                            <p className="text-sm md:text-base">{t("Once your account is deleted, all of its resources and data will be permanently deleted.")}</p>
                         }
                     />
                     <SectionInner></SectionInner>

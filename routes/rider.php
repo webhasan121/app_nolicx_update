@@ -4,6 +4,7 @@ use App\Http\Controllers\Rider\ConsignmentController;
 use App\Http\Controllers\Rider\RiderInfoController;
 use App\Http\Middleware\AbleTo;
 use App\Models\cod;
+use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,11 @@ Route::post('/consignments/{consignment}/status', function (Request $request, co
     if (auth()->user()->abailCoin() >= $consignment->total_amount) {
         $consignment->status = $request->string('status')->toString();
         $consignment->save();
+        $order = $consignment->order;
+        OrderNotice::riderStatusChanged($order, $consignment->status, auth()->id());
+        if ($consignment->status === 'Completed' && $order->exists) {
+            OrderNotice::statusChanged($order, 'Delivered', auth()->id());
+        }
 
         return back()->with('success', 'Shipment Updated');
     }

@@ -13,8 +13,10 @@ import OverviewDiv from "../../../../components/dashboard/overview/Div";
 import CoinStore from "../../../../livewire/system/store/CoinStore";
 import CoastStore from "../../../../livewire/system/store/CoastStore";
 import DonationStore from "../../../../livewire/system/store/DonationStore";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index() {
+    const { t } = useTranslation();
     const {
         pageTitle = "Coin Store",
         widgets = [],
@@ -208,14 +210,14 @@ export default function Index() {
                 className="py-1"
                 value={startDate}
                 onChange={(e) => updateDateFilter("start", e.target.value)}
-                title="Start date"
+                title={t("Start date")}
             />
             <TextInput
                 type="date"
                 className="py-1"
                 value={endDate}
                 onChange={(e) => updateDateFilter("end", e.target.value)}
-                title="End date"
+                title={t("End date")}
             />
         </>
     );
@@ -227,8 +229,7 @@ export default function Index() {
                     <div>
                         <h3 className="text-lg font-semibold text-gray-800">{pageTitle}</h3>
                         {targetStore?.range_label ? (
-                            <p className="text-sm text-gray-500">
-                                Previous distribution period: {targetStore.range_label}
+                            <p className="text-sm text-gray-500">{t("Previous distribution period:")}{targetStore.range_label}
                             </p>
                         ) : null}
                     </div>
@@ -307,12 +308,12 @@ export default function Index() {
                         <SectionHeader
                             title={
                                 <div className="flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
-                                    <h4>Distributed Commissions</h4>
+                                    <h4>{t("Distributed Commissions")}</h4>
                                     <div className="flex flex-wrap items-center justify-end gap-2">
                                         {dateFilterControls}
                                         <TextInput
                                             type="search"
-                                            placeholder="Search commissions..."
+                                            placeholder={t("Search commissions...")}
                                             className="py-1"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -391,7 +392,7 @@ export default function Index() {
                                         ) : (
                                             <tr>
                                                 <td colSpan={columns1.length} className="px-4 py-6 text-center text-gray-500">
-                                                    <span>No histories found.</span>
+                                                    <span>{t("No histories found.")}</span>
                                                 </td>
                                             </tr>
                                         )}
@@ -411,9 +412,7 @@ export default function Index() {
                                                     disabled={!pagination.prev?.url}
                                                     className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
-                                                >
-                                                    Previous
-                                                </button>
+                                                >{t("Previous")}</button>
                                                 {pagination.pages.map((link, index) => (
                                                     <button
                                                         key={`${link.label}-${index}`}
@@ -434,9 +433,7 @@ export default function Index() {
                                                     disabled={!pagination.next?.url}
                                                     className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
-                                                >
-                                                    Next
-                                                </button>
+                                                >{t("Next")}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -451,12 +448,12 @@ export default function Index() {
                         <SectionHeader
                             title={
                                 <div className="flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
-                                    <h4>Withdrawal History</h4>
+                                    <h4>{t("Withdrawal History")}</h4>
                                     <div className="flex flex-wrap items-center justify-end gap-2">
                                         {dateFilterControls}
                                         <TextInput
                                             type="search"
-                                            placeholder="Search withdrawals..."
+                                            placeholder={t("Search withdrawals...")}
                                             className="py-1"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -514,7 +511,7 @@ export default function Index() {
                                         ) : (
                                             <tr>
                                                 <td colSpan="9" className="px-4 py-6 text-center text-gray-500">
-                                                    <span>No histories found.</span>
+                                                    <span>{t("No histories found.")}</span>
                                                 </td>
                                             </tr>
                                         )}
@@ -534,9 +531,7 @@ export default function Index() {
                                                     disabled={!pagination.prev?.url}
                                                     className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
-                                                >
-                                                    Previous
-                                                </button>
+                                                >{t("Previous")}</button>
                                                 {pagination.pages.map((link, index) => (
                                                     <button
                                                         key={`${link.label}-${index}`}
@@ -557,9 +552,7 @@ export default function Index() {
                                                     disabled={!pagination.next?.url}
                                                     className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
-                                                >
-                                                    Next
-                                                </button>
+                                                >{t("Next")}</button>
                                             </div>
                                         </div>
                                     </div>

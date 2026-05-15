@@ -7,8 +7,10 @@ import Hr from "../../../../components/Hr";
 import NavLink from "../../../../components/NavLink";
 import NavLinkBtn from "../../../../components/NavLinkBtn";
 import UserDash from "../../../../components/user/dash/UserDash";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function UpgradeRiderIndex() {
+    const { t } = useTranslation();
     const { rider = [] } = usePage().props;
 
     return (
@@ -52,9 +54,7 @@ export default function UpgradeRiderIndex() {
                                     </div>
                                     <div>
                                         <div className="p-2">
-                                            <div className="text-xs">
-                                                Phone :
-                                            </div>
+                                            <div className="text-xs">{t("Phone :")}</div>
                                             <div className="text-sm text-md font-bold">
                                                 {item.phone}
                                             </div>
@@ -62,8 +62,7 @@ export default function UpgradeRiderIndex() {
                                         <hr />
                                         <div className="p-2">
                                             <div className="text-xs">
-                                                {" "}
-                                                Tergeted Area :{" "}
+                                                {" "}{t("Tergeted Area :")}{" "}
                                             </div>
                                             <div className="text-sm text-md font-bold">
                                                 {item.targeted_area}
@@ -72,8 +71,7 @@ export default function UpgradeRiderIndex() {
                                         <hr />
                                         <div className="p-2">
                                             <div className="text-xs">
-                                                {" "}
-                                                Create Date :{" "}
+                                                {" "}{t("Create Date :")}{" "}
                                             </div>
                                             <div className="text-sm text-md font-bold">
                                                 {item.created_at}
@@ -91,7 +89,7 @@ export default function UpgradeRiderIndex() {
                                                         color: "#b45309",
                                                     }}
                                                 >
-                                                    <strong>Pending</strong>
+                                                    <strong>{t("Pending")}</strong>
                                                 </div>
                                             )}
                                             {item.status === "Active" && (
@@ -103,7 +101,7 @@ export default function UpgradeRiderIndex() {
                                                         color: "#166534",
                                                     }}
                                                 >
-                                                    <strong>Active</strong>
+                                                    <strong>{t("Active")}</strong>
                                                 </div>
                                             )}
                                             {item.is_rejected && (
@@ -115,7 +113,7 @@ export default function UpgradeRiderIndex() {
                                                         color: "#b91c1c",
                                                     }}
                                                 >
-                                                    <strong> Rejected </strong>
+                                                    <strong>{t("Rejected")}</strong>
                                                 </div>
                                             )}
                                         </div>
@@ -129,9 +127,7 @@ export default function UpgradeRiderIndex() {
                                                             { id: item.id },
                                                         )}
                                                     >
-                                                        <i className="fas fa-edit pr-2"></i>{" "}
-                                                        Edit
-                                                    </NavLink>
+                                                        <i className="fas fa-edit pr-2"></i>{" "}{t("Edit")}</NavLink>
                                                 </div>
                                             </>
                                         )}

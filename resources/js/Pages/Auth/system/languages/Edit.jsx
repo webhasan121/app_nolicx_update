@@ -3,8 +3,10 @@ import { Link, router, usePage } from "@inertiajs/react";
 import AppLayout from "../../../../Layouts/App";
 import Container from "../../../../components/dashboard/Container";
 import PageHeader from "../../../../components/dashboard/PageHeader";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Edit() {
+    const { t } = useTranslation();
     const {
         pageTitle = "Translations",
         languageItem = {},
@@ -45,10 +47,10 @@ export default function Edit() {
             header={
                 <div className="flex items-center justify-between gap-4">
                     <PageHeader>
-                        <span>Translations</span>
+                        <span>{t("Translations")}</span>
                         <span className="text-slate-400"> | </span>
                         <span className="text-red-600">{languageItem.name}</span>
-                        <div className="mt-1 text-sm font-normal text-slate-500">{total} Total</div>
+                        <div className="mt-1 text-sm font-normal text-slate-500">{total}{t("Total")}</div>
                     </PageHeader>
                     <button
                         type="button"
@@ -70,7 +72,7 @@ export default function Edit() {
                                 <i className="fas fa-language text-xl"></i>
                             </div>
                             <div>
-                                <h1 className="text-lg font-bold text-slate-950">Translations</h1>
+                                <h1 className="text-lg font-bold text-slate-950">{t("Translations")}</h1>
                                 <p className="text-sm text-slate-600">{languageItem.name}</p>
                             </div>
                         </div>
@@ -104,7 +106,7 @@ export default function Edit() {
                         ))}
                     </div>
                     <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4 text-sm text-slate-600">
-                        <span>{done} of {total} translated</span>
+                        <span>{done}{t("of")}{total}{t("translated")}</span>
                         <button
                             type="button"
                             onClick={submit}

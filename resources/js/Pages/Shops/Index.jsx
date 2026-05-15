@@ -9,6 +9,7 @@ import Container from "@/components/dashboard/Container";
 import ShopsCart from "@/components/client/ShopsCart";
 import HeroSlider from "@/components/home/HeroSlider";
 import UserLayout from "@/Layouts/User/App";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Index({
     slides = [],
@@ -16,6 +17,7 @@ export default function Index({
     filters = {},
     showFiltered = false,
 }) {
+    const { t } = useTranslation();
     const { auth } = usePage().props;
     const [q, setQ] = useState(filters.q ?? "");
     const [location, setLocation] = useState(filters.location ?? "");
@@ -109,7 +111,7 @@ export default function Index({
     };
 
     return (
-        <UserLayout title="Shops">
+        <UserLayout title={t("Shops")}>
             <HeroSlider slides={slides} />
 
             <div className="py-4">
@@ -117,7 +119,7 @@ export default function Index({
                     <div className="w-auto w-full mb-3 text-3xl text-center heading_center">
                         <h2 className="flex justify-center gap-3">
                             <ApplicationName />
-                            <span className="font-bold text-green-900">Shops</span>
+                            <span className="font-bold text-green-900">{t("Shops")}</span>
                         </h2>
                     </div>
                 </div>
@@ -132,7 +134,7 @@ export default function Index({
 
                         <NavLink href={route("shops.reseller")}>
                             <ApplicationName />
-                            <div className="px-2">Shops</div>
+                            <div className="px-2">{t("Shops")}</div>
                         </NavLink>
                     </div>
 
@@ -142,7 +144,7 @@ export default function Index({
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
                             className="py-1 rounded-md"
-                            placeholder="search shops by name"
+                            placeholder={t("search shops by name")}
                         />
                         <div>
                             {auth?.user ? (
@@ -168,15 +170,11 @@ export default function Index({
                 </div>
 
                 {!auth?.user && (
-                    <div className="w-full p-1 text-center bg-gray-200">
-                        Login to get access the shops based on your location.
-                    </div>
+                    <div className="w-full p-1 text-center bg-gray-200">{t("Login to get access the shops based on your location.")}</div>
                 )}
 
                 <div>
-                    <p>
-                        Showing {shopItems.length} of {pagination?.total ?? 0} shops
-                    </p>
+                    <p>{t("Showing")}{shopItems.length}{t("of")}{pagination?.total ?? 0}{t("shops")}</p>
 
                     <div
                         style={{
@@ -192,7 +190,7 @@ export default function Index({
                                 <ShopsCart key={shop.id} shop={shop} />
                             ))
                         ) : (
-                            <p>No Shops Found !</p>
+                            <p>{t("No Shops Found !")}</p>
                         )}
                     </div>
 
@@ -211,9 +209,7 @@ export default function Index({
 
                 <Modal show={showModal} onClose={() => setShowModal(false)}>
                     <div className="p-3">
-                        <p className="text-xs">
-                            Shop will be displayed based on you expectation. From where you want to get the shop.
-                        </p>
+                        <p className="text-xs">{t("Shop will be displayed based on you expectation. From where you want to get the shop.")}</p>
 
                         <br />
 
@@ -222,8 +218,7 @@ export default function Index({
                                 <PrimaryButton
                                     onClick={getShopByMyLocation}
                                     className="flex items-center justify-center w-full p-3 text-white bg-indigo-300 rounded"
-                                >
-                                    My Location ({auth.user.city})
+                                >{t("My Location (")}{auth.user.city})
                                     <i className="px-2 fas fa-location"></i>
                                 </PrimaryButton>
                             )}
@@ -231,9 +226,7 @@ export default function Index({
                             <SecondaryButton
                                 onClick={getAllShops}
                                 className="flex justify-center w-full p-3 items-centere"
-                            >
-                                All Shops
-                            </SecondaryButton>
+                            >{t("All Shops")}</SecondaryButton>
 
                             <div className="p-2 bg-gray-200 rounded">
                                 <input
@@ -242,7 +235,7 @@ export default function Index({
                                     value={location}
                                     onChange={(e) => setLocation(e.target.value)}
                                     className="w-full py-1 mb-1 rounded"
-                                    placeholder="search shop by state, city or town"
+                                    placeholder={t("search shop by state, city or town")}
                                 />
                             </div>
                         </div>

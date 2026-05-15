@@ -11,8 +11,10 @@ import Section from "../../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../../components/dashboard/section/Inner";
 import Table from "../../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../../hooks/useTranslation";
 
 export default function Index({ pages = {}, filters = {}, printUrl }) {
+    const { t } = useTranslation();
     const rows = pages.data ?? [];
     const [search, setSearch] = useState(filters.find ?? "");
 
@@ -88,17 +90,15 @@ export default function Index({ pages = {}, filters = {}, printUrl }) {
             : "No pages found";
 
     return (
-        <AppLayout title="Page Setup">
-            <Head title="Page Setup" />
+        <AppLayout title={t("Page Setup")}>
+            <Head title={t("Page Setup")} />
 
             <Container>
                 <Section>
                     <SectionHeader
                         title={
                             <div className="flex items-center justify-between">
-                                <div>
-                                    Page Setup
-                                </div>
+                                <div>{t("Page Setup")}</div>
 
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                     <TextInput
@@ -122,7 +122,7 @@ export default function Index({ pages = {}, filters = {}, printUrl }) {
                                             );
                                         }}
                                         className="py-1"
-                                        placeholder="Search pages..."
+                                        placeholder={t("Search pages...")}
                                     />
                                     <PrimaryButton
                                         type="button"
@@ -136,7 +136,7 @@ export default function Index({ pages = {}, filters = {}, printUrl }) {
                                 </div>
                             </div>
                         }
-                        content="Setup your necessary pages from here. add, edit and delete."
+                        content={t("Setup your necessary pages from here. add, edit and delete.")}
                     />
 
                     <SectionInner>
@@ -145,10 +145,10 @@ export default function Index({ pages = {}, filters = {}, printUrl }) {
                                 <thead>
                                     <tr>
                                         <th> # </th>
-                                        <th> Name </th>
-                                        <th>Content</th>
-                                        <th> Status </th>
-                                        <th> A/C </th>
+                                        <th>{t("Name")}</th>
+                                        <th>{t("Content")}</th>
+                                        <th>{t("Status")}</th>
+                                        <th>{t("A/C")}</th>
                                     </tr>
                                 </thead>
 
@@ -192,9 +192,7 @@ export default function Index({ pages = {}, filters = {}, printUrl }) {
                                                     disabled={!pagination.prev?.url}
                                                     className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
-                                                >
-                                                    Previous
-                                                </button>
+                                                >{t("Previous")}</button>
                                                 {pagination.pages.map((link, index) => (
                                                     <button
                                                         key={`${link.label}-${index}`}
@@ -215,9 +213,7 @@ export default function Index({ pages = {}, filters = {}, printUrl }) {
                                                     disabled={!pagination.next?.url}
                                                     className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
-                                                >
-                                                    Next
-                                                </button>
+                                                >{t("Next")}</button>
                                             </div>
                                         </div>
                                     </div>

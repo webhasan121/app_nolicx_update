@@ -13,8 +13,10 @@ import PageHeader from "../../../../../components/dashboard/PageHeader";
 import SectionHeader from "../../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../../components/dashboard/section/Section";
+import useTranslation from "../../../../../hooks/useTranslation";
 
 export default function Edit() {
+    const { t } = useTranslation();
     const { package: pack, paymentOptions = [] } = usePage().props;
     const inputId = useId().replace(/:/g, "");
     const editorRef = useRef(null);
@@ -129,27 +131,23 @@ export default function Edit() {
 
     return (
         <AppLayout
-            title="VIP Package Update"
+            title={t("VIP Package Update")}
             header={
-                <PageHeader>
-                    VIP Package Update
-                    <br />
+                <PageHeader>{t("VIP Package Update")}<br />
                     <NavLink href={route("system.vip.index")}>
-                        <i className="fa-solid fa-up-right-from-square me-2"></i>
-                        Back To Packages
-                    </NavLink>
+                        <i className="fa-solid fa-up-right-from-square me-2"></i>{t("Back To Packages")}</NavLink>
                 </PageHeader>
             }
         >
             <Container>
                 <SectionSection>
-                    <SectionHeader title="Package Basic Info" content="" />
+                    <SectionHeader title={t("Package Basic Info")} content="" />
 
                     <SectionInner>
                         <form onSubmit={submit}>
                             <div className="flex flex-wrap space-x-3">
                                 <div className="w-md py-2 border-b">
-                                    <div className="text-sm">Package Name</div>
+                                    <div className="text-sm">{t("Package Name")}</div>
                                     <div className="text-md">
                                         <TextInput
                                             value={form.data.name}
@@ -161,7 +159,7 @@ export default function Edit() {
                                     </div>
                                 </div>
                                 <div className="w-md py-2 border-b">
-                                    <div className="text-sm">Package Price</div>
+                                    <div className="text-sm">{t("Package Price")}</div>
                                     <div className="text-md">
                                         <TextInput
                                             min="10"
@@ -175,7 +173,7 @@ export default function Edit() {
                                     </div>
                                 </div>
                                 <div className="w-md py-2 border-b">
-                                    <div className="text-sm">Package Task Duration (Minute)</div>
+                                    <div className="text-sm">{t("Package Task Duration (Minute)")}</div>
                                     <div className="text-md">
                                         <TextInput
                                             min="1"
@@ -190,7 +188,7 @@ export default function Edit() {
                                     </div>
                                 </div>
                                 <div className="w-md py-2 border-b">
-                                    <div className="text-sm">Package Daily Coin</div>
+                                    <div className="text-sm">{t("Package Daily Coin")}</div>
                                     <div className="text-md">
                                         <TextInput
                                             min="1"
@@ -204,7 +202,7 @@ export default function Edit() {
                                     </div>
                                 </div>
                                 <div className="w-md py-2 border-b">
-                                    <div className="text-sm">Package Monthly Coin</div>
+                                    <div className="text-sm">{t("Package Monthly Coin")}</div>
                                     <div className="text-md">
                                         <TextInput
                                             min="1"
@@ -218,7 +216,7 @@ export default function Edit() {
                                     </div>
                                 </div>
                                 <div className="w-md py-2 border-b">
-                                    <div className="text-sm">Referrer Coin</div>
+                                    <div className="text-sm">{t("Referrer Coin")}</div>
                                     <div className="text-md">
                                         <TextInput
                                             min="1"
@@ -244,7 +242,7 @@ export default function Edit() {
                     <SectionHeader
                         title={
                             <div className="flex justify-between items-center">
-                                <h4>Payment Option</h4>
+                                <h4>{t("Payment Option")}</h4>
                                 <SecondaryButton
                                     type="button"
                                     onClick={addPaymentOption}
@@ -254,7 +252,7 @@ export default function Edit() {
                                 </SecondaryButton>
                             </div>
                         }
-                        content="Manage your package payment options"
+                        content={t("Manage your package payment options")}
                     />
 
                     <SectionInner>
@@ -275,7 +273,7 @@ export default function Edit() {
                                             <TextInput
                                                 type="text"
                                                 className="border-0 py-1"
-                                                placeholder="Payment Method"
+                                                placeholder={t("Payment Method")}
                                                 value={option.pay_type}
                                                 onChange={(e) =>
                                                     updatePaymentOption(
@@ -297,7 +295,7 @@ export default function Edit() {
                                             <TextInput
                                                 type="text"
                                                 className="border-0 py-1"
-                                                placeholder="Payment To"
+                                                placeholder={t("Payment To")}
                                                 value={option.pay_to}
                                                 onChange={(e) =>
                                                     updatePaymentOption(
@@ -354,25 +352,17 @@ export default function Edit() {
                             )}
                         </main>
                         <br />
-                        <PrimaryButton type="button" onClick={submit}>
-                            Update
-                        </PrimaryButton>
+                        <PrimaryButton type="button" onClick={submit}>{t("Update")}</PrimaryButton>
                     </SectionInner>
                 </SectionSection>
 
                 <SectionSection>
                     <NavLink href="">
-                        <i className="fa-solid fa-up-right-from-square me-2"></i>
-                        Task Statatistics
-                    </NavLink>
+                        <i className="fa-solid fa-up-right-from-square me-2"></i>{t("Task Statatistics")}</NavLink>
                     <NavLink href="">
-                        <i className="fa-solid fa-up-right-from-square me-2"></i>
-                        VIP Users
-                    </NavLink>
+                        <i className="fa-solid fa-up-right-from-square me-2"></i>{t("VIP Users")}</NavLink>
                     <NavLink href="">
-                        <i className="fa-solid fa-up-right-from-square me-2"></i>
-                        Earnings
-                    </NavLink>
+                        <i className="fa-solid fa-up-right-from-square me-2"></i>{t("Earnings")}</NavLink>
                     <NavLink href="">
                         <i className="fa-solid fa-up-right-from-square me-2"></i>
                     </NavLink>

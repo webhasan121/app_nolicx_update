@@ -27,7 +27,9 @@ class TranslationManager
     {
         $candidate = session('locale') ?: auth()->user()?->site_language ?: auth()->user()?->language;
 
-        if ($candidate && self::findLanguage($candidate)) {
+        $language = $candidate ? self::findLanguage($candidate) : null;
+
+        if ($language && $language['is_active']) {
             return $candidate;
         }
 

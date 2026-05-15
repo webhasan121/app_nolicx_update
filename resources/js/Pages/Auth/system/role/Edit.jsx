@@ -9,8 +9,10 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import PermissionsToUser from "../../../../components/PermissionsToUser";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Edit({ role, permissions = [], userPermissions = [] }) {
+    const { t } = useTranslation();
     const permissionForm = useForm({
         permissions: userPermissions ?? [],
     });
@@ -22,10 +24,10 @@ export default function Edit({ role, permissions = [], userPermissions = [] }) {
 
     return (
         <AppLayout
-            title="Role Edit"
-            header={<PageHeader>Role Edit</PageHeader>}
+            title={t("Role Edit")}
+            header={<PageHeader>{t("Role Edit")}</PageHeader>}
         >
-            <Head title="Role Edit" />
+            <Head title={t("Role Edit")} />
 
             <Container>
                 <Section>
@@ -51,9 +53,7 @@ export default function Edit({ role, permissions = [], userPermissions = [] }) {
                     <SectionHeader
                         title={`Permissions (${role?.permissions_count ?? 0})`}
                         content={
-                            <p>
-                                Add or Remove permission from all ({permissions.length}) Permissiions.
-                            </p>
+                            <p>{t("Add or Remove permission from all (")}{permissions.length}{t(") Permissiions.")}</p>
                         }
                     />
 
@@ -67,13 +67,9 @@ export default function Edit({ role, permissions = [], userPermissions = [] }) {
                             />
                             <Hr />
                             {role?.name !== "system" ? (
-                                <PrimaryButton type="submit" className="mt-4 border-0">
-                                    Update
-                                </PrimaryButton>
+                                <PrimaryButton type="submit" className="mt-4 border-0">{t("Update")}</PrimaryButton>
                             ) : (
-                                <DangerButton type="submit" className="border-0 text-danger">
-                                    System Permission can't be omitted.
-                                </DangerButton>
+                                <DangerButton type="submit" className="border-0 text-danger">{t("System Permission can't be omitted.")}</DangerButton>
                             )}
                         </form>
                     </SectionInner>

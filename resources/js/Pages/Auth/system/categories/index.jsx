@@ -9,12 +9,14 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import CreateCategory from "../../../../livewire/reseller/categories/Create";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index({
     categories = [],
     categoryCount = 0,
     parentCategories = [],
 }) {
+    const { t } = useTranslation();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const form = useForm({
         name: "",
@@ -61,16 +63,15 @@ export default function Index({
     };
 
     return (
-        <AppLayout title="Categories">
-            <Head title="Categories" />
+        <AppLayout title={t("Categories")}>
+            <Head title={t("Categories")} />
 
             <Container>
                 <Section>
                     <SectionHeader
                         title={
                             <div className="flex justify-between items-center">
-                                <div>
-                                    Categories{" "}
+                                <div>{t("Categories")}{" "}
                                     <span className="text-sm text-gray-500">
                                         ({categoryCount})
                                     </span>
@@ -80,12 +81,10 @@ export default function Index({
                                     type="button"
                                     onClick={() => setShowCreateModal(true)}
                                 >
-                                    <i className="fas fa-plus pr-2"></i>{" "}
-                                    Category
-                                </PrimaryButton>
+                                    <i className="fas fa-plus pr-2"></i>{" "}{t("Category")}</PrimaryButton>
                             </div>
                         }
-                        content="Manage your categories and subcategories here."
+                        content={t("Manage your categories and subcategories here.")}
                     />
 
                     <SectionInner>

@@ -13,8 +13,10 @@ import SectionHeader from "../../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../../components/dashboard/section/Section";
 import Table from "../../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../../hooks/useTranslation";
 
 export default function Index() {
+    const { t } = useTranslation();
     const {
         nav = "Active",
         filters = {},
@@ -105,24 +107,20 @@ export default function Index() {
 
     return (
         <AppLayout
-            title="VIP"
+            title={t("VIP")}
             header={
-                <PageHeader>
-                    VIP
-                    <br />
+                <PageHeader>{t("VIP")}<br />
                     <div>
                         <NavLink
                             href={route("system.vip.index")}
                             active={route().current("system.vip.index")}
                         >
-                            <i className="fa-solid fa-up-right-from-square me-2"></i> Package
-                        </NavLink>
+                            <i className="fa-solid fa-up-right-from-square me-2"></i>{t("Package")}</NavLink>
                         <NavLink
                             href={route("system.vip.users")}
                             active={route().current("system.vip.users")}
                         >
-                            <i className="fa-solid fa-up-right-from-square me-2"></i> User
-                        </NavLink>
+                            <i className="fa-solid fa-up-right-from-square me-2"></i>{t("User")}</NavLink>
                     </div>
                 </PageHeader>
             }
@@ -139,7 +137,7 @@ export default function Index() {
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                     <TextInput
                                         type="search"
-                                        placeholder="Search packages..."
+                                        placeholder={t("Search packages...")}
                                         className="my-1 py-1"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
@@ -169,18 +167,14 @@ export default function Index() {
                                         find: filters.find ?? "",
                                     })}
                                     active={nav === "Active"}
-                                >
-                                    Active
-                                </NavLink>
+                                >{t("Active")}</NavLink>
                                 <NavLink
                                     href={route("system.vip.index", {
                                         nav: "Trash",
                                         find: filters.find ?? "",
                                     })}
                                     active={nav === "Trash"}
-                                >
-                                    Trash
-                                </NavLink>
+                                >{t("Trash")}</NavLink>
                             </>
                         }
                     />
@@ -192,14 +186,14 @@ export default function Index() {
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Name</th>
-                                            <th>Price</th>
-                                            <th>Timer</th>
-                                            <th>Coin</th>
-                                            <th>Sell</th>
-                                            <th>Earn</th>
-                                            <th>Created</th>
-                                            <th>A/C</th>
+                                            <th>{t("Name")}</th>
+                                            <th>{t("Price")}</th>
+                                            <th>{t("Timer")}</th>
+                                            <th>{t("Coin")}</th>
+                                            <th>{t("Sell")}</th>
+                                            <th>{t("Earn")}</th>
+                                            <th>{t("Created")}</th>
+                                            <th>{t("A/C")}</th>
                                         </tr>
                                     </thead>
 
@@ -212,13 +206,13 @@ export default function Index() {
                                                         {item.name}
                                                     </div>
                                                 </td>
-                                                <td>{item.price} TK</td>
-                                                <td>{item.countdown} Minute</td>
+                                                <td>{item.price}{t("TK")}</td>
+                                                <td>{item.countdown}{t("Minute")}</td>
                                                 <td>
-                                                    <div>D - {item.coin}</div>
-                                                    <div>M - {item.m_coin}</div>
+                                                    <div>{t("D -")}{item.coin}</div>
+                                                    <div>{t("M -")}{item.m_coin}</div>
                                                     <hr className="my-1" />
-                                                    <div>Ref - {item.ref_owner_get_coin}</div>
+                                                    <div>{t("Ref -")}{item.ref_owner_get_coin}</div>
                                                 </td>
                                                 <td>{item.users_count ?? "0"}</td>
                                                 <td>{item.earn}</td>
@@ -254,9 +248,7 @@ export default function Index() {
                                                             <DangerButton
                                                                 type="button"
                                                                 onClick={() => handleTrash(item.id)}
-                                                            >
-                                                                Trash
-                                                            </DangerButton>
+                                                            >{t("Trash")}</DangerButton>
                                                         )}
                                                     </div>
                                                 </td>
@@ -278,9 +270,7 @@ export default function Index() {
                                                         disabled={!pagination.prev?.url}
                                                         className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.prev?.url)}
-                                                    >
-                                                        Previous
-                                                    </button>
+                                                    >{t("Previous")}</button>
                                                     {pagination.pages.map((link, index) => (
                                                         <button
                                                             key={`${link.label}-${index}`}
@@ -301,9 +291,7 @@ export default function Index() {
                                                         disabled={!pagination.next?.url}
                                                         className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.next?.url)}
-                                                    >
-                                                        Next
-                                                    </button>
+                                                    >{t("Next")}</button>
                                                 </div>
                                             </div>
                                         </div>

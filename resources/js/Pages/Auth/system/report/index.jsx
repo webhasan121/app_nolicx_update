@@ -3,8 +3,10 @@ import AppLayout from "../../../../Layouts/App";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import SectionInner from "../../../../components/dashboard/section/Inner";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index({ filters }) {
+    const { t } = useTranslation();
     const form = useForm({
         nav: filters?.nav ?? "Deposit",
         sdate: filters?.sdate ?? "",
@@ -30,33 +32,33 @@ export default function Index({ filters }) {
 
     return (
         <AppLayout
-            title="Generate Reports"
-            header={<PageHeader>Generate Reports</PageHeader>}
+            title={t("Generate Reports")}
+            header={<PageHeader>{t("Generate Reports")}</PageHeader>}
         >
-            <Head title="Generate Reports" />
+            <Head title={t("Generate Reports")} />
 
             <div className="flex justify-center items-center w-full">
                 <div style={{ width: "350px" }} className="border rounded-md p-4 bg-white">
                     <SectionInner>
                         <form onSubmit={submit}>
                             <div className="mb-2">
-                                <p>Report For</p>
+                                <p>{t("Report For")}</p>
                                 <select
                                     value={form.data.nav}
                                     onChange={(e) => form.setData("nav", e.target.value)}
                                     className="w-full rounded-md"
                                 >
-                                    <option value=""> -- Select --</option>
-                                    <option value="Deposit">Deposit</option>
-                                    <option value="Withdraw">Withdraw</option>
-                                    <option value="Sells">Sells</option>
-                                    <option value="Vip">Vip</option>
-                                    <option value="Product">Products</option>
+                                    <option value="">{t("-- Select --")}</option>
+                                    <option value="Deposit">{t("Deposit")}</option>
+                                    <option value="Withdraw">{t("Withdraw")}</option>
+                                    <option value="Sells">{t("Sells")}</option>
+                                    <option value="Vip">{t("Vip")}</option>
+                                    <option value="Product">{t("Products")}</option>
                                 </select>
                             </div>
 
                             <div className="mb-2">
-                                <p>From</p>
+                                <p>{t("From")}</p>
                                 <input
                                     type="date"
                                     value={form.data.sdate}
@@ -69,7 +71,7 @@ export default function Index({ filters }) {
                             </div>
 
                             <div className="mb-2">
-                                <p>To</p>
+                                <p>{t("To")}</p>
                                 <input
                                     type="date"
                                     value={form.data.edate}
@@ -82,20 +84,18 @@ export default function Index({ filters }) {
                             </div>
 
                             <div className="mb-3">
-                                <p>ID</p>
+                                <p>{t("ID")}</p>
                                 <input
                                     type="text"
                                     value={form.data.sid}
                                     onChange={(e) => form.setData("sid", e.target.value)}
-                                    placeholder="Optional"
+                                    placeholder={t("Optional")}
                                     className="w-full rounded-md"
                                 />
                             </div>
 
                             <div className="w-ful text-end">
-                                <PrimaryButton type="submit">
-                                    Generate
-                                </PrimaryButton>
+                                <PrimaryButton type="submit">{t("Generate")}</PrimaryButton>
                             </div>
                         </form>
                     </SectionInner>

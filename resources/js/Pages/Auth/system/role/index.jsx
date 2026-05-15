@@ -7,19 +7,21 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Index({ roles = [] }) {
+    const { t } = useTranslation();
     return (
         <AppLayout
-            title="Roles"
-            header={<PageHeader>Roles</PageHeader>}
+            title={t("Roles")}
+            header={<PageHeader>{t("Roles")}</PageHeader>}
         >
-            <Head title="Roles" />
+            <Head title={t("Roles")} />
 
             <Container>
                 <Section>
                     <SectionHeader
-                        title="Role List"
+                        title={t("Role List")}
                         content={`system have all ${roles.length} role.`}
                     />
 
@@ -28,10 +30,10 @@ export default function Index({ roles = [] }) {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Role</th>
-                                    <th>Users</th>
-                                    <th>Permissions</th>
-                                    <th>Action</th>
+                                    <th>{t("Role")}</th>
+                                    <th>{t("Users")}</th>
+                                    <th>{t("Permissions")}</th>
+                                    <th>{t("Action")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -43,9 +45,7 @@ export default function Index({ roles = [] }) {
                                         <td>{role.permissions_count ?? "No Permissions"}</td>
                                         <td>
                                             <div className="flex">
-                                                <NavLink href={route("system.role.edit", { role: role.encrypted_id })}>
-                                                    Edit
-                                                </NavLink>
+                                                <NavLink href={route("system.role.edit", { role: role.encrypted_id })}>{t("Edit")}</NavLink>
                                             </div>
                                         </td>
                                     </tr>

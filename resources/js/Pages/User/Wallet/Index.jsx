@@ -8,6 +8,7 @@ import PrimaryButton from "../../../components/PrimaryButton";
 import TextInput from "../../../components/TextInput";
 import Table from "../../../components/dashboard/table/Table";
 import UserDash from "../../../components/user/dash/UserDash";
+import useTranslation from "../../../hooks/useTranslation";
 
 
 
@@ -19,8 +20,7 @@ function EarningCard({ title, amount, href }) {
                     <div className="">{title}</div>
                 </div>
                 <div className="pt-2 text-lg font-bold text-indigo-900">
-                    {amount ?? 0} TK
-                </div>
+                    {amount ?? 0}{t("TK")}</div>
                 <div className="text-xs">
                     <Link href={href} className="text-gray-600">
                         View All
@@ -32,6 +32,7 @@ function EarningCard({ title, amount, href }) {
 }
 
 export default function WalletIndex() {
+    const { t } = useTranslation();
     const {
         available_balance,
         task,
@@ -114,11 +115,10 @@ export default function WalletIndex() {
                 <SectionSection>
                     <div className="items-center justify-between md:flex">
                         <SectionHeader
-                            title="Your Wallet"
+                            title={t("Your Wallet")}
                             content={
                                 <div className="text-2xl font-bold text-indigo-900">
-                                    {" "}
-                                    Available Balance {available_balance} TK{" "}
+                                    {" "}{t("Available Balance")}{available_balance}{t("TK")}{" "}
                                 </div>
                             }
                         />
@@ -132,28 +132,28 @@ export default function WalletIndex() {
                 </SectionSection>
 
                 <SectionSection>
-                    <SectionHeader title="Todays Earning" />
+                    <SectionHeader title={t("Todays Earning")} />
                     <SectionInner>
                         <div className="flex flex-wrap items-start justify-start space-x-3 spacy-y-3">
                             <EarningCard
-                                title="Task"
+                                title={t("Task")}
                                 amount={task?.coin ?? 0}
                                 href={route("user.wallet.tasks")}
                             />
                             <EarningCard
-                                title="Earn Comission"
+                                title={t("Earn Comission")}
                                 amount={comission}
                                 href={route("user.wallet.earn-comissions")}
                             />
                             <EarningCard
-                                title="Cut Comission"
+                                title={t("Cut Comission")}
                                 amount={cut}
                                 href={route("user.wallet.earn-comissions", {
                                     nav: "system",
                                 })}
                             />
                             <EarningCard
-                                title="VIP Reffer"
+                                title={t("VIP Reffer")}
                                 amount={reffer}
                                 href={route("user.wallet.reffer")}
                             />
@@ -163,7 +163,7 @@ export default function WalletIndex() {
 
                 <SectionSection>
                     <SectionHeader
-                        title="Withdraws Requests"
+                        title={t("Withdraws Requests")}
                         content={
                             <div className="flex flex-wrap items-center justify-end gap-2">
                                 <TextInput
@@ -187,7 +187,7 @@ export default function WalletIndex() {
                                         );
                                     }}
                                     className="py-1"
-                                    placeholder="Search requests..."
+                                    placeholder={t("Search requests...")}
                                 />
                                 <PrimaryButton
                                     type="button"
@@ -205,16 +205,16 @@ export default function WalletIndex() {
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Amount</th>
-                                            <th>Status</th>
-                                            <th>Date</th>
+                                            <th>{t("Amount")}</th>
+                                            <th>{t("Status")}</th>
+                                            <th>{t("Date")}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {rows.map((item, index) => (
                                             <tr key={item.id}>
                                                 <td>#{(withdraw?.from ?? 1) + index}</td>
-                                                <td>{item.amount} TK</td>
+                                                <td>{item.amount}{t("TK")}</td>
                                                 <td>{item.status}</td>
                                                 <td className="text-xs text-gray-500">
                                                     {item.created_at} - {item.created_at_human}
@@ -237,9 +237,7 @@ export default function WalletIndex() {
                                                         disabled={!pagination.prev?.url}
                                                         className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.prev?.url)}
-                                                    >
-                                                        Previous
-                                                    </button>
+                                                    >{t("Previous")}</button>
                                                     {pagination.pages.map((link, index) => (
                                                         <button
                                                             key={`${link.label}-${index}`}
@@ -260,9 +258,7 @@ export default function WalletIndex() {
                                                         disabled={!pagination.next?.url}
                                                         className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.next?.url)}
-                                                    >
-                                                        Next
-                                                    </button>
+                                                    >{t("Next")}</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -270,7 +266,7 @@ export default function WalletIndex() {
                                 ) : null}
                             </div>
                         ) : (
-                            <div>No Withdraw Info Found !</div>
+                            <div>{t("No Withdraw Info Found !")}</div>
                         )}
                     </SectionInner>
                 </SectionSection>

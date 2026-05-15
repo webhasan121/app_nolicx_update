@@ -9,8 +9,10 @@ import PageHeader from "../../../components/dashboard/PageHeader";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import SectionSection from "../../../components/dashboard/section/Section";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function Create() {
+    const { t } = useTranslation();
     const form = useForm({
         name: "",
         image: null,
@@ -26,15 +28,15 @@ export default function Create() {
     };
 
     return (
-        <AppLayout title="Category Create" header={<PageHeader>Category Create</PageHeader>}>
-            <Head title="Category Create" />
+        <AppLayout title={t("Category Create")} header={<PageHeader>{t("Category Create")}</PageHeader>}>
+            <Head title={t("Category Create")} />
 
             <form onSubmit={save}>
                 <Container>
                     <SectionSection>
                         <SectionHeader
-                            title="Category"
-                            content="Get a new category."
+                            title={t("Category")}
+                            content={t("Get a new category.")}
                         />
 
                         <SectionInner>
@@ -42,21 +44,19 @@ export default function Create() {
                                 name="name"
                                 className="md:flex"
                                 labelWidth="250px"
-                                label="Your Category Name"
+                                label={t("Your Category Name")}
                                 value={form.data.name}
                                 onChange={(e) => form.setData("name", e.target.value)}
                                 error={form.errors.name}
                             />
                             <Hr />
-                            <InputFile label="Category Image" error="image" errors={form.errors}>
+                            <InputFile label={t("Category Image")} error="image" errors={form.errors}>
                                 <input
                                     type="file"
                                     onChange={(e) => form.setData("image", e.target.files?.[0] ?? null)}
                                 />
                             </InputFile>
-                            <PrimaryButton disabled={form.processing}>
-                                save
-                            </PrimaryButton>
+                            <PrimaryButton disabled={form.processing}>{t("save")}</PrimaryButton>
                         </SectionInner>
                     </SectionSection>
                 </Container>

@@ -10,8 +10,10 @@ import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import UserDash from "../../../../components/user/dash/UserDash";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function UpgradeRiderEdit() {
+    const { t } = useTranslation();
     const { rider } = usePage().props;
 
     const { data, setData, post, processing, errors } = useForm({
@@ -39,16 +41,14 @@ export default function UpgradeRiderEdit() {
                 <div>
                     <SectionSection>
                         <SectionHeader
-                            title="Rider request"
+                            title={t("Rider request")}
                             content={
                                 <>
                                     Edit and Upgrade Your Vendor Request Form{" "}
                                     <NavLink
                                         className="border-b font-bold"
                                         href={route("upgrade.rider.index")}
-                                    >
-                                        Previous Request
-                                    </NavLink>
+                                    >{t("Previous Request")}</NavLink>
                                 </>
                             }
                         />
@@ -58,7 +58,7 @@ export default function UpgradeRiderEdit() {
                         <SectionSection>
                             <SectionInner>
                                 <InputFile
-                                    label="You phone No"
+                                    label={t("You phone No")}
                                     name="phone"
                                     error="phone"
                                     errors={errors}
@@ -69,11 +69,11 @@ export default function UpgradeRiderEdit() {
                                         onChange={(e) =>
                                             setData("phone", e.target.value)
                                         }
-                                        placeholder="Your phone No "
+                                        placeholder={t("Your phone No")}
                                     />
                                 </InputFile>
                                 <InputFile
-                                    label="You email No"
+                                    label={t("You email No")}
                                     name="email"
                                     error="email"
                                     errors={errors}
@@ -85,13 +85,13 @@ export default function UpgradeRiderEdit() {
                                         onChange={(e) =>
                                             setData("email", e.target.value)
                                         }
-                                        placeholder="Your email No "
+                                        placeholder={t("Your email No")}
                                     />
                                 </InputFile>
                                 <Hr />
 
                                 <InputFile
-                                    label="You NID No"
+                                    label={t("You NID No")}
                                     name="nid"
                                     error="nid"
                                     errors={errors}
@@ -102,12 +102,12 @@ export default function UpgradeRiderEdit() {
                                         onChange={(e) =>
                                             setData("nid", e.target.value)
                                         }
-                                        placeholder="Your NID No "
+                                        placeholder={t("Your NID No")}
                                     />
                                 </InputFile>
 
                                 <InputFile
-                                    label="You NID Front Image"
+                                    label={t("You NID Front Image")}
                                     name="nid_photo_front"
                                     error="nid_photo_front"
                                     errors={errors}
@@ -154,7 +154,7 @@ export default function UpgradeRiderEdit() {
                                     </div>
                                 </InputFile>
                                 <InputFile
-                                    label="You NID Back Image"
+                                    label={t("You NID Back Image")}
                                     name="nid_photo_back"
                                     error="nid_photo_back"
                                     errors={errors}
@@ -201,7 +201,7 @@ export default function UpgradeRiderEdit() {
 
                                 <Hr />
                                 <InputFile
-                                    label="You Fixed Address"
+                                    label={t("You Fixed Address")}
                                     name="fixed_address"
                                     error="fixed_address"
                                     errors={errors}
@@ -215,11 +215,11 @@ export default function UpgradeRiderEdit() {
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="Your Permanent Address based on NID "
+                                        placeholder={t("Your Permanent Address based on NID")}
                                     ></textarea>
                                 </InputFile>
                                 <InputFile
-                                    label="You Current Address"
+                                    label={t("You Current Address")}
                                     name="current_address"
                                     error="current_address"
                                     errors={errors}
@@ -233,7 +233,7 @@ export default function UpgradeRiderEdit() {
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="Your Current Address based on NID "
+                                        placeholder={t("Your Current Address based on NID")}
                                     ></textarea>
                                 </InputFile>
                             </SectionInner>
@@ -242,7 +242,7 @@ export default function UpgradeRiderEdit() {
                         <SectionSection>
                             <SectionInner>
                                 <InputFile
-                                    label="Chose Your Area"
+                                    label={t("Chose Your Area")}
                                     name="area_condition"
                                     error="area_condition"
                                     errors={errors}
@@ -312,7 +312,7 @@ export default function UpgradeRiderEdit() {
                                 <Hr />
                                 <div>
                                     <InputFile
-                                        label="Targetted Area"
+                                        label={t("Targetted Area")}
                                         name="targeted_area"
                                         error="targeted_area"
                                         errors={errors}
@@ -331,9 +331,7 @@ export default function UpgradeRiderEdit() {
                                 </div>
                                 <Hr />
                                 <PrimaryButton disabled={processing}>
-                                    <i className="fas fa-sync pr-2"></i> Update
-                                    & Save
-                                </PrimaryButton>
+                                    <i className="fas fa-sync pr-2"></i>{t("Update & Save")}</PrimaryButton>
                             </SectionInner>
                         </SectionSection>
                     </form>

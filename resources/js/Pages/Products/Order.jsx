@@ -36,6 +36,7 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
         phone: "",
         district: "",
         upozila: "",
+        targeted_area: "",
         location: "",
         house_no: "",
         road_no: "",
@@ -212,6 +213,15 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
                                                 </option>
                                             ))}
                                         </select>
+                                    </InputFile>
+
+                                    <InputFile label="Targeted Area" name="targeted_area" error="targeted_area" errors={errors}>
+                                        <TextInput
+                                            type="text"
+                                            className="w-full"
+                                            value={data.targeted_area}
+                                            onChange={(e) => setData("targeted_area", e.target.value)}
+                                        />
                                     </InputFile>
 
                                     <div>

@@ -17,6 +17,7 @@ import {
     PRODUCT_VIDEO_DURATION_ERROR,
     validateProductVideoDuration,
 } from "../../../utils/videoValidation";
+import useTranslation from "../../../hooks/useTranslation";
 
 function renderCategoryOptions(categories = [], depth = 0) {
     return categories.flatMap((category) => [
@@ -40,23 +41,20 @@ function ProductNavigations({ productId, nav = "Product" }) {
                     nav: "Product",
                 })}
                 active={nav === "Product"}
-            >
-                Product
-            </NavLink>
+            >{t("Product")}</NavLink>
 
             <div>
                 <NavLink
                     href={route("vendor.products.resell", { product: productId })}
                     active={nav === "Resell"}
-                >
-                    Resell
-                </NavLink>
+                >{t("Resell")}</NavLink>
             </div>
         </div>
     );
 }
 
 export default function Edit() {
+    const { t } = useTranslation();
     const { productData, categories = [], errors = {}, auth } = usePage().props;
     const inputId = useId().replace(/:/g, "");
     const editorRef = useRef(null);
@@ -189,16 +187,14 @@ export default function Edit() {
 
     return (
         <AppLayout
-            title="Product Edit"
+            title={t("Product Edit")}
             header={
-                <PageHeader>
-                    Product Edit
-                    <br />
+                <PageHeader>{t("Product Edit")}<br />
                     <ProductNavigations productId={productData.encrypted_id} />
                 </PageHeader>
             }
         >
-            <Head title="Product Edit" />
+            <Head title={t("Product Edit")} />
             <Container>
                 <SectionSection>
                     <SectionHeader
@@ -211,9 +207,7 @@ export default function Edit() {
                                                 color: "red",
                                                 fontWeight: "bolder",
                                             }}
-                                        >
-                                            Trashed
-                                        </div>
+                                        >{t("Trashed")}</div>
                                     ) : (
                                         <div>
                                             {productData.status ? "Active" : "Drafted"}{" "}
@@ -227,17 +221,13 @@ export default function Edit() {
                                             type="button"
                                             onClick={restoreFromTrash}
                                         >
-                                            <i className="fa-solid fa-sync mr-2"></i>{" "}
-                                            Restore
-                                        </SecondaryButton>
+                                            <i className="fa-solid fa-sync mr-2"></i>{" "}{t("Restore")}</SecondaryButton>
                                     ) : (
                                         <SecondaryButton
                                             type="button"
                                             onClick={moveToTrash}
                                         >
-                                            <i className="fa-solid fa-trash mr-2"></i>{" "}
-                                            Trash
-                                        </SecondaryButton>
+                                            <i className="fa-solid fa-trash mr-2"></i>{" "}{t("Trash")}</SecondaryButton>
                                     )}
                                 </div>
                             </div>
@@ -252,24 +242,17 @@ export default function Edit() {
                                     </div>
                                     <div>{productData.title ?? "N/A"}</div>
 
-                                    <div className="text-sm">
-                                        Category :{" "}
+                                    <div className="text-sm">{t("Category :")}{" "}
                                         <strong>
                                             {productData.category_name ?? "N/A"}
                                         </strong>
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="text-sm">
-                                        Type :
-                                        {productData.is_resel ? (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">
-                                                Resel
-                                            </span>
+                                    <div className="text-sm">{t("Type :")}{productData.is_resel ? (
+                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">{t("Resel")}</span>
                                         ) : (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">
-                                                Owner
-                                            </span>
+                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">{t("Owner")}</span>
                                         )}
                                     </div>
                                 </div>
@@ -281,12 +264,12 @@ export default function Edit() {
                 <form onSubmit={save}>
                     <div className="md:flex jusfity-between">
                         <SectionSection>
-                            <SectionHeader title="Product Basic Info" content="" />
+                            <SectionHeader title={t("Product Basic Info")} content="" />
                             <SectionInner>
                                 <InputField
                                     error={errors.name}
                                     labelWidth="350px"
-                                    label="Products Name"
+                                    label={t("Products Name")}
                                     name="name"
                                     inputClass="w-full"
                                     value={form.data.name}
@@ -297,7 +280,7 @@ export default function Edit() {
                                 <InputFile
                                     labelWidth="200px"
                                     error="title"
-                                    label="Products title"
+                                    label={t("Products title")}
                                     name="title"
                                     errors={errors}
                                 >
@@ -315,17 +298,14 @@ export default function Edit() {
                                 <Hr />
                                 <InputFile
                                     labelWidth="250px"
-                                    label="Products Category"
+                                    label={t("Products Category")}
                                     error="category_id"
                                     errors={errors}
                                 >
-                                    <div className="text-xs">
-                                        Category :{" "}
+                                    <div className="text-xs">{t("Category :")}{" "}
                                         <strong>
                                             {productData.category_name ?? "N/A"}
-                                        </strong>
-                                        . Change to another
-                                    </div>
+                                        </strong>{t(". Change to another")}</div>
                                     <select
                                         value={form.data.category_id ?? ""}
                                         onChange={(e) =>
@@ -336,8 +316,7 @@ export default function Edit() {
                                         }
                                     >
                                         <option value="">
-                                            {" "}
-                                            -- Select Category --{" "}
+                                            {" "}{t("-- Select Category --")}{" "}
                                         </option>
                                         {renderCategoryOptions(categories)}
                                     </select>
@@ -347,13 +326,13 @@ export default function Edit() {
                         </SectionSection>
 
                         <SectionSection>
-                            <SectionHeader title="Product Price" content="" />
+                            <SectionHeader title={t("Product Price")} content="" />
                             <SectionInner>
                                 <div>
                                     <InputField
                                         className=" mx-1"
                                         labelWidth="100px"
-                                        label="Product Buying Price"
+                                        label={t("Product Buying Price")}
                                         name="buying_price"
                                         error={errors.buying_price}
                                         value={form.data.buying_price}
@@ -367,7 +346,7 @@ export default function Edit() {
                                     <InputField
                                         className=" mx-1"
                                         labelWidth="100px"
-                                        label="Product Sell Price"
+                                        label={t("Product Sell Price")}
                                         name="price"
                                         error={errors.price}
                                         value={form.data.price}
@@ -379,7 +358,7 @@ export default function Edit() {
                                         className={`${hideUnit ? "hidden disabled" : ""} mx-1`}
                                         labelWidth="100px"
                                         type="number"
-                                        label="Product Unite"
+                                        label={t("Product Unite")}
                                         name="unit"
                                         error={errors.unit}
                                         value={form.data.unit}
@@ -391,7 +370,7 @@ export default function Edit() {
                                 <Hr />
                                 <div>
                                     <InputFile
-                                        label="Wish to sell with Discount"
+                                        label={t("Wish to sell with Discount")}
                                         name="offer_type"
                                         error="offer_type"
                                         errors={errors}
@@ -414,7 +393,7 @@ export default function Edit() {
                                     {form.data.offer_type ? (
                                         <InputField
                                             labelWidth="250px"
-                                            label="Product Discount Price"
+                                            label={t("Product Discount Price")}
                                             name="discount"
                                             error={errors.discount}
                                             value={form.data.discount}
@@ -430,7 +409,7 @@ export default function Edit() {
                                 <Hr />
                                 <div>
                                     <InputFile
-                                        label="Set to Recomended Products"
+                                        label={t("Set to Recomended Products")}
                                         name="display_at_home"
                                         error="display_at_home"
                                         errors={errors}
@@ -459,15 +438,15 @@ export default function Edit() {
 
                     <SectionSection>
                         <SectionHeader
-                            title="Product Delevery"
-                            content="Define your product delevery option and charge from here."
+                            title={t("Product Delevery")}
+                            content={t("Define your product delevery option and charge from here.")}
                         />
                         <SectionInner>
                             <div className="md:flex justify-between  ">
                                 <div>
                                     <InputFile
                                         error="cod"
-                                        label="Available Cash-On-Delevery"
+                                        label={t("Available Cash-On-Delevery")}
                                         name="cod"
                                         errors={errors}
                                     >
@@ -489,7 +468,7 @@ export default function Edit() {
                                     <Hr />
                                     <InputFile
                                         error="courier"
-                                        label="Available Couried Delivery"
+                                        label={t("Available Couried Delivery")}
                                         name="courier"
                                         errors={errors}
                                     >
@@ -511,7 +490,7 @@ export default function Edit() {
                                     <Hr />
                                     <InputFile
                                         error="hand"
-                                        label="Available Hand-To-Hand Delevery"
+                                        label={t("Available Hand-To-Hand Delevery")}
                                         name="hand"
                                         errors={errors}
                                     >
@@ -533,7 +512,7 @@ export default function Edit() {
                                 </div>
                                 <div>
                                     <InputField
-                                        label="Delevery Amount Inside Dhaka"
+                                        label={t("Delevery Amount Inside Dhaka")}
                                         name="shipping_in_dhaka"
                                         className="lg:flex"
                                         labelWidth="250px"
@@ -548,7 +527,7 @@ export default function Edit() {
                                     />
                                     <Hr />
                                     <InputField
-                                        label="Normal Delevery Amount"
+                                        label={t("Normal Delevery Amount")}
                                         className="lg:flex"
                                         name="shipping_out_dhaka"
                                         labelWidth="250px"
@@ -563,7 +542,7 @@ export default function Edit() {
                                     />
                                     <Hr />
                                     <InputFile
-                                        label="Shipping Note"
+                                        label={t("Shipping Note")}
                                         error="shipping_note"
                                         name="shipping_note"
                                         labelWidth="250px"
@@ -573,7 +552,7 @@ export default function Edit() {
                                             id="psn"
                                             rows="3"
                                             className="w-full rounded"
-                                            placeholder="write your shipping note ... "
+                                            placeholder={t("write your shipping note ...")}
                                             value={form.data.shipping_note}
                                             onChange={(e) =>
                                                 form.setData(
@@ -590,13 +569,13 @@ export default function Edit() {
 
                     <SectionSection>
                         <SectionHeader
-                            title="SEO"
-                            content="Setup your product seo from here."
+                            title={t("SEO")}
+                            content={t("Setup your product seo from here.")}
                         />
                         <SectionInner>
                             <InputField
                                 error={errors.keyword}
-                                label="Meta Keyword"
+                                label={t("Meta Keyword")}
                                 name="keyword"
                                 className="lg:flex"
                                 inputClass="w-full"
@@ -607,7 +586,7 @@ export default function Edit() {
                             />
                             <InputField
                                 error={errors.meta_title}
-                                label="Meta Title"
+                                label={t("Meta Title")}
                                 name="meta_title"
                                 className="lg:flex"
                                 inputClass="w-full"
@@ -618,7 +597,7 @@ export default function Edit() {
                             />
                             <InputField
                                 error={errors.meta_tags}
-                                label="Meta Tags"
+                                label={t("Meta Tags")}
                                 name="meta_tags"
                                 className="lg:flex"
                                 inputClass="w-full"
@@ -629,14 +608,14 @@ export default function Edit() {
                             />
                             <InputFile
                                 error="meta_description"
-                                label="Meta Description"
+                                label={t("Meta Description")}
                                 name="meta_description"
                                 errors={errors}
                             >
                                 <textarea
                                     className="rounded-md p-2 shadow w-full"
                                     rows="4"
-                                    placeholder="Meta Description ...."
+                                    placeholder={t("Meta Description ....")}
                                     value={form.data.meta_description}
                                     onChange={(e) =>
                                         form.setData(
@@ -648,7 +627,7 @@ export default function Edit() {
                             </InputFile>
                             <InputFile
                                 error="newseothumb"
-                                label="Meta Thumbnail"
+                                label={t("Meta Thumbnail")}
                                 name="thumbnail"
                                 errors={errors}
                             >
@@ -672,7 +651,7 @@ export default function Edit() {
                                     ) : null}
                                 </div>
                                 <div className="relative">
-                                    <p>100 x 200 meta thumbnail</p>
+                                    <p>{t("100 x 200 meta thumbnail")}</p>
                                     <input
                                         type="file"
                                         id="newseothumb"
@@ -694,8 +673,8 @@ export default function Edit() {
 
                     <SectionSection>
                         <SectionHeader
-                            title="Image Attributes"
-                            content="Give your products attributes, product different types, different product color package and quantity."
+                            title={t("Image Attributes")}
+                            content={t("Give your products attributes, product different types, different product color package and quantity.")}
                         />
                         <SectionInner>
                             <div className="md:flex">
@@ -708,7 +687,7 @@ export default function Edit() {
                                             e.target.value
                                         )
                                     }
-                                    placeholder="Name"
+                                    placeholder={t("Name")}
                                 />
                                 <input
                                     type="text"
@@ -719,7 +698,7 @@ export default function Edit() {
                                             e.target.value
                                         )
                                     }
-                                    placeholder="Value"
+                                    placeholder={t("Value")}
                                 />
                             </div>
                         </SectionInner>
@@ -728,17 +707,10 @@ export default function Edit() {
                     <SectionSection>
                         <div className="md:flex flex-rowreverse justify-between">
                             <SectionHeader
-                                title="Image Thumbnail"
+                                title={t("Image Thumbnail")}
                                 content={
-                                    <div>
-                                        Provide a mendatory thumbnail image for
-                                        your products. This image consider for
-                                        the thumbnail for social media platform.
-
-                                        <div className="relative mt-3">
-                                            <p className="mb-2 text-xs">
-                                                600 x 600 image thumbnail
-                                            </p>
+                                    <div>{t("Provide a mendatory thumbnail image for your products. This image consider for the thumbnail for social media platform.")}<div className="relative mt-3">
+                                            <p className="mb-2 text-xs">{t("600 x 600 image thumbnail")}</p>
                                             <input
                                                 id="prod_thumb"
                                                 type="file"
@@ -779,12 +751,12 @@ export default function Edit() {
 
                     <SectionSection>
                         <SectionHeader
-                            title="Product Video"
-                            content="Add an optional YouTube video URL for the details page."
+                            title={t("Product Video")}
+                            content={t("Add an optional YouTube video URL for the details page.")}
                         />
                         <SectionInner>
                             <InputField
-                                label="YouTube URL"
+                                label={t("YouTube URL")}
                                 name="video"
                                 value={form.data.video}
                                 onChange={(e) => form.setData("video", e.target.value)}
@@ -795,8 +767,8 @@ export default function Edit() {
 
                     <SectionSection>
                         <SectionHeader
-                            title="Other Image"
-                            content="Other product image that showcase your product. other image mainly display at product details page."
+                            title={t("Other Image")}
+                            content={t("Other product image that showcase your product. other image mainly display at product details page.")}
                         />
 
                         <SectionInner>
@@ -816,9 +788,7 @@ export default function Edit() {
                                             onClick={() =>
                                                 eraseOldImage(item.id)
                                             }
-                                        >
-                                            Erage
-                                        </button>
+                                        >{t("Erage")}</button>
                                     </div>
                                 ))}
                             </div>
@@ -868,22 +838,19 @@ export default function Edit() {
                                 >
                                     <i className="fas fa-upload"></i>
                                 </label>
-                                <div className="text-xs leading-5">
-                                    Please choose all image at once, if you plan to
-                                    upload multiple image.
-                                </div>
+                                <div className="text-xs leading-5">{t("Please choose all image at once, if you plan to upload multiple image.")}</div>
                             </div>
                         </SectionInner>
                     </SectionSection>
 
                     <SectionSection>
                         <SectionHeader
-                            title="Description"
-                            content="Descrive your product as you need."
+                            title={t("Description")}
+                            content={t("Descrive your product as you need.")}
                         />
                         <SectionInner>
                             <InputFile
-                                label="Description"
+                                label={t("Description")}
                                 labelWidth="250px"
                                 error="description"
                                 errors={errors}
@@ -925,7 +892,7 @@ export default function Edit() {
                         </SectionInner>
                     </SectionSection>
 
-                    <PrimaryButton>save</PrimaryButton>
+                    <PrimaryButton>{t("save")}</PrimaryButton>
                 </form>
             </Container>
         </AppLayout>

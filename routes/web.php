@@ -32,6 +32,7 @@ use App\Support\VendorDashboardOverview;
 use App\Support\VendorOrdersIndexData;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
 
@@ -47,6 +48,22 @@ Route::post('/language/switch', function (\Illuminate\Http\Request $request) {
 
     session(['locale' => $language['code']]);
 
+    if ($request->user()) {
+        $updates = [];
+
+        if (Schema::hasColumn('users', 'site_language')) {
+            $updates['site_language'] = $language['code'];
+        }
+
+        if (Schema::hasColumn('users', 'language')) {
+            $updates['language'] = $language['code'];
+        }
+
+        if ($updates) {
+            $request->user()->forceFill($updates)->save();
+        }
+    }
+
     return back();
 })->name('language.switch');
 Route::middleware('auth')->post('/cart/add', [CartController::class, 'store']);
@@ -55,7 +72,7 @@ Route::get('dashboard', function () {
     if (auth()->user()->hasAnyRole(['system', 'admin']) || auth()->user()->can('access_vendor_dashboard') || auth()->user()->can('access_reseller_dashboard') || auth()->user()->can('access_rider_dashboard')) {
         return Inertia::render('Dashboard', [
             'systemOverview' => SystemDashboardOverview::get(),
-            'resellerOverview' => ResellerDashboardOverview::get(),
+            'resellerOverview' => ResellerDashboardOverview::get(auth()->user()),
             'riderConsignmentIndex' => RiderConsignmentIndexData::get(auth()->user(), request()->only([
                 'status',
                 'created_at',
@@ -105,6 +122,7 @@ Route::get('category', [CategoryIndexController::class, 'index'])->name('categor
 
 Route::get('product/{id}/{slug}', [ProductDetailsController::class, 'show'])->name('products.details')->middleware('products.view.add');
 Route::middleware('auth')->post('product/{id}/{slug}/task', [ProductDetailsController::class, 'countTask'])->name('products.details.task');
+Route::middleware('auth')->post('product/{id}/{slug}/save-for-later', [ProductDetailsController::class, 'saveForLater'])->name('products.save-for-later');
 
 Route::get('product/order/{id}/{slug}', [ProductOrderController::class, 'create'])->name('product.makeOrder')->middleware('auth');
 Route::post('product/order/{id}/{slug}', [ProductOrderController::class, 'store'])->name('product.makeOrder.store')->middleware('auth');

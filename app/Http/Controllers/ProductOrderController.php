@@ -110,6 +110,7 @@ class ProductOrderController extends Controller
             'phone' => ['required'],
             'district' => ['required'],
             'upozila' => ['required'],
+            'targeted_area' => ['nullable', 'string', 'max:255'],
             'location' => ['required'],
             'delevery' => ['required'],
             'area_condition' => ['nullable'],
@@ -156,7 +157,7 @@ class ProductOrderController extends Controller
             'road_no' => $data['road_no'] ?? null,
             'house_no' => $data['house_no'] ?? null,
             'shipping' => $shipping,
-            'target_area' => $data['upozila'],
+            'target_area' => $data['targeted_area'] ?: $data['upozila'],
         ]);
 
         CartOrder::create([

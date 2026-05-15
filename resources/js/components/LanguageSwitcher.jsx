@@ -2,7 +2,7 @@ import { router } from "@inertiajs/react";
 import useTranslation from "../hooks/useTranslation";
 
 export default function LanguageSwitcher({ compact = false, className = "" }) {
-    const { current, available } = useTranslation();
+    const { current, available, fixed = false } = useTranslation();
 
     if (!available.length) {
         return null;
@@ -29,6 +29,7 @@ export default function LanguageSwitcher({ compact = false, className = "" }) {
             <select
                 value={current}
                 onChange={switchLanguage}
+                disabled={fixed}
                 className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 shadow-sm focus:border-indigo-400 focus:ring-indigo-200"
                 title="Language"
             >

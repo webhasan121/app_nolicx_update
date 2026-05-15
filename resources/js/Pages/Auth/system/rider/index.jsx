@@ -13,10 +13,12 @@ import SectionInner from "../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../components/dashboard/section/Section";
 import Table from "../../../../components/dashboard/table/Table";
 import TextInput from "../../../../components/TextInput";
+import useTranslation from "../../../../hooks/useTranslation";
 
 const FILTERS = ["all", "Active", "Pending", "Disabled", "Suspended"];
 
 export default function Index() {
+    const { t } = useTranslation();
     const { filters = {}, widgets = [], riders = {}, printUrl } = usePage().props;
     const [search, setSearch] = useState(filters.find ?? "");
     const [sd, setSd] = useState(filters.sd ?? "");
@@ -105,8 +107,8 @@ export default function Index() {
 
     return (
         <AppLayout
-            title="Rider - Delevary Man"
-            header={<PageHeader>Rider - Delevary Man</PageHeader>}
+            title={t("Rider - Delevary Man")}
+            header={<PageHeader>{t("Rider - Delevary Man")}</PageHeader>}
         >
             <div>
                 <Container>
@@ -124,7 +126,7 @@ export default function Index() {
                 <Container>
                     <SectionSection>
                         <SectionHeader
-                            title="Riders"
+                            title={t("Riders")}
                             content={
                                 <>
                                     <div className="flex justify-between items-start gap-4">
@@ -184,7 +186,7 @@ export default function Index() {
                                             />
                                             <TextInput
                                                 type="search"
-                                                placeholder="Search riders..."
+                                                placeholder={t("Search riders...")}
                                                 className="py-1"
                                                 value={search}
                                                 onChange={(e) => setSearch(e.target.value)}
@@ -215,10 +217,10 @@ export default function Index() {
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Name</th>
-                                            <th>Status</th>
-                                            <th>Join Data</th>
-                                            <th>A/C</th>
+                                            <th>{t("Name")}</th>
+                                            <th>{t("Status")}</th>
+                                            <th>{t("Join Data")}</th>
+                                            <th>{t("A/C")}</th>
                                         </tr>
                                     </thead>
 
@@ -236,9 +238,7 @@ export default function Index() {
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <NavLink href={route("system.rider.edit", { id: item.id })}>
-                                                        edit
-                                                    </NavLink>
+                                                    <NavLink href={route("system.rider.edit", { id: item.id })}>{t("edit")}</NavLink>
                                                 </td>
                                             </tr>
                                         ))}
@@ -258,9 +258,7 @@ export default function Index() {
                                                         disabled={!pagination.prev?.url}
                                                         className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.prev?.url)}
-                                                    >
-                                                        Previous
-                                                    </button>
+                                                    >{t("Previous")}</button>
                                                     {pagination.pages.map((link, index) => (
                                                         <button
                                                             key={`${link.label}-${index}`}
@@ -281,9 +279,7 @@ export default function Index() {
                                                         disabled={!pagination.next?.url}
                                                         className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.next?.url)}
-                                                    >
-                                                        Next
-                                                    </button>
+                                                    >{t("Next")}</button>
                                                 </div>
                                             </div>
                                         </div>

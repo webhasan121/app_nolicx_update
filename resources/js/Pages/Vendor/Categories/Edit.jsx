@@ -8,8 +8,10 @@ import Container from "../../../components/dashboard/Container";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import SectionSection from "../../../components/dashboard/section/Section";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function Edit({ category }) {
+    const { t } = useTranslation();
     const form = useForm({
         name: category?.name ?? "",
         image: null,
@@ -26,8 +28,8 @@ export default function Edit({ category }) {
     };
 
     return (
-        <AppLayout title="Category Update" header={<PageHeader>Category Update</PageHeader>}>
-            <Head title="Category Update" />
+        <AppLayout title={t("Category Update")} header={<PageHeader>{t("Category Update")}</PageHeader>}>
+            <Head title={t("Category Update")} />
 
             <form onSubmit={save}>
                 <Container>
@@ -37,13 +39,13 @@ export default function Edit({ category }) {
                                 name="name"
                                 className="md:flex"
                                 labelWidth="250px"
-                                label="Your Category Name"
+                                label={t("Your Category Name")}
                                 value={form.data.name}
                                 onChange={(e) => form.setData("name", e.target.value)}
                                 error={form.errors.name}
                             />
                             <Hr />
-                            <InputFile label="Category Image" error="image" errors={form.errors}>
+                            <InputFile label={t("Category Image")} error="image" errors={form.errors}>
                                 {!preview && category?.image_url ? (
                                     <img width="100" height="100" src={category.image_url} alt="" />
                                 ) : null}
@@ -55,7 +57,7 @@ export default function Edit({ category }) {
                                     onChange={(e) => form.setData("image", e.target.files?.[0] ?? null)}
                                 />
                             </InputFile>
-                            <PrimaryButton disabled={form.processing}>update</PrimaryButton>
+                            <PrimaryButton disabled={form.processing}>{t("update")}</PrimaryButton>
                         </SectionInner>
                     </SectionSection>
                 </Container>

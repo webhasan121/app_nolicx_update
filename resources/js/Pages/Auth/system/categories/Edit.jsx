@@ -11,8 +11,10 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import CreateCategory from "../../../../livewire/reseller/categories/Create";
+import useTranslation from "../../../../hooks/useTranslation";
 
 export default function Edit({ category, parentCategories = [] }) {
+    const { t } = useTranslation();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
 
@@ -62,25 +64,22 @@ export default function Edit({ category, parentCategories = [] }) {
     };
 
     return (
-        <AppLayout title="Edit Category">
-            <Head title="Edit Category" />
+        <AppLayout title={t("Edit Category")}>
+            <Head title={t("Edit Category")} />
 
             <Container>
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between items-start w-full">
-                                Edit Category
-                                <PrimaryButton
+                            <div className="flex justify-between items-start w-full">{t("Edit Category")}<PrimaryButton
                                     className="ml-2"
                                     type="button"
                                     onClick={() => setShowCreateModal(true)}
                                 >
-                                    <i className="fas fa-plus pr-2"></i> Category
-                                </PrimaryButton>
+                                    <i className="fas fa-plus pr-2"></i>{t("Category")}</PrimaryButton>
                             </div>
                         }
-                        content="Modify the details of the selected category."
+                        content={t("Modify the details of the selected category.")}
                     />
 
                     <SectionInner>
@@ -158,8 +157,7 @@ export default function Edit({ category, parentCategories = [] }) {
                                     htmlFor="image"
                                     className="inline-block p-2 text-sm font-medium text-gray-700 border rounded text-end"
                                 >
-                                    <i className="pr-2 fas fa-upload"></i> Upload
-                                </label>
+                                    <i className="pr-2 fas fa-upload"></i>{t("Upload")}</label>
                                 <input
                                     type="file"
                                     id="image"
@@ -196,7 +194,7 @@ export default function Edit({ category, parentCategories = [] }) {
                                     id="parent_id"
                                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                 >
-                                    <option value="">None</option>
+                                    <option value="">{t("None")}</option>
                                     {renderCategoryOptions(parentCategories)}
                                 </select>
                                 {form.errors.belongs_to ? (
@@ -209,8 +207,7 @@ export default function Edit({ category, parentCategories = [] }) {
 
                             <div className="flex justify-end">
                                 <PrimaryButton type="submit">
-                                    <i className="fas fa-save pr-2"></i>Save Changes
-                                </PrimaryButton>
+                                    <i className="fas fa-save pr-2"></i>{t("Save Changes")}</PrimaryButton>
                             </div>
                         </form>
                     </SectionInner>

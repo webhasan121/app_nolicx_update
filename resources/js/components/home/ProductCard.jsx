@@ -1,9 +1,18 @@
-import { Link, router } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
+import { useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import NavLink from "../NavLink";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({
+    product,
+    showSaveForLater = false,
+    savedForLater = false,
+    onSaveForLaterChange = null,
+}) {
+    const { auth } = usePage().props;
+    const [isSaved, setIsSaved] = useState(Boolean(savedForLater));
+    const [saving, setSaving] = useState(false);
     const hasOffer = product.offer_type && product.discount;
 
     const discountPercentage = hasOffer
@@ -47,7 +56,59 @@ export default function ProductCard({ product }) {
             }
         }
     };
-                // alert("Login to add cart");
+
+    const toggleSaveForLater = async () => {
+        if (!auth?.user) {
+            router.get(route("login"));
+            return;
+        }
+
+        if (saving) return;
+
+        setSaving(true);
+
+        try {
+            const response = await axios.post(
+                route("products.save-for-later", {
+                    id: product.id,
+                    slug: product.slug,
+                }),
+            );
+            const saved = Boolean(response.data?.saved);
+
+            setIsSaved(saved);
+            onSaveForLaterChange?.(product, saved);
+
+            Swal.fire({
+                icon: "success",
+                title:
+                    response.data?.message ||
+                    (saved
+                        ? "Product saved for later"
+                        : "Product removed from saved list"),
+                toast: true,
+                timer: 1800,
+                showConfirmButton: false,
+                position: "bottom-start",
+            });
+        } catch (error) {
+            if (error.response?.status === 401) {
+                router.get(route("login"));
+                return;
+            }
+
+            Swal.fire({
+                icon: "error",
+                title: "Unable to update saved product",
+                toast: true,
+                timer: 1800,
+                showConfirmButton: false,
+                position: "bottom-start",
+            });
+        } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <div className="relative overflow-hidden bg-white border box group">
@@ -57,6 +118,21 @@ export default function ProductCard({ product }) {
                     {discountPercentage}%
                 </div>
             )}
+
+            {showSaveForLater ? (
+                <button
+                    type="button"
+                    className="absolute top-2 right-2 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm shadow disabled:opacity-70"
+                    onClick={toggleSaveForLater}
+                    disabled={saving}
+                    title={isSaved ? "Remove from For You" : "Save for later"}
+                >
+                    <i
+                        className={`${isSaved ? "fas" : "far"} fa-heart`}
+                        style={{ color: "var(--brand-primary)" }}
+                    ></i>
+                </button>
+            ) : null}
 
             {/* Hover Option Container */}
             <div className="absolute inset-0 hidden transition-opacity opacity-0 option_container lg:block bg-orange-100/40 group-hover:opacity-100">
