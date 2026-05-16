@@ -144,16 +144,15 @@ export default function Edit({ category, parentCategories = [] }) {
                                     htmlFor="slug"
                                     className="block text-sm font-medium text-gray-700"
                                 >
-                                    Category Name
+                                    SEO Slug
                                 </InputLabel>
                                 <TextInput
                                     type="text"
                                     id="slug"
                                     value={form.data.slug}
-                                    onChange={(e) =>
-                                        form.setData("slug", e.target.value)
-                                    }
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                    disabled
+                                    readOnly
+                                    className="mt-1 block w-full border-gray-300 bg-gray-100 text-gray-500 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                     required
                                 />
                                 {form.errors.slug ? (

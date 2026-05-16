@@ -3,7 +3,6 @@ import { usePage, router } from "@inertiajs/react";
 import AppLayout from "../../../../Layouts/App";
 import Container from "../../../../components/dashboard/Container";
 import Hr from "../../../../components/Hr";
-import PageHeader from "../../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import SectionInner from "../../../../components/dashboard/section/Inner";
@@ -221,7 +220,7 @@ export default function Index() {
     );
 
     return (
-        <AppLayout title={pageTitle} header={<PageHeader>{pageTitle}</PageHeader>}>
+        <AppLayout title={pageTitle}>
             <Container>
                 <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>

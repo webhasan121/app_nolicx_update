@@ -227,41 +227,38 @@ export default function Dashboard({
     };
 
     return (
-        <div>
-            <div>
+            <Container>
                 <div>
-                    <div>
-                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                            <OverviewDiv title="Product">{tp}</OverviewDiv>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                        <OverviewDiv title="Product">{tp}</OverviewDiv>
 
-                            <OverviewDiv title="Vendor Shops">
-                                {vendor}
-                            </OverviewDiv>
-                            <OverviewDiv title="Today sell">
-                                {money(dashboardOverview?.today_sell)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Monthly sell">
-                                {money(dashboardOverview?.monthly_sell)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Product stock">
-                                {dashboardOverview?.product_stock ?? "0"}
-                            </OverviewDiv>
-                            <OverviewDiv title="Total product stock price">
-                                {money(dashboardOverview?.total_product_stock_price)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Yearly sell amount">
-                                {money(dashboardOverview?.yearly_sell_amount)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Total amount">
-                                {money(dashboardOverview?.total_amount)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Monthly profit">
-                                {money(dashboardOverview?.monthly_profit)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Daily profit">
-                                {money(dashboardOverview?.daily_profit)}
-                            </OverviewDiv>
-                        </div>
+                        <OverviewDiv title="Vendor Shops">
+                            {vendor}
+                        </OverviewDiv>
+                        <OverviewDiv title="Today sell">
+                            {money(dashboardOverview?.today_sell)}
+                        </OverviewDiv>
+                        <OverviewDiv title="Monthly sell">
+                            {money(dashboardOverview?.monthly_sell)}
+                        </OverviewDiv>
+                        <OverviewDiv title="Product stock">
+                            {dashboardOverview?.product_stock ?? "0"}
+                        </OverviewDiv>
+                        <OverviewDiv title="Total product stock price">
+                            {money(dashboardOverview?.total_product_stock_price)}
+                        </OverviewDiv>
+                        <OverviewDiv title="Yearly sell amount">
+                            {money(dashboardOverview?.yearly_sell_amount)}
+                        </OverviewDiv>
+                        <OverviewDiv title="Total amount">
+                            {money(dashboardOverview?.total_amount)}
+                        </OverviewDiv>
+                        <OverviewDiv title="Monthly profit">
+                            {money(dashboardOverview?.monthly_profit)}
+                        </OverviewDiv>
+                        <OverviewDiv title="Daily profit">
+                            {money(dashboardOverview?.daily_profit)}
+                        </OverviewDiv>
                     </div>
                     <Hr />
 
@@ -314,7 +311,6 @@ export default function Dashboard({
                         <i className="w-6 pr-2 fas fa-sync"></i> View All
                     </ResponsiveNavLink>
                 </div>
-
                 <Modal show={open} onClose={closeCategoryModal}>
                     <div className="flex flex-col gap-3 p-3 border-b sm:flex-row sm:items-center sm:justify-between">
                         <div>Explore Category</div>
@@ -355,7 +351,6 @@ export default function Dashboard({
                         </DangerButton>
                     </div>
                 </Modal>
-            </div>
-        </div>
+            </Container>
     );
 }
