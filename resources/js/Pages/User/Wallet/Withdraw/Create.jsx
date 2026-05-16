@@ -11,6 +11,8 @@ import Hr from "../../../../components/Hr";
 export default function WithdrawCreate() {
     const {
         available_balance,
+        minimum_remaining_balance = 0,
+        minimum_remaining_balance_applies = false,
         phone,
         errors: pageErrors = {},
     } = usePage().props;
@@ -33,6 +35,14 @@ export default function WithdrawCreate() {
     const amountError = errors.amount || pageErrors.amount;
     const payToError = errors.pay_to || pageErrors.pay_to;
     const phoneError = errors.phone || pageErrors.phone;
+    const amountValue = Number(data.amount || 0);
+    const availableBalanceValue = Number(available_balance || 0);
+    const remainingBalance = availableBalanceValue - amountValue;
+    const showMinimumBalanceWarning =
+        minimum_remaining_balance_applies &&
+        (availableBalanceValue <= minimum_remaining_balance ||
+            (amountValue > 0 && remainingBalance <= minimum_remaining_balance));
+    const minimumBalanceMessage = `You cannot withdraw when the remaining withdrawable balance is ${minimum_remaining_balance} TK or less.`;
 
     return (
         <UserDash>
@@ -48,7 +58,14 @@ export default function WithdrawCreate() {
                             content={
                                 available_balance > 1 ? (
                                     <div>
-                                        Able to Withdraw : {available_balance}
+                                        <div>
+                                            Able to Withdraw : {available_balance}
+                                        </div>
+                                        {showMinimumBalanceWarning && (
+                                            <div className="mt-2 text-sm font-semibold text-red-700">
+                                                {minimumBalanceMessage}
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <span>
@@ -176,7 +193,12 @@ export default function WithdrawCreate() {
                                         <i className="mr-2 fas fa-arrow-left"></i>{" "}
                                         Back
                                     </NavLink>
-                                    <PrimaryButton disabled={processing}>
+                                    <PrimaryButton
+                                        disabled={
+                                            processing ||
+                                            showMinimumBalanceWarning
+                                        }
+                                    >
                                         Submit
                                     </PrimaryButton>
                                 </div>

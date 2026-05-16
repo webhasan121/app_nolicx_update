@@ -9,10 +9,14 @@ class WithdrawCreateController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+        $businessAccounts = ['rider', 'reseller', 'vendor'];
+
         return Inertia::render('User/Wallet/Withdraw/Create', [
-            'available_balance' => auth()->user()->abailCoin(),
-            'phone' => auth()->user()->phone,
+            'available_balance' => $user->abailCoin(),
+            'phone' => $user->phone,
+            'minimum_remaining_balance' => in_array($user->active_nav, $businessAccounts, true) ? 200 : 0,
+            'minimum_remaining_balance_applies' => in_array($user->active_nav, $businessAccounts, true),
         ]);
     }
 }
-

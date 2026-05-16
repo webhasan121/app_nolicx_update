@@ -1,10 +1,12 @@
 import { Head, router } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Hr from "../../../../components/Hr";
 import Modal from "../../../../components/Modal";
 import NavLink from "../../../../components/NavLink";
+import PrimaryButton from "../../../../components/PrimaryButton";
 import SecondaryButton from "../../../../components/SecondaryButton";
+import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import Foreach from "../../../../components/dashboard/Foreach";
 import Div from "../../../../components/dashboard/overview/Div";
@@ -39,17 +41,66 @@ function buildQuery(filters, updates = {}) {
     );
 }
 
-export default function Index({ activeNav, filters = {}, summary = {}, list = {} }) {
+export default function Index({ activeNav, filters = {}, summary = {}, list = {}, printUrl }) {
     const [filterOpen, setFilterOpen] = useState(false);
+    const [find, setFind] = useState(filters.find ?? "");
     const rows = list?.data ?? [];
 
-    const updateFilters = (updates) => {
+    const updateFilters = (updates = {}) => {
         router.get(route("reseller.resel-order.index"), buildQuery(filters, updates), {
             preserveState: true,
             preserveScroll: true,
             replace: true,
         });
     };
+
+    useEffect(() => {
+        setFind(filters.find ?? "");
+    }, [filters.find]);
+
+    useEffect(() => {
+        const nextFind = find.trim();
+        const currentFind = (filters.find ?? "").trim();
+
+        if (nextFind === currentFind) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            updateFilters({ find: nextFind, page: undefined });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [find, filters.find]);
+
+    const cleanLabel = (label) =>
+        String(label)
+            .replace(/&laquo;/g, "")
+            .replace(/&raquo;/g, "")
+            .trim();
+
+    const pagination = useMemo(() => {
+        const links = list?.links ?? [];
+
+        return {
+            prev: links[0] ?? null,
+            next: links[links.length - 1] ?? null,
+            pages: links.slice(1, -1),
+        };
+    }, [list?.links]);
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        router.get(url, {}, { preserveScroll: true, preserveState: true });
+    };
+
+    const resultSummary =
+        list?.total > 0
+            ? `Showing ${list?.from ?? 0}-${list?.to ?? 0} of ${list?.total ?? 0} resel orders`
+            : "No resel orders found";
 
     return (
         <AppLayout
@@ -85,38 +136,76 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-start space-x-2">
-                                <SecondaryButton type="button" onClick={() => setFilterOpen(true)}>
-                                    <i className="fas fa-filter pr-2"></i> Filter
-                                </SecondaryButton>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <SecondaryButton
+                                        type="button"
+                                        onClick={() => setFilterOpen(true)}
+                                        className="inline-flex h-9 items-center gap-2 px-4 text-xs"
+                                    >
+                                        <i className="fas fa-filter text-sm"></i>
+                                        <span>Filter</span>
+                                    </SecondaryButton>
 
-                                <select
-                                    id="status"
-                                    value={filters.nav ?? "Pending"}
-                                    onChange={(e) => updateFilters({ nav: e.target.value })}
-                                    className="py-1 px-2 rounded-md border"
-                                >
-                                    <option value="All">Any</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Accept">Accept</option>
-                                    <option value="Picked">Picked</option>
-                                    <option value="Delivery">Delivery</option>
-                                    <option value="Delivered">Delivered</option>
-                                    <option value="Confirm">Confirm</option>
-                                    <option value="Reject">Reject</option>
-                                    <option value="Hold">Hold</option>
-                                </select>
+                                    <div className="relative">
+                                        <select
+                                            id="status"
+                                            value={filters.nav ?? "Pending"}
+                                            onChange={(e) => updateFilters({ nav: e.target.value, page: undefined })}
+                                            className="h-9 min-w-28 appearance-none rounded-md border border-slate-300 bg-white py-1 pl-3 pr-9 text-sm text-slate-900 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                        >
+                                            <option value="All">Any</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Accept">Accept</option>
+                                            <option value="Picked">Picked</option>
+                                            <option value="Delivery">Delivery</option>
+                                            <option value="Delivered">Delivered</option>
+                                            <option value="Confirm">Confirm</option>
+                                            <option value="Reject">Reject</option>
+                                            <option value="Hold">Hold</option>
+                                        </select>
+                                        <i className="fas fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500"></i>
+                                    </div>
 
-                                <select
-                                    id="type"
-                                    value={filters.type ?? "All"}
-                                    onChange={(e) => updateFilters({ type: e.target.value })}
-                                    className="py-1 px-2 rounded-md border"
-                                >
-                                    <option value="All">All</option>
-                                    <option value="Resel">Resel</option>
-                                    <option value="Purchase">Purchase</option>
-                                </select>
+                                    <div className="relative">
+                                        <select
+                                            id="type"
+                                            value={filters.type ?? "All"}
+                                            onChange={(e) => updateFilters({ type: e.target.value, page: undefined })}
+                                            className="h-9 min-w-24 appearance-none rounded-md border border-slate-300 bg-white py-1 pl-3 pr-9 text-sm text-slate-900 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                        >
+                                            <option value="All">All</option>
+                                            <option value="Resel">Resel</option>
+                                            <option value="Purchase">Purchase</option>
+                                        </select>
+                                        <i className="fas fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500"></i>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <TextInput
+                                        type="search"
+                                        value={find}
+                                        onChange={(e) => setFind(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") {
+                                                return;
+                                            }
+
+                                            e.preventDefault();
+                                            updateFilters({ find: find.trim(), page: undefined });
+                                        }}
+                                        placeholder="Search orders..."
+                                        className="h-9 w-64 py-1 text-sm"
+                                    />
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={() => window.open(printUrl, "_blank")}
+                                        className="inline-flex h-9 w-12 items-center justify-center px-0"
+                                    >
+                                        <i className="fas fa-print text-sm"></i>
+                                    </PrimaryButton>
+                                </div>
                             </div>
                         }
                         content={
@@ -148,7 +237,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                 <tbody>
                                     {rows.map((item, index) => (
                                         <tr key={item.id}>
-                                            <td>{index + 1}</td>
+                                            <td>{item.sl ?? index + 1}</td>
                                             <td>{item.id}</td>
                                             <td>
                                                 {item.shop_id ? (
@@ -200,6 +289,51 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                     ))}
                                 </tbody>
                             </Table>
+
+                            {pagination.pages.length ? (
+                                <div className="w-full pt-4">
+                                    <div className="flex items-center justify-between w-full gap-3">
+                                        <div className="text-sm text-slate-700">
+                                            {resultSummary}
+                                        </div>
+                                        <div className="flex items-center md:justify-end">
+                                            <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
+                                                <button
+                                                    type="button"
+                                                    disabled={!pagination.prev?.url}
+                                                    className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    onClick={() => goToPage(pagination.prev?.url)}
+                                                >
+                                                    Previous
+                                                </button>
+                                                {pagination.pages.map((link, index) => (
+                                                    <button
+                                                        key={`${link.label}-${index}`}
+                                                        type="button"
+                                                        disabled={!link.url}
+                                                        className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                            link.active
+                                                                ? "bg-slate-100 text-blue-600"
+                                                                : "bg-white text-slate-700 hover:bg-slate-50"
+                                                        } disabled:cursor-not-allowed disabled:opacity-50`}
+                                                        onClick={() => goToPage(link.url)}
+                                                    >
+                                                        {cleanLabel(link.label)}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    disabled={!pagination.next?.url}
+                                                    className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    onClick={() => goToPage(pagination.next?.url)}
+                                                >
+                                                    Next
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
                         </Foreach>
                     </SectionInner>
                 </SectionSection>
