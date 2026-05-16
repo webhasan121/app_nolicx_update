@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\System;
 
+use App\HandleImageUpload;
 use App\Http\Controllers\Controller;
 use App\Models\Static_slider;
 use App\Models\Static_slider_slides;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class StaticSliderController extends Controller
 {
+    use HandleImageUpload;
+
     public function indexReact(): Response
     {
         $sliders = Static_slider::query()->orderBy('id', 'desc')->get();

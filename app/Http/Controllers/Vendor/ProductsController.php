@@ -23,6 +23,8 @@ class ProductsController extends Controller
 {
     use HandleImageUpload;
 
+    private const MAX_SHOWCASE_IMAGES = 8;
+
     public function index(Request $request): Response
     {
         $filters = [
@@ -246,6 +248,7 @@ class ProductsController extends Controller
             'price' => 'required',
             'thumb' => 'required|image|max:4096',
             'video' => ['nullable', 'url', 'max:2048'],
+            'newImage' => ['nullable', 'array', 'max:' . self::MAX_SHOWCASE_IMAGES],
             'newImage.*' => 'image|max:2048',
         ]);
 
@@ -401,6 +404,7 @@ class ProductsController extends Controller
             ->withTrashed()
             ->with(['attr', 'showcase'])
             ->findOrFail($productId);
+        $availableShowcaseSlots = max(0, self::MAX_SHOWCASE_IMAGES - $data->showcase->count());
 
         $payload = $request->validate([
             'name' => ['nullable', 'string'],
@@ -428,6 +432,7 @@ class ProductsController extends Controller
             'thumb' => [empty($data->thumbnail) ? 'required' : 'nullable', 'file', 'image'],
             'video' => ['nullable', 'url', 'max:2048'],
             'newseothumb' => ['nullable', 'file', 'image'],
+            'newImage' => ['nullable', 'array', 'max:' . $availableShowcaseSlots],
             'newImage.*' => ['nullable', 'file', 'image'],
         ]);
 

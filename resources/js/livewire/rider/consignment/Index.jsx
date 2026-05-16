@@ -39,8 +39,8 @@ export default function Index({ riderConsignmentIndex }) {
     return (
         <div>
             <Container>
-                <div className="flex justify-between items-center">
-                    <div className="flex gap-2 items-center">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                         <select
                             value={filters.status ?? "All"}
                             onChange={(e) => updateFilter(filters, { status: e.target.value })}
@@ -72,13 +72,13 @@ export default function Index({ riderConsignmentIndex }) {
                             }}
                         >
                             {consignments.map((cod) => (
-                                <div key={cod.id} className="relative bg-white rounded shadow text-center flex flex-col justify-between">
+                                <div key={cod.id} className="relative flex flex-col justify-between text-center bg-white rounded shadow">
                                     <div className="py-2 bg-gray-200">
                                         <h3 className="text-xs text-gray-500">
                                             Order ID
                                             <a
                                                 href={route("rider.consignment.view", { id: cod.id })}
-                                                className="cursor-pointer text-xs px-2 inline-block rounded-xl bg-indigo-900 text-white shadow"
+                                                className="inline-block px-2 text-xs text-white bg-indigo-900 shadow cursor-pointer rounded-xl"
                                             >
                                                 View
                                             </a>
@@ -87,12 +87,12 @@ export default function Index({ riderConsignmentIndex }) {
                                     </div>
 
                                     <div className="p-2">
-                                        <div className="flex justify-center items-center -space-x-2 overflow-hidden">
+                                        <div className="flex items-center justify-center -space-x-2 overflow-hidden">
                                             {cod.images.map((image, index) => (
                                                 <img
                                                     key={`${cod.id}-${index}`}
                                                     src={`/storage/${image}`}
-                                                    className="inline-block size-10 rounded-full ring-2 ring-white outline -outline-offset-1 outline-black/5"
+                                                    className="inline-block rounded-full size-10 ring-2 ring-white outline -outline-offset-1 outline-black/5"
                                                     alt=""
                                                 />
                                             ))}
@@ -100,14 +100,17 @@ export default function Index({ riderConsignmentIndex }) {
                                     </div>
 
                                     <div className="px-3 py-2">
-                                        <div className="text-2xl font-bold flex justify-center ">
+                                        <div className="flex justify-center text-2xl font-bold ">
                                             {cod.display_total} Tk
                                         </div>
-                                        <div className="text-sm text-gray-500 flex justify-center items-center text-center">
-                                            <div className="pl-1 font-bold">{cod.total_for_not_resel ?? "N/A"}</div>
-                                            <div className="px-1" style={{ lineHeight: "8px" }}>+</div>
-                                            <div className="flex justify-center items-cenrer">
-                                                <div>{cod.system_comission ?? "N/A"}</div>
+                                        <div className="text-sm text-center text-gray-500">
+                                            <div>
+                                                <span className="pl-1 font-bold">{cod.total_for_not_resel ?? "N/A"}</span>
+                                                <span className="px-1" style={{ lineHeight: "8px" }}>+</span>
+                                                <span>{cod.system_comission ?? "N/A"}</span>
+                                            </div>
+                                            <div className="text-xs text-red-500">
+                                                Commission {cod.system_comission ?? "N/A"}
                                             </div>
                                         </div>
                                     </div>
@@ -115,7 +118,7 @@ export default function Index({ riderConsignmentIndex }) {
                                     <div className="px-3 py-2">
                                         <p className="text-xswwww">{cod.created_at_formatted}</p>
                                         <div className="text-xs text-gray-500">
-                                            <i className="fas fa-map-marker-alt pr-1"></i>
+                                            <i className="pr-1 fas fa-map-marker-alt"></i>
                                             {cod.location ?? "N/A"}
                                         </div>
                                     </div>
@@ -124,14 +127,14 @@ export default function Index({ riderConsignmentIndex }) {
                                         <>
                                             <div className="pb-2">
                                                 <button
-                                                    className="rounded border px-2 py-1 bg-indigo-900 text-white shadow text-sm"
+                                                    className="px-2 py-1 text-sm text-white bg-indigo-900 border rounded shadow"
                                                     onClick={() => changeStatus(cod.id, "Received")}
                                                 >
                                                     Mark as Received
                                                 </button>
                                             </div>
                                             <div className="absolute p-1" style={{ top: 43, left: "50%", transform: "translatex(-50%)" }}>
-                                                <div className="text-xs px-2 rounded-xl bg-white shadow"> Pending </div>
+                                                <div className="px-2 text-xs bg-white shadow rounded-xl"> Pending </div>
                                             </div>
                                         </>
                                     ) : null}
@@ -140,32 +143,32 @@ export default function Index({ riderConsignmentIndex }) {
                                         <>
                                             <div className="pb-2">
                                                 <button
-                                                    className="rounded border px-2 py-1 bg-indigo-900 text-white shadow text-sm"
+                                                    className="px-2 py-1 text-sm text-white bg-indigo-900 border rounded shadow"
                                                     onClick={() => changeStatus(cod.id, "Completed")}
                                                 >
                                                     Mark as Delivered
                                                 </button>
                                             </div>
                                             <div className="absolute p-1" style={{ top: 43, left: "50%", transform: "translatex(-50%)" }}>
-                                                <div className="text-xs px-2 rounded-xl bg-indigo-200 shadow"> Received </div>
+                                                <div className="px-2 text-xs bg-indigo-200 shadow rounded-xl"> Received </div>
                                             </div>
                                         </>
                                     ) : null}
 
                                     {cod.status === "Completed" ? (
                                         <>
-                                            <p className="p-2 bg-green-200 text-green-900 font-bold">
+                                            <p className="p-2 font-bold text-green-900 bg-green-200">
                                                 <i className="fas fa-check-circle ps-2"></i> Earn ({cod.shipping}TK)
                                             </p>
                                             <div className="absolute p-1" style={{ top: 43, left: "50%", transform: "translatex(-50%)" }}>
-                                                <div className="text-xs px-2 rounded-xl bg-green-900 text-white shadow"> Done </div>
+                                                <div className="px-2 text-xs text-white bg-green-900 shadow rounded-xl"> Done </div>
                                             </div>
                                         </>
                                     ) : null}
                                 </div>
                             ))}
                         </div>
-                        <table className="w-full border p-2">
+                        <table className="w-full p-2 border">
                             <tbody>
                                 <tr className="p-2">
                                     <td>Delivery</td>
@@ -179,21 +182,21 @@ export default function Index({ riderConsignmentIndex }) {
                         </table>
                     </>
                 ) : (
-                    <p className="bg-gray-50 p-1">No Consignment Found !</p>
+                    <p className="p-1 bg-gray-50">No Consignment Found !</p>
                 )}
 
                 <Modal show={open} onClose={() => setOpen(false)} maxWidth="md">
-                    <div className="p-4 border-b flex justify-between items-center">
+                    <div className="flex items-center justify-between p-4 border-b">
                         Filter
                         <div onClick={() => setOpen(false)}>
                             <i className="fas fa-close"></i>
                         </div>
                     </div>
                     <div className="p-4">
-                        <div className="md:flex justify-between items-start">
+                        <div className="items-start justify-between md:flex">
                             <div className="p-2">
                                 {[['All', 'All'], ['Pending', 'Pending'], ['Received', 'Rececived'], ['Completed', 'Delivered'], ['Returned', 'Returned']].map(([value, label]) => (
-                                    <div key={value} className="flex p-2 border-b mb-1">
+                                    <div key={value} className="flex p-2 mb-1 border-b">
                                         <input
                                             type="radio"
                                             checked={filters.status === value}

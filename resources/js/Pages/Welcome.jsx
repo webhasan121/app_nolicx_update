@@ -213,6 +213,7 @@ export default function Welcome({
                 </div>
                 <MegaDealsProducts products={megaDealsProducts} />
                 <GroceryProducts products={groceryProducts} />
+
                 <WomensProducts products={womenProducts} />
                 <MedicineProducts products={medicineProducts} />
                 <FoodProducts products={foodProducts} />

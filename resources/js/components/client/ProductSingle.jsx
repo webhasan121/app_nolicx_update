@@ -41,6 +41,7 @@ export default function ProductSingle({
     const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
     const [bgPosition, setBgPosition] = useState("0px 0px");
     const imageRef = useRef(null);
+    const thumbnailScrollerRef = useRef(null);
 
     if (!product) return null;
 
@@ -57,9 +58,10 @@ export default function ProductSingle({
     ].filter(Boolean))];
 
     const videoEmbedUrl = youtubeEmbedUrl(product?.video_url);
+    const videoItem = videoEmbedUrl ? { type: "video", value: product.video_url } : null;
     const gallery = [
+        ...(videoItem ? [videoItem] : []),
         ...galleryImages.map((image) => ({ type: "image", value: image })),
-        ...(videoEmbedUrl ? [{ type: "video", value: product.video_url }] : []),
     ];
 
     const discountPercentage =
@@ -131,6 +133,13 @@ export default function ProductSingle({
         }
     };
 
+    const scrollThumbnails = (direction) => {
+        thumbnailScrollerRef.current?.scrollBy({
+            left: direction * 240,
+            behavior: "smooth",
+        });
+    };
+
     const handleMouseMove = (e) => {
         const img = imageRef.current;
 
@@ -172,6 +181,14 @@ export default function ProductSingle({
                     .image-area {
                         width: 100%;
                     }
+                }
+
+                .product-thumbnail-strip {
+                    scrollbar-width: none;
+                }
+
+                .product-thumbnail-strip::-webkit-scrollbar {
+                    display: none;
                 }
             `}</style>
 
@@ -217,39 +234,68 @@ export default function ProductSingle({
 
 
                         {gallery.length > 1 ? (
-                            <div className="flex flex-wrap items-center justify-center w-full gap-2">
-                                {gallery.map((item) => (
+                            <div className="relative flex items-center justify-center w-full gap-2">
+                                {gallery.length > 5 ? (
                                     <button
-                                        key={`${item.type}-${item.value}`}
                                         type="button"
-                                        className="flex items-center justify-center w-16 h-16 p-1 bg-white border rounded"
-                                        onClick={() => {
-                                            if (item.type === "video") {
-                                                setShowVideoModal(true);
-                                                return;
-                                            }
-
-                                            setPreviewImage(item.value);
-                                        }}
+                                        onClick={() => scrollThumbnails(-1)}
+                                        className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
                                     >
-                                        {item.type === "video" ? (
-                                            <div
-                                                className="relative flex items-center justify-center w-full h-full overflow-hidden rounded bg-slate-900"
-                                            >
-                                                <div className="absolute inset-0 bg-black/80" />
-                                                <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
-                                                    <i className="text-xs fas fa-play"></i>
-                                                </span>
-                                            </div>
-                                        ) : (
-                                            <img
-                                                className="object-cover w-full h-full rounded"
-                                                src={`/storage/${item.value}`}
-                                                alt={product.title}
-                                            />
-                                        )}
+                                        <i className="fas fa-angle-left"></i>
                                     </button>
-                                ))}
+                                ) : null}
+
+                                <div
+                                    ref={thumbnailScrollerRef}
+                                    className="flex max-w-[280px] gap-2 overflow-x-auto product-thumbnail-strip scroll-smooth"
+                                >
+                                    {gallery.map((item) => (
+                                        <button
+                                            key={`${item.type}-${item.value}`}
+                                            type="button"
+                                            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded border bg-white p-1 ${
+                                                item.type === "image" && item.value === previewImage
+                                                    ? "border-orange-500"
+                                                    : "border-gray-200"
+                                            }`}
+                                            onClick={() => {
+                                                if (item.type === "video") {
+                                                    setShowVideoModal(true);
+                                                    return;
+                                                }
+
+                                                setPreviewImage(item.value);
+                                            }}
+                                        >
+                                            {item.type === "video" ? (
+                                                <div
+                                                    className="relative flex items-center justify-center w-full h-full overflow-hidden rounded bg-slate-900"
+                                                >
+                                                    <div className="absolute inset-0 bg-black/80" />
+                                                    <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
+                                                        <i className="text-xs fas fa-play"></i>
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <img
+                                                    className="object-cover w-full h-full rounded"
+                                                    src={`/storage/${item.value}`}
+                                                    alt={product.title}
+                                                />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {gallery.length > 5 ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => scrollThumbnails(1)}
+                                        className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
+                                    >
+                                        <i className="fas fa-angle-right"></i>
+                                    </button>
+                                ) : null}
                             </div>
                         ) : null}
                     </div>
