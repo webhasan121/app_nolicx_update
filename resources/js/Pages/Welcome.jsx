@@ -21,6 +21,11 @@ export default function Welcome({
     products = [],
     categories = [],
     ss = [],
+    grocerySliders = [],
+    medicineSliders = [],
+    foodSliders = [],
+    topSalesSliders = [],
+    womensSliders = [],
     slides = [],
     recommended = [],
     megaDealsProducts = [],
@@ -31,14 +36,25 @@ export default function Welcome({
     topSales = [],
     newProducts = [],
     todaysProducts = [],
-    developer_percentage = 0
+    developer_percentage = 0,
 }) {
+    const topSliders = (sliders) =>
+        sliders.filter((slider) => slider.placement_top);
+
+    const bottomSliders = (sliders) =>
+        sliders.filter(
+            (slider) =>
+                !slider.placement_top ||
+                slider.placement_middle ||
+                slider.placement_bottom,
+        );
 
     return (
         <UserLayout>
-            <style
-                dangerouslySetInnerHTML={{
-                    __html: `
+            <div className="overflow-x-hidden">
+                <style
+                    dangerouslySetInnerHTML={{
+                        __html: `
         @media (min-width: 767px) {
             .detail-box h1 {
                 font-size: 3rem !important;
@@ -188,43 +204,73 @@ export default function Welcome({
             z-index: 1;
         }
     `,
-                }}
-            />
-            <HeroSlider slides={slides} />
+                    }}
+                />
+                <HeroSlider slides={slides} />
 
-            <Container>
-                <DisplayCategory categories={categories} />
-                <NewProduct products={newProducts} />
-                <TodaysProducts products={todaysProducts} />
-                <div className="pb-6">
-                    <div className="flex items-center justify-between px-2 py-4">
-                        <h2 className="text-xl font-bold">Products</h2>
-                        <NavLink
-                            href={route("products.index")}
-                             className="px-3 py-2 rounded hover:text-indigo-600"
-                        >
-                            View All
-                        </NavLink>
+                <Container>
+                    <DisplayCategory categories={categories} />
+                    <NewProduct products={newProducts} />
+                    <TodaysProducts products={todaysProducts} />
+                    <div className="pb-6">
+                        <div className="flex items-center justify-between px-2 py-4">
+                            <h2 className="text-xl font-bold">Products</h2>
+                            <NavLink
+                                href={route("products.index")}
+                                className="px-3 py-2 rounded hover:text-indigo-600"
+                            >
+                                View All
+                            </NavLink>
+                        </div>
+
+                        <div className="transition-all duration-300 product_section">
+                            <ProductsLoop products={products} />
+                        </div>
                     </div>
+                    <MegaDealsProducts products={megaDealsProducts} />
+                </Container>
 
-                    <div className="transition-all duration-300 product_section">
-                        <ProductsLoop products={products} />
-                    </div>
-                </div>
-                <MegaDealsProducts products={megaDealsProducts} />
-                <GroceryProducts products={groceryProducts} />
+                <StaticSlider sliders={topSliders(grocerySliders)} />
 
-                <WomensProducts products={womenProducts} />
-                <MedicineProducts products={medicineProducts} />
-                <FoodProducts products={foodProducts} />
-                <TopSales products={topSales} />
-            </Container>
+                <Container>
+                    <GroceryProducts products={groceryProducts} />
+                </Container>
 
-            <StaticSlider sliders={ss} />
+                <StaticSlider sliders={bottomSliders(grocerySliders)} />
+                <StaticSlider sliders={topSliders(womensSliders)} />
 
-            <Container>
-                <RecommendedProducts products={recommended} />
-            </Container>
+                <Container>
+                    <WomensProducts products={womenProducts} />
+                </Container>
+
+                <StaticSlider sliders={bottomSliders(womensSliders)} />
+                <StaticSlider sliders={topSliders(medicineSliders)} />
+
+                <Container>
+                    <MedicineProducts products={medicineProducts} />
+                </Container>
+
+                <StaticSlider sliders={bottomSliders(medicineSliders)} />
+                <StaticSlider sliders={topSliders(foodSliders)} />
+
+                <Container>
+                    <FoodProducts products={foodProducts} />
+                </Container>
+
+                <StaticSlider sliders={bottomSliders(foodSliders)} />
+                <StaticSlider sliders={topSliders(topSalesSliders)} />
+
+                <Container>
+                    <TopSales products={topSales} />
+                </Container>
+
+                <StaticSlider sliders={bottomSliders(topSalesSliders)} />
+                <StaticSlider sliders={ss} />
+
+                <Container>
+                    <RecommendedProducts products={recommended} />
+                </Container>
+            </div>
         </UserLayout>
     );
 }

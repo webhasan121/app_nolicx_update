@@ -52,11 +52,9 @@ class CategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $name = trim((string) $request->input('name'));
-        $slug = trim((string) $request->input('slug'));
 
         $request->merge([
             'name' => $name,
-            'slug' => $slug !== '' ? $slug : Str::slug($name),
         ]);
 
         $validated = $request->validate([
@@ -144,14 +142,12 @@ class CategoryController extends Controller
                     }
                 },
             ],
-            'slug' => 'required|string|max:255|unique:categories,slug,' . $category->id,
             'belongs_to' => 'nullable|exists:categories,id',
             'newImage' => 'nullable|file|max:100',
         ]);
 
         $category->update([
             'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
             'belongs_to' => $validated['belongs_to'] ?? null,
             'image' => $this->handleImageUpload($request->file('newImage'), 'categories', $category->image),
         ]);

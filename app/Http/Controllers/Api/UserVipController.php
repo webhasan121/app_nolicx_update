@@ -23,21 +23,21 @@ class UserVipController extends Controller
                 ->get()
                 ->map(fn (Vip $vip) => $this->vipPayload($vip, $user->id))
                 ->values(),
-            'packages' => Packages::all()->map(fn (Packages $package) => $this->packagePayload($package))->values(),
+            'packages' => Packages::active()->get()->map(fn (Packages $package) => $this->packagePayload($package))->values(),
         ], 'VIP fetched');
     }
 
     public function packages()
     {
         return ApiResponse::success(
-            Packages::all()->map(fn (Packages $package) => $this->packagePayload($package))->values(),
+            Packages::active()->get()->map(fn (Packages $package) => $this->packagePayload($package))->values(),
             'Packages fetched'
         );
     }
 
     public function packageDetails(int $package)
     {
-        $item = Packages::with('payOption')->findOrFail($package);
+        $item = Packages::active()->with('payOption')->findOrFail($package);
 
         return ApiResponse::success([
             'package' => $this->packageDetailsPayload($item),
@@ -58,6 +58,8 @@ class UserVipController extends Controller
             'nid_front' => ['required', 'image'],
             'nid_back' => ['required', 'image'],
         ]);
+
+        abort_unless(Packages::active()->whereKey($validated['package_id'])->exists(), 404);
 
         $validated['user_id'] = $request->user()->id;
         $validated['status'] = 0;

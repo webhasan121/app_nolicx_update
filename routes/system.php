@@ -161,6 +161,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::post('/package/store', [VipController::class, 'store'])->name('vip.store')->middleware(AbleTo::class . ":vip_add");
     Route::get('/package/{packages}', [VipController::class, 'editReact'])->name('package.edit')->middleware(AbleTo::class . ":vip_update");
     Route::post('/package/{packages}/update', [VipController::class, 'update'])->name('package.update')->middleware(AbleTo::class . ":vip_update");
+    Route::post('/packages/{packages}/status', [VipController::class, 'updatePackageStatus'])->name('vip.package.status')->middleware(AbleTo::class . ":vip_update");
     Route::post('/packages/{id}/trash', [VipController::class, 'trash'])->name('vip.trash')->middleware(AbleTo::class . ":vip_update");
     Route::post('/packages/{id}/restore', [VipController::class, 'restore'])->name('vip.restore')->middleware(AbleTo::class . ":vip_update");
 

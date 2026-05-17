@@ -169,6 +169,11 @@ class Product extends Model
     {
         return $this->hasOne(product_has_attribute::class);
     }
+
+    public function attrs()
+    {
+        return $this->hasMany(product_has_attribute::class);
+    }
     public function showcase()
     {
         return $this->hasMany(product_has_image::class);

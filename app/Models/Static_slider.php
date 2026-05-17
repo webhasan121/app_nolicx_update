@@ -16,9 +16,15 @@ class Static_slider extends Model
         'product_details',
         'order',
         'categories_product',
+        'grocery_item',
+        'medicine_products',
+        'food_items',
+        'top_sales',
+        'womens_item',
         'placement_top',
         'placement_middle',
         'placement_bottom',
+        'slider_height',
     ];
 
     public $pages = [
@@ -28,6 +34,11 @@ class Static_slider extends Model
         'product_details',
         'order',
         'categories_product',
+        'grocery_item',
+        'medicine_products',
+        'food_items',
+        'top_sales',
+        'womens_item',
     ];
 
     /**
@@ -61,6 +72,31 @@ class Static_slider extends Model
     public function scopeCategoriesProduct($query)
     {
         return $query->where('categories_product', true);
+    }
+
+    public function scopeGroceryItem($query)
+    {
+        return $query->where('grocery_item', true);
+    }
+
+    public function scopeMedicineProducts($query)
+    {
+        return $query->where('medicine_products', true);
+    }
+
+    public function scopeFoodItems($query)
+    {
+        return $query->where('food_items', true);
+    }
+
+    public function scopeTopSales($query)
+    {
+        return $query->where('top_sales', true);
+    }
+
+    public function scopeWomensItem($query)
+    {
+        return $query->where('womens_item', true);
     }
 
     public function scopePlacementTop($query)
@@ -118,6 +154,31 @@ class Static_slider extends Model
     public function getIsCategoriesProductAttribute()
     {
         return (bool) $this->categories_product;
+    }
+
+    public function getIsGroceryItemAttribute()
+    {
+        return (bool) $this->grocery_item;
+    }
+
+    public function getIsMedicineProductsAttribute()
+    {
+        return (bool) $this->medicine_products;
+    }
+
+    public function getIsFoodItemsAttribute()
+    {
+        return (bool) $this->food_items;
+    }
+
+    public function getIsTopSalesAttribute()
+    {
+        return (bool) $this->top_sales;
+    }
+
+    public function getIsWomensItemAttribute()
+    {
+        return (bool) $this->womens_item;
     }
 
     public function getIsPlacementTopAttribute()

@@ -308,15 +308,7 @@ class ProductsController extends Controller
 
 
 
-            if ($product->id && ($request->filled('attr_name') || $request->filled('attr_value'))) {
-                product_has_attribute::updateOrCreate(
-                    ['product_id' => $product->id],
-                    [
-                        'name' => $request->input('attr_name'),
-                        'value' => $request->input('attr_value'),
-                    ]
-                );
-            }
+            $this->syncProductAttributes($product, $request);
 
             if ($product->id && $request->file('newImage')) {
                 foreach ($request->file('newImage') as $image) {
@@ -341,7 +333,7 @@ class ProductsController extends Controller
         $data = auth()->user()
             ?->myProducts()
             ->withTrashed()
-            ->with(['category', 'showcase', 'attr', 'isResel'])
+            ->with(['category', 'showcase', 'attr', 'attrs', 'isResel'])
             ->findOrFail($productId);
 
         return Inertia::render('Vendor/Products/Edit', [
@@ -391,6 +383,11 @@ class ProductsController extends Controller
                     'name' => $data->attr?->name ?? '',
                     'value' => $data->attr?->value ?? '',
                 ],
+                'attrs' => $data->attrs->map(fn(product_has_attribute $attr) => [
+                    'id' => $attr->id,
+                    'name' => $attr->name ?? '',
+                    'value' => $attr->value ?? '',
+                ])->values()->all(),
             ],
             'categories' => Category::getAll()->toArray(),
         ]);
@@ -402,7 +399,7 @@ class ProductsController extends Controller
         $data = auth()->user()
             ?->myProducts()
             ->withTrashed()
-            ->with(['attr', 'showcase'])
+            ->with(['attr', 'attrs', 'showcase'])
             ->findOrFail($productId);
         $availableShowcaseSlots = max(0, self::MAX_SHOWCASE_IMAGES - $data->showcase->count());
 
@@ -429,6 +426,9 @@ class ProductsController extends Controller
             'shipping_note' => ['nullable', 'string'],
             'attr_name' => ['nullable', 'string'],
             'attr_value' => ['nullable', 'string'],
+            'attributes' => ['nullable', 'array'],
+            'attributes.*.name' => ['nullable', 'string'],
+            'attributes.*.value' => ['nullable', 'string'],
             'thumb' => [empty($data->thumbnail) ? 'required' : 'nullable', 'file', 'image'],
             'video' => ['nullable', 'url', 'max:2048'],
             'newseothumb' => ['nullable', 'file', 'image'],
@@ -469,18 +469,7 @@ class ProductsController extends Controller
         $data->shipping_note = $payload['shipping_note'] ?? $data->shipping_note;
         $data->save();
 
-        if ($data->attr) {
-            $data->attr->update([
-                'name' => $payload['attr_name'] ?? '',
-                'value' => $payload['attr_value'] ?? '',
-            ]);
-        } elseif (($payload['attr_name'] ?? null) || ($payload['attr_value'] ?? null)) {
-            product_has_attribute::create([
-                'product_id' => $data->id,
-                'name' => $payload['attr_name'] ?? '',
-                'value' => $payload['attr_value'] ?? '',
-            ]);
-        }
+        $this->syncProductAttributes($data, $request);
 
         if ($request->hasFile('newImage')) {
             foreach ($request->file('newImage') as $image) {
@@ -536,6 +525,34 @@ class ProductsController extends Controller
         return Str::startsWith($video, ['http://', 'https://'])
             ? $video
             : asset('storage/' . $video);
+    }
+
+    private function syncProductAttributes(Product $product, Request $request): void
+    {
+        $attributes = collect($request->input('attributes', []))
+            ->map(fn($row) => [
+                'name' => trim((string) ($row['name'] ?? '')),
+                'value' => trim((string) ($row['value'] ?? '')),
+            ])
+            ->filter(fn($row) => $row['name'] !== '' || $row['value'] !== '')
+            ->values();
+
+        if ($attributes->isEmpty() && ($request->filled('attr_name') || $request->filled('attr_value'))) {
+            $attributes = collect([[
+                'name' => trim((string) $request->input('attr_name', '')),
+                'value' => trim((string) $request->input('attr_value', '')),
+            ]]);
+        }
+
+        product_has_attribute::where('product_id', $product->id)->delete();
+
+        foreach ($attributes as $attribute) {
+            product_has_attribute::create([
+                'product_id' => $product->id,
+                'name' => $attribute['name'],
+                'value' => $attribute['value'],
+            ]);
+        }
     }
 
     public function resell(Request $request): Response|RedirectResponse

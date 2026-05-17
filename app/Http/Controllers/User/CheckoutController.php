@@ -14,7 +14,7 @@ class CheckoutController extends Controller
 
     public function index($id)
     {
-        $package = Packages::with('payOption')->findOrFail($id);
+        $package = Packages::active()->with('payOption')->findOrFail($id);
         $ownerPackage = 1;
 
         return Inertia::render('User/Vip/Package/Checkout', [
@@ -50,6 +50,8 @@ class CheckoutController extends Controller
             'nid_front' => 'required|image',
             'nid_back' => 'required|image',
         ]);
+
+        abort_unless(Packages::active()->whereKey($validated['package_id'])->exists(), 404);
 
         $validated['user_id'] = auth()->id();
         $validated['status'] = 0;

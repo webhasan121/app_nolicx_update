@@ -5,6 +5,7 @@ import Hr from "../../../components/Hr";
 import InputField from "../../../components/InputField";
 import InputFile from "../../../components/InputFile";
 import PrimaryButton from "../../../components/PrimaryButton";
+import ProductAttributesInput from "../../../components/ProductAttributesInput";
 import TextInput from "../../../components/TextInput";
 import Container from "../../../components/dashboard/Container";
 import PageHeader from "../../../components/dashboard/PageHeader";
@@ -50,6 +51,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         newImage: [],
         attr_name: "",
         attr_value: "",
+        attributes: [{ name: "", value: "" }],
     });
 
     const [thumbPreview, setThumbPreview] = useState(null);
@@ -482,18 +484,10 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 content="Give your products attributes, product different types, different product color package and quantity."
                             />
                             <SectionInner>
-                                <div className="md:flex">
-                                    <TextInput
-                                        value={form.data.attr_name}
-                                        onChange={(e) => form.setData("attr_name", e.target.value)}
-                                        placeholder="Name"
-                                    />
-                                    <TextInput
-                                        value={form.data.attr_value}
-                                        onChange={(e) => form.setData("attr_value", e.target.value)}
-                                        placeholder="Value"
-                                    />
-                                </div>
+                                <ProductAttributesInput
+                                    attributes={form.data.attributes}
+                                    onChange={(attributes) => form.setData("attributes", attributes)}
+                                />
                             </SectionInner>
                         </Section>
 

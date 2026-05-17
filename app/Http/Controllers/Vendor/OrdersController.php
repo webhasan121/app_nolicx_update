@@ -234,6 +234,7 @@ class OrdersController extends Controller
                     ];
                 })->values()->all(),
                 'rider_candidates' => rider::query()
+                    ->whereNotIn('user_id', ($data->hasRider ?? collect())->pluck('rider_id')->filter()->values())
                     ->where(function ($query) use ($data) {
                         $query->where('targeted_area', 'like', '%' . ($data->district ?? '') . '%')
                             ->orWhere('targeted_area', 'like', '%' . ($data->upozila ?? '') . '%')
@@ -424,6 +425,12 @@ class OrdersController extends Controller
         $rdr = rider::find($payload['rider_id']);
         if (!$rdr) {
             return redirect()->back()->with('error', 'Rider not found');
+        }
+
+        if ($data->hasRider()->where('rider_id', $rdr->user_id)->exists()) {
+            return redirect()->back()->withErrors([
+                'rider_id' => 'This rider is already assigned to this order.',
+            ]);
         }
 
         cod::create([

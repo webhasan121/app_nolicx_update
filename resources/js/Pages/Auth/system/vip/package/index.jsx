@@ -78,6 +78,19 @@ export default function Index() {
         router.post(route("system.vip.restore", { id }));
     };
 
+    const handleStatusToggle = (item) => {
+        const nextStatus = Number(item.status ?? 0) === 1 ? 0 : 1;
+        const action = nextStatus === 1 ? "activate" : "inactivate";
+
+        if (!window.confirm(`Are you sure you want to ${action} this package?`)) {
+            return;
+        }
+
+        router.post(`/dashboard/system/packages/${item.id}/status`, {
+            status: nextStatus,
+        });
+    };
+
     const goToPage = (url) => {
         if (!url) {
             return;
@@ -202,6 +215,7 @@ export default function Index() {
                                             <th>Coin</th>
                                             <th>Sell</th>
                                             <th>Earn</th>
+                                            <th>Status</th>
                                             <th>Created</th>
                                             <th>A/C</th>
                                         </tr>
@@ -226,6 +240,25 @@ export default function Index() {
                                                 </td>
                                                 <td>{item.users_count ?? "0"}</td>
                                                 <td>{item.earn}</td>
+                                                <td>
+                                                    {nav === "Trash" ? (
+                                                        <span className="inline-flex rounded bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                                                            -
+                                                        </span>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleStatusToggle(item)}
+                                                            className={`inline-flex rounded px-3 py-1 text-xs font-bold text-white ${
+                                                                Number(item.status ?? 0) === 1
+                                                                    ? "bg-green-600"
+                                                                    : "bg-gray-500"
+                                                            }`}
+                                                        >
+                                                            {Number(item.status ?? 0) === 1 ? "Active" : "Inactive"}
+                                                        </button>
+                                                    )}
+                                                </td>
                                                 <td>
                                                     <div>{item.created_at_human}</div>
                                                     <div className="text-xs">

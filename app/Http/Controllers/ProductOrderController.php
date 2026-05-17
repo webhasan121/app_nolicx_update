@@ -15,12 +15,13 @@ use Inertia\Inertia;
 
 class ProductOrderController extends Controller
 {
-    public function create($id, $slug)
+    public function create(Request $request, $id, $slug)
     {
         $product = Product::query()
             ->with([
                 'category:id,name,slug',
                 'attr:id,product_id,name,value',
+                'attrs:id,product_id,name,value',
                 'showcase:id,product_id,image',
                 'comments.user:id,name',
                 'owner:id,name',
@@ -34,6 +35,11 @@ class ProductOrderController extends Controller
         $country = country::where('name', 'Bangladesh')->firstOrFail();
         $states = state::where('country_id', $country->id)->orderBy('name')->get();
         $price = $product->offer_type ? $product->discount : $product->price;
+        $selectedAttrs = json_decode((string) $request->query('selected_attrs', '{}'), true);
+
+        if (!is_array($selectedAttrs)) {
+            $selectedAttrs = [];
+        }
 
         return Inertia::render('Products/Order', [
             'product' => [
@@ -64,6 +70,10 @@ class ProductOrderController extends Controller
                     'name' => $product->attr->name,
                     'value' => $product->attr->value,
                 ] : null,
+                'attrs' => $product->attrs->map(fn($attr) => [
+                    'name' => $attr->name,
+                    'value' => $attr->value,
+                ])->values(),
                 'showcase' => $product->showcase->map(fn($image) => [
                     'id' => $image->id,
                     'image' => $image->image,
@@ -91,6 +101,7 @@ class ProductOrderController extends Controller
                         ],
                     ]),
             ],
+            'selectedAttrs' => $selectedAttrs,
             'states' => $states,
             'initialPrice' => $price,
         ]);

@@ -9,12 +9,15 @@ import InputFile from "../../components/InputFile";
 import InputLabel from "../../components/InputLabel";
 import PrimaryButton from "../../components/PrimaryButton";
 import ProductSingle from "../../components/client/ProductSingle";
+import { normalizeProductAttributeGroups } from "../../components/client/ProductAttributesSelector";
 import TextInput from "../../components/TextInput";
 import UserLayout from "../../Layouts/User/App";
 import NavLink from "../../components/NavLink";
 
-export default function Order({ product, states = [], initialPrice = 0 }) {
+export default function Order({ product, states = [], initialPrice = 0, selectedAttrs = {} }) {
     const orderSectionRef = useRef(null);
+    const attrGroups = normalizeProductAttributeGroups(product);
+    const hasAttributes = attrGroups.some((group) => group.values.length);
     const attrValues = product?.attr?.value
         ? String(product.attr.value)
               .split(",")
@@ -31,7 +34,13 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
             : "";
 
     const { data, setData, post, processing, errors } = useForm({
-        size: attrValues.length ? "" : "Size Less",
+        size: Object.keys(selectedAttrs).length
+            ? Object.entries(selectedAttrs)
+                  .map(([name, value]) => `${name}: ${value}`)
+                  .join(", ")
+            : hasAttributes
+              ? ""
+              : "Size Less",
         quantity: 1,
         phone: "",
         district: "",
@@ -80,6 +89,19 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
         post(route("product.makeOrder.store", { id: product.id, slug: product.slug }));
     };
 
+    const syncSelectedAttrs = (attrs) => {
+        if (!Object.keys(attrs ?? {}).length) {
+            return;
+        }
+
+        setData(
+            "size",
+            Object.entries(attrs)
+                .map(([name, value]) => `${name}: ${value}`)
+                .join(", ")
+        );
+    };
+
     const scrollToOrderSection = () => {
         orderSectionRef.current?.scrollIntoView({
             behavior: "smooth",
@@ -94,6 +116,8 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
                     <ProductSingle
                         product={product}
                         onBuyNowClick={scrollToOrderSection}
+                        initialSelectedAttrs={selectedAttrs}
+                        onSelectedAttrsChange={syncSelectedAttrs}
                     />
                 </SectionSection>
 
@@ -139,7 +163,13 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
                                 </div>
 
                                 <div className="w-full md:w-1/2">
-                                    {attrValues.length > 0 ? (
+                                    {Object.keys(selectedAttrs).length ? (
+                                        <InputFile label="Attributes" name="size" error="size" errors={errors}>
+                                            <div className="w-full p-2 text-sm border rounded bg-gray-50">
+                                                {data.size}
+                                            </div>
+                                        </InputFile>
+                                    ) : attrValues.length > 0 ? (
                                         <div className="md:flex">
                                             <InputLabel htmlFor="size" style={{ width: "350px" }}>
                                                 {product?.attr?.name}

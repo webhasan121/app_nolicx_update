@@ -11,8 +11,6 @@ import SectionInner from "../../../components/dashboard/section/Inner";
 import SectionSection from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
 import Dropdown from "../../../components/Dropdown";
-import Hr from "../../../components/Hr";
-import Modal from "../../../components/Modal";
 import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
 import SecondaryButton from "../../../components/SecondaryButton";
@@ -56,14 +54,9 @@ function statusClass(status) {
 }
 
 export default function Index({ filters = {}, summary = {}, list = {}, activeNav, printUrl }) {
-    const [filterOpen, setFilterOpen] = useState(false);
     const rows = list?.data ?? [];
     const isReseller = activeNav === "reseller";
     const [search, setSearch] = useState(filters.find ?? "");
-    const [modalDelivery, setModalDelivery] = useState(filters.delivery ?? "all");
-    const [modalCreate, setModalCreate] = useState(filters.create ?? "all");
-    const [modalStartDate, setModalStartDate] = useState(filters.start_date ?? "");
-    const [modalEndDate, setModalEndDate] = useState(filters.end_date ?? "");
 
     const updateFilters = (updates, resetPage = true) => {
         router.get(route("vendor.orders.index"), buildQuery(filters, { ...updates, ...(resetPage ? { page: 1 } : {}) }), {
@@ -73,16 +66,21 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
         });
     };
 
+    const updateDateFilters = (updates) => {
+        const nextStartDate = updates.start_date ?? filters.start_date ?? "";
+        const nextEndDate = updates.end_date ?? filters.end_date ?? "";
+        const create = nextStartDate && nextEndDate ? "between" : nextStartDate ? "day" : "all";
+
+        updateFilters({
+            ...updates,
+            create,
+            end_date: nextStartDate ? nextEndDate : "",
+        });
+    };
+
     useEffect(() => {
         setSearch(filters.find ?? "");
     }, [filters.find]);
-
-    useEffect(() => {
-        setModalDelivery(filters.delivery ?? "all");
-        setModalCreate(filters.create ?? "all");
-        setModalStartDate(filters.start_date ?? "");
-        setModalEndDate(filters.end_date ?? "");
-    }, [filters.delivery, filters.create, filters.start_date, filters.end_date]);
 
     useEffect(() => {
         const trimmedSearch = search.trim();
@@ -137,30 +135,6 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
             ? `Showing ${list?.from ?? 0}-${list?.to ?? 0} of ${list?.total ?? 0} orders`
             : "No orders found";
 
-    const applyModalFilters = () => {
-        updateFilters({
-            delivery: modalDelivery,
-            create: modalCreate,
-            start_date: modalStartDate,
-            end_date: modalEndDate,
-        });
-        setFilterOpen(false);
-    };
-
-    const resetModalFilters = () => {
-        setModalDelivery("all");
-        setModalCreate("all");
-        setModalStartDate("");
-        setModalEndDate("");
-        updateFilters({
-            delivery: "all",
-            create: "all",
-            start_date: "",
-            end_date: "",
-        });
-        setFilterOpen(false);
-    };
-
     return (
         <AppLayout
             title="Orders"
@@ -195,11 +169,9 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                         <SectionHeader
                             title={
                                 <div className="flex items-center justify-between gap-3">
-                                    <div className="flex justify-start items-center space-x-2">
-                                        <SecondaryButton type="button" onClick={() => setFilterOpen(true)}>
-                                            <i className="fas fa-filter pr-2"></i> Filter
-                                        </SecondaryButton>
+                                    <div className="flex flex-wrap justify-start items-center gap-2">
                                         <Dropdown
+                                            align="left"
                                             trigger={
                                                 <SecondaryButton className="inline-flex items-center ">
                                                     Delivery <i className="fas fa-angle-down ps-2"></i>
@@ -243,6 +215,25 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                 <label className="p-0 m-0"> Outside of Dhaka </label>
                                             </div>
                                         </Dropdown>
+
+                                        <label className="sr-only" htmlFor="order_start_date">First Date</label>
+                                        <TextInput
+                                            id="order_start_date"
+                                            type="date"
+                                            value={filters.start_date ?? ""}
+                                            onChange={(e) => updateDateFilters({ start_date: e.target.value })}
+                                            className="min-w-[168px] py-1"
+                                            title="First Date"
+                                        />
+                                        <label className="sr-only" htmlFor="order_end_date">Last Date</label>
+                                        <TextInput
+                                            id="order_end_date"
+                                            type="date"
+                                            value={filters.end_date ?? ""}
+                                            onChange={(e) => updateDateFilters({ end_date: e.target.value })}
+                                            className="min-w-[168px] py-1"
+                                            title="Last Date"
+                                        />
                                     </div>
 
                                     <div className="flex flex-wrap items-center justify-end gap-2">
@@ -404,64 +395,6 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                     </SectionSection>
                 </Container>
 
-            <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
-                <div className="p-2">
-                    <div>Filter</div>
-                    <Hr />
-                    <div className="md:flex justify-between">
-                        <div>
-                            <div>
-                                <div>Delevery Type</div>
-                                <div className="px-2">
-                                    {[['all', 'Not Defined'], ['cash', 'Home Delivery'], ['courier', 'Courier Delivery'], ['hand', 'Hand-to-Hand']].map(([value, label]) => (
-                                        <div key={value}>
-                                            <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={modalDelivery === value} onChange={() => setModalDelivery(value)} /> {label}
-                                            </div>
-                                            <hr />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-2 w-1/2">
-                            <div className=" border rounded-md">
-                                <div className=" p-2 ">
-                                    {[['all', 'All Time'], ['day', 'From First Date'], ['between', 'Between in Range']].map(([value, label]) => (
-                                        <div key={value}>
-                                            <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={modalCreate === value} onChange={() => setModalCreate(value)} />{label}
-                                            </div>
-                                            <hr />
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="space-y-2 p-2 ">
-                                    <div>
-                                        First Date
-                                        <input className="rounded-md" type="date" value={modalStartDate} onChange={(e) => setModalStartDate(e.target.value)} />
-                                    </div>
-                                    <div>
-                                        Last Date
-                                        <input className="rounded-md" type="date" value={modalEndDate} onChange={(e) => setModalEndDate(e.target.value)} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-end gap-2 mt-4 md:mt-0">
-                            <PrimaryButton type="button" onClick={resetModalFilters}>
-                                Reset
-                            </PrimaryButton>
-                            <PrimaryButton type="button" onClick={applyModalFilters}>
-                                Apply
-                            </PrimaryButton>
-                        </div>
-                    </div>
-                </div>
-            </Modal>
         </AppLayout>
     );
 }

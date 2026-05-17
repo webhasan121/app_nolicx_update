@@ -7,6 +7,7 @@ import InputField from "../../../components/InputField";
 import InputFile from "../../../components/InputFile";
 import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
+import ProductAttributesInput from "../../../components/ProductAttributesInput";
 import SecondaryButton from "../../../components/SecondaryButton";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Container from "../../../components/dashboard/Container";
@@ -90,6 +91,9 @@ export default function Edit() {
         shipping_note: productData?.shipping_note ?? "",
         attr_name: productData?.attr?.name ?? "",
         attr_value: productData?.attr?.value ?? "",
+        attributes: productData?.attrs?.length
+            ? productData.attrs
+            : [{ name: productData?.attr?.name ?? "", value: productData?.attr?.value ?? "" }],
         thumb: null,
         video: productData?.video ?? "",
         newseothumb: null,
@@ -733,30 +737,10 @@ export default function Edit() {
                             content="Give your products attributes, product different types, different product color package and quantity."
                         />
                         <SectionInner>
-                            <div className="md:flex">
-                                <input
-                                    type="text"
-                                    value={form.data.attr_name}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "attr_name",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder="Name"
-                                />
-                                <input
-                                    type="text"
-                                    value={form.data.attr_value}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "attr_value",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder="Value"
-                                />
-                            </div>
+                            <ProductAttributesInput
+                                attributes={form.data.attributes}
+                                onChange={(attributes) => form.setData("attributes", attributes)}
+                            />
                         </SectionInner>
                     </SectionSection>
 

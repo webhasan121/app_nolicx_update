@@ -48,7 +48,7 @@ class PartnershipController extends Controller
         return Inertia::render('Auth/system/partnership/Developer', [
             'applications' => [
                 'data' => $applications->getCollection()->values()->map(function (DeveloperAccess $app, int $index) use ($applications) {
-                    $status = $app->status === 1 ? 'Approved' : ($app->status === 0 ? 'Rejected' : 'Pending');
+                    $status = $app->status === 1 ? 'Active' : ($app->status === 0 ? 'Inactive' : 'Pending');
                     $reverseSerial = ($applications->total() - ($applications->firstItem() + $index - 1)) . '.';
 
                     return [
@@ -111,7 +111,7 @@ class PartnershipController extends Controller
                     'sl' => $index + 1,
                     'user_name' => $app->user?->name,
                     'user_email' => $app->user?->email,
-                    'status_text' => $app->status === 1 ? 'Approved' : ($app->status === 0 ? 'Rejected' : 'Pending'),
+                    'status_text' => $app->status === 1 ? 'Active' : ($app->status === 0 ? 'Inactive' : 'Pending'),
                     'responder_name' => $app->responder?->name ?? '-',
                 ];
             })->all(),
@@ -177,7 +177,7 @@ class PartnershipController extends Controller
         return Inertia::render('Auth/system/partnership/Management', [
             'applications' => [
                 'data' => $applications->getCollection()->values()->map(function (ManagementAccess $app, int $index) use ($applications) {
-                    $status = $app->status === 1 ? 'Approved' : ($app->status === 0 ? 'Rejected' : 'Pending');
+                    $status = $app->status === 1 ? 'Active' : ($app->status === 0 ? 'Inactive' : 'Pending');
                     $reverseSerial = ($applications->total() - ($applications->firstItem() + $index - 1)) . '.';
 
                     return [
@@ -240,7 +240,7 @@ class PartnershipController extends Controller
                     'sl' => $index + 1,
                     'user_name' => $app->user?->name,
                     'user_email' => $app->user?->email,
-                    'status_text' => $app->status === 1 ? 'Approved' : ($app->status === 0 ? 'Rejected' : 'Pending'),
+                    'status_text' => $app->status === 1 ? 'Active' : ($app->status === 0 ? 'Inactive' : 'Pending'),
                     'responder_name' => $app->responder?->name ?? '-',
                 ];
             })->all(),
@@ -306,7 +306,7 @@ class PartnershipController extends Controller
         return Inertia::render('Auth/system/partnership/ManagementTeam', [
             'applications' => [
                 'data' => $applications->getCollection()->values()->map(function (ManagementTeam $app, int $index) use ($applications) {
-                    $status = $app->status === 1 ? 'Approved' : ($app->status === 0 ? 'Rejected' : 'Pending');
+                    $status = $app->status === 1 ? 'Active' : ($app->status === 0 ? 'Inactive' : 'Pending');
                     $reverseSerial = ($applications->total() - ($applications->firstItem() + $index - 1)) . '.';
 
                     return [
@@ -369,7 +369,7 @@ class PartnershipController extends Controller
                     'sl' => $index + 1,
                     'user_name' => $app->user?->name,
                     'user_email' => $app->user?->email,
-                    'status_text' => $app->status === 1 ? 'Approved' : ($app->status === 0 ? 'Rejected' : 'Pending'),
+                    'status_text' => $app->status === 1 ? 'Active' : ($app->status === 0 ? 'Inactive' : 'Pending'),
                     'responder_name' => $app->responder?->name ?? '-',
                 ];
             })->all(),

@@ -1,10 +1,11 @@
 import { Link, router } from "@inertiajs/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import SecondaryButton from "../SecondaryButton";
 import Hr from "../Hr";
 import NavLink from "../NavLink";
 import ProductsLoop from "./ProductsLoop";
+import ProductAttributesSelector from "./ProductAttributesSelector";
 import Swal from "sweetalert2";
 
 function youtubeEmbedUrl(url) {
@@ -33,24 +34,28 @@ export default function ProductSingle({
     product,
     relatedProduct = [],
     onBuyNowClick = null,
+    initialSelectedAttrs = {},
+    onSelectedAttrsChange = null,
 }) {
     const [copied, setCopied] = useState(false);
     const [previewImage, setPreviewImage] = useState(product?.thumbnail);
     const [showVideoModal, setShowVideoModal] = useState(false);
+    const [selectedAttrs, setSelectedAttrs] = useState(initialSelectedAttrs ?? {});
     const [isZooming, setIsZooming] = useState(false);
     const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
     const [bgPosition, setBgPosition] = useState("0px 0px");
     const imageRef = useRef(null);
     const thumbnailScrollerRef = useRef(null);
 
-    if (!product) return null;
+    useEffect(() => {
+        setSelectedAttrs(initialSelectedAttrs ?? {});
+    }, [JSON.stringify(initialSelectedAttrs ?? {})]);
 
-    const attrValues = product?.attr?.value
-        ? String(product.attr.value)
-              .split(",")
-              .map((v) => v.trim())
-              .filter(Boolean)
-        : [];
+    useEffect(() => {
+        onSelectedAttrsChange?.(selectedAttrs);
+    }, [JSON.stringify(selectedAttrs)]);
+
+    if (!product) return null;
 
     const galleryImages = [...new Set([
         product.thumbnail,
@@ -87,6 +92,20 @@ export default function ProductSingle({
                   id: product.id,
                   slug: product.slug,
               });
+    const selectedAttrQuery = Object.fromEntries(
+        Object.entries(selectedAttrs).filter(([, value]) => value)
+    );
+    const buyNowHref = (() => {
+        const href = route("product.makeOrder", { id: product.id, slug: product.slug });
+
+        if (!Object.keys(selectedAttrQuery).length) {
+            return href;
+        }
+
+        return `${href}?${new URLSearchParams({
+            selected_attrs: JSON.stringify(selectedAttrQuery),
+        }).toString()}`;
+    })();
 
     const addToCart = async () => {
         try {
@@ -411,21 +430,11 @@ export default function ProductSingle({
                         <Hr />
                     </div>
 
-                    {attrValues.length > 0 && (
-                        <div className="py-2 my-3">
-                            <h4>{product?.attr?.name}</h4>
-                            <div className="flex flex-wrap items-center justify-start gap-2 my-1">
-                                {attrValues.map((attr) => (
-                                    <div
-                                        key={attr}
-                                        className="px-2 py-1 text-sm text-white bg-indigo-300 rounded"
-                                    >
-                                        {attr.toUpperCase()}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    <ProductAttributesSelector
+                        product={product}
+                        selectedAttrs={selectedAttrs}
+                        onChange={setSelectedAttrs}
+                    />
 
                     {product.shipping_note ? (
                         <div className="flex p-1 bg-indigo-900 rounded-lg shadow bg-gray-50">
@@ -476,7 +485,7 @@ export default function ProductSingle({
                             </button>
                         ) : (
                             <Link
-                                href={route("product.makeOrder", { id: product.id, slug: product.slug })}
+                                href={buyNowHref}
                                 className="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase bg-orange-500 border border-transparent rounded-md hover:text-white hover:border-transparent"
                             >
                                 Buy Now <i className="fas fa-arrow-right ms-2"></i>

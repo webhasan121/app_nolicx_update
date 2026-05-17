@@ -10,8 +10,6 @@ import SectionInner from "../../../components/dashboard/section/Inner";
 import SectionSection from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
 import Dropdown from "../../../components/Dropdown";
-import Hr from "../../../components/Hr";
-import Modal from "../../../components/Modal";
 import NavLink from "../../../components/NavLink";
 import SecondaryButton from "../../../components/SecondaryButton";
 import PrimaryButton from "../../../components/PrimaryButton";
@@ -53,7 +51,6 @@ function StatusBadge({ status }) {
 }
 
 export default function Index({ orderIndex, activeNav, embedded = false }) {
-    const [filterOpen, setFilterOpen] = useState(false);
     const filters = orderIndex?.filters ?? {};
     const summary = orderIndex?.summary ?? {};
     const list = orderIndex?.list ?? {};
@@ -85,6 +82,18 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
             preserveState: true,
             preserveScroll: true,
             replace: true,
+        });
+    };
+
+    const updateDateFilters = (updates) => {
+        const nextStartDate = updates.start_date ?? filters.start_date ?? "";
+        const nextEndDate = updates.end_date ?? filters.end_date ?? "";
+        const create = nextStartDate && nextEndDate ? "between" : nextStartDate ? "day" : "all";
+
+        updateFilters({
+            ...updates,
+            create,
+            end_date: nextStartDate ? nextEndDate : "",
         });
     };
 
@@ -162,13 +171,8 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                         title={
                             <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center space-x-2">
-                                    <SecondaryButton
-                                        type="button"
-                                        onClick={() => setFilterOpen(true)}
-                                    >
-                                        <i className="pr-2 fas fa-filter"></i> Filter
-                                    </SecondaryButton>
                                     <Dropdown
+                                        align="left"
                                         trigger={
                                             <SecondaryButton className="inline-flex items-center ">
                                                 Delivery <i className="fas fa-angle-down ps-2"></i>
@@ -212,6 +216,31 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                             <label className="p-0 m-0"> Outside of Dhaka </label>
                                         </div>
                                     </Dropdown>
+
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <label className="sr-only" htmlFor="order_start_date">First Date</label>
+                                        <div>
+                                            <TextInput
+                                                id="order_start_date"
+                                                type="date"
+                                                value={filters.start_date ?? ""}
+                                                onChange={(e) => updateDateFilters({ start_date: e.target.value })}
+                                                className="py-1"
+                                                title="First Date"
+                                            />
+                                        </div>
+                                        <label className="sr-only" htmlFor="order_end_date">Last Date</label>
+                                        <div>
+                                            <TextInput
+                                                id="order_end_date"
+                                                type="date"
+                                                value={filters.end_date ?? ""}
+                                                onChange={(e) => updateDateFilters({ end_date: e.target.value })}
+                                                className="py-1"
+                                                title="Last Date"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="flex flex-wrap items-center justify-end gap-2">
@@ -376,55 +405,6 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                 </SectionSection>
             </Wrapper>
 
-            <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
-                <div className="p-2">
-                    <div>Filter</div>
-                    <Hr />
-                    <div className="justify-between md:flex">
-                        <div>
-                            <div>
-                                <div>Delevery Type</div>
-                                <div className="px-2">
-                                    {[['all', 'Not Defined'], ['cash', 'Home Delivery'], ['courier', 'Courier Delivery'], ['hand', 'Hand-to-Hand']].map(([value, label]) => (
-                                        <div key={value}>
-                                            <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.delivery === value} onChange={() => updateFilters({ delivery: value })} /> {label}
-                                            </div>
-                                            <hr />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="w-1/2 mt-2">
-                            <div className="border rounded-md ">
-                                <div className="p-2 ">
-                                    {[['all', 'All Time'], ['day', 'From First Date'], ['between', 'Between in Range']].map(([value, label]) => (
-                                        <div key={value}>
-                                            <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={filters.create === value} onChange={() => updateFilters({ create: value })} />{label}
-                                            </div>
-                                            <hr />
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="p-2 space-y-2 ">
-                                    <div>
-                                        First Date
-                                        <input className="rounded-md" type="date" value={filters.start_date ?? ""} onChange={(e) => updateFilters({ start_date: e.target.value })} />
-                                    </div>
-                                    <div>
-                                        Last Date
-                                        <input className="rounded-md" type="date" value={filters.end_date ?? ""} onChange={(e) => updateFilters({ end_date: e.target.value })} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Modal>
         </div>
     );
 }
