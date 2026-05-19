@@ -44,6 +44,11 @@ class Packages extends Model
         return $query->where('created_at', '>', now()->subDays(360));
     }
 
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
+    }
+
     public function user()
     {
         return $this->belongsToMany(User::class, 'vips', 'package_id', 'user_id');

@@ -4,6 +4,7 @@ import DangerButton from "../../../components/DangerButton";
 import InputLabel from "../../../components/InputLabel";
 import NavLinkBtn from "../../../components/NavLinkBtn";
 import PrimaryButton from "../../../components/PrimaryButton";
+import TextInput from "../../../components/TextInput";
 
 function checkboxRows(slider, setSlider) {
     return [
@@ -54,6 +55,56 @@ function checkboxRows(slider, setSlider) {
             text: (
                 <>
                     If checked, Banner will display on <strong>Categories Product Page</strong>.
+                </>
+            ),
+        },
+        {
+            key: "grocery_item",
+            id: "grocery_item_section",
+            label: "Grocery Item",
+            text: (
+                <>
+                    If checked, Banner will display after <strong>Grocery Item</strong>.
+                </>
+            ),
+        },
+        {
+            key: "medicine_products",
+            id: "medicine_products_section",
+            label: "Medicine Products",
+            text: (
+                <>
+                    If checked, Banner will display after <strong>Medicine Products</strong>.
+                </>
+            ),
+        },
+        {
+            key: "food_items",
+            id: "food_items_section",
+            label: "Food Items",
+            text: (
+                <>
+                    If checked, Banner will display after <strong>Food Items</strong>.
+                </>
+            ),
+        },
+        {
+            key: "top_sales",
+            id: "top_sales_section",
+            label: "Top Sales",
+            text: (
+                <>
+                    If checked, Banner will display after <strong>Top Sales</strong>.
+                </>
+            ),
+        },
+        {
+            key: "womens_item",
+            id: "womens_item_section",
+            label: "Women's Item",
+            text: (
+                <>
+                    If checked, Banner will display after <strong>Women's Item</strong>.
                 </>
             ),
         },
@@ -118,7 +169,14 @@ function placementRows(slider, setSlider) {
                 type="checkbox"
                 id={`${item.id}_${slider.id}`}
                 checked={Boolean(slider[item.key])}
-                onChange={(e) => setSlider((current) => ({ ...current, [item.key]: e.target.checked }))}
+                onChange={(e) =>
+                    setSlider((current) => ({
+                        ...current,
+                        placement_top: item.key === "placement_top" ? e.target.checked : false,
+                        placement_middle: item.key === "placement_middle" ? e.target.checked : false,
+                        placement_bottom: item.key === "placement_bottom" ? e.target.checked : false,
+                    }))
+                }
                 style={{ width: "20px", height: "20px" }}
                 className="me-3"
             />
@@ -149,9 +207,15 @@ export default function Slider({ item, index }) {
             order: slider.order,
             product_details: slider.product_details,
             categories_product: slider.categories_product,
+            grocery_item: slider.grocery_item,
+            medicine_products: slider.medicine_products,
+            food_items: slider.food_items,
+            top_sales: slider.top_sales,
+            womens_item: slider.womens_item,
             placement_top: slider.placement_top,
             placement_middle: slider.placement_middle,
             placement_bottom: slider.placement_bottom,
+            slider_height: slider.slider_height,
         });
     };
 
@@ -194,7 +258,26 @@ export default function Slider({ item, index }) {
                                 <div className="p-3">{checkboxRows(slider, setSlider)}</div>
                                 <br />
 
-                                <div className="p-3 bg-gray-100">{placementRows(slider, setSlider)}</div>
+                                <div>
+                                    <div className="p-3 bg-gray-100">{placementRows(slider, setSlider)}</div>
+                                    <div className="p-3 mt-3">
+                                        <InputLabel htmlFor={`slider_height_${slider.id}`}>Slider Height</InputLabel>
+                                        <TextInput
+                                            id={`slider_height_${slider.id}`}
+                                            type="number"
+                                            min="1"
+                                            value={slider.slider_height ?? ""}
+                                            onChange={(e) =>
+                                                setSlider((current) => ({
+                                                    ...current,
+                                                    slider_height: e.target.value,
+                                                }))
+                                            }
+                                            className="w-full py-1"
+                                            placeholder="Height in px"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className="p-2 bg-gray-100">

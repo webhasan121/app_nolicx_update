@@ -159,7 +159,7 @@ export default function Index({ filters, stats, orders }) {
                                 </select>
 
                                 <select value={filters?.date ?? ""} className="rounded-md border border-gray-300 bg-white shadow-sm" onChange={(e) => apply({ date: e.target.value })}>
-                                    <option value="">Null</option>
+                                    <option value="">All Time</option>
                                     <option value="today">Today</option>
                                     <option value="yesterday">Yesterday</option>
                                     <option value="between">Custom</option>

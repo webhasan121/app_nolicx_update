@@ -7,6 +7,7 @@ import InputField from "../../../components/InputField";
 import InputFile from "../../../components/InputFile";
 import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
+import ProductAttributesInput from "../../../components/ProductAttributesInput";
 import SecondaryButton from "../../../components/SecondaryButton";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Container from "../../../components/dashboard/Container";
@@ -17,6 +18,8 @@ import {
     PRODUCT_VIDEO_DURATION_ERROR,
     validateProductVideoDuration,
 } from "../../../utils/videoValidation";
+
+const MAX_OTHER_IMAGES = 8;
 
 function renderCategoryOptions(categories = [], depth = 0) {
     return categories.flatMap((category) => [
@@ -88,11 +91,23 @@ export default function Edit() {
         shipping_note: productData?.shipping_note ?? "",
         attr_name: productData?.attr?.name ?? "",
         attr_value: productData?.attr?.value ?? "",
+        attributes: productData?.attrs?.length
+            ? productData.attrs
+            : [{ name: productData?.attr?.name ?? "", value: productData?.attr?.value ?? "" }],
         thumb: null,
         video: productData?.video ?? "",
         newseothumb: null,
         newImage: [],
     });
+    const existingOtherImageCount = productData?.related_images?.length ?? 0;
+    const selectedOtherImageCount = Array.isArray(form.data.newImage)
+        ? form.data.newImage.length
+        : 0;
+    const remainingOtherImageSlots = Math.max(
+        0,
+        MAX_OTHER_IMAGES - existingOtherImageCount - selectedOtherImageCount
+    );
+
     useEffect(() => {
         let isMounted = true;
 
@@ -165,6 +180,22 @@ export default function Edit() {
         form.post(route("reseller.products.update", { id: productData.encrypted_id }), {
             forceFormData: true,
         });
+    };
+
+    const handleOtherImagesChange = (event) => {
+        const currentFiles = Array.isArray(form.data.newImage)
+            ? form.data.newImage
+            : [];
+        const selectedFiles = Array.from(event.target.files ?? []);
+
+        if (selectedFiles.length > remainingOtherImageSlots) {
+            window.alert(`You can upload ${remainingOtherImageSlots} more other image(s).`);
+            event.target.value = "";
+            return;
+        }
+
+        form.setData("newImage", [...currentFiles, ...selectedFiles]);
+        event.target.value = "";
     };
 
     const moveToTrash = () => {
@@ -706,30 +737,10 @@ export default function Edit() {
                             content="Give your products attributes, product different types, different product color package and quantity."
                         />
                         <SectionInner>
-                            <div className="md:flex">
-                                <input
-                                    type="text"
-                                    value={form.data.attr_name}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "attr_name",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder="Name"
-                                />
-                                <input
-                                    type="text"
-                                    value={form.data.attr_value}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "attr_value",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder="Value"
-                                />
-                            </div>
+                            <ProductAttributesInput
+                                attributes={form.data.attributes}
+                                onChange={(attributes) => form.setData("attributes", attributes)}
+                            />
                         </SectionInner>
                     </SectionSection>
 
@@ -848,8 +859,7 @@ export default function Edit() {
                                         >
                                             <img
                                                 src={URL.createObjectURL(ni)}
-                                                width="50px"
-                                                height="50px"
+                                                className="object-cover w-16 h-16 rounded"
                                                 alt=""
                                             />
                                         </div>
@@ -863,23 +873,28 @@ export default function Edit() {
                                     id="multi_prod_img"
                                     className="absolute hidden border p-1"
                                     multiple
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "newImage",
-                                            Array.from(e.target.files ?? [])
-                                        )
-                                    }
+                                    accept="image/*"
+                                    disabled={remainingOtherImageSlots < 1}
+                                    onChange={handleOtherImagesChange}
                                 />
                                 <label
                                     htmlFor="multi_prod_img"
-                                    className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
+                                    className={`inline-flex items-center justify-center w-9 h-9 border rounded ${
+                                        remainingOtherImageSlots < 1
+                                            ? "cursor-not-allowed opacity-50"
+                                            : "cursor-pointer"
+                                    }`}
                                 >
                                     <i className="fas fa-upload"></i>
                                 </label>
                                 <div className="text-xs leading-5">
-                                    Please choose all image at once, if you plan to
-                                    upload multiple image.
+                                    You can upload maximum {MAX_OTHER_IMAGES} images. You can add {remainingOtherImageSlots} more.
                                 </div>
+                                {errors.newImage ? (
+                                    <div className="text-xs text-red-500">
+                                        {errors.newImage}
+                                    </div>
+                                ) : null}
                             </div>
                         </SectionInner>
                     </SectionSection>

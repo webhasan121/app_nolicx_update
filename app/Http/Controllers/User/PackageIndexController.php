@@ -11,7 +11,7 @@ class PackageIndexController extends Controller
 {
     public function index()
     {
-       $packages = Packages::all();
+       $packages = Packages::active()->get();
         return Inertia::render('User/Vip/Package/Index', [
             'packages' => $packages,
         ]);

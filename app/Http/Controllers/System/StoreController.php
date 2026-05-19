@@ -279,17 +279,18 @@ class StoreController extends Controller
             return back()->with('error', 'No balance available for distribution');
         }
 
-        $developerPercentage = (float) ($metrics['percentages']['developer'] ?? 0);
-        $managementPercentage = (float) ($metrics['percentages']['management'] ?? 0);
-        $managementTeamPercentage = (float) ($metrics['percentages']['management_team'] ?? 0);
+        $developers = $this->approvedPartnershipUsers(DeveloperAccess::class);
+        $managers = $this->approvedPartnershipUsers(ManagementAccess::class);
+        $managementTeams = $this->approvedPartnershipUsers(ManagementTeam::class);
+
+        $developerPercentage = $developers->count() > 0 ? (float) ($metrics['percentages']['developer'] ?? 0) : 0;
+        $managementPercentage = $managers->count() > 0 ? (float) ($metrics['percentages']['management'] ?? 0) : 0;
+        $managementTeamPercentage = $managementTeams->count() > 0 ? (float) ($metrics['percentages']['management_team'] ?? 0) : 0;
         $developerPool = round(($balance * $developerPercentage) / 100, 8);
         $managementPool = round(($balance * $managementPercentage) / 100, 8);
         $managementTeamPool = round(($balance * $managementTeamPercentage) / 100, 8);
         $levelCap = max(0, round($balance - $developerPool - $managementPool - $managementTeamPool, 8));
 
-        $developers = $this->approvedPartnershipUsers(DeveloperAccess::class);
-        $managers = $this->approvedPartnershipUsers(ManagementAccess::class);
-        $managementTeams = $this->approvedPartnershipUsers(ManagementTeam::class);
         $levelUsers = $this->refreshQualifiedLevelUsers();
 
         DB::transaction(function () use (
@@ -620,6 +621,9 @@ class StoreController extends Controller
         $store = $this->syncStoreSnapshot($start, $totalBalance);
         $distributedBalance = $this->sumDistributedForStore($store, $start, $end);
         $currentBalance = max(0, round($totalBalance - $distributedBalance, 2));
+        $developerPercentage = $this->activePartnershipCount(DeveloperAccess::class) > 0 ? $developerPercentage : 0;
+        $managementPercentage = $this->activePartnershipCount(ManagementAccess::class) > 0 ? $managementPercentage : 0;
+        $managementTeamPercentage = $this->activePartnershipCount(ManagementTeam::class) > 0 ? $managementTeamPercentage : 0;
         $developerBalance = round(($totalBalance * $developerPercentage) / 100, 2);
         $managementBalance = round(($totalBalance * $managementPercentage) / 100, 2);
         $managementTeamBalance = round(($totalBalance * $managementTeamPercentage) / 100, 2);
@@ -1092,6 +1096,15 @@ class StoreController extends Controller
         return User::query()
             ->whereIn('id', $userIds)
             ->get();
+    }
+
+    private function activePartnershipCount(string $modelClass): int
+    {
+        return $modelClass::query()
+            ->where('status', 1)
+            ->whereNotNull('applied_id')
+            ->distinct('applied_id')
+            ->count('applied_id');
     }
 
     private function formatStoreLabel($store): string

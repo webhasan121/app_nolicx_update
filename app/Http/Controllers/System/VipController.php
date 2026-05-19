@@ -99,6 +99,7 @@ class VipController extends Controller
                         'coin' => $item->coin,
                         'm_coin' => $item->m_coin ?? '0',
                         'ref_owner_get_coin' => $item->ref_owner_get_coin,
+                        'status' => (int) ($item->status ?? 0),
                         'users_count' => $usersCount,
                         'earn' => $item->price * $usersCount,
                         'created_at_human' => $item->created_at?->diffForHumans(),
@@ -637,6 +638,18 @@ class VipController extends Controller
         });
 
         return redirect()->back()->with('success', 'Updated !');
+    }
+
+    public function updatePackageStatus(Request $request, Packages $packages)
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'boolean'],
+        ]);
+
+        $packages->status = $validated['status'] ? 1 : 0;
+        $packages->save();
+
+        return redirect()->back()->with('success', $packages->status ? 'Package activated' : 'Package inactivated');
     }
 
     public function trash($id)

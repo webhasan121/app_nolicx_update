@@ -16,6 +16,7 @@ import Hr from "../../../../components/Hr";
 export default function DepositHistory() {
     const { coin = 0, history = [], payNumbers = {} } = usePage().props;
     const [showModal, setShowModal] = useState(false);
+    const [copiedType, setCopiedType] = useState("");
 
     const { data, setData, post, processing, errors, reset } = useForm({
         amount: "",
@@ -34,6 +35,24 @@ export default function DepositHistory() {
                 setShowModal(false);
             },
         });
+    };
+
+    const copyNumber = async (type, number) => {
+        if (!number) return;
+
+        if (window.navigator?.clipboard?.writeText) {
+            await window.navigator.clipboard.writeText(number);
+        } else {
+            const input = document.createElement("input");
+            input.value = number;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand("copy");
+            document.body.removeChild(input);
+        }
+
+        setCopiedType(type);
+        window.setTimeout(() => setCopiedType(""), 1200);
     };
 
     return (
@@ -68,10 +87,23 @@ export default function DepositHistory() {
                         {Object.entries(payNumbers).map(([type, pay]) => (
                             <div
                                 key={type}
-                                className="inline-flex p-2 mb-1 border rounded"
+                                className="inline-flex items-center p-2 mb-1 border rounded"
                             >
                                 <span className="pr-2 font-bold">{type}:</span>{" "}
-                                {pay}
+                                <span>{pay}</span>
+                                <button
+                                    type="button"
+                                    className="inline-flex items-center justify-center w-7 h-7 ml-2 text-gray-600 border rounded hover:bg-gray-100"
+                                    title="Copy number"
+                                    onClick={() => copyNumber(type, pay)}
+                                >
+                                    <i className="fas fa-copy"></i>
+                                </button>
+                                {copiedType === type ? (
+                                    <span className="ml-1 text-xs text-green-600">
+                                        Copied
+                                    </span>
+                                ) : null}
                             </div>
                         ))}
                     </p>

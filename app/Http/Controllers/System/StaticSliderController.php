@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\System;
 
+use App\HandleImageUpload;
 use App\Http\Controllers\Controller;
 use App\Models\Static_slider;
 use App\Models\Static_slider_slides;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class StaticSliderController extends Controller
 {
+    use HandleImageUpload;
+
     public function indexReact(): Response
     {
         $sliders = Static_slider::query()->orderBy('id', 'desc')->get();
@@ -26,9 +29,15 @@ class StaticSliderController extends Controller
                 'order' => (bool) $item->order,
                 'product_details' => (bool) $item->product_details,
                 'categories_product' => (bool) $item->categories_product,
+                'grocery_item' => (bool) $item->grocery_item,
+                'medicine_products' => (bool) $item->medicine_products,
+                'food_items' => (bool) $item->food_items,
+                'top_sales' => (bool) $item->top_sales,
+                'womens_item' => (bool) $item->womens_item,
                 'placement_top' => (bool) $item->placement_top,
                 'placement_middle' => (bool) $item->placement_middle,
                 'placement_bottom' => (bool) $item->placement_bottom,
+                'slider_height' => $item->slider_height,
             ])->values()->all(),
         ]);
     }
@@ -47,9 +56,13 @@ class StaticSliderController extends Controller
             'order' => $request->boolean('order'),
             'product_details' => $request->boolean('product_details'),
             'categories_product' => $request->boolean('categories_product'),
-            'placement_top' => $request->boolean('top'),
-            'placement_middle' => $request->boolean('middle'),
-            'placement_bottom' => $request->boolean('bottom'),
+            'grocery_item' => $request->boolean('grocery_item'),
+            'medicine_products' => $request->boolean('medicine_products'),
+            'food_items' => $request->boolean('food_items'),
+            'top_sales' => $request->boolean('top_sales'),
+            'womens_item' => $request->boolean('womens_item'),
+            'slider_height' => $request->integer('slider_height') ?: null,
+            ...$this->placementPayload($request, 'top', 'middle', 'bottom'),
         ]);
 
         return redirect()->route('system.static-slider.index')->with('success', 'Added !');
@@ -65,9 +78,13 @@ class StaticSliderController extends Controller
             'order' => $request->boolean('order'),
             'product_details' => $request->boolean('product_details'),
             'categories_product' => $request->boolean('categories_product'),
-            'placement_top' => $request->boolean('placement_top'),
-            'placement_middle' => $request->boolean('placement_middle'),
-            'placement_bottom' => $request->boolean('placement_bottom'),
+            'grocery_item' => $request->boolean('grocery_item'),
+            'medicine_products' => $request->boolean('medicine_products'),
+            'food_items' => $request->boolean('food_items'),
+            'top_sales' => $request->boolean('top_sales'),
+            'womens_item' => $request->boolean('womens_item'),
+            'slider_height' => $request->integer('slider_height') ?: null,
+            ...$this->placementPayload($request, 'placement_top', 'placement_middle', 'placement_bottom'),
         ]);
 
         return redirect()->route('system.static-slider.index')->with('success', 'Updated !');
@@ -129,5 +146,20 @@ class StaticSliderController extends Controller
         $slide->delete();
 
         return redirect()->route('system.static-slider.slides', ['id' => $sliderId])->with('success', 'Deleted !');
+    }
+
+    private function placementPayload(Request $request, string $top, string $middle, string $bottom): array
+    {
+        $placement = collect([
+            'placement_top' => $request->boolean($top),
+            'placement_middle' => $request->boolean($middle),
+            'placement_bottom' => $request->boolean($bottom),
+        ])->search(true, true);
+
+        return [
+            'placement_top' => $placement === 'placement_top',
+            'placement_middle' => $placement === 'placement_middle',
+            'placement_bottom' => $placement === 'placement_bottom',
+        ];
     }
 }

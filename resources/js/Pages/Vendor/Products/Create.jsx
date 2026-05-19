@@ -5,6 +5,7 @@ import Hr from "../../../components/Hr";
 import InputField from "../../../components/InputField";
 import InputFile from "../../../components/InputFile";
 import PrimaryButton from "../../../components/PrimaryButton";
+import ProductAttributesInput from "../../../components/ProductAttributesInput";
 import TextInput from "../../../components/TextInput";
 import Container from "../../../components/dashboard/Container";
 import PageHeader from "../../../components/dashboard/PageHeader";
@@ -15,6 +16,8 @@ import {
     PRODUCT_VIDEO_DURATION_ERROR,
     validateProductVideoDuration,
 } from "../../../utils/videoValidation";
+
+const MAX_OTHER_IMAGES = 8;
 
 export default function Create({ categories = [], shop, ableToCreate = true }) {
     const inputId = useId().replace(/:/g, "");
@@ -48,6 +51,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         newImage: [],
         attr_name: "",
         attr_value: "",
+        attributes: [{ name: "", value: "" }],
     });
 
     const [thumbPreview, setThumbPreview] = useState(null);
@@ -181,6 +185,23 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         form.post(route("vendor.products.store"), {
             forceFormData: true,
         });
+    };
+
+    const handleOtherImagesChange = (event) => {
+        const currentFiles = Array.isArray(form.data.newImage)
+            ? form.data.newImage
+            : [];
+        const selectedFiles = Array.from(event.target.files ?? []);
+        const nextFiles = [...currentFiles, ...selectedFiles];
+
+        if (nextFiles.length > MAX_OTHER_IMAGES) {
+            window.alert(`You can upload a maximum of ${MAX_OTHER_IMAGES} other images.`);
+            event.target.value = "";
+            return;
+        }
+
+        form.setData("newImage", nextFiles);
+        event.target.value = "";
     };
 
     return (
@@ -463,18 +484,10 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 content="Give your products attributes, product different types, different product color package and quantity."
                             />
                             <SectionInner>
-                                <div className="md:flex">
-                                    <TextInput
-                                        value={form.data.attr_name}
-                                        onChange={(e) => form.setData("attr_name", e.target.value)}
-                                        placeholder="Name"
-                                    />
-                                    <TextInput
-                                        value={form.data.attr_value}
-                                        onChange={(e) => form.setData("attr_value", e.target.value)}
-                                        placeholder="Value"
-                                    />
-                                </div>
+                                <ProductAttributesInput
+                                    attributes={form.data.attributes}
+                                    onChange={(attributes) => form.setData("attributes", attributes)}
+                                />
                             </SectionInner>
                         </Section>
 
@@ -533,10 +546,14 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 content="Other product image that showcase your product. other image mainly display at product details page."
                             />
                             <SectionInner>
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,50px)", gridGap: "10px" }}>
+                                <div className="flex flex-wrap gap-3">
                                     {newImagePreviews.map((src, index) => (
                                         <div key={`${src}-${index}`} className="p-2 border rounded">
-                                            <img src={src} width="50px" height="50px" alt="" />
+                                            <img
+                                                src={src}
+                                                className="object-cover w-16 h-16 rounded"
+                                                alt=""
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -548,9 +565,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                         className="absolute hidden"
                                         multiple
                                         accept="image/*"
-                                        onChange={(e) =>
-                                            form.setData("newImage", Array.from(e.target.files ?? []))
-                                        }
+                                        onChange={handleOtherImagesChange}
                                     />
                                     <label
                                         htmlFor="multi_prod_img"
@@ -559,8 +574,13 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                         <i className="fas fa-upload"></i>
                                     </label>
                                     <div className="text-xs leading-5">
-                                        Please choose all image at once, if you plan to upload multiple image.
+                                        You can upload maximum {MAX_OTHER_IMAGES} images. You can choose all at once or add one by one.
                                     </div>
+                                    {form.errors.newImage ? (
+                                        <div className="text-xs text-red-500">
+                                            {form.errors.newImage}
+                                        </div>
+                                    ) : null}
                                 </div>
                             </SectionInner>
                         </Section>

@@ -54,6 +54,21 @@ export default function Developer({ applications = { data: [] }, filters = {}, p
         router.post(route("system.partnership.developer.reject", { id }));
     };
 
+    const toggleStatus = (app) => {
+        const isActive = Number(app.status) === 1;
+        const action = isActive ? "inactivate" : "activate";
+
+        if (!window.confirm(`Are you sure you want to ${action} this developer?`)) {
+            return;
+        }
+
+        if (isActive) {
+            reject(app.id);
+        } else {
+            accept(app.id);
+        }
+    };
+
     const destroy = (id) => {
         if (!window.confirm("Are you sure you want to delete this application?")) {
             return;
@@ -150,29 +165,26 @@ export default function Developer({ applications = { data: [] }, filters = {}, p
                                             <td className="px-4 py-3 font-medium text-gray-700">{app.sl}</td>
                                             <td className="px-4 py-3 text-gray-700">{app.user_name}</td>
                                             <td className="px-4 py-3 text-gray-700">{app.user_email}</td>
-                                            <td className="px-4 py-3 text-gray-700">{app.status_text}</td>
+                                            <td className="px-4 py-3 text-gray-700">
+                                                {app.status === null ? (
+                                                    <span className="inline-flex rounded bg-yellow-100 px-3 py-1 text-xs font-bold text-yellow-800">
+                                                        Pending
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleStatus(app)}
+                                                        className={`inline-flex rounded px-3 py-1 text-xs font-bold text-white ${
+                                                            Number(app.status) === 1 ? "bg-green-600" : "bg-gray-500"
+                                                        }`}
+                                                    >
+                                                        {Number(app.status) === 1 ? "Active" : "Inactive"}
+                                                    </button>
+                                                )}
+                                            </td>
                                             <td className="px-4 py-3 text-gray-700">{app.responder_name}</td>
                                             <td className="px-4 py-3 text-center space-x-2">
-                                                {app.status !== null ? (
-                                                    <>
-                                                        {app.status === 1 ? (
-                                                            <button className="inline-flex justify-center items-center p-2 rounded-lg bg-green-500 text-white text-xs font-medium hover:bg-green-600 w-7 h-7 transition" disabled>
-                                                                <i className="fas fa-check-circle"></i>
-                                                            </button>
-                                                        ) : (
-                                                            <button className="inline-flex justify-center items-center p-2 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 w-7 h-7 transition" disabled>
-                                                                <i className="fas fa-circle-xmark"></i>
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => destroy(app.id)}
-                                                            className="inline-flex justify-center items-center p-2 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 w-7 h-7 transition"
-                                                        >
-                                                            <i className="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </>
-                                                ) : (
+                                                {app.status === null ? (
                                                     <>
                                                         <button
                                                             type="button"
@@ -189,7 +201,14 @@ export default function Developer({ applications = { data: [] }, filters = {}, p
                                                             <i className="fas fa-times"></i>
                                                         </button>
                                                     </>
-                                                )}
+                                                ) : null}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => destroy(app.id)}
+                                                    className="inline-flex justify-center items-center p-2 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 w-7 h-7 transition"
+                                                >
+                                                    <i className="fas fa-trash-alt"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}

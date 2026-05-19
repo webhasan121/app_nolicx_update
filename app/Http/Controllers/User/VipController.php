@@ -16,7 +16,7 @@ class VipController extends Controller
     {
         $user = $request->user();
 
-        $packages = Packages::all();
+        $packages = Packages::active()->get();
 
         $vip = Vip::with('package')
             ->where('user_id', $user->id)
