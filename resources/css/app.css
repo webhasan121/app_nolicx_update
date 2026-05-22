@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+    .product-title-clamp-3 {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        min-height: 3.75rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
 /* @import "tailwindcss"; */
 /** import tailwind css with vite plugin**/
 

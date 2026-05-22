@@ -129,7 +129,7 @@ function ProductCard({ product }) {
     return (
         <div className="relative overflow-hidden bg-white rounded shadow">
             {product?.offer_type ? (
-                <div className="bg-orange-600 discount-badge ">
+                <div className="bg-orange-500 discount-badge ">
                     {product?.price
                         ? Math.round(
                               (((product.price - product.discount) /
@@ -159,7 +159,7 @@ function ProductCard({ product }) {
                     })}
                     className="p-0 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                 >
-                    <div className="text-sm text-start">
+                    <div className="text-sm text-start product-title-clamp-3">
                         {product?.name ?? "N/A"}
                     </div>
                 </NavLink>

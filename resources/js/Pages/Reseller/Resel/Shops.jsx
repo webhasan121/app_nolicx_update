@@ -348,27 +348,17 @@ export default function Shops({
                                 shops.data.map((shop) => (
                                     <div key={shop.id}>
                                         <div className="overflow-hidden bg-white rounded-lg shadow">
-                                            <div className="relative">
-                                                {shop.banner_url ? (
-                                                    <img
-                                                        className="w-full bg-indigo-900"
-                                                        style={{ height: "100px" }}
-                                                        src={shop.banner_url}
-                                                        alt=""
-                                                    />
-                                                ) : null}
+                                            <div className="relative p-3">
                                                 {shop.logo_url ? (
                                                     <img
-                                                        className="absolute top-0 right-0 m-2 bg-white rounded-full"
+                                                        className="absolute object-cover bg-white rounded-full top-2 right-2"
                                                         style={{ height: "50px", width: "50px" }}
                                                         src={shop.logo_url}
-                                                        alt=""
+                                                        alt={shop.shop_name_en}
                                                     />
                                                 ) : null}
-                                            </div>
-                                            <div className="p-3">
-                                                <div>{shop.shop_name_en}</div>
-                                                <p className="text-xs">
+                                                <div className="pr-16">{shop.shop_name_en}</div>
+                                                <p className="pr-16 text-xs">
                                                     {shop.village}, {shop.upozila},{" "}
                                                     {shop.district}
                                                 </p>
