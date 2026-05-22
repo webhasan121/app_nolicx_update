@@ -58,6 +58,7 @@ class StoreController extends Controller
 
         $commissions = DistributeComissions::query()
             ->with('user')
+            ->confirmed()
             ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
             ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
             ->when($search !== '', function ($query) use ($search) {
@@ -190,6 +191,7 @@ class StoreController extends Controller
 
         $commissions = DistributeComissions::query()
             ->with('user')
+            ->confirmed()
             ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
             ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
             ->when($search !== '', function ($query) use ($search) {

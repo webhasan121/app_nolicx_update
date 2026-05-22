@@ -47,6 +47,8 @@ Route::get('dashboard', function () {
                 'created_at',
                 'start_time',
                 'end_time',
+                'find',
+                'page',
             ])),
             'vendorOverview' => VendorDashboardOverview::get(auth()->user()),
             'vendorOrdersIndex' => VendorOrdersIndexData::get(auth()->user(), request()->only([

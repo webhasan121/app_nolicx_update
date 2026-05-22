@@ -13,6 +13,18 @@ import CoinStore from "../../../../livewire/system/store/CoinStore";
 import CoastStore from "../../../../livewire/system/store/CoastStore";
 import DonationStore from "../../../../livewire/system/store/DonationStore";
 
+const formatCoin = (value, maxDecimals = 3) => {
+    const number = Number(value ?? 0);
+
+    if (!Number.isFinite(number)) {
+        return "0";
+    }
+
+    return number
+        .toFixed(maxDecimals)
+        .replace(/\.?0+$/, "");
+};
+
 export default function Index() {
     const {
         pageTitle = "Coin Store",
@@ -251,7 +263,7 @@ export default function Index() {
                         <OverviewDiv
                             key={`${widget.label}-${index}`}
                             title={widget.label}
-                            content={widget.value ?? 0}
+                            content={formatCoin(widget.value)}
                             onClick={shareFilters[widget.label] ? () => openShareList(widget.label) : null}
                             titleText={shareFilters[widget.label] ? `View ${shareFilters[widget.label]} list` : ""}
                         />
@@ -265,17 +277,17 @@ export default function Index() {
                 <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 mb-6">
                     <div className="relative bg-white rounded-md shadow-md p-6">
                         <CoinStore
-                            store={coinStore.store}
-                            take={coinStore.take}
-                            give={coinStore.give}
+                            store={formatCoin(coinStore.store)}
+                            take={formatCoin(coinStore.take)}
+                            give={formatCoin(coinStore.give)}
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-6">
                         <div className="relative bg-white rounded-md shadow-md p-6">
-                            <CoastStore store={coastStore.store} />
+                            <CoastStore store={formatCoin(coastStore.store)} />
                         </div>
                         <div className="relative bg-white rounded-md shadow-md p-6">
-                            <DonationStore store={donationStore.store} />
+                            <DonationStore store={formatCoin(donationStore.store)} />
                         </div>
                     </div>
                 </section>

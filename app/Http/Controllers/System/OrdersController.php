@@ -63,7 +63,7 @@ class OrdersController extends Controller
         $totalCom = 0;
 
         $items = $orders->getCollection()->map(function (Order $item) use (&$totalCom) {
-            $comission = $item->comissionsInfo()->sum('take_comission');
+            $comission = $this->money($item->comissionsInfo()->sum('take_comission'));
             $totalCom += $comission;
 
             return [
@@ -83,8 +83,8 @@ class OrdersController extends Controller
                 'user_type' => $item->user_type,
                 'belongs_to_type' => $item->belongs_to_type,
                 'status' => $item->status,
-                'total' => $item->total ?? 0,
-                'comission' => $comission ?? 0,
+                'total' => $this->money($item->total),
+                'comission' => $comission,
                 'created_at_formatted' => $item->created_at?->toFormattedDateString(),
             ];
         })->values()->all();
@@ -109,8 +109,8 @@ class OrdersController extends Controller
                 'from' => $orders->firstItem(),
                 'to' => $orders->lastItem(),
                 'total' => $orders->total(),
-                'sum_total' => $orders->sum('total'),
-                'sum_comission' => $totalCom,
+                'sum_total' => $this->money($orders->sum('total')),
+                'sum_comission' => $this->money($totalCom),
                 'count' => count($items),
             ],
         ]);
@@ -174,7 +174,7 @@ class OrdersController extends Controller
                 'ed_formatted' => $ed ? Carbon::parse($ed)->format('d/m/Y') : '',
             ],
             'orders' => $orders->map(function (Order $item) use (&$totalCom) {
-                $comission = $item->comissionsInfo()->sum('take_comission');
+                $comission = $this->money($item->comissionsInfo()->sum('take_comission'));
                 $totalCom += $comission;
 
                 return [
@@ -192,15 +192,15 @@ class OrdersController extends Controller
                     'user_type' => $item->user_type,
                     'belongs_to_type' => $item->belongs_to_type,
                     'status' => $item->status,
-                    'total' => $item->total ?? 0,
+                    'total' => $this->money($item->total),
                     'comission' => $comission,
                     'created_at_formatted' => $item->created_at?->toFormattedDateString(),
                 ];
             })->values()->all(),
             'summary' => [
                 'count' => $orders->count(),
-                'sum_total' => $orders->sum('total'),
-                'sum_comission' => $totalCom,
+                'sum_total' => $this->money($orders->sum('total')),
+                'sum_comission' => $this->money($totalCom),
             ],
         ]);
     }
@@ -223,26 +223,31 @@ class OrdersController extends Controller
                 'house_no' => $order->house_no ?? 'Not Defined !',
                 'road_no' => $order->road_no ?? 'Not Defined !',
                 'number' => $order->number,
-                'shipping' => (float) ($order->shipping ?? 0),
+                'shipping' => $this->money($order->shipping),
                 'user' => [
                     'name' => $order->user?->name ?? 'Not Found !',
                 ],
                 'cart_orders' => $order->cartOrders->map(function ($item, $key) use ($order) {
+                    $quantity = max(1, (int) ($item->quantity ?? 1));
+                    $buyingPrice = is_numeric($item->buying_price)
+                        ? (float) $item->buying_price
+                        : (float) ($item->product?->buying_price ?? 0);
+
                     return [
                         'id' => $item->id ?? 'N/A',
                         'product_title' => $item->product?->title ?? 'N/A',
                         'product_thumbnail' => $item->product?->thumbnail,
                         'is_resel' => (bool) ($item->product?->isResel ?? false),
-                        'price' => (float) ($item->price ?? 0),
-                        'quantity' => (int) ($item->quantity ?? 0),
-                        'total' => (float) ($item->total ?? 0),
+                        'price' => $this->money($item->price),
+                        'quantity' => $quantity,
+                        'total' => $this->money($item->total),
                         'size' => $item->size ?? 'N/A',
-                        'buying_price' => is_numeric($item->product?->buying_price) ? (float) $item->product?->buying_price : 'N/A',
-                        'profit' => ((float) ($item->price ?? 0) - (float) ($item->buying_price ?? 0)) * (int) ($item->quantity ?? 0),
-                        'comission' => (float) ($item->order?->comissionsInfo[$key]?->take_comission ?? 0),
+                        'buying_price' => $this->money($buyingPrice),
+                        'profit' => $this->money(((float) ($item->price ?? 0) - $buyingPrice) * $quantity),
+                        'comission' => $this->money($item->order?->comissionsInfo[$key]?->take_comission ?? 0),
                     ];
                 })->values()->all(),
-                'cart_sum_total' => (float) $order->cartOrders->sum('total'),
+                'cart_sum_total' => $this->money($order->cartOrders->sum('total')),
             ],
             'earnFilters' => [
                 'where' => 'order_id',
@@ -255,25 +260,25 @@ class OrdersController extends Controller
                 'user_id' => $item->user_id,
                 'order_id' => $item->order_id ?? 0,
                 'product_id' => $item->product_id ?? 0,
-                'buying_price' => $item->buying_price ?? 0,
-                'selling_price' => $item->selling_price ?? 0,
-                'profit' => $item->profit ?? 0,
-                'comission_range' => $item->comission_range ?? 0,
-                'take_comission' => $item->take_comission ?? 0,
-                'distribute_comission' => $item->distribute_comission ?? 0,
-                'store' => $item->store ?? 0,
+                'buying_price' => $this->money($item->buying_price),
+                'selling_price' => $this->money($item->selling_price),
+                'profit' => $this->money($item->profit),
+                'comission_range' => $this->money($item->comission_range),
+                'take_comission' => $this->money($item->take_comission),
+                'distribute_comission' => $this->money($item->distribute_comission),
+                'store' => $this->money($item->store),
                 'created_at_formatted' => $item->created_at?->toFormattedDateString(),
                 'confirmed' => (bool) $item->confirmed,
             ])->values()->all(),
             'resellerProfit' => $resellerProfit->map(fn ($item) => [
                 'id' => $item->id,
-                'buy' => $item->buy,
-                'sel' => $item->sel,
-                'profit' => $item->profit,
+                'buy' => $this->money($item->buy),
+                'sel' => $this->money($item->sel),
+                'profit' => $this->money($item->profit),
                 'confirmed' => (bool) $item->confirmed,
                 'created_at_formatted' => $item->created_at?->toFormattedDateString(),
             ])->values()->all(),
-            'reseller_profit_sum' => $resellerProfit->sum('profit'),
+            'reseller_profit_sum' => $this->money($resellerProfit->sum('profit')),
         ]);
     }
 
@@ -291,5 +296,10 @@ class OrdersController extends Controller
         $pc->refundResellerResellProfit($id);
 
         return redirect()->back()->with('success', 'Profit Rounded !');
+    }
+
+    private function money($value): float
+    {
+        return round((float) ($value ?? 0), 2);
     }
 }

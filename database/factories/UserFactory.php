@@ -25,6 +25,8 @@ class UserFactory extends Factory
     public function definition(): array
     {
         $state = state::where('country_id', 18)->with('cities')->inRandomOrder()->first();
+        $city = $state?->cities?->first();
+
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
@@ -34,8 +36,8 @@ class UserFactory extends Factory
             'country' => 'Bangladesh',
             'country_code' => 'BN',
             'phone' => fake()->phoneNumber(),
-            'state' => $state->name,
-            'city' => $state->cities?->first()->name ?? 'Dhaka',
+            'state' => $state?->name ?? 'Dhaka',
+            'city' => $city?->name ?? 'Dhaka',
         ];
     }
 

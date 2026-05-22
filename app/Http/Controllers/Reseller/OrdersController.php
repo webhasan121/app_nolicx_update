@@ -181,13 +181,16 @@ class OrdersController extends Controller
             ->findOrFail($order);
 
         if ($data->status === 'Pending') {
+            $ct = new ProductComissionController();
+            $ct->refreshPendingOrderComissions($data);
+            $data->load('comissionsInfo');
+
             $requiredBalance = $data->comissionsInfo->sum('take_comission');
 
             if (auth()->user()->abailCoin() > $requiredBalance) {
                 $data->status = $payload['status'];
                 $data->save();
 
-                $ct = new ProductComissionController();
                 $ct->confirmTakeComissions($data->id);
                 UpdateProductSalesIndex::dispatch();
 

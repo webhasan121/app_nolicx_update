@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Container from "../../../components/dashboard/Container";
 import Hr from "../../../components/Hr";
 import Modal from "../../../components/Modal";
@@ -23,7 +23,9 @@ export default function Index({ riderConsignmentIndex }) {
     const [open, setOpen] = useState(false);
     const filters = riderConsignmentIndex?.filters ?? {};
     const consignments = riderConsignmentIndex?.consignments ?? [];
+    const pagination = riderConsignmentIndex?.pagination ?? {};
     const totals = riderConsignmentIndex?.totals ?? {};
+    const [search, setSearch] = useState(filters.find ?? "");
 
     const changeStatus = (id, status) => {
         router.post(
@@ -36,14 +38,47 @@ export default function Index({ riderConsignmentIndex }) {
         );
     };
 
+    useEffect(() => {
+        const nextSearch = search.trim();
+        const currentSearch = (filters.find ?? "").trim();
+
+        if (nextSearch === currentSearch) {
+            return undefined;
+        }
+
+        const timeout = setTimeout(() => {
+            updateFilter(filters, { find: nextSearch, page: undefined });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search]);
+
+    useEffect(() => {
+        setSearch(filters.find ?? "");
+    }, [filters.find]);
+
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        updateFilter(filters, {
+            find: nextUrl.searchParams.get("find") ?? filters.find,
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        });
+    };
+
     return (
         <div>
             <Container>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
                         <select
                             value={filters.status ?? "All"}
-                            onChange={(e) => updateFilter(filters, { status: e.target.value })}
+                            onChange={(e) => updateFilter(filters, { status: e.target.value, page: undefined })}
                             className="py-1 mt-1 rounded"
                             id="select_status"
                         >
@@ -53,6 +88,14 @@ export default function Index({ riderConsignmentIndex }) {
                             <option value="Completed">Delivered</option>
                             <option value="Returned">Returned</option>
                         </select>
+
+                        <input
+                            type="search"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search consignments..."
+                            className="w-64 rounded border-gray-300 py-1 text-sm"
+                        />
                     </div>
 
                     <div>
@@ -180,6 +223,30 @@ export default function Index({ riderConsignmentIndex }) {
                                 </tr>
                             </tbody>
                         </table>
+
+                        {pagination?.links?.length ? (
+                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                                <div className="text-sm text-gray-600">
+                                    Showing {pagination.from ?? 0}-{pagination.to ?? 0} of {pagination.total ?? 0}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-1">
+                                    {pagination.links.map((link, index) => (
+                                        <button
+                                            key={`${link.label}-${index}`}
+                                            type="button"
+                                            disabled={!link.url || link.active}
+                                            onClick={() => goToPage(link.url)}
+                                            className={`min-w-9 rounded border px-3 py-1 text-sm ${
+                                                link.active
+                                                    ? "border-orange-500 bg-orange-500 text-white"
+                                                    : "border-gray-300 bg-white text-gray-700"
+                                            } disabled:cursor-not-allowed disabled:opacity-50`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
                     </>
                 ) : (
                     <p className="p-1 bg-gray-50">No Consignment Found !</p>
@@ -200,7 +267,7 @@ export default function Index({ riderConsignmentIndex }) {
                                         <input
                                             type="radio"
                                             checked={filters.status === value}
-                                            onChange={() => updateFilter(filters, { status: value })}
+                                            onChange={() => updateFilter(filters, { status: value, page: undefined })}
                                             style={{ width: 20, height: 20 }}
                                             className="mr-3"
                                         /> {label}
@@ -213,7 +280,7 @@ export default function Index({ riderConsignmentIndex }) {
                                         <input
                                             type="radio"
                                             checked={filters.created_at === value}
-                                            onChange={() => updateFilter(filters, { created_at: value })}
+                                            onChange={() => updateFilter(filters, { created_at: value, page: undefined })}
                                             style={{ width: 20, height: 20 }}
                                             className="mr-3"
                                         /> {label}

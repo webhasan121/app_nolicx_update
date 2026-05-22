@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\rider;
 use App\Models\syncOrder;
+use App\Support\RiderAreaMatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -234,12 +235,9 @@ class OrdersController extends Controller
                     ];
                 })->values()->all(),
                 'rider_candidates' => rider::query()
+                    ->whereHas('user.roles', fn ($query) => $query->where('name', 'rider'))
                     ->whereNotIn('user_id', ($data->hasRider ?? collect())->pluck('rider_id')->filter()->values())
-                    ->where(function ($query) use ($data) {
-                        $query->where('targeted_area', 'like', '%' . ($data->district ?? '') . '%')
-                            ->orWhere('targeted_area', 'like', '%' . ($data->upozila ?? '') . '%')
-                            ->orWhere('targeted_area', 'like', '%' . ($data->location ?? '') . '%');
-                    })
+                    ->tap(fn ($query) => RiderAreaMatcher::applyRiderAreaScope($query, RiderAreaMatcher::termsForOrder($data)))
                     ->with('user:id,name')
                     ->get()
                     ->map(function ($item) {
@@ -291,6 +289,10 @@ class OrdersController extends Controller
         }
 
         if ($data->status === 'Pending' && $status === 'Accept') {
+            $ct = new ProductComissionController();
+            $ct->refreshPendingOrderComissions($data);
+            $data->load(['comissionsInfo', 'resellerProfit']);
+
             $ensureBalance = ($data->comissionsInfo?->sum('take_comission') ?? 0) + ($data->resellerProfit?->sum('profit') ?? 0);
             if (auth()->user()->abailCoin() < $ensureBalance) {
                 return redirect()->back()->with('error', "You don't have required balance. Minimum {$ensureBalance} needed.");
@@ -427,9 +429,21 @@ class OrdersController extends Controller
             return redirect()->back()->with('error', 'Rider not found');
         }
 
+        if (!$rdr->user?->hasRole('rider')) {
+            return redirect()->back()->withErrors([
+                'rider_id' => 'Selected user does not have rider role.',
+            ]);
+        }
+
         if ($data->hasRider()->where('rider_id', $rdr->user_id)->exists()) {
             return redirect()->back()->withErrors([
                 'rider_id' => 'This rider is already assigned to this order.',
+            ]);
+        }
+
+        if (!RiderAreaMatcher::riderMatchesOrder($rdr->load('targetedArea'), $data)) {
+            return redirect()->back()->withErrors([
+                'rider_id' => 'This rider is outside this order city or targeted area.',
             ]);
         }
 
