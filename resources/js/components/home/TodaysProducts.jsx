@@ -7,7 +7,6 @@ export default function TodaysProducts({ products = [] }) {
             {/* Header */}
             <div className="flex items-center justify-between px-2 py-4">
                 <h2 className="text-xl font-bold">Today's</h2>
-
                 <NavLink
                     href={`${route("products.index")}?tag=today`}
                     className="px-3 py-2 rounded hover:text-indigo-600"
