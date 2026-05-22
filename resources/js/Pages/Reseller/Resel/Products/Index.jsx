@@ -111,7 +111,7 @@ function ProductCard({ product, onPurchase }) {
     return (
         <div className="bg-white rounded shadow overflow-hidden relative">
             {product.offer_type ? (
-                <div className="discount-badge bg-orange-600">
+                <div className="discount-badge bg-orange-500">
                     {discountPercent}%</div>
             ) : null}
 
@@ -132,7 +132,9 @@ function ProductCard({ product, onPurchase }) {
                         pd: product.id,
                     })}
                 >
-                    <div className="text-sm">{product.name ?? "N/A"}</div>
+                    <div className="text-sm product-title-clamp-3">
+                        {product.name ?? "N/A"}
+                    </div>
                 </NavLink>
 
                 <div>
@@ -358,7 +360,6 @@ export default function Index({
             }
         >
             <Head title="Resel Products" />
-
             <Container>
                 {!ableToAdd ? (
                     <div className="p-2 bg-red-200 text-red-800">

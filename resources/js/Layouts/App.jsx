@@ -75,7 +75,7 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
                             height: 100px;
                             text-align: center;
                             display: flex;
-                            font-size: 18px;
+                            font-size: 15px;
                             padding-top: 8px;
                         }
                     `,

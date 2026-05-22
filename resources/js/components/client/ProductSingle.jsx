@@ -12,7 +12,10 @@ function youtubeEmbedUrl(url) {
     if (!url) return null;
 
     try {
-        const parsed = new URL(url);
+        const normalizedUrl = String(url).match(/^https?:\/\//i)
+            ? String(url)
+            : `https://${String(url).replace(/^\/+/, "")}`;
+        const parsed = new URL(normalizedUrl);
 
         if (parsed.hostname.includes("youtu.be")) {
             const id = parsed.pathname.replace("/", "");
@@ -20,7 +23,10 @@ function youtubeEmbedUrl(url) {
         }
 
         if (parsed.hostname.includes("youtube.com")) {
-            const id = parsed.searchParams.get("v") || parsed.pathname.split("/").pop();
+            const parts = parsed.pathname.split("/").filter(Boolean);
+            const id =
+                parsed.searchParams.get("v") ||
+                (["embed", "shorts", "live"].includes(parts[0]) ? parts[1] : parts.at(-1));
             return id ? `https://www.youtube.com/embed/${id}` : null;
         }
     } catch {

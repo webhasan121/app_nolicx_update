@@ -25,6 +25,7 @@ class ProductOrderController extends Controller
                 'showcase:id,product_id,image',
                 'comments.user:id,name',
                 'owner:id,name',
+                'isResel.mainProduct:id,video',
             ])
             ->where('id', $id)
             ->active()
@@ -49,8 +50,8 @@ class ProductOrderController extends Controller
                 'slug' => $product->slug,
                 'description' => $product->description,
                 'thumbnail' => $product->thumbnail,
-                'video' => $product->video,
-                'video_url' => $this->videoUrl($product->video),
+                'video' => $product->video ?: $product->isResel?->mainProduct?->video,
+                'video_url' => $this->videoUrl($product->video ?: $product->isResel?->mainProduct?->video),
                 'offer_type' => $product->offer_type,
                 'discount' => $product->discount,
                 'price' => $product->price,
@@ -194,6 +195,14 @@ class ProductOrderController extends Controller
     {
         if (empty($video)) {
             return null;
+        }
+
+        $video = trim($video);
+
+        if (Str::contains($video, ['youtube.com', 'youtu.be'])) {
+            return Str::startsWith($video, ['http://', 'https://'])
+                ? $video
+                : 'https://' . ltrim($video, '/');
         }
 
         return Str::startsWith($video, ['http://', 'https://'])

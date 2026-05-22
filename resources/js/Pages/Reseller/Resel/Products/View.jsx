@@ -28,7 +28,10 @@ function youtubeEmbedUrl(url) {
     if (!url) return null;
 
     try {
-        const parsed = new URL(url);
+        const normalizedUrl = String(url).match(/^https?:\/\//i)
+            ? String(url)
+            : `https://${String(url).replace(/^\/+/, "")}`;
+        const parsed = new URL(normalizedUrl);
 
         if (parsed.hostname.includes("youtu.be")) {
             const id = parsed.pathname.replace("/", "");
@@ -36,7 +39,12 @@ function youtubeEmbedUrl(url) {
         }
 
         if (parsed.hostname.includes("youtube.com")) {
-            const id = parsed.searchParams.get("v") || parsed.pathname.split("/").pop();
+            const parts = parsed.pathname.split("/").filter(Boolean);
+            const id =
+                parsed.searchParams.get("v") ||
+                (["embed", "shorts", "live"].includes(parts[0])
+                    ? parts[1]
+                    : parts.at(-1));
             return id ? `https://www.youtube.com/embed/${id}` : null;
         }
     } catch {
@@ -63,6 +71,7 @@ export default function View({
     const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
     const [bgPosition, setBgPosition] = useState("0px 0px");
     const imageRef = useRef(null);
+    const thumbnailScrollerRef = useRef(null);
 
     const form = useForm({
         resel_price: reselDefaults?.resel_price ?? "",
@@ -88,6 +97,14 @@ export default function View({
     const gallery = useMemo(() => {
         const items = [];
 
+        if (videoEmbedUrl) {
+            items.push({
+                type: "video",
+                key: `video-${product.video_url}`,
+                value: product.video_url,
+            });
+        }
+
         if (product?.thumbnail_url) {
             items.push({
                 type: "image",
@@ -105,14 +122,6 @@ export default function View({
                 });
             }
         });
-
-        if (videoEmbedUrl) {
-            items.push({
-                type: "video",
-                key: `video-${product.video_url}`,
-                value: product.video_url,
-            });
-        }
 
         return items.filter(
             (item, index, array) =>
@@ -144,6 +153,13 @@ export default function View({
         setBgPosition(`-${x * zoom}px -${y * zoom}px`);
     };
 
+    const scrollThumbnails = (direction) => {
+        thumbnailScrollerRef.current?.scrollBy({
+            left: direction * 240,
+            behavior: "smooth",
+        });
+    };
+
     const confirmClone = () => {
         form.post(
             route("reseller.resel-product.clone", { product: product.id }),
@@ -170,16 +186,26 @@ export default function View({
             <style>{`
                 .resel-product-zoom {
                     display: flex;
+                    flex-direction: column;
                     gap: 20px;
-                    align-items: flex-start;
+                    align-items: center;
                 }
 
                 .resel-product-image-area {
                     position: relative;
-                    width: 360px;
+                    width: 100%;
+                    max-width: 420px;
                     border: 1px solid #eee;
                     background: #fff;
                     flex-shrink: 0;
+                }
+
+                .resel-product-thumbnail-strip {
+                    scrollbar-width: none;
+                }
+
+                .resel-product-thumbnail-strip::-webkit-scrollbar {
+                    display: none;
                 }
 
                 @media (max-width: 1024px) {
@@ -253,7 +279,7 @@ export default function View({
 
                     <SectionInner>
                         <div className="items-start gap-6 p-2 lg:flex">
-                            <div className="w-full lg:max-w-[460px] xl:max-w-[500px]">
+                            <div className="w-full lg:max-w-[420px]">
                                 <div className="resel-product-zoom">
                                     <div
                                         className="resel-product-image-area shrink-0"
@@ -272,8 +298,7 @@ export default function View({
                                                 style={{
                                                     width: "100%",
                                                     objectFit: "contain",
-                                                    maxWidth: "360px",
-                                                    height: "360px",
+                                                    height: "300px",
                                                 }}
                                                 src={selectedImage}
                                                 alt="image"
@@ -299,52 +324,66 @@ export default function View({
                                     </div>
 
                                     {gallery.length > 1 ? (
-                                        <div className="flex flex-wrap items-center gap-1 md:block">
-                                            {gallery.map((item) => (
+                                        <div className="relative flex items-center justify-center w-full gap-2">
+                                            {gallery.length > 5 ? (
                                                 <button
                                                     type="button"
-                                                    className="p-1 mb-1 rounded"
-                                                    key={item.key}
-                                                    onClick={() => {
-                                                        if (
-                                                            item.type ===
-                                                            "video"
-                                                        ) {
-                                                            setShowVideoModal(
-                                                                true,
-                                                            );
-                                                            return;
-                                                        }
-
-                                                        setSelectedImage(
-                                                            item.value,
-                                                        );
-                                                    }}
+                                                    onClick={() => scrollThumbnails(-1)}
+                                                    className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
                                                 >
-                                                    {item.type === "video" ? (
-                                                        <div
-                                                            className="relative flex items-center justify-center p-1 border rounded bg-slate-900"
-                                                            style={{
-                                                                width: "60px",
-                                                                height: "60px",
-                                                            }}
-                                                        >
-                                                            <div className="absolute inset-0 bg-black/80" />
-                                                            <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
-                                                                <i className="text-xs fas fa-play"></i>
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <img
-                                                            width="60"
-                                                            height="60"
-                                                            className="p-1 border rounded"
-                                                            src={item.value}
-                                                            alt=""
-                                                        />
-                                                    )}
+                                                    <i className="fas fa-angle-left"></i>
                                                 </button>
-                                            ))}
+                                            ) : null}
+
+                                            <div
+                                                ref={thumbnailScrollerRef}
+                                                className="flex max-w-[280px] gap-2 overflow-x-auto resel-product-thumbnail-strip scroll-smooth"
+                                            >
+                                                {gallery.map((item) => (
+                                                    <button
+                                                        type="button"
+                                                        className={`flex h-16 w-16 shrink-0 items-center justify-center rounded border bg-white p-1 ${
+                                                            item.type === "image" && item.value === selectedImage
+                                                                ? "border-orange-500"
+                                                                : "border-gray-200"
+                                                        }`}
+                                                        key={item.key}
+                                                        onClick={() => {
+                                                            if (item.type === "video") {
+                                                                setShowVideoModal(true);
+                                                                return;
+                                                            }
+
+                                                            setSelectedImage(item.value);
+                                                        }}
+                                                    >
+                                                        {item.type === "video" ? (
+                                                            <div className="relative flex items-center justify-center w-full h-full overflow-hidden rounded bg-slate-900">
+                                                                <div className="absolute inset-0 bg-black/80" />
+                                                                <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
+                                                                    <i className="text-xs fas fa-play"></i>
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <img
+                                                                className="object-cover w-full h-full rounded"
+                                                                src={item.value}
+                                                                alt=""
+                                                            />
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {gallery.length > 5 ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => scrollThumbnails(1)}
+                                                    className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
+                                                >
+                                                    <i className="fas fa-angle-right"></i>
+                                                </button>
+                                            ) : null}
                                         </div>
                                     ) : null}
                                 </div>
@@ -553,6 +592,7 @@ export default function View({
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </SectionInner>
