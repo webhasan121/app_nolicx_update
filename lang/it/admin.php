@@ -905,6 +905,7 @@ return array (
   'Withdraws' => 'Withdraws',
   'Withdraws Requests' => 'Withdraws Requests',
   'Women\'s' => 'Women\'s',
+  'Women\'s Item' => 'Women\'s Item',
   'Womens Products' => 'Womens Products',
   'Write something about yourself...' => 'Write something about yourself...',
   'Writing Materials (লেখার সামগ্রী)' => 'Writing Materials (লেখার সামগ্রী)',

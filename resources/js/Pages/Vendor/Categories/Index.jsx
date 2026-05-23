@@ -31,6 +31,10 @@ export default function Index({ categories = [] }) {
     };
 
     const remove = (id) => {
+        if (!window.confirm("Are you sure you want to delete this category?")) {
+            return;
+        }
+
         router.delete(route("vendor.category.destroy", { category: id }), {
             preserveScroll: true,
         });

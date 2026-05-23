@@ -11,6 +11,8 @@ import Container from "../../../../components/dashboard/Container";
 import useTranslation from "../../../../hooks/useTranslation";
 
 function SettingCard({ title, content, href, buttonText, isQueueRunning, onStartQueue, queueControlAvailable, queueCommand }) {
+    const { t } = useTranslation();
+
     return (
         <Section>
             <SectionHeader

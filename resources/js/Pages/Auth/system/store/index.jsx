@@ -225,7 +225,7 @@ export default function Index() {
     return (
         <AppLayout title={pageTitle} header={<PageHeader>{pageTitle}</PageHeader>}>
             <Container>
-                <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-col gap-3 mb-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <h3 className="text-lg font-semibold text-gray-800">{pageTitle}</h3>
                         {targetStore?.range_label ? (
@@ -238,17 +238,17 @@ export default function Index() {
                             type="button"
                             onClick={distribute}
                             disabled={distributing}
-                            className="inline-flex items-center justify-center rounded-md bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white transition bg-blue-500 rounded-md hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {distributing ? "Distributing..." : "Distribute"}
                         </button>
                     ) : (
-                        <span className="inline-flex items-center justify-center rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700">
+                        <span className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md">
                             {distributionStatusLabel}
                         </span>
                     )}
                 </div>
-                <section className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <section className="grid grid-cols-2 gap-6 mb-6 lg:grid-cols-4">
                     {widgets.map((widget, index) => (
                         <OverviewDiv
                             key={`${widget.label}-${index}`}
@@ -264,8 +264,8 @@ export default function Index() {
             <Hr />
 
             <Container>
-                <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 mb-6">
-                    <div className="relative bg-white rounded-md shadow-md p-6">
+                <section className="grid grid-cols-1 gap-6 mt-6 mb-6 lg:grid-cols-2">
+                    <div className="relative p-6 bg-white rounded-md shadow-md">
                         <CoinStore
                             store={coinStore.store}
                             take={coinStore.take}
@@ -273,10 +273,10 @@ export default function Index() {
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-6">
-                        <div className="relative bg-white rounded-md shadow-md p-6">
+                        <div className="relative p-6 bg-white rounded-md shadow-md">
                             <CoastStore store={coastStore.store} />
                         </div>
-                        <div className="relative bg-white rounded-md shadow-md p-6">
+                        <div className="relative p-6 bg-white rounded-md shadow-md">
                             <DonationStore store={donationStore.store} />
                         </div>
                     </div>
@@ -307,7 +307,7 @@ export default function Index() {
                     <SectionSection>
                         <SectionHeader
                             title={
-                                <div className="flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
+                                <div className="flex flex-col gap-3 pb-4 border-b lg:flex-row lg:items-center lg:justify-between">
                                     <h4>{t("Distributed Commissions")}</h4>
                                     <div className="flex flex-wrap items-center justify-end gap-2">
                                         {dateFilterControls}
@@ -337,14 +337,14 @@ export default function Index() {
                                                 type="button"
                                                 onClick={distribute}
                                                 disabled={distributing}
-                                                className="inline-block bg-blue-500 hover:bg-blue-600 rounded-md px-4 py-1 disabled:cursor-not-allowed disabled:opacity-60"
+                                                className="inline-block px-4 py-1 bg-blue-500 rounded-md hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
                                             >
                                                 <span className="text-sm text-white">
                                                     {distributing ? "Distributing..." : "Distribute"}
                                                 </span>
                                             </button>
                                         ) : (
-                                            <div className="inline-block bg-blue-500 hover:bg-blue-600 rounded-md px-4 py-1">
+                                            <div className="inline-block px-4 py-1 bg-blue-500 rounded-md hover:bg-blue-600">
                                                 <span className="text-sm text-white">{distributionStatusLabel}</span>
                                             </div>
                                         )}
@@ -355,24 +355,24 @@ export default function Index() {
                         />
 
                         <SectionInner>
-                            <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-                                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                            <div className="overflow-x-auto border border-gray-200 shadow-sm rounded-xl">
+                                <table className="min-w-full text-sm divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>
                                             {columns1.map((column, index) => (
                                                 <th
                                                     key={`${column}-${index}`}
-                                                    className="px-4 py-3 text-left font-semibold text-gray-600"
+                                                    className="px-4 py-3 font-semibold text-left text-gray-600"
                                                 >
                                                     <strong>{column}</strong>
                                                 </th>
                                             ))}
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 bg-white">
+                                    <tbody className="bg-white divide-y divide-gray-100">
                                         {(commissions?.data ?? []).length ? (
                                             commissions.data.map((item, index) => (
-                                                <tr key={`${item.user_name}-${index}`} className="hover:bg-gray-50 transition">
+                                                <tr key={`${item.user_name}-${index}`} className="transition hover:bg-gray-50">
                                                     <td className="px-4 py-3 font-medium text-gray-700">
                                                         {item.sl}
                                                     </td>
@@ -401,16 +401,16 @@ export default function Index() {
                             </div>
                             {pagination.pages.length ? (
                                 <div className="w-full pt-4">
-                                    <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="flex items-center justify-between w-full gap-3">
                                         <div className="text-sm text-slate-700">
                                             {resultSummary}
                                         </div>
                                         <div className="flex items-center md:justify-end">
-                                            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                            <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                                 <button
                                                     type="button"
                                                     disabled={!pagination.prev?.url}
-                                                    className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
                                                 >{t("Previous")}</button>
                                                 {pagination.pages.map((link, index) => (
@@ -431,7 +431,7 @@ export default function Index() {
                                                 <button
                                                     type="button"
                                                     disabled={!pagination.next?.url}
-                                                    className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
                                                 >{t("Next")}</button>
                                             </div>
@@ -447,7 +447,7 @@ export default function Index() {
                     <SectionSection>
                         <SectionHeader
                             title={
-                                <div className="flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-center lg:justify-between">
+                                <div className="flex flex-col gap-3 pb-4 border-b lg:flex-row lg:items-center lg:justify-between">
                                     <h4>{t("Withdrawal History")}</h4>
                                     <div className="flex flex-wrap items-center justify-end gap-2">
                                         {dateFilterControls}
@@ -479,24 +479,24 @@ export default function Index() {
                         />
 
                         <SectionInner>
-                            <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-                                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                            <div className="overflow-x-auto border border-gray-200 shadow-sm rounded-xl">
+                                <table className="min-w-full text-sm divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>
                                             {columns2.map((column, index) => (
                                                 <th
                                                     key={`${column}-${index}`}
-                                                    className="px-4 py-3 text-left font-semibold text-gray-600"
+                                                    className="px-4 py-3 font-semibold text-left text-gray-600"
                                                 >
                                                     <strong>{column}</strong>
                                                 </th>
                                             ))}
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 bg-white">
+                                    <tbody className="bg-white divide-y divide-gray-100">
                                         {(withdrawals?.data ?? []).length ? (
                                             withdrawals.data.map((withdraw, index) => (
-                                                <tr key={`${withdraw.user_name}-${index}`} className="hover:bg-gray-50 transition">
+                                                <tr key={`${withdraw.user_name}-${index}`} className="transition hover:bg-gray-50">
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.sl}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.user_name}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.store_req}</td>
@@ -505,6 +505,7 @@ export default function Index() {
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.pay_by}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.status}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.requested_at}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-700">{withdraw.remarks}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">-</td>
                                                 </tr>
                                             ))
@@ -520,16 +521,16 @@ export default function Index() {
                             </div>
                             {pagination.pages.length ? (
                                 <div className="w-full pt-4">
-                                    <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="flex items-center justify-between w-full gap-3">
                                         <div className="text-sm text-slate-700">
                                             {resultSummary}
                                         </div>
                                         <div className="flex items-center md:justify-end">
-                                            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                            <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                                 <button
                                                     type="button"
                                                     disabled={!pagination.prev?.url}
-                                                    className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
                                                 >{t("Previous")}</button>
                                                 {pagination.pages.map((link, index) => (
@@ -550,7 +551,7 @@ export default function Index() {
                                                 <button
                                                     type="button"
                                                     disabled={!pagination.next?.url}
-                                                    className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
                                                 >{t("Next")}</button>
                                             </div>

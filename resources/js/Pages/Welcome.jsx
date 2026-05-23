@@ -13,6 +13,7 @@ import RecommendedProducts from "../components/home/RecommendedProducts";
 import TopSales from "../components/home/TopSales";
 import MedicineProducts from "../components/home/MedicineProducts";
 import WomensProducts from "../components/home/WomensProducts";
+import GroceryProducts from "../components/home/GroceryProducts";
 import FoodProducts from "../components/home/FoodProducts";
 import MegaDealsProducts from "../components/home/MegaDealsProducts";
 import NavLink from "../components/NavLink";
@@ -25,6 +26,7 @@ export default function Welcome({
     recommended = [],
     megaDealsProducts = [],
     foodProducts = [],
+    groceryProducts = [],
     medicineProducts = [],
     womenProducts = [],
     topSales = [],
@@ -216,6 +218,7 @@ export default function Welcome({
                     </div>
                 </div>
                 <MegaDealsProducts products={megaDealsProducts} />
+                <GroceryProducts products={groceryProducts} />
                 <WomensProducts products={womenProducts} />
                 <MedicineProducts products={medicineProducts} />
                 <FoodProducts products={foodProducts} />

@@ -70,6 +70,10 @@ export default function Slides({ slider, slides = [] }) {
     };
 
     const deleteSlide = (item) => {
+        if (!window.confirm("Are you sure you want to delete this slide?")) {
+            return;
+        }
+
         router.delete(route("system.slider.slides.destroy", { slide: item.id }));
     };
 

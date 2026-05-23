@@ -53,6 +53,7 @@ export default function PrintSummery() {
                                     <th>Method</th>
                                     <th>Status</th>
                                     <th>Requested At</th>
+                                    <th>Remarks</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -66,12 +67,13 @@ export default function PrintSummery() {
                                         <td>{item.pay_by}</td>
                                         <td>{item.status}</td>
                                         <td>{item.requested_at}</td>
+                                        <td>{item.remarks}</td>
                                     </tr>
                                 ))}
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colSpan="8">Total {rows.length} Items</td>
+                                    <td colSpan="9">Total {rows.length} Items</td>
                                 </tr>
                             </tfoot>
                         </Table>

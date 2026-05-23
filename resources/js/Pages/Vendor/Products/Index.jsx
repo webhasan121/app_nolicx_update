@@ -52,6 +52,13 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
 
     const postBulkAction = (routeName) => {
         if (selectedModel.length < 1) return;
+        if (
+            routeName === "vendor.products.bulk-trash" &&
+            !window.confirm("Are you sure you want to move selected products to trash?")
+        ) {
+            return;
+        }
+
         router.post(
             route(routeName),
             { selectedModel },

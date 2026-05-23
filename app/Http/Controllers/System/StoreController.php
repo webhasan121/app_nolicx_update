@@ -54,7 +54,7 @@ class StoreController extends Controller
         ];
 
         $columns1 = ['SL', 'Name of User', 'Store Info', 'Given', 'Range', 'Purpose', 'Distributed At', 'A/C'];
-        $columns2 = ['SL', 'Name of User', 'Store', 'Server Cost', 'Donation', 'Method', 'Status', 'Requested At', 'A/C'];
+        $columns2 = ['SL', 'Name of User', 'Store', 'Server Cost', 'Donation', 'Method', 'Status', 'Requested At', 'Remarks', 'A/C'];
 
         $commissions = DistributeComissions::query()
             ->with('user')
@@ -156,6 +156,7 @@ class StoreController extends Controller
                         'pay_by' => $withdraw->pay_by ?? '',
                         'status' => $withdraw->status === 1 ? 'Confirm' : 'Pending',
                         'requested_at' => $withdraw->created_at?->format('M d, Y'),
+                        'remarks' => $withdraw->remarks ?? '-',
                     ];
                 })->all(),
                 'links' => collect($withdrawals->linkCollection())->map(function (array $link) {
@@ -250,6 +251,7 @@ class StoreController extends Controller
                     'pay_by' => $withdraw->pay_by ?? '',
                     'status' => $withdraw->status === 1 ? 'Confirm' : 'Pending',
                     'requested_at' => $withdraw->created_at?->format('M d, Y'),
+                    'remarks' => $withdraw->remarks ?? '-',
                 ];
             })->all(),
         ]);
@@ -448,6 +450,7 @@ class StoreController extends Controller
             'store_req',
             'maintenance_fee',
             'server_fee',
+            'remarks',
         ])->filter(fn ($column) => Schema::hasColumn('withdraws', $column))->values();
 
         $query->where(function ($builder) use ($search, $searchableColumns) {

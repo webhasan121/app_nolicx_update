@@ -32,6 +32,10 @@ export default function Edit() {
     });
 
     const updateStatus = (status) => {
+        if (status === "reject" && !window.confirm("Are you sure you want to move this VIP user to trash?")) {
+            return;
+        }
+
         statusForm.setData((data) => ({ ...data, status }));
         router.post(
             route("system.vip.status", { vip: vipData.id }),
@@ -65,6 +69,10 @@ export default function Edit() {
     };
 
     const destroy = () => {
+        if (!window.confirm("Are you sure you want to delete this VIP user permanently?")) {
+            return;
+        }
+
         router.delete(route("system.vip.user.delete", { vip: vipData.id }));
     };
 

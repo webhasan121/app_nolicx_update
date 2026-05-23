@@ -60,6 +60,10 @@ export default function Index({
     };
 
     const denyDeposit = (id) => {
+        if (!window.confirm("Are you sure you want to delete this deposit?")) {
+            return;
+        }
+
         router.delete(route("system.deposit.destroy", { deposit: id }));
     };
 

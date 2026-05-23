@@ -21,9 +21,9 @@ class WithdrawController extends Controller
         $sdate = $request->query('sdate');
         $edate = $request->query('edate');
 
-        $statsQuery = Withdraw::query();
+        $statsQuery = $this->visibleWithdrawsQuery();
 
-        $qry = Withdraw::query()->with('user');
+        $qry = $this->visibleWithdrawsQuery()->with('user');
 
         if ($fst === 'Reject') {
             $qry->rejected();
@@ -53,9 +53,9 @@ class WithdrawController extends Controller
             'filters' => compact('where', 'q', 'fst', 'sdate', 'edate'),
             'stats' => [
                 'total' => $statsQuery->count(),
-                'pending' => Withdraw::pending()->count(),
-                'paid' => Withdraw::accepted()->count(),
-                'reject' => Withdraw::rejected()->count(),
+                'pending' => $this->visibleWithdrawsQuery()->pending()->count(),
+                'paid' => $this->visibleWithdrawsQuery()->accepted()->count(),
+                'reject' => $this->visibleWithdrawsQuery()->rejected()->count(),
                 'amount' => $withdraw->sum('amount'),
                 'payable' => $withdraw->sum('payable_amount'),
                 'server_fee' => $withdraw->sum('server_fee'),
@@ -136,7 +136,7 @@ class WithdrawController extends Controller
         $q = $request->query('q');
         $where = $request->query('where');
 
-        $qry = Withdraw::query()->with('user');
+        $qry = $this->visibleWithdrawsQuery()->with('user');
 
         if ($fst === 'Reject') {
             $qry->rejected();
@@ -268,5 +268,18 @@ class WithdrawController extends Controller
                 Carbon::parse($edate)->endOfDay(),
             ]);
         }
+    }
+
+    private function visibleWithdrawsQuery()
+    {
+        return Withdraw::query()
+            ->whereHas('user', function ($query) {
+                $query
+                    ->where('email', '!=', config('app.system_email'))
+                    ->where('name', '!=', 'Super Admin')
+                    ->whereDoesntHave('roles', function ($roleQuery) {
+                        $roleQuery->whereIn('name', ['system', 'admin']);
+                    });
+            });
     }
 }
