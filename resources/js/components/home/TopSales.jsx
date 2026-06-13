@@ -1,18 +1,21 @@
 import NavLink from "../NavLink";
 import ProductsLoop from "../client/ProductsLoop";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function TopSales({ products = [] }) {
+    const { t } = useTranslation();
+
     if (!products.length) return null;
 
     return (
         <div className="pb-6">
             <div className="flex items-center justify-between px-2 py-4">
-                <h2 className="text-xl font-bold">Top Sales</h2>
+                <h2 className="text-xl font-bold">{t("Top Sales")}</h2>
                 <NavLink
                     href={route("products.index")}
                     className="px-3 py-2 rounded hover:text-indigo-600"
                 >
-                    View All
+                    {t("View All")}
                 </NavLink>
             </div>
 

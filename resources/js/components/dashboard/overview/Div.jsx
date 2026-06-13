@@ -1,11 +1,16 @@
+import useTranslation from "../../../hooks/useTranslation";
+
 export default function Div({ title = "Overview", content = " 0 / 0", onClick = null, titleText = "" }) {
+    const { t } = useTranslation();
     const Component = onClick ? "button" : "div";
+    const displayTitle = typeof title === "string" ? t(title) : title;
+    const displayTitleText = titleText ? t(titleText) : "";
 
     return (
         <Component
             type={onClick ? "button" : undefined}
             onClick={onClick ?? undefined}
-            title={titleText}
+            title={displayTitleText}
             className={`rounded d-block shadow p-3 relative overflow-hidden text-left w-full ${
                 onClick ? "cursor-pointer transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-2" : ""
             }`}
@@ -40,7 +45,7 @@ export default function Div({ title = "Overview", content = " 0 / 0", onClick = 
                 }}
             />
 
-            <div className="text-md mb-3">{title}</div>
+            <div className="text-md mb-3">{displayTitle}</div>
 
             <div className="text-end text-2xl">{content}</div>
 

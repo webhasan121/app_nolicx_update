@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\NoticeBroadcasted;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,7 @@ class Notice extends Model
 
     protected $fillable = [
         'created_by',
+        'target_user_id',
         'title',
         'body',
         'order_id',
@@ -34,6 +36,16 @@ class Notice extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function targetUser()
+    {
+        return $this->belongsTo(User::class, 'target_user_id');
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id');
     }
 
     public function reads()
@@ -66,5 +78,12 @@ class Notice extends Model
                 $builder->orWhereJsonContains('target_roles', $role);
             }
         });
+    }
+
+    protected static function booted(): void
+    {
+        static::created(fn (Notice $notice) => NoticeBroadcasted::dispatch($notice->loadMissing('creator:id,name'), 'created'));
+        static::updated(fn (Notice $notice) => NoticeBroadcasted::dispatch($notice->loadMissing('creator:id,name'), 'updated'));
+        static::deleted(fn (Notice $notice) => NoticeBroadcasted::dispatch($notice, 'deleted'));
     }
 }

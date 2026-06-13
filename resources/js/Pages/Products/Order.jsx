@@ -9,12 +9,16 @@ import InputFile from "../../components/InputFile";
 import InputLabel from "../../components/InputLabel";
 import PrimaryButton from "../../components/PrimaryButton";
 import ProductSingle from "../../components/client/ProductSingle";
+import { normalizeProductAttributeGroups } from "../../components/client/ProductAttributesSelector";
+import SearchableSelect from "../../components/SearchableSelect";
 import TextInput from "../../components/TextInput";
 import UserLayout from "../../Layouts/User/App";
 import NavLink from "../../components/NavLink";
 
-export default function Order({ product, states = [], initialPrice = 0 }) {
+export default function Order({ product, states = [], initialPrice = 0, selectedAttrs = {} }) {
     const orderSectionRef = useRef(null);
+    const attrGroups = normalizeProductAttributeGroups(product);
+    const hasAttributes = attrGroups.some((group) => group.values.length);
     const attrValues = product?.attr?.value
         ? String(product.attr.value)
               .split(",")
@@ -31,7 +35,13 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
             : "";
 
     const { data, setData, post, processing, errors } = useForm({
-        size: attrValues.length ? "" : "Size Less",
+        size: Object.keys(selectedAttrs).length
+            ? Object.entries(selectedAttrs)
+                  .map(([name, value]) => `${name}: ${value}`)
+                  .join(", ")
+            : hasAttributes
+              ? ""
+              : "Size Less",
         quantity: 1,
         phone: "",
         district: "",
@@ -80,6 +90,19 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
         post(route("product.makeOrder.store", { id: product.id, slug: product.slug }));
     };
 
+    const syncSelectedAttrs = (attrs) => {
+        if (!Object.keys(attrs ?? {}).length) {
+            return;
+        }
+
+        setData(
+            "size",
+            Object.entries(attrs)
+                .map(([name, value]) => `${name}: ${value}`)
+                .join(", ")
+        );
+    };
+
     const scrollToOrderSection = () => {
         orderSectionRef.current?.scrollIntoView({
             behavior: "smooth",
@@ -94,6 +117,8 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
                     <ProductSingle
                         product={product}
                         onBuyNowClick={scrollToOrderSection}
+                        initialSelectedAttrs={selectedAttrs}
+                        onSelectedAttrsChange={syncSelectedAttrs}
                     />
                 </SectionSection>
 
@@ -109,37 +134,49 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
                         <SectionInner>
                             <form onSubmit={submit}>
                                 <div className="items-start justify-between md:flex">
-                                    <div className="top-0 w-48 p-3 pr-2 text-white bg-indigo-900 rounded shadow md:sticky">
-                                    <div className="p-4 rounded shadow">
-                                        <div>
-                                            <div className="text-xs">Product</div>
-                                            <div className="text-sm">{product.name}</div>
+                                    <aside className="top-3 w-full p-4 mb-4 border border-gray-200 rounded-lg shadow-sm bg-gray-50 md:sticky md:w-56 md:mb-0">
+                                        <div className="pb-3 border-b border-gray-200">
+                                            <div className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                                                Product
+                                            </div>
+                                            <div className="mt-1 text-sm font-semibold leading-5 text-gray-900">
+                                                {product.name}
+                                            </div>
                                         </div>
-                                        <Hr />
-                                        <div className="flex justify-between">
-                                            <div className="text-xs">Price</div>
-                                            <div className="text-sm bold">{price}</div>
+
+                                        <div className="py-3 space-y-2 text-sm">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span className="text-gray-500">Price</span>
+                                                <span className="font-semibold text-gray-900">{price} TK</span>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span className="text-gray-500">Unit</span>
+                                                <span className="font-semibold text-gray-900">{quantity}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span className="text-gray-500">Shipping</span>
+                                                <span className="font-semibold text-gray-900">{shipping} TK</span>
+                                            </div>
                                         </div>
-                                        <Hr />
-                                        <div className="flex justify-between">
-                                            <div className="text-xs">Unite</div>
-                                            <div className="text-sm bold">{quantity}</div>
+
+                                        <div className="p-3 border border-orange-200 rounded-md bg-orange-50">
+                                            <div className="text-xs font-semibold tracking-wide text-orange-700 uppercase">
+                                                Total
+                                            </div>
+                                            <div className="mt-1 text-xl font-semibold text-orange-800">
+                                                {shipping + total} TK
+                                            </div>
                                         </div>
-                                        <Hr />
-                                        <div className="flex justify-between">
-                                            <div className="text-xs">Shipping</div>
-                                            <div className="text-sm bold">{shipping}</div>
-                                        </div>
-                                        <Hr />
-                                        <div className="flex justify-between">
-                                            <div className="text-xs">Total</div>
-                                            <div className="text-sm bold">{shipping + total}</div>
-                                        </div>
-                                    </div>
-                                </div>
+                                    </aside>
 
                                 <div className="w-full md:w-1/2">
-                                    {attrValues.length > 0 ? (
+                                    {Object.keys(selectedAttrs).length ? (
+                                        <InputFile label="Attributes" name="size" error="size" errors={errors}>
+                                            <div className="w-full p-2 text-sm border rounded bg-gray-50">
+                                                {data.size}
+                                            </div>
+                                        </InputFile>
+                                    ) : attrValues.length > 0 ? (
                                         <div className="md:flex">
                                             <InputLabel htmlFor="size" style={{ width: "350px" }}>
                                                 {product?.attr?.name}
@@ -182,37 +219,34 @@ export default function Order({ product, states = [], initialPrice = 0 }) {
                                     </InputFile>
 
                                     <InputFile label="State" name="state" error="district" errors={errors}>
-                                        <select
+                                        <SearchableSelect
                                             value={data.district}
-                                            onChange={(e) => setData("district", e.target.value)}
-                                            id="states"
-                                            className="w-full rounded-md"
-                                        >
-                                            <option value="">-- Select State --</option>
-                                            {states.map((state) => (
-                                                <option key={state.id} value={state.id}>
-                                                    {state.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            options={states}
+                                            onChange={(selectedDistrict) => {
+                                                setData((currentData) => ({
+                                                    ...currentData,
+                                                    district: selectedDistrict,
+                                                    upozila: "",
+                                                }));
+                                            }}
+                                            placeholder="-- Select State --"
+                                            noneLabel="-- Select State --"
+                                            noResultsLabel="No district found."
+                                        />
                                     </InputFile>
 
                                     <Hr />
 
                                     <InputFile label="City" name="city" error="upozila" errors={errors}>
-                                        <select
+                                        <SearchableSelect
                                             value={data.upozila}
-                                            onChange={(e) => setData("upozila", e.target.value)}
-                                            id="cities"
-                                            className="w-full rounded-md"
-                                        >
-                                            <option value="">-- Select City --</option>
-                                            {cities.map((item) => (
-                                                <option key={item.id} value={item.id}>
-                                                    {item.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            options={cities}
+                                            onChange={(selectedCity) => setData("upozila", selectedCity)}
+                                            placeholder="-- Select City --"
+                                            noneLabel="-- Select City --"
+                                            noResultsLabel="No city found."
+                                            disabled={!data.district}
+                                        />
                                     </InputFile>
 
                                     <InputFile label="Targeted Area" name="targeted_area" error="targeted_area" errors={errors}>

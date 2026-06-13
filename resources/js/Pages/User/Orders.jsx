@@ -6,10 +6,9 @@ import SectionHeader from "../../components/dashboard/section/Header";
 import SectionSection from "../../components/dashboard/section/Section";
 import UserDash from "../../components/user/dash/UserDash";
 import Table from "../../components/dashboard/table/Table";
-import NavLink from "../../components/NavLink";
 import PrimaryButton from "../../components/PrimaryButton";
-import SecondaryButton from "../../components/SecondaryButton";
 import TextInput from "../../components/TextInput";
+import { ActionIconButton, ActionIconLink } from "../../components/ActionIcon";
 
 export default function Orders() {
     const { orders = {}, nav, filters = {}, printUrl } = usePage().props;
@@ -36,6 +35,7 @@ export default function Orders() {
                     preserveScroll: true,
                     preserveState: true,
                     replace: true,
+                    only: ["filters", "orders", "nav", "printUrl"],
                 }
             );
         }, 400);
@@ -70,6 +70,7 @@ export default function Orders() {
                 preserveScroll: true,
                 preserveState: true,
                 replace: true,
+                only: ["filters", "orders", "nav", "printUrl"],
             }
         );
     };
@@ -136,28 +137,17 @@ export default function Orders() {
                         <Table data={rows}>
                             <thead>
                                 <tr>
-                                    <th></th>
                                     <th>ID</th>
                                     <th>Status</th>
                                     <th>Product</th>
                                     <th>Total</th>
                                     <th>Shop</th>
-                                    <th></th>
+                                    <th>A/C</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {rows.map((item) => (
                                     <tr key={item.id}>
-                                        <td>
-                                            <NavLink
-                                                href={route("user.orders.details", {
-                                                    id: item.id,
-                                                })}
-                                            >
-                                                View
-                                            </NavLink>
-                                        </td>
-
                                         <td>{item.id}</td>
 
                                         <td>
@@ -186,11 +176,20 @@ export default function Orders() {
                                         </td>
 
                                         <td>
-                                            <SecondaryButton
-                                                onClick={() => cancelOrder(item.id)}
-                                            >
-                                                cancel
-                                            </SecondaryButton>
+                                            <div className="flex items-center gap-2">
+                                                <ActionIconLink
+                                                    href={route("user.orders.details", {
+                                                        id: item.id,
+                                                    })}
+                                                    action="details"
+                                                    title="Details"
+                                                />
+                                                <ActionIconButton
+                                                    action="cancel"
+                                                    title="Cancel"
+                                                    onClick={() => cancelOrder(item.id)}
+                                                />
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

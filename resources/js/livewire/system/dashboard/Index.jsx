@@ -1,6 +1,7 @@
 import Container from "../../../components/dashboard/Container";
 import Hr from "../../../components/Hr";
 import NavLink from "../../../components/NavLink";
+import useTranslation from "../../../hooks/useTranslation";
 
 function OverviewDiv({ title, children }) {
     return (
@@ -59,15 +60,17 @@ export default function Index({
     vp,
     cat,
 }) {
+    const { t } = useTranslation();
+
     return (
         <div>
             <Container>
                 <div className="w-full text-md rounded-md mb-3 p-3">
-                    Welcome Back ! {userName}
-                    <p className="text-xs">Quick review what's goint on your store.</p>
+                    {t("Welcome Back !")} {userName}
+                    <p className="text-xs">{t("Quick review what's goint on your store.")}</p>
                 </div>
 
-                <p className="mb-2 text-xs">Overall Details</p>
+                <p className="mb-2 text-xs">{t("Overall Details")}</p>
                 <div
                     style={{
                         display: "grid",
@@ -76,36 +79,36 @@ export default function Index({
                         gridGap: "20px",
                     }}
                 >
-                    <OverviewDiv title="Admins">{adm}</OverviewDiv>
+                    <OverviewDiv title={t("Admins")}>{adm}</OverviewDiv>
 
-                    <OverviewDiv title="Vendors">
+                    <OverviewDiv title={t("Vendors")}>
                         <div>
                             {vd} / {avd}
                         </div>
                     </OverviewDiv>
 
-                    <OverviewDiv title="Resellers">
+                    <OverviewDiv title={t("Resellers")}>
                         <div>
                             {rs} / {ars}
                         </div>
                     </OverviewDiv>
 
-                    <OverviewDiv title="Riders">
+                    <OverviewDiv title={t("Riders")}>
                         <div>
                             {ri} / {ari}
                         </div>
                     </OverviewDiv>
 
-                    <OverviewDiv title="Users">
+                    <OverviewDiv title={t("Users")}>
                         <div>{userCount}</div>
                     </OverviewDiv>
 
                     <OverviewDiv
                         title={
                             <div className="flex">
-                                Products
+                                {t("Products")}
                                 <NavLink href={route("system.products.index")} className="ms-2">
-                                    view
+                                    {t("View")}
                                 </NavLink>
                             </div>
                         }
@@ -113,7 +116,7 @@ export default function Index({
                         <div>{vp}</div>
                     </OverviewDiv>
 
-                    <OverviewDiv title="Category">
+                    <OverviewDiv title={t("Category")}>
                         <div>{cat}</div>
                     </OverviewDiv>
                 </div>

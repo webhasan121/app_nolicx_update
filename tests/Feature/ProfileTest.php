@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Inertia\Testing\AssertableInertia as Assert;
 
 test('profile page is displayed', function () {
     $user = User::factory()->create();
@@ -12,9 +12,7 @@ test('profile page is displayed', function () {
 
     $response
         ->assertOk()
-        ->assertSeeVolt('profile.update-profile-information-form')
-        ->assertSeeVolt('profile.update-password-form')
-        ->assertSeeVolt('profile.delete-user-form');
+        ->assertInertia(fn (Assert $page) => $page->component('User/Profile/Edit'));
 });
 
 test('profile information can be updated', function () {
@@ -22,15 +20,13 @@ test('profile information can be updated', function () {
 
     $this->actingAs($user);
 
-    $component = Volt::test('profile.update-profile-information-form')
-        ->set('name', 'Test User')
-        ->set('email', 'test@example.com')
-        ->call('updateProfileInformation');
+    $response = $this->from('/profile')->patch(route('profile.update'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
 
-    $component
-        ->assertHasNoErrors()
-        ->assertNoRedirect();
-
+    $response->assertRedirect('/profile');
+    $response->assertSessionHasNoErrors();
     $user->refresh();
 
     $this->assertSame('Test User', $user->name);
@@ -43,15 +39,13 @@ test('email verification status is unchanged when the email address is unchanged
 
     $this->actingAs($user);
 
-    $component = Volt::test('profile.update-profile-information-form')
-        ->set('name', 'Test User')
-        ->set('email', $user->email)
-        ->call('updateProfileInformation');
+    $response = $this->from('/profile')->patch(route('profile.update'), [
+        'name' => 'Test User',
+        'email' => $user->email,
+    ]);
 
-    $component
-        ->assertHasNoErrors()
-        ->assertNoRedirect();
-
+    $response->assertRedirect('/profile');
+    $response->assertSessionHasNoErrors();
     $this->assertNotNull($user->refresh()->email_verified_at);
 });
 
@@ -60,16 +54,13 @@ test('user can delete their account', function () {
 
     $this->actingAs($user);
 
-    $component = Volt::test('profile.delete-user-form')
-        ->set('password', 'password')
-        ->call('deleteUser');
+    $response = $this->delete(route('profile.destroy'), [
+        'password' => 'password',
+    ]);
 
-    $component
-        ->assertHasNoErrors()
-        ->assertRedirect('/');
-
+    $response->assertRedirect('/');
     $this->assertGuest();
-    $this->assertNull($user->fresh());
+    $this->assertNotNull($user->fresh()->deleted_at);
 });
 
 test('correct password must be provided to delete account', function () {
@@ -77,13 +68,11 @@ test('correct password must be provided to delete account', function () {
 
     $this->actingAs($user);
 
-    $component = Volt::test('profile.delete-user-form')
-        ->set('password', 'wrong-password')
-        ->call('deleteUser');
+    $response = $this->from('/profile')->delete(route('profile.destroy'), [
+        'password' => 'wrong-password',
+    ]);
 
-    $component
-        ->assertHasErrors('password')
-        ->assertNoRedirect();
-
+    $response->assertRedirect('/profile');
+    $response->assertSessionHasErrors('password', null, 'userDeletion');
     $this->assertNotNull($user->fresh());
 });

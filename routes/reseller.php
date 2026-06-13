@@ -58,6 +58,7 @@ Route::prefix('/r/')->group(function () {
         ->name('reseller.resel-product.clone');
     Route::get('/resel/categories', [ReselProductsController::class, 'categories'])->name('reseller.resel-products.catgory');
     Route::get('/order/resel', [ReselOrdersController::class, 'index'])->name('reseller.resel-order.index');
+    Route::get('/order/resel/print', [ReselOrdersController::class, 'print'])->name('reseller.resel-order.print');
 
     // comissions
     Route::get('/comissions', [ResellerComissionsController::class, 'index'])->name('reseller.comissions.index');

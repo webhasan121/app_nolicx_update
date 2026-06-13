@@ -33,6 +33,16 @@ export default function Print({ products = [], filters = {} }) {
 
                     <Section>
                         <Table data={products}>
+                            <colgroup>
+                                <col style={{ width: "5%" }} />
+                                <col style={{ width: "7%" }} />
+                                <col style={{ width: "34%" }} />
+                                <col style={{ width: "14%" }} />
+                                <col style={{ width: "12%" }} />
+                                <col style={{ width: "10%" }} />
+                                <col style={{ width: "10%" }} />
+                                <col style={{ width: "8%" }} />
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <th>#</th>

@@ -7,6 +7,8 @@ use App\Models\Package_pays;
 use App\Models\Packages;
 use App\Models\User;
 use App\Models\Vip;
+use App\Support\TableDateFilter;
+use App\Support\VipReferralCommission;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -99,6 +101,7 @@ class VipController extends Controller
                         'coin' => $item->coin,
                         'm_coin' => $item->m_coin ?? '0',
                         'ref_owner_get_coin' => $item->ref_owner_get_coin,
+                        'status' => (int) ($item->status ?? 0),
                         'users_count' => $usersCount,
                         'earn' => $item->price * $usersCount,
                         'created_at_human' => $item->created_at?->diffForHumans(),
@@ -215,34 +218,21 @@ class VipController extends Controller
 
         $this->applyDateFilter($query, $sdate, $edate);
 
-        if (!empty($search)) {
-            $query = Vip::query()
-                ->with(['user', 'package'])
-                ->where('name', 'like', '%' . $search . '%')
-                ->orWhere('phone', 'like', '%' . $search . '%')
-                ->latest('id');
-
-            if ($nav === 'Trash') {
-                $query->onlyTrashed();
-            } elseif ($nav === 'Pending') {
-                $query->where(['status' => false]);
-            } elseif ($nav === 'Confirmed' || $nav === 'Active') {
-                $query->where(['status' => true]);
-            }
-
-            if ($type !== 'All') {
-                $query->where(['task_type' => $type]);
-            }
-
-            if ($validity !== 'All') {
-                $query->whereDate(
-                    'valid_till',
-                    $validity === 'valid' ? '>' : '<',
-                    now()->format('Y-m-d')
-                );
-            }
-
-            $this->applyDateFilter($query, $sdate, $edate);
+        if ($search !== '') {
+            $query->where(function ($searchQuery) use ($search) {
+                $searchQuery
+                    ->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('phone', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery
+                            ->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('email', 'like', '%' . $search . '%')
+                            ->orWhere('phone', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('package', function ($packageQuery) use ($search) {
+                        $packageQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            });
         }
 
         $vipUsers = $query->paginate(config('app.paginate'))->withQueryString();
@@ -309,9 +299,8 @@ class VipController extends Controller
         $search = (string) $request->string('search');
         $sdate = $request->input('sdate');
         $edate = $request->input('edate');
-        $type = $request->input('type');
-        $validity = $request->input('validity');
-
+        $type = $request->input('type', 'All');
+        $validity = $request->input('validity', 'All');
         $query = Vip::query()
             ->with(['user', 'package']);
 
@@ -323,44 +312,34 @@ class VipController extends Controller
             $query->where(['status' => true]);
         }
 
-        if ($type != 'All') {
+        if ($type !== 'All') {
             $query->where(['task_type' => $type]);
         }
 
-        if ($validity != 'All') {
-            $query->whereDate('valid_till', $validity == 'valid' ? '>' : '<', now()->format('Y-m-d'));
+        if ($validity !== 'All') {
+            $query->whereDate('valid_till', $validity === 'valid' ? '>' : '<', now()->format('Y-m-d'));
         }
 
         $this->applyDateFilter($query, $sdate, $edate);
 
-        if (isset($search) && !empty($search)) {
-            $query = Vip::query()
-                ->with(['user', 'package'])
-                ->where('name', 'like', '%' . $search . '%')
-                ->orWhere('phone', 'like', '%' . $search . '%');
-
-            if ($nav == 'Trash') {
-                $query->onlyTrashed();
-            } elseif ($nav === 'Pending') {
-                $query->where(['status' => false]);
-            } elseif ($nav === 'Confirmed' || $nav === 'Active') {
-                $query->where(['status' => true]);
-            }
-
-            if ($type != 'All') {
-                $query->where(['task_type' => $type]);
-            }
-
-            if ($validity != 'All') {
-                $query->whereDate('valid_till', $validity == 'valid' ? '>' : '<', now()->format('Y-m-d'));
-            }
-
-            $this->applyDateFilter($query, $sdate, $edate);
+        if ($search !== '') {
+            $query->where(function ($searchQuery) use ($search) {
+                $searchQuery
+                    ->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('phone', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery
+                            ->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('email', 'like', '%' . $search . '%')
+                            ->orWhere('phone', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('package', function ($packageQuery) use ($search) {
+                        $packageQuery->where('name', 'like', '%' . $search . '%');
+                    });
+            });
         }
 
-        $vipUsers = $query->paginate(config('app.paginate'));
-
-        $items = $vipUsers->getCollection()->values()->map(function ($item, $index) {
+        $items = $query->latest('id')->get()->values()->map(function ($item, $index) {
             $status = 'Pending';
 
             if ($item?->status) {
@@ -432,6 +411,8 @@ class VipController extends Controller
             return redirect()->back()->with('warning', 'Trashed !');
         }
 
+        $wasActive = (int) ($vipData->status ?? 0) === 1;
+
         if ($validated['status'] === 'active') {
             $vipData->status = 1;
 
@@ -443,12 +424,8 @@ class VipController extends Controller
 
             $vipData->save();
 
-            $vipUser = $vipData->user;
-            $ref = User::find($vipData->refer);
-
-            if ($vipUser && $ref) {
-                $ref->coin += $vipData->comission ?? 100;
-                $ref->save();
+            if (!$wasActive) {
+                VipReferralCommission::award($vipData);
             }
 
             return redirect()->back()->with('success', 'Status Updated !');
@@ -497,19 +474,13 @@ class VipController extends Controller
     public function reCalculateRefComission($vip)
     {
         $vipData = $this->findVipUser($vip);
+        $vipData = VipReferralCommission::ensureVipReferral($vipData);
 
         if (!$vipData->refer) {
             return redirect()->back()->with('error', 'No refer associated with this vip !');
         }
 
-        $refUser = User::find($vipData->refer);
-
-        if (!$refUser) {
-            return redirect()->back()->with('error', 'Refer user not found !');
-        }
-
-        $refUser->coin += $vipData->comission ?? 100;
-        $refUser->save();
+        VipReferralCommission::award($vipData);
 
         return redirect()->back()->with('success', 'Comission added to refer user !');
     }
@@ -639,6 +610,18 @@ class VipController extends Controller
         return redirect()->back()->with('success', 'Updated !');
     }
 
+    public function updatePackageStatus(Request $request, Packages $packages)
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'boolean'],
+        ]);
+
+        $packages->status = $validated['status'] ? 1 : 0;
+        $packages->save();
+
+        return redirect()->back()->with('success', $packages->status ? 'Package activated' : 'Package inactivated');
+    }
+
     public function trash($id)
     {
         Packages::destroy($id);
@@ -653,36 +636,9 @@ class VipController extends Controller
         return redirect()->back()->with('success', 'Packages restored');
     }
 
-    private function applyDateFilter($query, ?string $sdate, ?string $edate): void
+    private function applyDateFilter($query, ?string $sdate, ?string $edate, bool $defaultToday = false): void
     {
-        if (!empty($sdate) && !empty($edate)) {
-            $start = Carbon::parse($sdate)->startOfDay();
-            $end = Carbon::parse($edate)->endOfDay();
-
-            if ($start->gt($end)) {
-                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
-            }
-
-            $query->whereBetween('created_at', [$start, $end]);
-
-            return;
-        }
-
-        if (!empty($sdate)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($sdate)->startOfDay(),
-                Carbon::parse($sdate)->endOfDay(),
-            ]);
-
-            return;
-        }
-
-        if (!empty($edate)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($edate)->startOfDay(),
-                Carbon::parse($edate)->endOfDay(),
-            ]);
-        }
+        TableDateFilter::apply($query, $sdate, $edate, $defaultToday);
     }
 
     private function findVipUser($vip): vip

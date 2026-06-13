@@ -23,6 +23,7 @@ class WithdrawIndexController extends Controller
         });
 
         return Inertia::render('User/Wallet/Withdraw/Index', [
+            'wallet_balance' => auth()->user()->coin ?? 0,
             'available_balance' => auth()->user()->abailCoin(),
             'withdraw' => $withdraw,
         ]);

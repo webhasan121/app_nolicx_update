@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\product_has_image;
 use App\Models\Reseller_resel_product;
+use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -188,6 +189,7 @@ class ReselProductsController extends Controller
         ]);
 
         ProductComissionController::dispatchProductComissionsListeners($order->id);
+        OrderNotice::orderPlaced($order, Auth::id());
 
         return back()->with('success', 'Order Done');
     }

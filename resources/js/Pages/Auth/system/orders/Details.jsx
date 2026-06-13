@@ -3,7 +3,6 @@ import AppLayout from "../../../../Layouts/App";
 import DangerButton from "../../../../components/DangerButton";
 import Hr from "../../../../components/Hr";
 import NavLink from "../../../../components/NavLink";
-import NavLinkBtn from "../../../../components/NavLinkBtn";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import ApplicationName from "../../../../components/ApplicationName";
@@ -11,6 +10,7 @@ import Container from "../../../../components/dashboard/Container";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import Table from "../../../../components/dashboard/table/Table";
+import { ActionIconLink } from "../../../../components/ActionIcon";
 
 export default function Details({ nav = "tab", order, earnFilters, earnComissions = [], resellerProfit, reseller_profit_sum }) {
     const shippingTotal = Number(order?.shipping ?? 0);
@@ -61,7 +61,7 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
                                     <div className="order-info">
                                         <div>Order ID: {order.id}</div>
                                         <div><span className="text-xs"> {order.created_at_daytime}</span></div>
-                                        <NavLinkBtn href={route("vendor.orders.cprint", { order: order.id })}>Print</NavLinkBtn>
+                                        <ActionIconLink href={route("vendor.orders.cprint", { order: order.id })} action="print" title="Print" />
                                     </div>
                                     <div className="order-total text-end">
                                         <table className="table">
@@ -226,6 +226,7 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
                                 <tfoot>
                                     <tr className="py-2 bg-gray-200">
                                         <td>{earnComissions.length}</td>
+                                        <td></td>
                                         <td className="font-bold">{earnComissions.reduce((sum, item) => sum + Number(item.buying_price || 0), 0)}</td>
                                         <td className="font-bold">{earnComissions.reduce((sum, item) => sum + Number(item.selling_price || 0), 0)}</td>
                                         <td className="font-bold">{earnComissions.reduce((sum, item) => sum + Number(item.profit || 0), 0)}</td>

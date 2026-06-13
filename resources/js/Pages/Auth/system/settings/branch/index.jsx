@@ -1,7 +1,6 @@
 import { Head, router } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../../Layouts/App";
-import DangerButton from "../../../../../components/DangerButton";
 import PrimaryButton from "../../../../../components/PrimaryButton";
 import TextInput from "../../../../../components/TextInput";
 import NavLinkBtn from "../../../../../components/NavLinkBtn";
@@ -12,6 +11,7 @@ import SectionHeader from "../../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../../components/dashboard/section/Inner";
 import Table from "../../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../../hooks/useTranslation";
+import { ActionIconButton, ActionIconLink } from "../../../../../components/ActionIcon";
 
 export default function Index({ branches = {}, filters = {}, printUrl }) {
     const { t } = useTranslation();
@@ -164,13 +164,9 @@ export default function Index({ branches = {}, filters = {}, printUrl }) {
                                             <td>{branch.type}</td>
                                             <td>{branch.created_at}</td>
                                             <td>
-                                                <div className="flex items-center gap-2">
-                                                    <NavLinkBtn href={route("system.branches.modify", branch.id)}>
-                                                        <i className="fas fa-edit"></i>
-                                                    </NavLinkBtn>
-                                                    <DangerButton type="button" onClick={() => destroy(branch.id)}>
-                                                        <i className="fas fa-trash"></i>
-                                                    </DangerButton>
+                                                <div className="flex items-center gap-1">
+                                                    <ActionIconLink href={route("system.branches.modify", branch.id)} action="edit" title={t("Edit")} />
+                                                    <ActionIconButton action="delete" title={t("Delete")} onClick={() => destroy(branch.id)} />
                                                 </div>
                                             </td>
                                         </tr>

@@ -5,8 +5,10 @@ import InputLabel from "../../../components/InputLabel";
 import NavLink from "../../../components/NavLink";
 import TextInput from "../../../components/TextInput";
 import PrimaryButton from "../../../components/PrimaryButton";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function CoinStore({ store = 0, take = 0, give = 0 }) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const form = useForm({
         method: "",
@@ -46,7 +48,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                                 }}
                             >
                                 <i className="p-2 fas fa-store fs-6"></i>
-                                Comission Store
+                                {t("Comission Store")}
                             </NavLink>
                         </div>
                         {/* <div className="relative mt-2">
@@ -96,37 +98,37 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
             </div>
 
             <Modal show={open} onClose={() => setOpen(false)} maxWidth="md">
-                <div className="p-3">Withdraw</div>
+                <div className="p-3">{t("Withdraw")}</div>
                 <hr className="my-2" />
                 <div className="p-4">
                     <form onSubmit={submit}>
                         <div className="grid grid-cols-2 gap-6">
                             <div className="relative w-full">
-                                <InputLabel htmlFor="coin-method">Payment Method</InputLabel>
+                                <InputLabel htmlFor="coin-method">{t("Payment Method")}</InputLabel>
                                 <select
                                     id="coin-method"
                                     value={form.data.method}
                                     onChange={(e) => form.setData("method", e.target.value)}
                                     className="w-full py-2 rounded-md"
                                 >
-                                    <option value=""> -- Choose -- </option>
+                                    <option value=""> {t("-- Choose --")} </option>
                                     {["Bkash", "Nogod", "Rocket", "Bank"].map((item) => (
                                         <option key={item} value={item}>
-                                            {item}
+                                            {t(item)}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
                             <div className="relative">
-                                <InputLabel htmlFor="coin-amount">Withdraw Amount</InputLabel>
+                                <InputLabel htmlFor="coin-amount">{t("Withdraw Amount")}</InputLabel>
                                 <TextInput
                                     id="coin-amount"
                                     type="number"
                                     value={form.data.amount}
                                     onChange={(e) => form.setData("amount", e.target.value)}
                                     className="w-full"
-                                    placeholder="Enter withdraw amount"
+                                    placeholder={t("Enter withdraw amount")}
                                 />
                                 {form.errors.amount ? (
                                     <span className="text-sm text-red-500">{form.errors.amount}</span>
@@ -137,83 +139,83 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                         {form.data.method === "Bank" ? (
                             <>
                                 <div className="relative my-4">
-                                    <InputLabel htmlFor="coin-bankAccount">Bank Account</InputLabel>
+                                    <InputLabel htmlFor="coin-bankAccount">{t("Bank Account")}</InputLabel>
                                     <TextInput
                                         id="coin-bankAccount"
                                         type="text"
                                         value={form.data.bankAccount}
                                         onChange={(e) => form.setData("bankAccount", e.target.value)}
                                         className="w-full"
-                                        placeholder="Enter bank account"
+                                        placeholder={t("Enter bank account")}
                                     />
                                 </div>
 
                                 <div className="relative my-4">
-                                    <InputLabel htmlFor="coin-accountholder">Account Holder Name</InputLabel>
+                                    <InputLabel htmlFor="coin-accountholder">{t("Account Holder Name")}</InputLabel>
                                     <TextInput
                                         id="coin-accountholder"
                                         type="text"
                                         value={form.data.accountholder}
                                         onChange={(e) => form.setData("accountholder", e.target.value)}
                                         className="w-full"
-                                        placeholder="Account holder name"
+                                        placeholder={t("Account holder name")}
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-6 my-4">
                                     <div className="relative">
-                                        <InputLabel htmlFor="coin-bankBranch">Bank Branch</InputLabel>
+                                        <InputLabel htmlFor="coin-bankBranch">{t("Bank Branch")}</InputLabel>
                                         <TextInput
                                             id="coin-bankBranch"
                                             type="text"
                                             value={form.data.bankBranch}
                                             onChange={(e) => form.setData("bankBranch", e.target.value)}
                                             className="w-full"
-                                            placeholder="Enter bank branch"
+                                            placeholder={t("Enter bank branch")}
                                         />
                                     </div>
 
                                     <div className="relative">
-                                        <InputLabel htmlFor="coin-swiftCode">Swift Code</InputLabel>
+                                        <InputLabel htmlFor="coin-swiftCode">{t("Swift Code")}</InputLabel>
                                         <TextInput
                                             id="coin-swiftCode"
                                             type="text"
                                             value={form.data.swiftCode}
                                             onChange={(e) => form.setData("swiftCode", e.target.value)}
                                             className="w-full"
-                                            placeholder="Enter swift code"
+                                            placeholder={t("Enter swift code")}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="relative my-4">
-                                    <InputLabel htmlFor="coin-accountNumber">Account Number</InputLabel>
+                                    <InputLabel htmlFor="coin-accountNumber">{t("Account Number")}</InputLabel>
                                     <TextInput
                                         id="coin-accountNumber"
                                         type="text"
                                         value={form.data.accountNumber}
                                         onChange={(e) => form.setData("accountNumber", e.target.value)}
                                         className="w-full"
-                                        placeholder="Enter account number"
+                                        placeholder={t("Enter account number")}
                                     />
                                 </div>
                             </>
                         ) : (
                             <div className="relative my-4">
-                                <InputLabel htmlFor="coin-phone">Phone Number</InputLabel>
+                                <InputLabel htmlFor="coin-phone">{t("Phone Number")}</InputLabel>
                                 <TextInput
                                     id="coin-phone"
                                     type="number"
                                     value={form.data.phone}
                                     onChange={(e) => form.setData("phone", e.target.value)}
                                     className="w-full"
-                                    placeholder="Enter phone number"
+                                    placeholder={t("Enter phone number")}
                                 />
                             </div>
                         )}
 
                         <div className="relative my-4">
-                            <InputLabel htmlFor="coin-remarks">Remarks</InputLabel>
+                            <InputLabel htmlFor="coin-remarks">{t("Remarks")}</InputLabel>
                             <textarea
                                 id="coin-remarks"
                                 rows="3"
@@ -225,7 +227,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
 
                         <div className="flex justify-end">
                             <PrimaryButton type="submit" disabled={form.processing}>
-                                Submit
+                                {t("Submit")}
                             </PrimaryButton>
                         </div>
                     </form>

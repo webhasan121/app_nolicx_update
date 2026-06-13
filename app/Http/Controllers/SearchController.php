@@ -13,6 +13,7 @@ class SearchController extends Controller
     public function index(Request $request)
     {
         $q = $request->string('q')->toString();
+        $country = trim($request->string('country')->toString());
 
         $category = Category::query()
             ->where('name', 'like', '%' . $q . '%')
@@ -27,6 +28,9 @@ class SearchController extends Controller
                 $query->where('shop_name_en', 'like', '%' . $q . '%')
                     ->where(['status' => 'Active']);
             })
+            ->when($country !== '', function ($query) use ($country) {
+                $query->whereRaw('LOWER(country) = ?', [mb_strtolower($country)]);
+            })
             ->get();
 
         $product = Product::query()
@@ -37,11 +41,15 @@ class SearchController extends Controller
             ->where(function ($query) use ($q) {
                 $query->whereAny(['name', 'title'], 'like', '%' . $q . '%');
             })
+            ->when($country !== '', function ($query) use ($country) {
+                $query->whereRaw('LOWER(country) = ?', [mb_strtolower($country)]);
+            })
             ->paginate(30)
             ->withQueryString();
 
         return Inertia::render('Search/Index', [
             'q' => $q,
+            'country' => $country,
             'category' => $category,
             'product' => $product,
             'shop' => $shop,

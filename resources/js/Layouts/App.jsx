@@ -1,6 +1,7 @@
 import { Head, usePage } from "@inertiajs/react";
 import { useEffect } from "react";
 import Swal from "sweetalert2";
+import AutoTranslate from "../components/AutoTranslate";
 import SupportButton from "../components/SupportButton";
 import Navigation from "../layout/Navigation";
 import ResponsiveNavigation from "./ResponsiveNavigation";
@@ -55,7 +56,8 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
     }, [flash]);
 
     return (
-        <div className="h-screen overflow-x-hidden font-sans antialiased bg-gray-100">
+        <div className="h-screen overflow-hidden font-sans antialiased bg-gray-100">
+            <AutoTranslate />
             <Head title={title} />
 
             <style
@@ -75,20 +77,22 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
                             height: 100px;
                             text-align: center;
                             display: flex;
-                            font-size: 18px;
+                            font-size: 15px;
                             padding-top: 8px;
                         }
                     `,
                 }}
             />
 
-            <div className="h-full overflow-y-auto">
-                <SupportButton whatsapp={appConfig?.whatsapp_no} />
+            <SupportButton whatsapp={appConfig?.whatsapp_no} />
+            <div className="fixed top-0 left-0 right-0 z-50">
                 <Navigation />
+            </div>
 
-                <div className="flex sm:px-6 lg:px-8 ">
+            <div className="h-screen pt-16">
+                <div className="flex h-full overflow-hidden sm:pl-6 lg:pl-8">
                     <div
-                        className="hidden h-auto md:block"
+                        className="hidden h-full shrink-0 overflow-y-auto md:block"
                         style={{ width: 220 }}
                     >
                         <div className="w-full pt-2 pb-3">
@@ -108,7 +112,7 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
                         </div>
                     </div>
 
-                    <div className="w-full overflow-x-hidden">
+                    <div className="w-full h-full overflow-x-hidden overflow-y-auto">
                         {header && (
                             <header className="">
                                 <div className="w-full px-2 px-4 py-6 mx-auto sm:px-6 lg:px-8">
@@ -116,7 +120,7 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
                                 </div>
                             </header>
                         )}
-                        <main className="overflow-y-auto">{children}</main>
+                        <main>{children}</main>
                     </div>
                 </div>
             </div>

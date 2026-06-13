@@ -336,6 +336,7 @@ class GeolocationController extends Controller
             })->values()->all();
 
         $cities = city::query()
+            ->when($selectedCountry, fn ($query) => $query->where('country_id', $selectedCountry))
             ->when($selectedState, fn ($query) => $query->where('state_id', $selectedState))
             ->when($find !== '', fn ($query) => $query->where('name', 'like', '%' . $find . '%'))
             ->latest('id')
@@ -383,6 +384,7 @@ class GeolocationController extends Controller
         $find = trim((string) $request->query('find', ''));
 
         $cities = city::query()
+            ->when($selectedCountry, fn ($query) => $query->where('country_id', $selectedCountry))
             ->when($selectedState, fn ($query) => $query->where('state_id', $selectedState))
             ->when($find !== '', fn ($query) => $query->where('name', 'like', '%' . $find . '%'))
             ->latest('id')
@@ -472,6 +474,8 @@ class GeolocationController extends Controller
             : [];
 
         $areas = ta::query()
+            ->when($selectedCountry, fn ($query) => $query->whereHas('city', fn ($cityQuery) => $cityQuery->where('country_id', $selectedCountry)))
+            ->when($selectedState, fn ($query) => $query->whereHas('city', fn ($cityQuery) => $cityQuery->where('state_id', $selectedState)))
             ->when($selectedCity, fn ($query) => $query->where('city_id', $selectedCity))
             ->when($find !== '', fn ($query) => $query->where('name', 'like', '%' . $find . '%'))
             ->latest()
@@ -521,6 +525,8 @@ class GeolocationController extends Controller
         $find = trim((string) $request->query('find', ''));
 
         $areas = ta::query()
+            ->when($selectedCountry, fn ($query) => $query->whereHas('city', fn ($cityQuery) => $cityQuery->where('country_id', $selectedCountry)))
+            ->when($selectedState, fn ($query) => $query->whereHas('city', fn ($cityQuery) => $cityQuery->where('state_id', $selectedState)))
             ->when($selectedCity, fn ($query) => $query->where('city_id', $selectedCity))
             ->when($find !== '', fn ($query) => $query->where('name', 'like', '%' . $find . '%'))
             ->latest()

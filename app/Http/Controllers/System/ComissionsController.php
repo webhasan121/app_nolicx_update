@@ -4,6 +4,7 @@ namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
 use App\Models\TakeComissions;
+use App\Support\TableDateFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -18,8 +19,9 @@ class ComissionsController extends Controller
         $wid = trim((string) $request->query('wid', ''));
         $from = $request->query('from');
         $to = $request->query('to');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['confirm' => 'All']);
 
-        $comissions = $this->queryResult($confirm, $where, $wid, $from, $to)
+        $comissions = $this->queryResult($confirm, $where, $wid, $from, $to, $defaultToday)
             ->latest('id')
             ->paginate((int) config('app.paginate'))
             ->withQueryString();
@@ -38,14 +40,14 @@ class ComissionsController extends Controller
                     'created_at_formatted' => $item->created_at?->format('d M Y'),
                     'order_id' => $item->order_id ?? 0,
                     'product_id' => $item->product_id ?? 0,
-                    'buying_price' => $item->buying_price ?? 0,
-                    'selling_price' => $item->selling_price ?? 0,
-                    'profit' => $item->profit ?? 0,
-                    'comission_range' => $item->comission_range ?? 0,
-                    'take_comission' => $item->take_comission ?? 0,
-                    'distribute_comission' => $item->distribute_comission ?? 0,
-                    'store' => $item->store ?? 0,
-                    'return' => $item->return ?? 0,
+                    'buying_price' => $this->money($item->buying_price),
+                    'selling_price' => $this->money($item->selling_price),
+                    'profit' => $this->money($item->profit),
+                    'comission_range' => $this->money($item->comission_range),
+                    'take_comission' => $this->money($item->take_comission),
+                    'distribute_comission' => $this->money($item->distribute_comission),
+                    'store' => $this->money($item->store),
+                    'return' => $this->money($item->return),
                     'confirmed' => (bool) $item->confirmed,
                 ])->values()->all(),
                 'links' => collect($comissions->linkCollection())->map(function ($link) {
@@ -59,13 +61,13 @@ class ComissionsController extends Controller
                 'to' => $comissions->lastItem(),
                 'total' => $comissions->total(),
                 'summary' => [
-                    'profit' => $comissions->getCollection()->sum('profit'),
-                    'take_comission' => $comissions->getCollection()->sum('take_comission'),
-                    'distribute_comission' => $comissions->getCollection()->sum('distribute_comission'),
-                    'store' => $comissions->getCollection()->sum('store'),
-                    'return' => $comissions->getCollection()->sum('return'),
-                    'buying_price' => $comissions->getCollection()->sum('buying_price'),
-                    'selling_price' => $comissions->getCollection()->sum('selling_price'),
+                    'profit' => $this->money($comissions->getCollection()->sum('profit')),
+                    'take_comission' => $this->money($comissions->getCollection()->sum('take_comission')),
+                    'distribute_comission' => $this->money($comissions->getCollection()->sum('distribute_comission')),
+                    'store' => $this->money($comissions->getCollection()->sum('store')),
+                    'return' => $this->money($comissions->getCollection()->sum('return')),
+                    'buying_price' => $this->money($comissions->getCollection()->sum('buying_price')),
+                    'selling_price' => $this->money($comissions->getCollection()->sum('selling_price')),
                 ],
             ],
         ]);
@@ -78,8 +80,9 @@ class ComissionsController extends Controller
         $wid = trim((string) $request->query('wid', ''));
         $from = $request->query('from');
         $to = $request->query('to');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['confirm' => 'All']);
 
-        $comissions = $this->queryResult($confirm, $where, $wid, $from, $to)
+        $comissions = $this->queryResult($confirm, $where, $wid, $from, $to, $defaultToday)
             ->get();
 
         return Inertia::render('Auth/system/comissions/Takes', [
@@ -97,13 +100,13 @@ class ComissionsController extends Controller
                 'user_id' => $item->user_id,
                 'order_id' => $item->order_id ?? 0,
                 'product_id' => $item->product_id ?? 0,
-                'buying_price' => $item->buying_price ?? 0,
-                'selling_price' => $item->selling_price ?? 0,
-                'profit' => $item->profit ?? 0,
-                'comission_range' => $item->comission_range ?? 0,
-                'take_comission' => $item->take_comission ?? 0,
-                'distribute_comission' => $item->distribute_comission ?? 0,
-                'store' => $item->store ?? 0,
+                'buying_price' => $this->money($item->buying_price),
+                'selling_price' => $this->money($item->selling_price),
+                'profit' => $this->money($item->profit),
+                'comission_range' => $this->money($item->comission_range),
+                'take_comission' => $this->money($item->take_comission),
+                'distribute_comission' => $this->money($item->distribute_comission),
+                'store' => $this->money($item->store),
                 'created_at_formatted' => $item->created_at?->toFormattedDateString(),
                 'confirmed' => (bool) $item->confirmed,
             ])->values()->all(),
@@ -119,14 +122,14 @@ class ComissionsController extends Controller
                 'id' => $item->id,
                 'order_id' => $item->order_id ?? 0,
                 'product_id' => $item->product_id ?? 0,
-                'buying_price' => $item->buying_price ?? 0,
-                'selling_price' => $item->selling_price ?? 0,
-                'profit' => $item->profit ?? 0,
-                'comission_range' => $item->comission_range ?? 0,
-                'take_comission' => $item->take_comission ?? 0,
-                'distribute_comission' => $item->distribute_comission ?? 0,
-                'store' => $item->store ?? 0,
-                'return' => $item->return ?? 0,
+                'buying_price' => $this->money($item->buying_price),
+                'selling_price' => $this->money($item->selling_price),
+                'profit' => $this->money($item->profit),
+                'comission_range' => $this->money($item->comission_range),
+                'take_comission' => $this->money($item->take_comission),
+                'distribute_comission' => $this->money($item->distribute_comission),
+                'store' => $this->money($item->store),
+                'return' => $this->money($item->return),
                 'confirmed' => (bool) $item->confirmed,
             ])->values()->all(),
         ]);
@@ -148,28 +151,28 @@ class ComissionsController extends Controller
                 'product_id' => $takes->product_id ?? 0,
                 'product_name' => $takes->product?->name ?? 0,
                 'product_thumbnail' => $takes->product?->thumbnail,
-                'buying_price' => $takes->buying_price ?? 0,
-                'selling_price' => $takes->selling_price ?? 0,
-                'profit' => $takes->profit ?? 0,
-                'comission_range' => $takes->comission_range ?? 0,
-                'take_comission' => $takes->take_comission ?? 0,
-                'distribute_comission' => $takes->distribute_comission ?? 0,
-                'store' => $takes->store ?? 0,
-                'return' => $takes->return ?? 0,
+                'buying_price' => $this->money($takes->buying_price),
+                'selling_price' => $this->money($takes->selling_price),
+                'profit' => $this->money($takes->profit),
+                'comission_range' => $this->money($takes->comission_range),
+                'take_comission' => $this->money($takes->take_comission),
+                'distribute_comission' => $this->money($takes->distribute_comission),
+                'store' => $this->money($takes->store),
+                'return' => $this->money($takes->return),
             ],
             'distributes' => $distributes->map(fn ($item) => [
                 'id' => $item->id,
                 'user_id' => $item->user_id,
                 'user_name' => $item->user?->name ?? 0,
                 'product_name' => $item->product?->name ?? 0,
-                'amount' => $item->amount ?? 0,
-                'range' => $item->range ?? 0,
+                'amount' => $this->money($item->amount),
+                'range' => $this->money($item->range),
                 'confirmed' => (bool) $item->confirmed,
             ])->values()->all(),
         ]);
     }
 
-    private function queryResult($confirm, $where, $wid, $from, $to)
+    private function queryResult($confirm, $where, $wid, $from, $to, bool $defaultToday = false)
     {
         $q = TakeComissions::query();
 
@@ -199,40 +202,18 @@ class ComissionsController extends Controller
                 });
             });
 
-        $this->applyDateFilter($q, $from, $to);
+        $this->applyDateFilter($q, $from, $to, $defaultToday);
 
         return $q;
     }
 
-    private function applyDateFilter($query, ?string $from, ?string $to): void
+    private function applyDateFilter($query, ?string $from, ?string $to, bool $defaultToday = false): void
     {
-        if (!empty($from) && !empty($to)) {
-            $start = Carbon::parse($from)->startOfDay();
-            $end = Carbon::parse($to)->endOfDay();
+        TableDateFilter::apply($query, $from, $to, $defaultToday);
+    }
 
-            if ($start->gt($end)) {
-                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
-            }
-
-            $query->whereBetween('created_at', [$start, $end]);
-
-            return;
-        }
-
-        if (!empty($from)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($from)->startOfDay(),
-                Carbon::parse($from)->endOfDay(),
-            ]);
-
-            return;
-        }
-
-        if (!empty($to)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($to)->startOfDay(),
-                Carbon::parse($to)->endOfDay(),
-            ]);
-        }
+    private function money($value): float
+    {
+        return round((float) ($value ?? 0), 2);
     }
 }

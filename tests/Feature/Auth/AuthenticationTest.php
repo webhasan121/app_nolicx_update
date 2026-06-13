@@ -1,45 +1,38 @@
 <?php
 
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Inertia\Testing\AssertableInertia as Assert;
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
 
     $response
         ->assertOk()
-        ->assertSeeVolt('pages.auth.login');
+        ->assertInertia(fn (Assert $page) => $page->component('Auth/Login'));
 });
 
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
-    $component = Volt::test('pages.auth.login')
-        ->set('form.email', $user->email)
-        ->set('form.password', 'password');
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
 
-    $component->call('login');
-
-    $component
-        ->assertHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
-
+    $response->assertRedirect(route('user.dash'));
     $this->assertAuthenticated();
 });
 
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
-    $component = Volt::test('pages.auth.login')
-        ->set('form.email', $user->email)
-        ->set('form.password', 'wrong-password');
+    $response = $this->from('/login')->post('/login', [
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ]);
 
-    $component->call('login');
-
-    $component
-        ->assertHasErrors()
-        ->assertNoRedirect();
-
+    $response->assertRedirect('/login');
+    $response->assertSessionHasErrors('email');
     $this->assertGuest();
 });
 
@@ -52,7 +45,7 @@ test('navigation menu can be rendered', function () {
 
     $response
         ->assertOk()
-        ->assertSeeVolt('layout.navigation');
+        ->assertInertia(fn (Assert $page) => $page->component('Dashboard'));
 });
 
 test('users can logout', function () {
@@ -60,13 +53,8 @@ test('users can logout', function () {
 
     $this->actingAs($user);
 
-    $component = Volt::test('layout.navigation');
+    $response = $this->post(route('logout.perform'));
 
-    $component->call('logout');
-
-    $component
-        ->assertHasNoErrors()
-        ->assertRedirect('/');
-
+    $response->assertRedirect('/');
     $this->assertGuest();
 });

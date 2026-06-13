@@ -1,5 +1,6 @@
 import { Head } from "@inertiajs/react";
 import { useEffect } from "react";
+import AutoTranslate from "../components/AutoTranslate";
 
 const STYLE_TEXT = `
     @page {
@@ -7,9 +8,29 @@ const STYLE_TEXT = `
         margin: 20mm;
     }
 
-    td,
-    th {
-        white-space: nowrap;
+    #pdf-content {
+        width: 100%;
+    }
+
+    #pdf-content .overflow-x-scroll,
+    #pdf-content .overflow-hidden {
+        overflow: visible !important;
+    }
+
+    #pdf-content table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+    }
+
+    #pdf-content td,
+    #pdf-content th {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        vertical-align: top;
+        font-size: 11px;
+        padding: 6px;
     }
 
     tr:hover {
@@ -157,6 +178,7 @@ export default function Print({ title = "nolicx", children }) {
 
     return (
         <>
+            <AutoTranslate />
             <Head title={title}>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />

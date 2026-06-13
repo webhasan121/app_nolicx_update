@@ -8,10 +8,11 @@ import Hr from "../../../../components/Hr";
 import NavLink from "../../../../components/NavLink";
 import NavLinkBtn from "../../../../components/NavLinkBtn";
 import useTranslation from "../../../../hooks/useTranslation";
+import { formatAmount } from "../../../../utils/formatAmount";
 
 export default function WithdrawIndex() {
     const { t } = useTranslation();
-    const { available_balance, withdraw } = usePage().props;
+    const { wallet_balance, available_balance, withdraw } = usePage().props;
     const cancelWithdraw = (wid) => {
         router.post(route("user.withdraw.destroy"), { wid });
     };
@@ -28,9 +29,13 @@ export default function WithdrawIndex() {
                                 </div>
                             }
                             content={
-                                <div className="flex items-center justify-between">
+                                <div>
                                     <div className="text-2xl font-bold text-indigo-900">
-                                        {" "}{t("Available Balance")}{available_balance}{t("TK")}</div>
+                                        {" "}{t("Wallet Balance")}-{formatAmount(wallet_balance)}{t("TK")}
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                        {t("Withdrawable Balance")}: {formatAmount(available_balance)}{t("TK")}
+                                    </div>
                                 </div>
                             }
                         />
@@ -38,22 +43,17 @@ export default function WithdrawIndex() {
                         <SectionInner>
                             <ul>
                                 <li>
-                                    To make a withdrawal, your balance must be
-                                    at least 500 TK. If you're a new user,
-                                    you'll need to reach a minimum balance of
-                                    500 TK before you can withdraw.
+                                    {t("To make a withdrawal, your balance must be at least 500 TK. If you're a new user, you'll need to reach a minimum balance of 500 TK before you can withdraw.")}
                                 </li>
                                 <li>
-                                    To make a withdrawal, VIP and VIP Package
-                                    users must first complete a product
-                                    purchase.
+                                    {t("To make a withdrawal, VIP and VIP Package users must first complete a product purchase.")}
                                 </li>
                             </ul>
 
                             <Hr />
                             <div className="mt-2 space-x-2 text-end">
                                 <NavLinkBtn href={route("user.wallet.withdraw.create")}>
-                                    Request A Payment
+                                    {t("Request A Payment")}
                                 </NavLinkBtn>
                             </div>
                         </SectionInner>
@@ -72,13 +72,13 @@ export default function WithdrawIndex() {
                                         <div key={wtd.id} className="w-48 py-3">
                                             <div className="text-left border rounded">
                                                 <div className="px-3 py-2 border-bottom">
-                                                    <h6>Status</h6>
+                                                    <h6>{t("Status")}</h6>
                                                     <p className="font-bold text-red-900">{t("Pending")}</p>
                                                 </div>
                                                 <div className="px-3 py-2 border-b">
-                                                    <h6>Amount</h6>
+                                                    <h6>{t("Amount")}</h6>
                                                     <p className="font-bold">
-                                                        {wtd.amount}{t("TK")}</p>
+                                                        {formatAmount(wtd.amount)}{t("TK")}</p>
                                                 </div>
                                                 <div className="px-3 py-2 border-b">
                                                     <p>{wtd.pay_by}</p>
@@ -86,7 +86,7 @@ export default function WithdrawIndex() {
                                                     </p>
                                                 </div>
                                                 <div className="p-3">
-                                                    <h6>Date</h6>
+                                                    <h6>{t("Date")}</h6>
                                                     <p>
                                                         {wtd.created_at}
                                                         <br />- {wtd.created_at_human}
@@ -95,7 +95,7 @@ export default function WithdrawIndex() {
                                                     <form
                                                         className={`${wtd.is_rejected ? "d-none" : "d-block"}`}
                                                         onSubmit={(e) => {
-                                                            confirm("Are you sure to cancel this withdraw request?") &&
+                                                            confirm(t("Are you sure to cancel this withdraw request?")) &&
                                                             e.preventDefault();
                                                             cancelWithdraw(wtd.id);
                                                         }}

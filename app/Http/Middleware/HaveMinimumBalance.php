@@ -15,7 +15,7 @@ class HaveMinimumBalance
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user()->coin > 500) {
+        if (($request->user()->coin ?? 0) < 500) {
             return redirect('dashboard')->with('warning', 'You need to keep 500TK as Minimum Balance');
         }
         return $next($request);

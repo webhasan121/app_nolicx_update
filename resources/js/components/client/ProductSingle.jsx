@@ -1,17 +1,21 @@
 import { Link, router, usePage } from "@inertiajs/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import SecondaryButton from "../SecondaryButton";
 import Hr from "../Hr";
 import NavLink from "../NavLink";
 import ProductsLoop from "./ProductsLoop";
+import ProductAttributesSelector from "./ProductAttributesSelector";
 import Swal from "sweetalert2";
 
 function youtubeEmbedUrl(url) {
     if (!url) return null;
 
     try {
-        const parsed = new URL(url);
+        const normalizedUrl = String(url).match(/^https?:\/\//i)
+            ? String(url)
+            : `https://${String(url).replace(/^\/+/, "")}`;
+        const parsed = new URL(normalizedUrl);
 
         if (parsed.hostname.includes("youtu.be")) {
             const id = parsed.pathname.replace("/", "");
@@ -19,7 +23,10 @@ function youtubeEmbedUrl(url) {
         }
 
         if (parsed.hostname.includes("youtube.com")) {
-            const id = parsed.searchParams.get("v") || parsed.pathname.split("/").pop();
+            const parts = parsed.pathname.split("/").filter(Boolean);
+            const id =
+                parsed.searchParams.get("v") ||
+                (["embed", "shorts", "live"].includes(parts[0]) ? parts[1] : parts.at(-1));
             return id ? `https://www.youtube.com/embed/${id}` : null;
         }
     } catch {
@@ -54,29 +61,39 @@ export default function ProductSingle({
     product,
     relatedProduct = [],
     onBuyNowClick = null,
+    initialSelectedAttrs = {},
+    onSelectedAttrsChange = null,
+    savedForLater = null,
     onSaveForLaterChange = null,
 }) {
     const { auth } = usePage().props;
     const [copied, setCopied] = useState(false);
     const [previewImage, setPreviewImage] = useState(product?.thumbnail);
     const [showVideoModal, setShowVideoModal] = useState(false);
-    const [savedForLater, setSavedForLater] = useState(
-        Boolean(product?.is_saved_for_later),
+    const [selectedAttrs, setSelectedAttrs] = useState(initialSelectedAttrs ?? {});
+    const [isSavedForLater, setIsSavedForLater] = useState(
+        Boolean(savedForLater ?? product?.is_saved_for_later),
     );
     const [savingForLater, setSavingForLater] = useState(false);
     const [isZooming, setIsZooming] = useState(false);
     const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
     const [bgPosition, setBgPosition] = useState("0px 0px");
     const imageRef = useRef(null);
+    const thumbnailScrollerRef = useRef(null);
+
+    useEffect(() => {
+        setSelectedAttrs(initialSelectedAttrs ?? {});
+    }, [JSON.stringify(initialSelectedAttrs ?? {})]);
+
+    useEffect(() => {
+        onSelectedAttrsChange?.(selectedAttrs);
+    }, [JSON.stringify(selectedAttrs)]);
+
+    useEffect(() => {
+        setIsSavedForLater(Boolean(savedForLater ?? product?.is_saved_for_later));
+    }, [savedForLater, product?.is_saved_for_later]);
 
     if (!product) return null;
-
-    const attrValues = product?.attr?.value
-        ? String(product.attr.value)
-              .split(",")
-              .map((v) => v.trim())
-              .filter(Boolean)
-        : [];
 
     const galleryImages = [...new Set([
         product.thumbnail,
@@ -84,9 +101,10 @@ export default function ProductSingle({
     ].filter(Boolean))];
 
     const videoEmbedUrl = youtubeEmbedUrl(product?.video_url);
+    const videoItem = videoEmbedUrl ? { type: "video", value: product.video_url } : null;
     const gallery = [
+        ...(videoItem ? [videoItem] : []),
         ...galleryImages.map((image) => ({ type: "image", value: image })),
-        ...(videoEmbedUrl ? [{ type: "video", value: product.video_url }] : []),
     ];
 
     const discountPercentage =
@@ -112,6 +130,20 @@ export default function ProductSingle({
                   id: product.id,
                   slug: product.slug,
               });
+    const selectedAttrQuery = Object.fromEntries(
+        Object.entries(selectedAttrs).filter(([, value]) => value)
+    );
+    const buyNowHref = (() => {
+        const href = route("product.makeOrder", { id: product.id, slug: product.slug });
+
+        if (!Object.keys(selectedAttrQuery).length) {
+            return href;
+        }
+
+        return `${href}?${new URLSearchParams({
+            selected_attrs: JSON.stringify(selectedAttrQuery),
+        }).toString()}`;
+    })();
 
     const addToCart = async () => {
         try {
@@ -153,7 +185,7 @@ export default function ProductSingle({
             );
 
             const isSaved = Boolean(response.data?.saved);
-            setSavedForLater(isSaved);
+            setIsSavedForLater(isSaved);
             onSaveForLaterChange?.(product, isSaved);
             Swal.fire({
                 icon: "success",
@@ -210,6 +242,13 @@ export default function ProductSingle({
         }
     };
 
+    const scrollThumbnails = (direction) => {
+        thumbnailScrollerRef.current?.scrollBy({
+            left: direction * 240,
+            behavior: "smooth",
+        });
+    };
+
     const handleMouseMove = (e) => {
         const img = imageRef.current;
 
@@ -251,6 +290,14 @@ export default function ProductSingle({
                     .image-area {
                         width: 100%;
                     }
+                }
+
+                .product-thumbnail-strip {
+                    scrollbar-width: none;
+                }
+
+                .product-thumbnail-strip::-webkit-scrollbar {
+                    display: none;
                 }
             `}</style>
 
@@ -296,39 +343,68 @@ export default function ProductSingle({
 
 
                         {gallery.length > 1 ? (
-                            <div className="flex flex-wrap items-center justify-center w-full gap-2">
-                                {gallery.map((item) => (
+                            <div className="relative flex items-center justify-center w-full gap-2">
+                                {gallery.length > 5 ? (
                                     <button
-                                        key={`${item.type}-${item.value}`}
                                         type="button"
-                                        className="flex items-center justify-center w-16 h-16 p-1 bg-white border rounded"
-                                        onClick={() => {
-                                            if (item.type === "video") {
-                                                setShowVideoModal(true);
-                                                return;
-                                            }
-
-                                            setPreviewImage(item.value);
-                                        }}
+                                        onClick={() => scrollThumbnails(-1)}
+                                        className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
                                     >
-                                        {item.type === "video" ? (
-                                            <div
-                                                className="relative flex items-center justify-center w-full h-full overflow-hidden rounded bg-slate-900"
-                                            >
-                                                <div className="absolute inset-0 bg-black/80" />
-                                                <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
-                                                    <i className="text-xs fas fa-play"></i>
-                                                </span>
-                                            </div>
-                                        ) : (
-                                            <img
-                                                className="object-cover w-full h-full rounded"
-                                                src={`/storage/${item.value}`}
-                                                alt={product.title}
-                                            />
-                                        )}
+                                        <i className="fas fa-angle-left"></i>
                                     </button>
-                                ))}
+                                ) : null}
+
+                                <div
+                                    ref={thumbnailScrollerRef}
+                                    className="flex max-w-[280px] gap-2 overflow-x-auto product-thumbnail-strip scroll-smooth"
+                                >
+                                    {gallery.map((item) => (
+                                        <button
+                                            key={`${item.type}-${item.value}`}
+                                            type="button"
+                                            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded border bg-white p-1 ${
+                                                item.type === "image" && item.value === previewImage
+                                                    ? "border-orange-500"
+                                                    : "border-gray-200"
+                                            }`}
+                                            onClick={() => {
+                                                if (item.type === "video") {
+                                                    setShowVideoModal(true);
+                                                    return;
+                                                }
+
+                                                setPreviewImage(item.value);
+                                            }}
+                                        >
+                                            {item.type === "video" ? (
+                                                <div
+                                                    className="relative flex items-center justify-center w-full h-full overflow-hidden rounded bg-slate-900"
+                                                >
+                                                    <div className="absolute inset-0 bg-black/80" />
+                                                    <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
+                                                        <i className="text-xs fas fa-play"></i>
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <img
+                                                    className="object-cover w-full h-full rounded"
+                                                    src={`/storage/${item.value}`}
+                                                    alt={product.title}
+                                                />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {gallery.length > 5 ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => scrollThumbnails(1)}
+                                        className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
+                                    >
+                                        <i className="fas fa-angle-right"></i>
+                                    </button>
+                                ) : null}
                             </div>
                         ) : null}
                     </div>
@@ -413,15 +489,15 @@ export default function ProductSingle({
                         >
                             <i
                                 style={{
-                                    color: savedForLater
+                                    color: isSavedForLater
                                         ? "var(--brand-primary)"
                                         : "#ff8a4c",
                                 }}
-                                className={`mr-2 ${savedForLater ? "fas" : "far"} fa-heart`}
+                                className={`mr-2 ${isSavedForLater ? "fas" : "far"} fa-heart`}
                             ></i>
                             <div>
-                                {savedForLater
-                                    ? "saved"
+                                {isSavedForLater
+                                    ? "saved for you"
                                     : savingForLater
                                       ? "saving..."
                                       : "save for later"}
@@ -449,21 +525,11 @@ export default function ProductSingle({
                         <Hr />
                     </div>
 
-                    {attrValues.length > 0 && (
-                        <div className="py-2 my-3">
-                            <h4>{product?.attr?.name}</h4>
-                            <div className="flex flex-wrap items-center justify-start gap-2 my-1">
-                                {attrValues.map((attr) => (
-                                    <div
-                                        key={attr}
-                                        className="px-2 py-1 text-sm text-white bg-indigo-300 rounded"
-                                    >
-                                        {attr.toUpperCase()}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    <ProductAttributesSelector
+                        product={product}
+                        selectedAttrs={selectedAttrs}
+                        onChange={setSelectedAttrs}
+                    />
 
                     {product.shipping_note ? (
                         <div className="flex p-1 bg-indigo-900 rounded-lg shadow bg-gray-50">
@@ -514,7 +580,7 @@ export default function ProductSingle({
                             </button>
                         ) : (
                             <Link
-                                href={route("product.makeOrder", { id: product.id, slug: product.slug })}
+                                href={buyNowHref}
                                 className="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase bg-orange-500 border border-transparent rounded-md hover:text-white hover:border-transparent"
                             >
                                 Buy Now <i className="fas fa-arrow-right ms-2"></i>

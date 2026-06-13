@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Withdraw;
 use App\Rules\HaveEnoughBalance;
+use Closure;
 
 class WithdrawController extends Controller
 {
@@ -28,13 +29,32 @@ class WithdrawController extends Controller
             [
                 'pay_to' => 'required',
                 'pay_by' => 'required',
-                'amount' => ['required', new HaveEnoughBalance()],
+                'amount' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    new HaveEnoughBalance(),
+                    function (string $attribute, mixed $value, Closure $fail): void {
+                        $user = auth()->user();
+
+                        if (!$this->minimumRemainingBalanceApplies($user)) {
+                            return;
+                        }
+
+                        $remainingBalance = $user->abailCoin() - (float) $value;
+
+                        if ($remainingBalance <= 200) {
+                            $fail('Rider, reseller and vendor accounts cannot withdraw if the remaining withdrawable balance is 200 TK or less.');
+                        }
+                    },
+                ],
                 'phone' => 'required',
             ],
             [
                 'pay_to.required' => 'Give A Number to receive payment.',
                 'pay_by.required' => 'Select A payment Method.',
-                'amount.required' => 'Give Amount .'
+                'amount.required' => 'Give Amount .',
+                'amount.min' => 'Withdraw amount must be at least 1 TK.',
             ]
         );
         // related data
@@ -94,5 +114,10 @@ class WithdrawController extends Controller
     private function store(Request $reqeust)
     {
         // handle store, and return a successk
+    }
+
+    private function minimumRemainingBalanceApplies($user): bool
+    {
+        return in_array($user?->active_nav, ['rider', 'reseller', 'vendor'], true);
     }
 }

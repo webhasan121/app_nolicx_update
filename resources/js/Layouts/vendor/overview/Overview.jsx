@@ -1,7 +1,9 @@
 import Div from "../../../components/dashboard/overview/Div";
 import Section from "../../../components/dashboard/overview/Section";
+import useTranslation from "../../../hooks/useTranslation";
+import { formatAmount } from "../../../utils/formatAmount";
 
-const money = (value) => `Tk ${Number(value ?? 0).toLocaleString()}`;
+const money = (value) => `Tk ${formatAmount(value)}`;
 
 export default function Overview({
     products,
@@ -15,26 +17,28 @@ export default function Overview({
     monthly_profit,
     daily_profit,
 }) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <p className="mb-2 text-xs">Overall Details</p>
+            <p className="mb-2 text-xs">{t("Overall Details")}</p>
             <Section>
-                <Div title="Products" content={<div>{products ?? "0"}</div>} />
-                <Div title="Sales" content={<div>{money(sales)}</div>} />
-                <Div title="Today sell" content={<div>{money(today_sell)}</div>} />
-                <Div title="Monthly sell" content={<div>{money(monthly_sell)}</div>} />
-                <Div title="Product stock" content={<div>{product_stock ?? "0"}</div>} />
+                <Div title={t("Products")} content={<div>{products ?? "0"}</div>} />
+                <Div title={t("Sales")} content={<div>{money(sales)}</div>} />
+                <Div title={t("Today sell")} content={<div>{money(today_sell)}</div>} />
+                <Div title={t("Monthly sell")} content={<div>{money(monthly_sell)}</div>} />
+                <Div title={t("Product stock")} content={<div>{product_stock ?? "0"}</div>} />
                 <Div
-                    title="Total product stock price"
+                    title={t("Total product stock price")}
                     content={<div>{money(total_product_stock_price)}</div>}
                 />
                 <Div
-                    title="Yearly sell amount"
+                    title={t("Yearly sell amount")}
                     content={<div>{money(yearly_sell_amount)}</div>}
                 />
-                <Div title="Total amount" content={<div>{money(total_amount)}</div>} />
-                <Div title="Monthly profit" content={<div>{money(monthly_profit)}</div>} />
-                <Div title="Daily profit" content={<div>{money(daily_profit)}</div>} />
+                <Div title={t("Total amount")} content={<div>{money(total_amount)}</div>} />
+                <Div title={t("Monthly profit")} content={<div>{money(monthly_profit)}</div>} />
+                <Div title={t("Daily profit")} content={<div>{money(daily_profit)}</div>} />
             </Section>
             <hr className="my-2" />
         </>

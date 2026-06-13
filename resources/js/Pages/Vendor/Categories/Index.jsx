@@ -1,10 +1,8 @@
 import { Head, router, useForm } from "@inertiajs/react";
 import AppLayout from "../../../Layouts/App";
-import DangerButton from "../../../components/DangerButton";
 import Hr from "../../../components/Hr";
 import InputField from "../../../components/InputField";
 import InputFile from "../../../components/InputFile";
-import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
 import Container from "../../../components/dashboard/Container";
 import PageHeader from "../../../components/dashboard/PageHeader";
@@ -13,6 +11,7 @@ import SectionInner from "../../../components/dashboard/section/Inner";
 import SectionSection from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
 import useTranslation from "../../../hooks/useTranslation";
+import { ActionIconButton, ActionIconLink } from "../../../components/ActionIcon";
 
 export default function Index({ categories = [] }) {
     const { t } = useTranslation();
@@ -117,13 +116,14 @@ export default function Index({ categories = [] }) {
                                             <span className="text-xs">{item.created_at_formatted}</span>
                                         </td>
                                         <td>
-                                            <NavLink href={route("vendor.category.edit", { cat: item.id })}>
-                                                <PrimaryButton type="button">{t("edit")}</PrimaryButton>
-                                            </NavLink>
-                                            <DangerButton
-                                                type="button"
+                                            <div className="flex items-center gap-1">
+                                                <ActionIconLink href={route("vendor.category.edit", { cat: item.id })} action="edit" title={t("edit")} />
+                                                <ActionIconButton
+                                                    action="delete"
+                                                    title={t("delete")}
                                                 onClick={() => remove(item.id)}
-                                            >{t("delete")}</DangerButton>
+                                                />
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

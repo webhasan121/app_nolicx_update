@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Level;
 use App\Models\User;
 use App\Models\UserHasRefs;
+use App\Support\ReferralChangePolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -40,7 +41,9 @@ class UserDashboardController extends Controller
 
         return ApiResponse::success([
             'user_my_ref' => $myRef?->ref,
-            'hide_claim' => $user->created_at->diffInHours(Carbon::now()) > 72,
+            'applied_ref' => $user->reference && $user->reference !== config('app.ref') ? $user->reference : '',
+            'hide_claim' => false,
+            'ref_claim' => ReferralChangePolicy::status($user),
             'joined' => $user->created_at->diffForHumans(),
             'roles' => $user->roles->pluck('name')->values(),
             'active_nav' => $user->active_nav,
@@ -80,14 +83,15 @@ class UserDashboardController extends Controller
         }
 
         $ref = UserHasRefs::where('ref', $validated['newRef'])->first();
+        $refClaim = ReferralChangePolicy::status($user);
 
-        if ($user->created_at->diffInHours(Carbon::now()) > 72 || $user->reference_accepted_at) {
-            return ApiResponse::error('Time Up. You can not update your ref', null, 422);
+        if (!$refClaim['can_apply']) {
+            return ApiResponse::error($refClaim['message'] ?? 'You can not update your ref', null, 422);
         }
 
         if ($ref && (int) $ref->owner->id !== (int) $user->id) {
             $user->reference = $validated['newRef'];
-            $user->reference_accepted_at = today();
+            ReferralChangePolicy::markApplied($user);
             $user->save();
 
             return ApiResponse::success($user->fresh(), 'Ref Accepted');

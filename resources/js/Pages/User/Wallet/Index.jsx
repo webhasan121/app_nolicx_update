@@ -9,10 +9,11 @@ import TextInput from "../../../components/TextInput";
 import Table from "../../../components/dashboard/table/Table";
 import UserDash from "../../../components/user/dash/UserDash";
 import useTranslation from "../../../hooks/useTranslation";
+import { formatAmount } from "../../../utils/formatAmount";
 
 
 
-function EarningCard({ title, amount, href }) {
+function EarningCard({ title, amount, href, t }) {
     return (
         <div className="w-48 space-y-3">
             <div className="p-3 rounded-lg shadow-md">
@@ -20,7 +21,7 @@ function EarningCard({ title, amount, href }) {
                     <div className="">{title}</div>
                 </div>
                 <div className="pt-2 text-lg font-bold text-indigo-900">
-                    {amount ?? 0}{t("TK")}</div>
+                    {formatAmount(amount)}{t("TK")}</div>
                 <div className="text-xs">
                     <Link href={href} className="text-gray-600">
                         View All
@@ -34,6 +35,7 @@ function EarningCard({ title, amount, href }) {
 export default function WalletIndex() {
     const { t } = useTranslation();
     const {
+        wallet_balance,
         available_balance,
         task,
         comission,
@@ -66,6 +68,7 @@ export default function WalletIndex() {
                     preserveScroll: true,
                     preserveState: true,
                     replace: true,
+                    only: ["filters", "withdraw", "printUrl"],
                 }
             );
         }, 400);
@@ -90,6 +93,7 @@ export default function WalletIndex() {
                 preserveScroll: true,
                 preserveState: true,
                 replace: true,
+                only: ["filters", "withdraw", "printUrl"],
             }
         );
     };
@@ -117,8 +121,13 @@ export default function WalletIndex() {
                         <SectionHeader
                             title={t("Your Wallet")}
                             content={
-                                <div className="text-2xl font-bold text-indigo-900">
-                                    {" "}{t("Available Balance")}{available_balance}{t("TK")}{" "}
+                                <div>
+                                    <div className="text-2xl font-bold text-indigo-900">
+                                        {" "}{t("Wallet Balance")}-{formatAmount(wallet_balance)}{t("TK")}{" "}
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                        {t("Withdrawable Balance")}: {formatAmount(available_balance)}{t("TK")}
+                                    </div>
                                 </div>
                             }
                         />
@@ -136,16 +145,19 @@ export default function WalletIndex() {
                     <SectionInner>
                         <div className="flex flex-wrap items-start justify-start space-x-3 spacy-y-3">
                             <EarningCard
+                                t={t}
                                 title={t("Task")}
                                 amount={task?.coin ?? 0}
                                 href={route("user.wallet.tasks")}
                             />
                             <EarningCard
+                                t={t}
                                 title={t("Earn Comission")}
                                 amount={comission}
                                 href={route("user.wallet.earn-comissions")}
                             />
                             <EarningCard
+                                t={t}
                                 title={t("Cut Comission")}
                                 amount={cut}
                                 href={route("user.wallet.earn-comissions", {
@@ -153,6 +165,7 @@ export default function WalletIndex() {
                                 })}
                             />
                             <EarningCard
+                                t={t}
                                 title={t("VIP Reffer")}
                                 amount={reffer}
                                 href={route("user.wallet.reffer")}
@@ -214,7 +227,7 @@ export default function WalletIndex() {
                                         {rows.map((item, index) => (
                                             <tr key={item.id}>
                                                 <td>#{(withdraw?.from ?? 1) + index}</td>
-                                                <td>{item.amount}{t("TK")}</td>
+                                                <td>{formatAmount(item.amount)}{t("TK")}</td>
                                                 <td>{item.status}</td>
                                                 <td className="text-xs text-gray-500">
                                                     {item.created_at} - {item.created_at_human}

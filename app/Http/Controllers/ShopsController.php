@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\reseller;
 use App\Models\Category;
+use App\Models\city as CityModel;
+use App\Models\country as CountryModel;
 use App\Models\Product;
 use App\Models\Slider as SliderModel;
 use App\Models\Slider_has_slide;
+use App\Models\state as StateModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,15 +23,25 @@ class ShopsController extends Controller
         $q = $request->string('q')->toString();
         $location = $request->string('location')->toString();
         $state = $request->string('state')->toString();
+        $userLocation = $this->currentUserLocation();
+
+        if ($state === 'me') {
+            $location = $userLocation;
+        }
 
         $query = reseller::where('status', 'Active');
 
         if ($q !== '') {
-            $query->whereAny(
-                ['shop_name_en', 'shop_name_bn'],
-                'like',
-                '%' . Str::ucfirst($q ?: $location) . '%'
-            );
+            $keyword = mb_strtolower($q);
+
+            $query->where(function ($builder) use ($keyword) {
+                $builder->whereRaw('LOWER(shop_name_en) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(shop_name_bn) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(district) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(upozila) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(village) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(country) LIKE ?', ["%{$keyword}%"]);
+            });
         }
 
         if ($location !== '') {
@@ -42,7 +56,7 @@ class ShopsController extends Controller
         }
 
         $shops = ($q !== '' || $location !== '')
-            ? $query->latest('id')->paginate(16)->withQueryString()
+            ? $query->latest('id')->paginate(20)->withQueryString()
             : $this->defaultShops();
 
         $sliderIds = SliderModel::query()
@@ -64,8 +78,47 @@ class ShopsController extends Controller
                 'location' => $location,
                 'state' => $state,
             ],
+            'userLocation' => $userLocation,
             'showFiltered' => $q !== '' || $location !== '',
         ]);
+    }
+
+    private function currentUserLocation(): string
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return '';
+        }
+
+        foreach ([
+            ['value' => $user->city, 'model' => CityModel::class],
+            ['value' => $user->state, 'model' => StateModel::class],
+            ['value' => $user->country, 'model' => CountryModel::class],
+        ] as $candidate) {
+            $location = $this->locationName($candidate['value'], $candidate['model']);
+
+            if ($location !== '') {
+                return $location;
+            }
+        }
+
+        return '';
+    }
+
+    private function locationName($value, string $model): string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        if (ctype_digit($value)) {
+            return trim((string) $model::query()->find((int) $value)?->name);
+        }
+
+        return $value;
     }
 
     public function show($id, $name): Response
@@ -102,7 +155,7 @@ class ShopsController extends Controller
         return reseller::query()
             ->where('status', 'Active')
             ->latest('id')
-            ->paginate(16)
+            ->paginate(20)
             ->withQueryString();
     }
 }

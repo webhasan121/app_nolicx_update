@@ -5,6 +5,7 @@ namespace App\Http\Controllers\System;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UserWalletController;
 use App\Models\Withdraw;
+use App\Support\TableDateFilter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -20,6 +21,7 @@ class WithdrawController extends Controller
         $fst = $request->query('fst', 'All');
         $sdate = $request->query('sdate');
         $edate = $request->query('edate');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['fst' => 'All']);
 
         $statsQuery = $this->visibleWithdrawsQuery();
 
@@ -42,7 +44,7 @@ class WithdrawController extends Controller
             $qry->where('id', $q);
         }
 
-        $this->applyDateFilter($qry, $sdate, $edate);
+        $this->applyDateFilter($qry, $sdate, $edate, $defaultToday);
 
         $withdraw = $qry
             ->orderBy('id', 'desc')
@@ -135,6 +137,7 @@ class WithdrawController extends Controller
         $fst = $request->query('fst', 'All');
         $q = $request->query('q');
         $where = $request->query('where');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['fst' => 'All']);
 
         $qry = $this->visibleWithdrawsQuery()->with('user');
 
@@ -155,18 +158,18 @@ class WithdrawController extends Controller
             $qry->where('id', $q);
         }
 
-        $this->applyDateFilter($qry, $sdate, $edate);
+        $this->applyDateFilter($qry, $sdate, $edate, $defaultToday);
 
         $withdraws = $qry
             ->orderBy('id', 'desc')
-            ->paginate(config('app.pagination'));
+            ->get();
 
         return Inertia::render('Auth/system/withdraw/Print', [
             'filters' => [
                 'sdate_formatted' => $sdate ? Carbon::parse($sdate)->format('d/m/Y') : '',
                 'edate_formatted' => $edate ? Carbon::parse($edate)->format('d/m/Y') : '',
             ],
-            'withdraws' => $withdraws->getCollection()->map(fn (Withdraw $item) => [
+            'withdraws' => $withdraws->map(fn (Withdraw $item) => [
                 'id' => $item->id,
                 'seen_by_admin' => (bool) $item->seen_by_admin,
                 'created_at_formatted' => $item->created_at?->toFormattedDateString(),
@@ -238,36 +241,9 @@ class WithdrawController extends Controller
         return redirect()->back()->with('error', 'Withdraw Request Already Accept !');
     }
 
-    private function applyDateFilter($query, ?string $sdate, ?string $edate): void
+    private function applyDateFilter($query, ?string $sdate, ?string $edate, bool $defaultToday = false): void
     {
-        if (!empty($sdate) && !empty($edate)) {
-            $start = Carbon::parse($sdate)->startOfDay();
-            $end = Carbon::parse($edate)->endOfDay();
-
-            if ($start->gt($end)) {
-                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
-            }
-
-            $query->whereBetween('created_at', [$start, $end]);
-
-            return;
-        }
-
-        if (!empty($sdate)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($sdate)->startOfDay(),
-                Carbon::parse($sdate)->endOfDay(),
-            ]);
-
-            return;
-        }
-
-        if (!empty($edate)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($edate)->startOfDay(),
-                Carbon::parse($edate)->endOfDay(),
-            ]);
-        }
+        TableDateFilter::apply($query, $sdate, $edate, $defaultToday);
     }
 
     private function visibleWithdrawsQuery()

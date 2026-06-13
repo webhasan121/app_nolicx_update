@@ -1,7 +1,6 @@
 import { Head, router } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../../Layouts/App";
-import DangerButton from "../../../../../components/DangerButton";
 import NavLink from "../../../../../components/NavLink";
 import NavLinkBtn from "../../../../../components/NavLinkBtn";
 import PrimaryButton from "../../../../../components/PrimaryButton";
@@ -12,6 +11,7 @@ import SectionHeader from "../../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../../components/dashboard/section/Inner";
 import Table from "../../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../../hooks/useTranslation";
+import { ActionIconButton } from "../../../../../components/ActionIcon";
 
 export default function Index({ pages = {}, filters = {}, printUrl }) {
     const { t } = useTranslation();
@@ -168,10 +168,8 @@ export default function Index({ pages = {}, filters = {}, printUrl }) {
                                             <td dangerouslySetInnerHTML={{ __html: item.content }} />
                                             <td>{item.status}</td>
                                             <td>
-                                                <div className="flex">
-                                                    <DangerButton type="button" onClick={() => destroy(item.id)}>
-                                                        <i className="fas fa-trash"></i>
-                                                    </DangerButton>
+                                                <div className="flex items-center gap-1">
+                                                    <ActionIconButton action="delete" title={t("Delete")} onClick={() => destroy(item.id)} />
                                                 </div>
                                             </td>
                                         </tr>

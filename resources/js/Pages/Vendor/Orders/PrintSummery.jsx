@@ -5,6 +5,7 @@ import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
+import { formatAmount } from "../../../utils/formatAmount";
 
 export default function PrintSummery({ orders = [], filters = {} }) {
     useEffect(() => {
@@ -57,7 +58,7 @@ export default function PrintSummery({ orders = [], filters = {} }) {
                                         <td>{item.created_at_formatted}</td>
                                         <td>{item.delevery}</td>
                                         <td>{item.user_name} / {item.number}</td>
-                                        <td>{item.comission}</td>
+                                        <td>{formatAmount(item.comission)}</td>
                                     </tr>
                                 ))}
                             </tbody>

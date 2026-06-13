@@ -5,6 +5,7 @@ export default function NavLink({
     active = false,
     children,
     className = "",
+    unstyled = false,
     ...props
 }) {
     const classes = active
@@ -19,7 +20,11 @@ export default function NavLink({
        transition duration-150 ease-in-out`;
 
     return (
-        <Link href={href} className={`${classes} ${className}`} {...props}>
+        <Link
+            href={href}
+            className={unstyled ? className : `${classes} ${className}`}
+            {...props}
+        >
             {children}
         </Link>
     );

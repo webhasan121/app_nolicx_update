@@ -1,7 +1,6 @@
 import { Head, router } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
-import DangerButton from "../../../../components/DangerButton";
 import NavLink from "../../../../components/NavLink";
 import NavLinkBtn from "../../../../components/NavLinkBtn";
 import PageHeader from "../../../../components/dashboard/PageHeader";
@@ -9,6 +8,7 @@ import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import OverviewDiv from "../../../../components/dashboard/overview/Div";
+import { formatTk } from "../../../../utils/formatAmount";
 import OverviewSection from "../../../../components/dashboard/overview/Section";
 import OrderStatus from "../../../../components/dashboard/OrderStatus";
 import Section from "../../../../components/dashboard/section/Section";
@@ -16,25 +16,37 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { ActionIconButton, ActionIconLink } from "../../../../components/ActionIcon";
 
 export default function Index({ filters, stats, orders }) {
     const { t } = useTranslation();
     const [searchValue, setSearchValue] = useState(filters?.search ?? "");
+    const today = todayInputDate();
 
     const apply = (next = {}) => {
+        const nextSd = next.sd ?? filters?.sd ?? "";
+        const nextEd = next.ed ?? filters?.ed ?? "";
+        const nextDate = next.date ?? (nextSd || nextEd ? filters?.date ?? "between" : "all");
+
         router.get(
             route("system.orders.index"),
             {
-                date: next.date ?? filters?.date ?? "today",
+                date: nextDate,
                 search: next.search ?? filters?.search ?? "",
-                sd: next.sd ?? filters?.sd ?? "",
-                ed: next.ed ?? filters?.ed ?? "",
+                sd: nextSd,
+                ed: nextEd,
                 qf: next.qf ?? filters?.qf ?? "id",
                 type: next.type ?? filters?.type ?? "",
                 status: next.status ?? filters?.status ?? "",
                 page: next.page ?? undefined,
             },
-            { preserveScroll: true, preserveState: true }
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+                only: ["filters", "stats", "orders"],
+            }
         );
     };
 
@@ -53,18 +65,34 @@ export default function Index({ filters, stats, orders }) {
     }, [searchValue]);
 
     const print = () => {
+        const hasDate = Boolean(filters?.sd || filters?.ed);
+
         window.open(
             route("system.orders.sprint", {
-                date: filters?.date ?? "today",
+                date: hasDate ? filters?.date ?? "between" : "all",
                 sd: filters?.sd ?? "",
                 ed: filters?.ed ?? "",
-                search: filters?.search ?? "",
+                search: searchValue ?? "",
                 type: filters?.type ?? "",
                 qf: filters?.qf ?? "id",
                 status: filters?.status ?? "",
             }),
             "_blank"
         );
+    };
+
+    const applyDate = (field, value) => {
+        const next = {
+            sd: filters?.sd ?? "",
+            ed: filters?.ed ?? "",
+            [field]: value,
+        };
+        const hasDateRange = Boolean(next.sd || next.ed);
+
+        apply({
+            ...next,
+            date: hasDateRange ? "between" : "all",
+        });
     };
 
     const destroy = (id) => {
@@ -108,6 +136,15 @@ export default function Index({ filters, stats, orders }) {
         orders?.total > 0
             ? `Showing ${orders?.from ?? 0}-${orders?.to ?? 0} of ${orders?.total ?? 0} orders`
             : "No orders found";
+    const hasActiveFilters = Boolean(
+        searchValue.trim() ||
+            (filters?.date ?? "all") !== "all" ||
+            filters?.sd ||
+            filters?.ed ||
+            (filters?.qf ?? "id") !== "id" ||
+            filters?.type ||
+            filters?.status
+    );
 
     return (
         <AppLayout
@@ -123,28 +160,38 @@ export default function Index({ filters, stats, orders }) {
             <Container>
                 <OverviewSection>
                     <OverviewDiv title={t("Orders")} content={stats?.orders ?? 0} />
-                    <OverviewDiv title={t("Amount")} content={`${stats?.amount ?? 0} TK`} />
+                    <OverviewDiv title={t("Amount")} content={formatTk(stats?.amount)} />
                 </OverviewSection>
 
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1">
                                 <div className="flex items-center gap-2">
-                                    <select className="rounded-md border border-gray-300 shadow-sm" value={filters?.qf ?? "id"} onChange={(e) => apply({ qf: e.target.value })}>
+                                    <select className="h-10 w-24 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value={filters?.qf ?? "id"} onChange={(e) => apply({ qf: e.target.value })}>
                                         <option value="id">{t("Order")}</option>
                                         <option value="user_id">{t("Buyer")}</option>
                                         <option value="belongs_to">{t("Seller")}</option>
                                     </select>
-                                    <TextInput type="search" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} placeholder={t("Search")} />
+                                    <TextInput className="h-10 w-44 rounded-md border-slate-300 py-2 text-sm shadow-sm" type="search" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} placeholder={t("Search")} />
                                 </div>
 
-                                <select className="rounded-md border border-gray-300 shadow-sm" value={filters?.type ?? ""} onChange={(e) => apply({ type: e.target.value })}>
+                                <select className="h-10 w-32 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value={filters?.type ?? ""} onChange={(e) => apply({ type: e.target.value })}>
                                     <option value="">{t("Both (")}{stats?.orders ?? 0})</option>
                                     <option value="user">{t("U > R (")}{stats?.user_to_reseller ?? 0})</option>
                                     <option value="reseller">{t("R > V (")}{stats?.reseller_to_vendor ?? 0})</option>
                                 </select>
-                                <select className="rounded-md border border-gray-300 shadow-sm" value={filters?.status ?? ""} onChange={(e) => apply({ status: e.target.value })}>
+                                <select
+                                    className="h-10 w-36 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    value={filters?.status ?? ""}
+                                    onChange={(e) => {
+                                        const status = e.target.value;
+
+                                        apply({
+                                            status,
+                                        });
+                                    }}
+                                >
                                     <option value="">{t("Any")}</option>
                                     <option value="Pending">{t("Pending")}</option>
                                     <option value="Accept">{t("Accept")}</option>
@@ -158,37 +205,47 @@ export default function Index({ filters, stats, orders }) {
                                     <option value="None">{t("None")}</option>
                                 </select>
 
-                                <select value={filters?.date ?? ""} className="rounded-md border border-gray-300 bg-white shadow-sm" onChange={(e) => apply({ date: e.target.value })}>
-                                    <option value="">{t("Null")}</option>
-                                    <option value="today">{t("Today")}</option>
-                                    <option value="yesterday">{t("Yesterday")}</option>
-                                    <option value="between">{t("Custom")}</option>
-                                </select>
-                                <PrimaryButton type="button" onClick={print}>
+                                <TextInput
+                                    type="date"
+                                    className="h-10 w-36 rounded-md border-slate-300 py-2 text-sm font-medium shadow-sm"
+                                    value={filters?.sd || today}
+                                    onChange={(e) => applyDate("sd", e.target.value)}
+                                    id="sd"
+                                />
+                                <TextInput
+                                    type="date"
+                                    className="h-10 w-36 rounded-md border-slate-300 py-2 text-sm font-medium shadow-sm"
+                                    value={filters?.ed ?? ""}
+                                    onChange={(e) => applyDate("ed", e.target.value)}
+                                    id="ed"
+                                />
+                                <PrimaryButton type="button" className="inline-flex h-10 w-12 items-center justify-center px-0" onClick={print}>
                                     <i className="fas fa-print"></i>
                                 </PrimaryButton>
+                                {hasActiveFilters ? (
+                                    <button
+                                        type="button"
+                                        className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                        onClick={() => {
+                                            setSearchValue("");
+                                            apply({
+                                                date: "all",
+                                                search: "",
+                                                sd: "",
+                                                ed: "",
+                                                qf: "id",
+                                                type: "",
+                                                status: "",
+                                                page: undefined,
+                                            });
+                                        }}
+                                    >
+                                        {t("Reset")}
+                                    </button>
+                                ) : null}
                             </div>
                         }
-                        content={
-                            filters?.date === "between" ? (
-                                <div className="flex items-center gap-2 pt-2">
-                                    <TextInput
-                                        type="date"
-                                        className="py-1"
-                                        value={filters?.sd ?? ""}
-                                        onChange={(e) => apply({ sd: e.target.value })}
-                                        id="sd"
-                                    />
-                                    <TextInput
-                                        type="date"
-                                        className="py-1"
-                                        value={filters?.ed ?? ""}
-                                        onChange={(e) => apply({ ed: e.target.value })}
-                                        id="ed"
-                                    />
-                                </div>
-                            ) : null
-                        }
+                        content={null}
                     />
 
                     <SectionInner>
@@ -248,10 +305,8 @@ export default function Index({ filters, stats, orders }) {
                                         <td>{item.created_at_formatted}</td>
                                         <td>
                                             <div className="flex">
-                                                <NavLink href={route("system.orders.details", { id: item.id })}>{t("Details")}</NavLink>
-                                                <DangerButton type="button" onClick={() => destroy(item.id)}>
-                                                    <i className="fas fa-trash"></i>
-                                                </DangerButton>
+                                                <ActionIconLink href={route("system.orders.details", { id: item.id })} action="details" title={t("Details")} />
+                                                <ActionIconButton action="delete" title={t("Delete")} onClick={() => destroy(item.id)} />
                                             </div>
                                         </td>
                                     </tr>
@@ -269,16 +324,16 @@ export default function Index({ filters, stats, orders }) {
                         </Table>
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex items-center justify-between w-full gap-3">
                                     <div className="text-sm text-slate-700">
                                         {resultSummary}
                                     </div>
                                     <div className="flex items-center md:justify-end">
-                                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                        <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                             <button
                                                 type="button"
                                                 disabled={!pagination.prev?.url}
-                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
                                             >{t("Previous")}</button>
                                             {pagination.pages.map((link, index) => (
@@ -299,7 +354,7 @@ export default function Index({ filters, stats, orders }) {
                                             <button
                                                 type="button"
                                                 disabled={!pagination.next?.url}
-                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
                                             >{t("Next")}</button>
                                         </div>

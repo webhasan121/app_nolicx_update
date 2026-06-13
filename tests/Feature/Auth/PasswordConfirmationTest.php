@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Inertia\Testing\AssertableInertia as Assert;
 
 test('confirm password screen can be rendered', function () {
     $user = User::factory()->create();
@@ -11,8 +11,8 @@ test('confirm password screen can be rendered', function () {
     $response = $this->actingAs($user)->get('/confirm-password');
 
     $response
-        ->assertSeeVolt('pages.auth.confirm-password')
-        ->assertStatus(200);
+        ->assertStatus(200)
+        ->assertInertia(fn (Assert $page) => $page->component('Auth/ConfirmPassword'));
 });
 
 test('password can be confirmed', function () {
@@ -20,14 +20,12 @@ test('password can be confirmed', function () {
 
     $this->actingAs($user);
 
-    $component = Volt::test('pages.auth.confirm-password')
-        ->set('password', 'password');
+    $response = $this->post('/confirm-password', [
+        'password' => 'password',
+    ]);
 
-    $component->call('confirmPassword');
-
-    $component
-        ->assertRedirect('/dashboard')
-        ->assertHasNoErrors();
+    $response->assertRedirect('/dashboard');
+    $this->assertNotNull(session('auth.password_confirmed_at'));
 });
 
 test('password is not confirmed with invalid password', function () {
@@ -35,12 +33,10 @@ test('password is not confirmed with invalid password', function () {
 
     $this->actingAs($user);
 
-    $component = Volt::test('pages.auth.confirm-password')
-        ->set('password', 'wrong-password');
+    $response = $this->from('/confirm-password')->post('/confirm-password', [
+        'password' => 'wrong-password',
+    ]);
 
-    $component->call('confirmPassword');
-
-    $component
-        ->assertNoRedirect()
-        ->assertHasErrors('password');
+    $response->assertRedirect('/confirm-password');
+    $response->assertSessionHasErrors('password');
 });

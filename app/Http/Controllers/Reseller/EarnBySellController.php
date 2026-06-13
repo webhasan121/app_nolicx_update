@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Reseller;
 
 use App\Http\Controllers\Controller;
 use App\Models\CartOrder;
+use App\Support\TableDateFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -18,6 +19,9 @@ class EarnBySellController extends Controller
         $lastDate = $request->query('lastDate', '');
         $search = trim((string) $request->query('search', ''));
         $account = auth()->user()->account_type();
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, [
+            'nav' => 'sold',
+        ]);
 
         $baseQuery = CartOrder::query()
             ->where('belongs_to_type', $account);
@@ -36,6 +40,8 @@ class EarnBySellController extends Controller
             $baseQuery->whereDate('created_at', Carbon::parse($fd)->toDateString());
         } elseif (!empty($lastDate)) {
             $baseQuery->whereDate('created_at', Carbon::parse($lastDate)->toDateString());
+        } elseif ($defaultToday) {
+            $baseQuery->whereDate('created_at', Carbon::today());
         }
 
         if ($search !== '') {
@@ -79,6 +85,8 @@ class EarnBySellController extends Controller
             $productsQuery->whereDate('created_at', Carbon::parse($fd)->toDateString());
         } elseif (!empty($lastDate)) {
             $productsQuery->whereDate('created_at', Carbon::parse($lastDate)->toDateString());
+        } elseif ($defaultToday) {
+            $productsQuery->whereDate('created_at', Carbon::today());
         }
 
         if ($search !== '') {
@@ -175,6 +183,9 @@ class EarnBySellController extends Controller
         $lastDate = $request->query('lastDate', '');
         $search = trim((string) $request->query('search', ''));
         $account = auth()->user()->account_type();
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, [
+            'nav' => 'sold',
+        ]);
 
         $productsQuery = CartOrder::query()
             ->where('belongs_to_type', $account)
@@ -198,6 +209,8 @@ class EarnBySellController extends Controller
             $productsQuery->whereDate('created_at', Carbon::parse($fd)->toDateString());
         } elseif (!empty($lastDate)) {
             $productsQuery->whereDate('created_at', Carbon::parse($lastDate)->toDateString());
+        } elseif ($defaultToday) {
+            $productsQuery->whereDate('created_at', Carbon::today());
         }
 
         if ($search !== '') {

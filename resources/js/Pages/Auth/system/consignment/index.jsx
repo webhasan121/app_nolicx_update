@@ -1,7 +1,6 @@
 import { Head, router } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
-import DangerButton from "../../../../components/DangerButton";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
@@ -12,12 +11,16 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { ActionIconButton } from "../../../../components/ActionIcon";
+import { formatAmount } from "../../../../utils/formatAmount";
 
 export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
     const { t } = useTranslation();
     const [search, setSearch] = useState(filters.find ?? "");
     const [sdate, setSdate] = useState(filters.sdate ?? "");
     const [edate, setEdate] = useState(filters.edate ?? "");
+    const today = todayInputDate();
 
     const requestConsignment = ({
         nextType = filters.type ?? "Pending",
@@ -39,6 +42,7 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                only: ["filters", "cod", "printUrl"],
             }
         );
     };
@@ -99,6 +103,7 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
         cod?.total > 0
             ? `Showing ${cod?.from ?? 0}-${cod?.to ?? 0} of ${cod?.total ?? 0} consignments`
             : "No consignments found";
+    const hasActiveFilters = Boolean(search.trim() || sdate || edate || (filters.type ?? "Pending") !== "Pending");
 
     return (
         <AppLayout
@@ -150,7 +155,7 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                     <TextInput
                                         type="date"
-                                        value={sdate}
+                                    value={sdate || today}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             setSdate(value);
@@ -164,7 +169,7 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                     />
                                     <TextInput
                                         type="date"
-                                        value={edate}
+                                    value={edate}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             setEdate(value);
@@ -190,6 +195,26 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                             requestConsignment();
                                         }}
                                     />
+                                    {hasActiveFilters ? (
+                                        <button
+                                            type="button"
+                                            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            onClick={() => {
+                                                setSearch("");
+                                                setSdate("");
+                                                setEdate("");
+                                                requestConsignment({
+                                                    nextType: "Pending",
+                                                    nextFind: "",
+                                                    nextSdate: "",
+                                                    nextEdate: "",
+                                                    page: undefined,
+                                                });
+                                            }}
+                                        >
+                                            {t("Reset")}
+                                        </button>
+                                    ) : null}
                                     <PrimaryButton
                                         type="button"
                                         onClick={() => window.open(printUrl, "_blank")}
@@ -227,18 +252,16 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                         <td>{item.id}</td>
                                         <td>{item.order_id}</td>
                                         <td>{item.rider_name}</td>
-                                        <td>{item.amount}</td>
-                                        <td>{item.rider_amount}</td>
-                                        <td>{item.total_amount}</td>
-                                        <td>{item.system_comission}</td>
-                                        <td>{item.comission}</td>
+                                        <td>{formatAmount(item.amount)}</td>
+                                        <td>{formatAmount(item.rider_amount)}</td>
+                                        <td>{formatAmount(item.total_amount)}</td>
+                                        <td>{formatAmount(item.system_comission)}</td>
+                                        <td>{formatAmount(item.comission)}</td>
                                         <td>{item.status}</td>
                                         <td>{item.created_at_formatted}</td>
                                         <td>
-                                            <div className="flex gap-2 items-center">
-                                                <DangerButton type="button">
-                                                    <i className="fas fa-trash"></i>
-                                                </DangerButton>
+                                            <div className="flex items-center gap-1">
+                                                <ActionIconButton action="delete" title={t("Delete")} />
                                             </div>
                                         </td>
                                     </tr>

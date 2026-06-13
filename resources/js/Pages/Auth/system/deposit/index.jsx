@@ -1,7 +1,6 @@
 import { Head, router } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
-import DangerButton from "../../../../components/DangerButton";
 import NavLinkBtn from "../../../../components/NavLinkBtn";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../../components/PrimaryButton";
@@ -11,6 +10,8 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { ActionIconButton } from "../../../../components/ActionIcon";
 
 function buildParams(status, find, sdate, edate, page) {
     const params = { status, find, sdate, edate };
@@ -31,6 +32,7 @@ export default function Index({
 }) {
     const { t } = useTranslation();
     const [search, setSearch] = useState(find ?? "");
+    const today = todayInputDate();
 
     const visit = (nextStatus, nextFind, nextSdate, nextEdate, page = null) => {
         router.get(
@@ -39,6 +41,8 @@ export default function Index({
             {
                 preserveScroll: true,
                 preserveState: true,
+                replace: true,
+                only: ["status", "find", "sdate", "edate", "history"],
             },
         );
     };
@@ -116,6 +120,7 @@ export default function Index({
         history?.total > 0
             ? `Showing ${history?.from ?? 0}-${history?.to ?? 0} of ${history?.total ?? 0} deposits`
             : "No deposits found";
+    const hasActiveFilters = Boolean(search.trim() || sdate || edate || status !== "*");
 
     return (
         <AppLayout title={t("Deposit")} header={<PageHeader>{t("Deposit")}</PageHeader>}>
@@ -142,7 +147,7 @@ export default function Index({
                                     <TextInput
                                         type="date"
                                         id="sdate"
-                                        value={sdate}
+                                        value={sdate || today}
                                         onChange={(e) =>
                                             visit(status, search.trim(), e.target.value, edate)
                                         }
@@ -172,6 +177,18 @@ export default function Index({
                                         className="py-1"
                                         placeholder={t("Search deposits...")}
                                     />
+                                    {hasActiveFilters ? (
+                                        <button
+                                            type="button"
+                                            className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            onClick={() => {
+                                                setSearch("");
+                                                visit("*", "", "", "");
+                                            }}
+                                        >
+                                            {t("Reset")}
+                                        </button>
+                                    ) : null}
                                 </div>
 
                                 <div className="flex items-center justify-end py-1">
@@ -234,28 +251,24 @@ export default function Index({
                                         <td>
                                             <div className="flex items-center gap-2 px-2 py-1">
                                                 {item.confirmed ? (
-                                                    <button
-                                                        type="button"
-                                                        className="inline-flex items-center justify-center w-8 h-8 text-xs font-semibold text-white bg-green-600 border border-transparent rounded-md cursor-default"
+                                                    <ActionIconButton
+                                                        action="confirm"
+                                                        className="cursor-default opacity-70"
                                                         disabled
                                                         title={t("Confirmed")}
-                                                    >
-                                                        <i className="fas fa-check-circle"></i>
-                                                    </button>
+                                                    />
                                                 ) : (
-                                                    <PrimaryButton
-                                                        type="button"
-                                                        className="justify-center w-8 h-8 px-0 py-0"
+                                                    <ActionIconButton
+                                                        action="confirm"
+                                                        title={t("Confirm")}
                                                         onClick={() =>
                                                             confirmDeposit(item.id)
                                                         }
-                                                    >
-                                                        <i className="fas fa-check"></i>
-                                                    </PrimaryButton>
+                                                    />
                                                 )}
-                                                <DangerButton
-                                                    type="button"
-                                                    className={`justify-center w-8 h-8 px-0 py-0 ${
+                                                <ActionIconButton
+                                                    action="reject"
+                                                    className={`${
                                                         item.confirmed
                                                             ? "opacity-50 cursor-not-allowed"
                                                             : ""
@@ -269,9 +282,7 @@ export default function Index({
                                                     onClick={() =>
                                                         denyDeposit(item.id)
                                                     }
-                                                >
-                                                    <i className="fas fa-times"></i>
-                                                </DangerButton>
+                                                />
                                             </div>
                                         </td>
                                     </tr>

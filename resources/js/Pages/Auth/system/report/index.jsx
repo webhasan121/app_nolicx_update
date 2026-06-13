@@ -29,6 +29,12 @@ export default function Index({ filters }) {
 
         window.location.assign(route("system.report.generate", params));
     };
+    const hasActiveFilters = Boolean(
+        form.data.nav !== "Deposit" ||
+            form.data.sdate ||
+            form.data.edate ||
+            form.data.sid
+    );
 
     return (
         <AppLayout
@@ -95,6 +101,22 @@ export default function Index({ filters }) {
                             </div>
 
                             <div className="w-ful text-end">
+                                {hasActiveFilters ? (
+                                    <button
+                                        type="button"
+                                        className="mr-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                        onClick={() =>
+                                            form.setData({
+                                                nav: "Deposit",
+                                                sdate: "",
+                                                edate: "",
+                                                sid: "",
+                                            })
+                                        }
+                                    >
+                                        {t("Reset")}
+                                    </button>
+                                ) : null}
                                 <PrimaryButton type="submit">{t("Generate")}</PrimaryButton>
                             </div>
                         </form>

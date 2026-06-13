@@ -1,9 +1,7 @@
 import { router, usePage } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
-import NavLink from "../../../../components/NavLink";
 import Container from "../../../../components/dashboard/Container";
-import Foreach from "../../../../components/dashboard/Foreach";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import Div from "../../../../components/dashboard/overview/Div";
 import SectionSection from "../../../../components/dashboard/section/Section";
@@ -13,6 +11,8 @@ import Table from "../../../../components/dashboard/table/Table";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { ActionIconLink } from "../../../../components/ActionIcon";
 
 export default function Index() {
     const { t } = useTranslation();
@@ -20,6 +20,7 @@ export default function Index() {
     const [search, setSearch] = useState(filters.search ?? "");
     const [sd, setSd] = useState(filters.sd ?? "");
     const [ed, setEd] = useState(filters.ed ?? "");
+    const today = todayInputDate();
 
     const requestUsers = ({
         nextSearch = search,
@@ -35,7 +36,12 @@ export default function Index() {
                 ed: nextEd,
                 page,
             },
-            { preserveState: true, preserveScroll: true, replace: true }
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ["filters", "users", "printUrl"],
+            }
         );
     };
 
@@ -97,6 +103,7 @@ export default function Index() {
         users?.total > 0
             ? `Showing ${users?.from ?? 0}-${users?.to ?? 0} of ${users?.total ?? 0} users`
             : "No users found";
+    const hasActiveFilters = Boolean(search.trim() || sd || ed);
 
     return (
         <AppLayout
@@ -131,8 +138,8 @@ export default function Index() {
                                     <div className="flex flex-wrap items-center justify-end gap-2">
                                         <TextInput
                                             type="date"
-                                            className="py-1"
-                                            value={sd}
+                                            className="h-10 w-40 py-2"
+                                            value={sd || today}
                                             onChange={(e) => {
                                                 const value = e.target.value;
                                                 const nextEd = ed;
@@ -147,7 +154,7 @@ export default function Index() {
                                         />
                                         <TextInput
                                             type="date"
-                                            className="py-1"
+                                            className="h-10 w-40 py-2"
                                             value={ed}
                                             onChange={(e) => {
                                                 const value = e.target.value;
@@ -164,7 +171,7 @@ export default function Index() {
                                         <TextInput
                                             type="search"
                                             placeholder={t("Search users...")}
-                                            className="py-1"
+                                            className="h-10 w-52 py-2"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                             onKeyDown={(e) => {
@@ -176,6 +183,25 @@ export default function Index() {
                                                 applyFilters();
                                             }}
                                         />
+                                        {hasActiveFilters ? (
+                                            <button
+                                                type="button"
+                                                className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                                onClick={() => {
+                                                    setSearch("");
+                                                    setSd("");
+                                                    setEd("");
+                                                    requestUsers({
+                                                        nextSearch: "",
+                                                        nextSd: "",
+                                                        nextEd: "",
+                                                        page: undefined,
+                                                    });
+                                                }}
+                                            >
+                                                {t("Reset")}
+                                            </button>
+                                        ) : null}
                                         <PrimaryButton
                                             type="button"
                                             onClick={() => window.open(printUrl, "_blank")}
@@ -188,9 +214,8 @@ export default function Index() {
                         />
 
                         <SectionInner>
-                            <Foreach data={users?.data ?? []}>
-                                <div>
-                                    <Table data={users?.data ?? []}>
+                            <div>
+                                <Table data={users?.data ?? []}>
                                         <thead>
                                             <tr>
                                                 <th>#</th>
@@ -249,26 +274,30 @@ export default function Index() {
                                                     <td>{user.coin}</td>
                                                     <td>{user.created_at_formatted}</td>
                                                     <td>
-                                                        <div className="flex">
-                                                            <NavLink
+                                                        <div className="flex items-center gap-1">
+                                                            <ActionIconLink
                                                                 href={route(
                                                                     "system.users.edit",
                                                                     {
                                                                         id: user.id,
                                                                     }
                                                                 )}
-                                                            >
-                                                                <i className="fa-solid fa-pen mr-2"></i>{t("Edit")}</NavLink>
-                                                            <NavLink href="#">
-                                                                <i className="fa-solid fa-eye mr-2"></i>{t("view")}</NavLink>
+                                                                action="edit"
+                                                                title={t("Edit")}
+                                                            />
+                                                            <ActionIconLink
+                                                                href={`/dashboard/system/users/${user.id}/details`}
+                                                                action="view"
+                                                                title={t("view")}
+                                                            />
                                                         </div>
                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
-                                    </Table>
+                                </Table>
 
-                                    {pagination.pages.length ? (
+                                {pagination.pages.length ? (
                                         <div className="w-full pt-4">
                                             <div className="flex w-full items-center justify-between gap-3">
                                                 <div className="text-sm text-slate-700">
@@ -307,9 +336,8 @@ export default function Index() {
                                                 </div>
                                             </div>
                                         </div>
-                                    ) : null}
-                                </div>
-                            </Foreach>
+                                ) : null}
+                            </div>
                         </SectionInner>
                     </SectionSection>
                 </Container>

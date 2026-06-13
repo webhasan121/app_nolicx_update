@@ -5,7 +5,6 @@ import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
-import Foreach from "../../../../components/dashboard/Foreach";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import Div from "../../../../components/dashboard/overview/Div";
 import OverviewSection from "../../../../components/dashboard/overview/Section";
@@ -14,6 +13,8 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { ActionIconLink } from "../../../../components/ActionIcon";
 
 const FILTERS = ["*", "Active", "Pending", "Disabled", "Suspended"];
 
@@ -23,6 +24,7 @@ export default function Index() {
     const [search, setSearch] = useState(filters.find ?? "");
     const [sd, setSd] = useState(filters.sd ?? "");
     const [ed, setEd] = useState(filters.ed ?? "");
+    const today = todayInputDate();
 
     const requestVendors = ({
         nextSearch = search,
@@ -44,6 +46,7 @@ export default function Index() {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                only: ["filters", "vendors", "printUrl"],
             }
         );
     };
@@ -104,6 +107,7 @@ export default function Index() {
         vendors?.total > 0
             ? `Showing ${vendors?.from ?? 0}-${vendors?.to ?? 0} of ${vendors?.total ?? 0} vendors`
             : "No vendors found";
+    const hasActiveFilters = Boolean(search.trim() || sd || ed || (filters.filter ?? "Active") !== "Active");
 
     return (
         <AppLayout title={t("Vendors")} header={<PageHeader>{t("Vendors")}</PageHeader>}>
@@ -148,7 +152,7 @@ export default function Index() {
                                 <TextInput
                                     type="date"
                                     className="my-1 py-1"
-                                    value={sd}
+                                    value={sd || today}
                                     onChange={(e) => {
                                         const value = e.target.value;
 
@@ -192,6 +196,26 @@ export default function Index() {
                                         requestVendors();
                                     }}
                                 />
+                                {hasActiveFilters ? (
+                                    <button
+                                        type="button"
+                                        className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                        onClick={() => {
+                                            setSearch("");
+                                            setSd("");
+                                            setEd("");
+                                            requestVendors({
+                                                nextSearch: "",
+                                                nextFilter: "Active",
+                                                nextSd: "",
+                                                nextEd: "",
+                                                page: undefined,
+                                            });
+                                        }}
+                                    >
+                                        {t("Reset")}
+                                    </button>
+                                ) : null}
                                 <PrimaryButton
                                     type="button"
                                     onClick={() => window.open(printUrl, "_blank")}
@@ -202,9 +226,8 @@ export default function Index() {
                         </div>
 
                         <SectionInner>
-                            <Foreach data={vendors?.data ?? []}>
-                                <div>
-                                    <Table data={vendors?.data ?? []}>
+                            <div>
+                                <Table data={vendors?.data ?? []}>
                                         <thead>
                                             <tr>
                                                 <th>{t("SL")}</th>
@@ -254,30 +277,34 @@ export default function Index() {
                                                     <span className="badge badge-info">
                                                         {vendor.products_count}
                                                     </span>
-                                                    <NavLink
+                                                    <ActionIconLink
                                                         href={route("system.products.index", {
                                                             find: vendor.id,
                                                             from: "vendor",
                                                         })}
-                                                    >{t("View")}</NavLink>
+                                                        action="view"
+                                                        title={t("View")}
+                                                    />
                                                 </td>
                                                 <td>{vendor.created_at_formatted}</td>
                                                 <td>
-                                                    <NavLink
+                                                    <ActionIconLink
                                                         href={route(
                                                             "system.vendor.settings",
                                                             {
                                                                 id: vendor.id,
                                                             }
                                                         )}
-                                                    >{t("Edit")}</NavLink>
+                                                        action="edit"
+                                                        title={t("Edit")}
+                                                    />
                                                 </td>
                                             </tr>
                                         ))}
                                         </tbody>
-                                    </Table>
+                                </Table>
 
-                                    {pagination.pages.length ? (
+                                {pagination.pages.length ? (
                                         <div className="w-full pt-4">
                                             <div className="flex w-full items-center justify-between gap-3">
                                                 <div className="text-sm text-slate-700">
@@ -316,9 +343,8 @@ export default function Index() {
                                                 </div>
                                             </div>
                                         </div>
-                                    ) : null}
-                                </div>
-                            </Foreach>
+                                ) : null}
+                            </div>
                         </SectionInner>
                     </SectionSection>
                 </Container>

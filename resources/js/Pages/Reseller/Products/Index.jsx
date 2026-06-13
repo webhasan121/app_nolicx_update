@@ -12,6 +12,7 @@ import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
 import useTranslation from "../../../hooks/useTranslation";
+import { ActionIconLink } from "../../../components/ActionIcon";
 
 export default function Index({ products, filters, printUrl }) {
     const { t } = useTranslation();
@@ -36,6 +37,7 @@ export default function Index({ products, filters, printUrl }) {
                 preserveScroll: true,
                 preserveState: true,
                 replace: true,
+                only: ["filters", "products", "printUrl"],
                 ...options,
             }
         );
@@ -264,11 +266,13 @@ export default function Index({ products, filters, printUrl }) {
                                         <td>{product.offer_type ? product.discount : product.price}</td>
                                         <td>{product.created_at_human}</td>
                                         <td>
-                                            <NavLink
+                                            <ActionIconLink
                                                 href={route("reseller.products.edit", {
                                                     id: product.encrypted_id,
                                                 })}
-                                            >{t("edit")}</NavLink>
+                                                action="edit"
+                                                title={t("edit")}
+                                            />
                                         </td>
                                     </tr>
                                 ))}

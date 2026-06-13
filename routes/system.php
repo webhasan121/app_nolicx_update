@@ -113,6 +113,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
         // permit to make users task
         Route::get('/', [SystemUsersController::class, 'indexReact'])->name('users.view')->middleware(AbleTo::class . ":users_view");
 
+        Route::get('/{id}/details', [SystemUsersController::class, 'detailsReact'])->name('users.details')->middleware(AbleTo::class . ":users_view");
         Route::get('/edit/{id}', [SystemUsersController::class, 'editReact'])->name('users.edit')->middleware(AbleTo::class . ":users_edit");
         Route::post('/update/{id}', [SystemUsersController::class, 'admin_update'])->name("users.update")->middleware(AbleTo::class . ":users_update");
         Route::post('/{user}/roles', [SystemUsersController::class, 'update_roles'])->name('users.roles.update')->middleware(AbleTo::class . ":sync_role_to_user");
@@ -162,6 +163,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::post('/package/store', [VipController::class, 'store'])->name('vip.store')->middleware(AbleTo::class . ":vip_add");
     Route::get('/package/{packages}', [VipController::class, 'editReact'])->name('package.edit')->middleware(AbleTo::class . ":vip_update");
     Route::post('/package/{packages}/update', [VipController::class, 'update'])->name('package.update')->middleware(AbleTo::class . ":vip_update");
+    Route::post('/packages/{packages}/status', [VipController::class, 'updatePackageStatus'])->name('vip.package.status')->middleware(AbleTo::class . ":vip_update");
     Route::post('/packages/{id}/trash', [VipController::class, 'trash'])->name('vip.trash')->middleware(AbleTo::class . ":vip_update");
     Route::post('/packages/{id}/restore', [VipController::class, 'restore'])->name('vip.restore')->middleware(AbleTo::class . ":vip_update");
 
@@ -379,6 +381,7 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::post('/settings/dbid', [SettingsController::class, 'updateDBIDNo'])->name('settings.dbid.update');
     Route::post('/settings/trade-license', [SettingsController::class, 'updateTradeLicense'])->name('settings.trade-license.update');
     Route::post('/settings/playstore', [SettingsController::class, 'updatePlaystoreLink'])->name('settings.playstore.update');
+    Route::post('/settings/deposit-pay-numbers', [SettingsController::class, 'updateDepositPayNumbers'])->name('settings.deposit-pay-numbers.update');
     Route::post('/settings/developer-percentage', [SettingsController::class, 'updateDeveloperPercentage'])->name('settings.developer-percentage.update');
     Route::post('/settings/management-percentage', [SettingsController::class, 'updateManagementPercentage'])->name('settings.management-percentage.update');
     Route::post('/settings/management-team-percentage', [SettingsController::class, 'updateManagementTeamPercentage'])->name('settings.management-team-percentage.update');

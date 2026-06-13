@@ -3,32 +3,24 @@ import { useMemo, useRef, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Modal from "../../../../components/Modal";
 import Hr from "../../../../components/Hr";
+import CategorySelect from "../../../../components/CategorySelect";
+import InputField from "../../../../components/InputField";
+import InputFile from "../../../../components/InputFile";
 import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import Container from "../../../../components/dashboard/Container";
-import ReselProductCart from "../../../../components/dashboard/reseller/ReselProductCart";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
-
-function renderCategoryOptions(categories = [], depth = 0) {
-    return categories.flatMap((category) => [
-        <option key={category.id} value={category.id}>
-            {"-".repeat(depth ? depth * 2 : 0)}
-            {depth ? " " : ""}
-            {category.name}
-        </option>,
-        ...(category.children?.length
-            ? renderCategoryOptions(category.children, depth + 1)
-            : []),
-    ]);
-}
 
 function youtubeEmbedUrl(url) {
     if (!url) return null;
 
     try {
-        const parsed = new URL(url);
+        const normalizedUrl = String(url).match(/^https?:\/\//i)
+            ? String(url)
+            : `https://${String(url).replace(/^\/+/, "")}`;
+        const parsed = new URL(normalizedUrl);
 
         if (parsed.hostname.includes("youtu.be")) {
             const id = parsed.pathname.replace("/", "");
@@ -36,7 +28,12 @@ function youtubeEmbedUrl(url) {
         }
 
         if (parsed.hostname.includes("youtube.com")) {
-            const id = parsed.searchParams.get("v") || parsed.pathname.split("/").pop();
+            const parts = parsed.pathname.split("/").filter(Boolean);
+            const id =
+                parsed.searchParams.get("v") ||
+                (["embed", "shorts", "live"].includes(parts[0])
+                    ? parts[1]
+                    : parts.at(-1));
             return id ? `https://www.youtube.com/embed/${id}` : null;
         }
     } catch {
@@ -58,17 +55,32 @@ export default function View({
         product?.thumbnail_url ?? ""
     );
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showOrderModal, setShowOrderModal] = useState(false);
     const [showVideoModal, setShowVideoModal] = useState(false);
     const [isZooming, setIsZooming] = useState(false);
     const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
     const [bgPosition, setBgPosition] = useState("0px 0px");
     const imageRef = useRef(null);
+    const thumbnailScrollerRef = useRef(null);
 
     const form = useForm({
         resel_price: reselDefaults?.resel_price ?? "",
         resel_discount_price: reselDefaults?.resel_discount_price ?? "",
         is_resel_with_discount_price: false,
         reseller_category_id: "",
+    });
+    const orderForm = useForm({
+        name: "",
+        phone: "",
+        district: "",
+        upozila: "",
+        location: "",
+        house_no: "",
+        road_no: "",
+        area_condition: "",
+        delevery: "",
+        quantity: "",
+        attr: "",
     });
 
     const discountPercent = useMemo(() => {
@@ -82,11 +94,29 @@ export default function View({
         if (!value) return [];
         return value.split(",").map((item) => item.trim()).filter(Boolean);
     }, [product]);
+    const quantityOptions = useMemo(() => {
+        if (!product?.unit || Number(product.unit) < 1) {
+            return [];
+        }
+
+        return Array.from({ length: Number(product.unit) }, (_, index) => index + 1);
+    }, [product]);
+    const totalOrderPrice =
+        (Number(orderForm.data.quantity || 0) || 0) *
+        Number(product?.total_price || 0);
 
     const videoEmbedUrl = youtubeEmbedUrl(product?.video_url);
 
     const gallery = useMemo(() => {
         const items = [];
+
+        if (videoEmbedUrl) {
+            items.push({
+                type: "video",
+                key: `video-${product.video_url}`,
+                value: product.video_url,
+            });
+        }
 
         if (product?.thumbnail_url) {
             items.push({
@@ -105,14 +135,6 @@ export default function View({
                 });
             }
         });
-
-        if (videoEmbedUrl) {
-            items.push({
-                type: "video",
-                key: `video-${product.video_url}`,
-                value: product.video_url,
-            });
-        }
 
         return items.filter(
             (item, index, array) =>
@@ -144,10 +166,33 @@ export default function View({
         setBgPosition(`-${x * zoom}px -${y * zoom}px`);
     };
 
+    const scrollThumbnails = (direction) => {
+        thumbnailScrollerRef.current?.scrollBy({
+            left: direction * 240,
+            behavior: "smooth",
+        });
+    };
+
     const confirmClone = () => {
         form.post(
             route("reseller.resel-product.clone", { product: product.id }),
             { onSuccess: () => setShowConfirm(false) }
+        );
+    };
+
+    const closeOrderModal = () => {
+        setShowOrderModal(false);
+        orderForm.reset();
+    };
+
+    const submitOrder = (event) => {
+        event.preventDefault();
+
+        orderForm.post(
+            route("reseller.resel-product.order", { product: product.id }),
+            {
+                onSuccess: closeOrderModal,
+            },
         );
     };
 
@@ -170,16 +215,26 @@ export default function View({
             <style>{`
                 .resel-product-zoom {
                     display: flex;
+                    flex-direction: column;
                     gap: 20px;
-                    align-items: flex-start;
+                    align-items: center;
                 }
 
                 .resel-product-image-area {
                     position: relative;
-                    width: 360px;
+                    width: 100%;
+                    max-width: 420px;
                     border: 1px solid #eee;
                     background: #fff;
                     flex-shrink: 0;
+                }
+
+                .resel-product-thumbnail-strip {
+                    scrollbar-width: none;
+                }
+
+                .resel-product-thumbnail-strip::-webkit-scrollbar {
+                    display: none;
                 }
 
                 @media (max-width: 1024px) {
@@ -189,6 +244,127 @@ export default function View({
 
                     .resel-product-image-area {
                         width: 100%;
+                    }
+                }
+
+                .resel-product-summary {
+                    border: 1px solid #e7e9f3;
+                    border-radius: 8px;
+                    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+                    padding: 18px;
+                    box-shadow: 0 12px 28px rgba(31, 41, 55, 0.08);
+                }
+
+                .resel-product-category {
+                    display: inline-flex;
+                    align-items: center;
+                    width: auto;
+                    border-radius: 999px;
+                    background: #4338ca;
+                    color: #fff;
+                    font-size: 11px;
+                    font-weight: 700;
+                    letter-spacing: .08em;
+                    line-height: 1;
+                    padding: 8px 12px;
+                    text-transform: uppercase;
+                }
+
+                .resel-product-title {
+                    margin-top: 12px;
+                    color: #1e1b4b;
+                    font-size: 30px;
+                    font-weight: 700;
+                    line-height: 1.2;
+                    text-transform: capitalize;
+                }
+
+                .resel-product-price {
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    gap: 10px 14px;
+                    margin-top: 18px;
+                    color: #111827;
+                }
+
+                .resel-product-price-current {
+                    font-size: 24px;
+                    font-weight: 800;
+                }
+
+                .resel-product-price-label {
+                    color: #4b5563;
+                    font-size: 17px;
+                    font-weight: 600;
+                }
+
+                .resel-product-mrp {
+                    color: #6b7280;
+                    font-size: 16px;
+                }
+
+                .resel-product-discount {
+                    border-radius: 999px;
+                    background: #fff7ed;
+                    color: #ea580c;
+                    font-size: 11px;
+                    font-weight: 800;
+                    padding: 4px 8px;
+                }
+
+                .resel-product-owner-card {
+                    margin-top: 18px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    background: #fff;
+                    padding: 16px;
+                }
+
+                .resel-product-owner-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 14px 28px;
+                }
+
+                .resel-product-info-label {
+                    color: #6b7280;
+                    font-size: 11px;
+                    font-weight: 800;
+                    letter-spacing: .05em;
+                    text-transform: uppercase;
+                }
+
+                .resel-product-info-value {
+                    margin-top: 4px;
+                    color: #1e1b4b;
+                    font-size: 15px;
+                    font-weight: 600;
+                    overflow-wrap: anywhere;
+                }
+
+                .resel-product-visit-link {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-top: 6px;
+                    color: #ea580c;
+                    font-size: 13px;
+                    font-weight: 700;
+                    text-transform: capitalize;
+                }
+
+                @media (max-width: 640px) {
+                    .resel-product-summary {
+                        padding: 14px;
+                    }
+
+                    .resel-product-title {
+                        font-size: 24px;
+                    }
+
+                    .resel-product-owner-grid {
+                        grid-template-columns: 1fr;
                     }
                 }
             `}</style>
@@ -253,7 +429,7 @@ export default function View({
 
                     <SectionInner>
                         <div className="items-start gap-6 p-2 lg:flex">
-                            <div className="w-full lg:max-w-[460px] xl:max-w-[500px]">
+                            <div className="w-full lg:max-w-[420px]">
                                 <div className="resel-product-zoom">
                                     <div
                                         className="resel-product-image-area shrink-0"
@@ -272,8 +448,7 @@ export default function View({
                                                 style={{
                                                     width: "100%",
                                                     objectFit: "contain",
-                                                    maxWidth: "360px",
-                                                    height: "360px",
+                                                    height: "300px",
                                                 }}
                                                 src={selectedImage}
                                                 alt="image"
@@ -299,52 +474,66 @@ export default function View({
                                     </div>
 
                                     {gallery.length > 1 ? (
-                                        <div className="flex flex-wrap items-center gap-1 md:block">
-                                            {gallery.map((item) => (
+                                        <div className="relative flex items-center justify-center w-full gap-2">
+                                            {gallery.length > 5 ? (
                                                 <button
                                                     type="button"
-                                                    className="p-1 mb-1 rounded"
-                                                    key={item.key}
-                                                    onClick={() => {
-                                                        if (
-                                                            item.type ===
-                                                            "video"
-                                                        ) {
-                                                            setShowVideoModal(
-                                                                true,
-                                                            );
-                                                            return;
-                                                        }
-
-                                                        setSelectedImage(
-                                                            item.value,
-                                                        );
-                                                    }}
+                                                    onClick={() => scrollThumbnails(-1)}
+                                                    className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
                                                 >
-                                                    {item.type === "video" ? (
-                                                        <div
-                                                            className="relative flex items-center justify-center p-1 border rounded bg-slate-900"
-                                                            style={{
-                                                                width: "60px",
-                                                                height: "60px",
-                                                            }}
-                                                        >
-                                                            <div className="absolute inset-0 bg-black/80" />
-                                                            <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
-                                                                <i className="text-xs fas fa-play"></i>
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <img
-                                                            width="60"
-                                                            height="60"
-                                                            className="p-1 border rounded"
-                                                            src={item.value}
-                                                            alt=""
-                                                        />
-                                                    )}
+                                                    <i className="fas fa-angle-left"></i>
                                                 </button>
-                                            ))}
+                                            ) : null}
+
+                                            <div
+                                                ref={thumbnailScrollerRef}
+                                                className="flex max-w-[280px] gap-2 overflow-x-auto resel-product-thumbnail-strip scroll-smooth"
+                                            >
+                                                {gallery.map((item) => (
+                                                    <button
+                                                        type="button"
+                                                        className={`flex h-16 w-16 shrink-0 items-center justify-center rounded border bg-white p-1 ${
+                                                            item.type === "image" && item.value === selectedImage
+                                                                ? "border-orange-500"
+                                                                : "border-gray-200"
+                                                        }`}
+                                                        key={item.key}
+                                                        onClick={() => {
+                                                            if (item.type === "video") {
+                                                                setShowVideoModal(true);
+                                                                return;
+                                                            }
+
+                                                            setSelectedImage(item.value);
+                                                        }}
+                                                    >
+                                                        {item.type === "video" ? (
+                                                            <div className="relative flex items-center justify-center w-full h-full overflow-hidden rounded bg-slate-900">
+                                                                <div className="absolute inset-0 bg-black/80" />
+                                                                <span className="relative z-10 flex items-center justify-center w-8 h-8 text-white rounded-full bg-black/60">
+                                                                    <i className="text-xs fas fa-play"></i>
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <img
+                                                                className="object-cover w-full h-full rounded"
+                                                                src={item.value}
+                                                                alt=""
+                                                            />
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {gallery.length > 5 ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => scrollThumbnails(1)}
+                                                    className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
+                                                >
+                                                    <i className="fas fa-angle-right"></i>
+                                                </button>
+                                            ) : null}
                                         </div>
                                     ) : null}
                                 </div>
@@ -377,7 +566,7 @@ export default function View({
                                         backgroundPosition: bgPosition,
                                     }}
                                 />
-                                <div>
+                                <div className="resel-product-summary">
                                     <div
                                         className="text-gray-400 rounded bold"
                                         style={{ fontSize: "12px" }}
@@ -389,170 +578,173 @@ export default function View({
                                                     cat: product?.category?.id,
                                                 }
                                             )}
-                                            className="w-full p-1 text-white uppercase bg-indigo-700 hover:text-white"
+                                            className="resel-product-category hover:text-white"
                                         >
                                             {product?.category?.name ??
                                                 "Undefined"}
                                         </NavLink>
                                     </div>
-                                    <div className="text-3xl text-indigo-900 capitalize text-bold">
+                                    <div className="resel-product-title">
                                         {product?.title ?? ""}
                                     </div>
-                                </div>
 
-                                <div className="py-2">
-                                    {product?.attr?.name ? (
-                                        <>
-                                            <hr />
-                                            <h4 className="">
-                                                {product.attr.name}
-                                            </h4>
-                                            <div
-                                                className="flex items-center justify-start my-1"
-                                                style={{
-                                                    flexWrap: "wrap",
-                                                    gap: "10px",
-                                                }}
-                                            >
-                                                {attrValues.map((attr) => (
-                                                    <div
-                                                        key={attr}
-                                                        className="mr-2 border rounded"
-                                                        style={{
-                                                            width: "45px",
-                                                            height: "35px",
-                                                            alignContent:
-                                                                "center",
-                                                            textAlign: "center",
-                                                        }}
-                                                    >
-                                                        {attr}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <hr />
-                                        </>
-                                    ) : null}
-                                </div>
-
-                                <div className="flex text-2xl bold">
-                                    {product?.offer_type ? (
-                                        <div className="items-baseline md:flex">
-                                            <div
-                                                style={{
-                                                    fontSize: "22px",
-                                                    marginRight: "12px",
-                                                }}
-                                            >
-                                                Price :{" "}
-                                                <strong className="text_secondary bold">
-                                                    {product.total_price} TK
-                                                </strong>
-                                            </div>
-                                            <div className="flex items-baseline justify-start">
-                                                <del
-                                                    className="px-1"
+                                    <div className="py-2">
+                                        {product?.attr?.name ? (
+                                            <>
+                                                <hr />
+                                                <h4 className="">
+                                                    {product.attr.name}
+                                                </h4>
+                                                <div
+                                                    className="flex items-center justify-start my-1"
                                                     style={{
-                                                        fontSize: "22px",
+                                                        flexWrap: "wrap",
+                                                        gap: "10px",
                                                     }}
                                                 >
+                                                    {attrValues.map((attr) => (
+                                                        <div
+                                                            key={attr}
+                                                            className="mr-2 border rounded"
+                                                            style={{
+                                                                width: "45px",
+                                                                height: "35px",
+                                                                alignContent:
+                                                                    "center",
+                                                                textAlign: "center",
+                                                            }}
+                                                        >
+                                                            {attr}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <hr />
+                                            </>
+                                        ) : null}
+                                    </div>
+
+                                    <div className="resel-product-price">
+                                        {product?.offer_type ? (
+                                            <>
+                                                <div>
+                                                    <span className="resel-product-price-label">
+                                                        Price:
+                                                    </span>{" "}
+                                                    <strong className="resel-product-price-current">
+                                                        {product.total_price} TK
+                                                    </strong>
+                                                </div>
+                                                <del className="resel-product-mrp">
                                                     MRP: {product.price} TK
                                                 </del>
-                                                <div className="text-xs">
+                                                <span className="resel-product-discount">
                                                     {discountPercent}% OFF
-                                                </div>
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <div>
+                                                <span className="resel-product-price-label">
+                                                    Price:
+                                                </span>{" "}
+                                                <strong className="resel-product-price-current">
+                                                    {product?.total_price} TK
+                                                </strong>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <div
-                                            style={{
-                                                fontWeight: "bold",
-                                                fontSize: "22px",
-                                                color: "var(--brand-primary)",
-                                                marginRight: "12px",
-                                            }}
-                                        >
-                                            Price : {product?.total_price} TK
-                                        </div>
-                                    )}
-                                </div>
+                                        )}
+                                    </div>
 
-                                <div className="p-3 mt-3 bg-gray-200 rounded-lg">
-                                    <div className="justify-between w-full md:flex">
-                                        <div>
+                                    <div className="resel-product-owner-card">
+                                        <div className="resel-product-owner-grid">
                                             <div>
-                                                <div className="text-sm">
-                                                    Vendor
-                                                </div>
-                                                <NavLink className="text-lg text-indigo-900">
-                                                    {product?.owner?.name ??
-                                                        "n/a"}
-                                                </NavLink>
-                                            </div>
-                                            <Hr />
-                                            <div>
-                                                <div className="text-sm">
-                                                    Shop / Brand
-                                                </div>
-                                                <div className="text-lg text-indigo-900">
-                                                    {product?.owner?.shop
-                                                        ?.shop_name_en ?? "n/a"}{" "}
-                                                    <span className="text-xs">
-                                                        (
-                                                        {product?.owner?.shop
-                                                            ?.shop_name_bn ??
+                                                <div>
+                                                    <div className="resel-product-info-label">
+                                                        Vendor
+                                                    </div>
+                                                    <NavLink className="resel-product-info-value">
+                                                        {product?.owner?.name ??
                                                             "n/a"}
-                                                        )
-                                                    </span>
-                                                    <br />
-                                                    <NavLink
-                                                        href={route("shops", {
-                                                            slug: product?.owner
-                                                                ?.shop?.slug,
-                                                            id: product?.owner
-                                                                ?.shop?.id,
-                                                        })}
-                                                    >
-                                                        visit shops{" "}
-                                                        <i className="pl-2 fas fa-angle-right"></i>
                                                     </NavLink>
                                                 </div>
                                             </div>
-                                            <Hr />
                                             <div>
-                                                <div className="text-sm">
-                                                    Addrss
-                                                </div>
-                                                <div className="text-sm text-indigo-900">
-                                                    {product?.owner?.address ??
-                                                        "n/a"}
+                                                <div>
+                                                    <div className="resel-product-info-label">
+                                                        Phone
+                                                    </div>
+                                                    <div className="resel-product-info-value">
+                                                        {product?.owner?.phone ??
+                                                            "n/a"}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div>
                                             <div>
-                                                <div className="text-sm">
-                                                    Phone
-                                                </div>
-                                                <div className="text-lg text-indigo-900">
-                                                    {product?.owner?.phone ??
-                                                        "n/a"}
+                                                <div>
+                                                    <div className="resel-product-info-label">
+                                                        Shop / Brand
+                                                    </div>
+                                                    <div className="resel-product-info-value">
+                                                        {product?.owner?.shop
+                                                            ?.shop_name_en ?? "n/a"}{" "}
+                                                        <span className="text-xs font-normal text-gray-500">
+                                                            (
+                                                            {product?.owner?.shop
+                                                                ?.shop_name_bn ??
+                                                                "n/a"}
+                                                        )
+                                                        </span>
+                                                        <br />
+                                                        <NavLink
+                                                            className="resel-product-visit-link hover:text-orange-700"
+                                                            href={route("shops", {
+                                                                slug: product?.owner
+                                                                    ?.shop?.slug,
+                                                                id: product?.owner
+                                                                    ?.shop?.id,
+                                                            })}
+                                                        >
+                                                            visit shops{" "}
+                                                            <i className="fas fa-angle-right"></i>
+                                                        </NavLink>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <Hr />
                                             <div>
-                                                <div className="text-sm">
-                                                    Email
+                                                <div>
+                                                    <div className="resel-product-info-label">
+                                                        Email
+                                                    </div>
+                                                    <div className="resel-product-info-value">
+                                                        {product?.owner?.email ??
+                                                            "n/a"}
+                                                    </div>
                                                 </div>
-                                                <div className="text-lg text-indigo-900">
-                                                    {product?.owner?.email ??
-                                                        "n/a"}
+                                            </div>
+                                            <div>
+                                                <div>
+                                                    <div className="resel-product-info-label">
+                                                        Address
+                                                    </div>
+                                                    <div className="resel-product-info-value text-sm">
+                                                        {product?.owner?.address ??
+                                                            "n/a"}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <div className="mt-4">
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={() => setShowOrderModal(true)}
+                                        className="flex min-w-44 justify-between px-6 py-3"
+                                    >
+                                        Purchase
+                                        <i className="pl-4 fas fa-angle-right"></i>
+                                    </PrimaryButton>
+                                </div>
+
                             </div>
                         </div>
                     </SectionInner>
@@ -568,11 +760,6 @@ export default function View({
                         />
                     </SectionInner>
                 </Section>
-
-                <div style={{ width: "170px" }} className="shadow-xl">
-                    <ReselProductCart product={product} />
-                </div>
-                <Hr />
             </Container>
 
             <Modal show={showConfirm} onClose={() => setShowConfirm(false)}>
@@ -743,19 +930,20 @@ export default function View({
                             <label className="text-sm font-bold">
                                 Reseller Category
                             </label>
-                            <select
-                                className="w-full border rounded"
+                            <CategorySelect
+                                categories={categories}
+                                className="mt-1"
+                                inputClassName="border rounded"
                                 value={form.data.reseller_category_id}
-                                onChange={(e) =>
+                                onChange={(categoryId) =>
                                     form.setData(
                                         "reseller_category_id",
-                                        e.target.value
+                                        categoryId
                                     )
                                 }
-                            >
-                                <option value="">Select Category</option>
-                                {renderCategoryOptions(categories)}
-                            </select>
+                                placeholder="Select Category"
+                                noneLabel="Select Category"
+                            />
                             {form.errors.reseller_category_id ? (
                                 <p className="text-red-900">
                                     {form.errors.reseller_category_id}
@@ -774,6 +962,274 @@ export default function View({
                             <i className="pr-2 fas fa-sync"></i> Confirm
                         </PrimaryButton>
                     </div>
+                </div>
+            </Modal>
+
+            <Modal
+                show={showOrderModal}
+                onClose={closeOrderModal}
+                maxWidth="md"
+            >
+                <div>
+                    <div className="flex items-center justify-between p-3 border-b bold">
+                        <div>Purchase</div>
+                        <div className="text-lg bold">
+                            {product?.total_price} TK
+                        </div>
+                    </div>
+                    <div className="flex items-start justify-start p-5 mb-3 bg-gray-100">
+                        <div className="flex">
+                            {product?.thumbnail_url ? (
+                                <img
+                                    src={product.thumbnail_url}
+                                    className="w-12 h-12 mr-3 rounded shadow"
+                                    alt=""
+                                />
+                            ) : null}
+                        </div>
+                        <div>
+                            <div className="text-lg bold">
+                                {product?.name ?? product?.title ?? "N/A"}
+                            </div>
+                            <div className="text-sm">
+                                {product?.offer_type ? (
+                                    <div className="flex items-baseline gap-2">
+                                        <div className="bold">
+                                            Price : {product?.total_price} TK
+                                        </div>
+                                        <div className="text-xs">
+                                            <del>
+                                                MRP: {product?.price ?? "0"} TK
+                                            </del>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bold">
+                                        Price : {product?.price ?? "0"} TK
+                                    </div>
+                                )}
+                                <div className="text-xs">
+                                    Available Stock: {product?.unit ?? "0"}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form onSubmit={submitOrder} className="p-5">
+                        <InputField
+                            className="md:flex"
+                            labelWidth="140px"
+                            label="Name"
+                            name="name"
+                            inputClass="w-full"
+                            error={orderForm.errors.name}
+                            value={orderForm.data.name}
+                            onChange={(e) =>
+                                orderForm.setData("name", e.target.value)
+                            }
+                        />
+                        <InputField
+                            className="md:flex"
+                            labelWidth="140px"
+                            label="Phone"
+                            name="phone"
+                            inputClass="w-full"
+                            error={orderForm.errors.phone}
+                            value={orderForm.data.phone}
+                            onChange={(e) =>
+                                orderForm.setData("phone", e.target.value)
+                            }
+                        />
+                        <InputField
+                            className="md:flex"
+                            labelWidth="140px"
+                            label="District"
+                            name="district"
+                            inputClass="w-full"
+                            error={orderForm.errors.district}
+                            value={orderForm.data.district}
+                            onChange={(e) =>
+                                orderForm.setData("district", e.target.value)
+                            }
+                        />
+                        <InputField
+                            className="md:flex"
+                            labelWidth="140px"
+                            label="Upozila"
+                            name="upozila"
+                            inputClass="w-full"
+                            error={orderForm.errors.upozila}
+                            value={orderForm.data.upozila}
+                            onChange={(e) =>
+                                orderForm.setData("upozila", e.target.value)
+                            }
+                        />
+                        <InputFile
+                            labelWidth="140px"
+                            label="Full Address"
+                            name="location"
+                            error="location"
+                            errors={orderForm.errors}
+                        >
+                            <textarea
+                                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                rows="3"
+                                placeholder="Full Address"
+                                value={orderForm.data.location}
+                                onChange={(e) =>
+                                    orderForm.setData("location", e.target.value)
+                                }
+                            />
+                        </InputFile>
+                        <InputField
+                            className="md:flex"
+                            labelWidth="140px"
+                            label="Road No"
+                            name="road_no"
+                            inputClass="w-full"
+                            error={orderForm.errors.road_no}
+                            value={orderForm.data.road_no}
+                            onChange={(e) =>
+                                orderForm.setData("road_no", e.target.value)
+                            }
+                        />
+                        <InputField
+                            className="md:flex"
+                            labelWidth="140px"
+                            label="House No"
+                            name="house_no"
+                            inputClass="w-full"
+                            error={orderForm.errors.house_no}
+                            value={orderForm.data.house_no}
+                            onChange={(e) =>
+                                orderForm.setData("house_no", e.target.value)
+                            }
+                        />
+
+                        <InputFile
+                            labelWidth="140px"
+                            label="Quantity"
+                            name="quantity"
+                            error="quantity"
+                            errors={orderForm.errors}
+                        >
+                            <select
+                                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                value={orderForm.data.quantity}
+                                onChange={(e) =>
+                                    orderForm.setData(
+                                        "quantity",
+                                        e.target.value,
+                                    )
+                                }
+                            >
+                                <option value="">Select Quantity</option>
+                                {quantityOptions.map((qty) => (
+                                    <option key={qty} value={qty}>
+                                        {qty}
+                                    </option>
+                                ))}
+                            </select>
+                        </InputFile>
+
+                        <div className="p-3 my-3 text-sm rounded-md shadow-sm bg-indigo-50">
+                            <div className="text-xs">
+                                {Number(product?.unit) < 1
+                                    ? "Stock Out"
+                                    : `You can order maximum ${product?.unit} item`}
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div>Total</div>
+                                <div>
+                                    {orderForm.data.quantity || 0} *{" "}
+                                    {product?.total_price} = {totalOrderPrice}
+                                </div>
+                            </div>
+                        </div>
+
+                        <InputFile
+                            labelWidth="140px"
+                            label="Size/Attribute"
+                            name="attr"
+                            error="attr"
+                            errors={orderForm.errors}
+                        >
+                            <select
+                                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                value={orderForm.data.attr}
+                                onChange={(e) =>
+                                    orderForm.setData("attr", e.target.value)
+                                }
+                            >
+                                <option value="">Select Size/Attribute</option>
+                                {attrValues.length > 0 ? (
+                                    attrValues.map((attr) => (
+                                        <option key={attr} value={attr}>
+                                            {attr}
+                                        </option>
+                                    ))
+                                ) : (
+                                    <option value="N/A">N/A</option>
+                                )}
+                            </select>
+                        </InputFile>
+
+                        <Hr />
+
+                        <InputFile
+                            labelWidth="140px"
+                            label="Area"
+                            name="area_condition"
+                            error="area_condition"
+                            errors={orderForm.errors}
+                        >
+                            <select
+                                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                value={orderForm.data.area_condition}
+                                onChange={(e) =>
+                                    orderForm.setData(
+                                        "area_condition",
+                                        e.target.value,
+                                    )
+                                }
+                            >
+                                <option value="">Select Area</option>
+                                <option value="Dhaka">Inside Dhaka</option>
+                                <option value="Other">Out side of Dhaka</option>
+                            </select>
+                        </InputFile>
+
+                        <InputFile
+                            labelWidth="140px"
+                            label="Shipping Type"
+                            name="delevery"
+                            error="delevery"
+                            errors={orderForm.errors}
+                        >
+                            <select
+                                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                value={orderForm.data.delevery}
+                                onChange={(e) =>
+                                    orderForm.setData(
+                                        "delevery",
+                                        e.target.value,
+                                    )
+                                }
+                            >
+                                <option value="">Shipping Type</option>
+                                <option value="Courier">Courier</option>
+                                <option value="Home">Home Delivery</option>
+                                <option value="Hand">Hand-To-Hand</option>
+                            </select>
+                        </InputFile>
+
+                        <PrimaryButton
+                            type="submit"
+                            disabled={orderForm.processing}
+                        >
+                            Order
+                        </PrimaryButton>
+                    </form>
                 </div>
             </Modal>
 

@@ -45,9 +45,15 @@ export default function Index({ slider = [] }) {
         order: false,
         product_details: false,
         categories_product: false,
+        grocery_item: false,
+        medicine_products: false,
+        food_items: false,
+        top_sales: false,
+        womens_item: false,
         top: false,
         middle: false,
         bottom: false,
+        slider_height: "",
         status: false,
     });
 
@@ -60,6 +66,15 @@ export default function Index({ slider = [] }) {
                 form.reset();
             },
         });
+    };
+
+    const setPlacement = (key, checked) => {
+        form.setData((current) => ({
+            ...current,
+            top: key === "top" ? checked : false,
+            middle: key === "middle" ? checked : false,
+            bottom: key === "bottom" ? checked : false,
+        }));
     };
 
 
@@ -156,38 +171,98 @@ export default function Index({ slider = [] }) {
                                         If checked, Banner will display on <strong>{t("Categories Product Page")}</strong>.
                                     </>
                                 )}
-                            </div>
-                            <br />
-
-                            <div className="p-3 bg-gray-100">
                                 {checkboxRow(
-                                    "page_top",
-                                    form.data.top,
-                                    (e) => form.setData("top", e.target.checked),
-                                    "Top",
+                                    "grocery_item_section",
+                                    form.data.grocery_item,
+                                    (e) => form.setData("grocery_item", e.target.checked),
+                                    "Grocery Item",
                                     <>
-                                        If checked, Banner will display on <strong>{t("Top Of The Page")}</strong>.
+                                        If checked, Banner will display after <strong>Grocery Item</strong>.
                                     </>
                                 )}
                                 {checkboxRow(
-                                    "page_middle",
-                                    form.data.middle,
-                                    (e) => form.setData("middle", e.target.checked),
-                                    "Middle",
+                                    "medicine_products_section",
+                                    form.data.medicine_products,
+                                    (e) => form.setData("medicine_products", e.target.checked),
+                                    "Medicine Products",
                                     <>
-                                        If checked, Banner will display on <strong>{t("Middle Of The Page")}</strong>.
+                                        If checked, Banner will display after <strong>Medicine Products</strong>.
                                     </>
                                 )}
                                 {checkboxRow(
-                                    "page_bottom",
-                                    form.data.bottom,
-                                    (e) => form.setData("bottom", e.target.checked),
-                                    "Bottom",
+                                    "food_items_section",
+                                    form.data.food_items,
+                                    (e) => form.setData("food_items", e.target.checked),
+                                    "Food Items",
                                     <>
-                                        If checked, Banner will display on <strong>{t("Bottom Of The Page")}</strong>.
+                                        If checked, Banner will display after <strong>Food Items</strong>.
+                                    </>
+                                )}
+                                {checkboxRow(
+                                    "top_sales_section",
+                                    form.data.top_sales,
+                                    (e) => form.setData("top_sales", e.target.checked),
+                                    "Top Sales",
+                                    <>
+                                        If checked, Banner will display after <strong>Top Sales</strong>.
+                                    </>
+                                )}
+                                {checkboxRow(
+                                    "womens_item_section",
+                                    form.data.womens_item,
+                                    (e) => form.setData("womens_item", e.target.checked),
+                                    "Women's Item",
+                                    <>
+                                        If checked, Banner will display after <strong>Women's Item</strong>.
                                     </>,
                                     "border-"
                                 )}
+                            </div>
+                            <br />
+
+                            <div>
+                                <div className="p-3 bg-gray-100">
+                                    {checkboxRow(
+                                        "page_top",
+                                        form.data.top,
+                                        (e) => setPlacement("top", e.target.checked),
+                                        "Top",
+                                        <>
+                                            If checked, Banner will display on <strong>Top Of The Page</strong>.
+                                        </>
+                                    )}
+                                    {checkboxRow(
+                                        "page_middle",
+                                        form.data.middle,
+                                        (e) => setPlacement("middle", e.target.checked),
+                                        "Middle",
+                                        <>
+                                            If checked, Banner will display on <strong>Middle Of The Page</strong>.
+                                        </>
+                                    )}
+                                    {checkboxRow(
+                                        "page_bottom",
+                                        form.data.bottom,
+                                        (e) => setPlacement("bottom", e.target.checked),
+                                        "Bottom",
+                                        <>
+                                            If checked, Banner will display on <strong>Bottom Of The Page</strong>.
+                                        </>,
+                                        "border-"
+                                    )}
+                                </div>
+                                <div className="p-3 mt-3">
+                                    <InputLabel htmlFor="slider_height">Slider Height</InputLabel>
+                                    <TextInput
+                                        id="slider_height"
+                                        type="number"
+                                        min="1"
+                                        value={form.data.slider_height}
+                                        onChange={(e) => form.setData("slider_height", e.target.value)}
+                                        className="w-full py-1"
+                                        placeholder="Height in px"
+                                    />
+                                </div>
                             </div>
                         </div>
 

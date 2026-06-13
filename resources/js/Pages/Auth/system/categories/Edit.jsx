@@ -1,7 +1,8 @@
 import { Head, useForm } from "@inertiajs/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Hr from "../../../../components/Hr";
+import CategorySelect from "../../../../components/CategorySelect";
 import InputLabel from "../../../../components/InputLabel";
 import Modal from "../../../../components/Modal";
 import PrimaryButton from "../../../../components/PrimaryButton";
@@ -17,10 +18,6 @@ export default function Edit({ category, parentCategories = [] }) {
     const { t } = useTranslation();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
-    const parentCategoryItems = useMemo(
-        () => flattenParentCategories(parentCategories, category?.id),
-        [parentCategories, category?.id]
-    );
 
     const form = useForm({
         name: category?.name ?? "",
@@ -99,12 +96,15 @@ export default function Edit({ category, parentCategories = [] }) {
                                 >
                                     Parent
                                 </InputLabel>
-                                <SearchableParentCategory
-                                    categories={parentCategoryItems}
+                                <CategorySelect
+                                    categories={parentCategories}
                                     value={form.data.belongs_to}
                                     onChange={(categoryId) =>
                                         form.setData("belongs_to", categoryId)
                                     }
+                                    placeholder="Search parent category"
+                                    noneLabel="None"
+                                    currentCategoryId={category?.id}
                                 />
                                 {form.errors.belongs_to ? (
                                     <span className="text-sm text-red-500">
@@ -143,16 +143,15 @@ export default function Edit({ category, parentCategories = [] }) {
                                     htmlFor="slug"
                                     className="block text-sm font-medium text-gray-700"
                                 >
-                                    Category Name
+                                    SEO Slug
                                 </InputLabel>
                                 <TextInput
                                     type="text"
                                     id="slug"
                                     value={form.data.slug}
-                                    onChange={(e) =>
-                                        form.setData("slug", e.target.value)
-                                    }
-                                    className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                    disabled
+                                    readOnly
+                                    className="block w-full mt-1 text-gray-500 bg-gray-100 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                     required
                                 />
                                 {form.errors.slug ? (
@@ -230,119 +229,4 @@ export default function Edit({ category, parentCategories = [] }) {
             </Modal>
         </AppLayout>
     );
-}
-
-function SearchableParentCategory({ categories = [], value, onChange }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [search, setSearch] = useState("");
-    const selectedCategory = categories.find(
-        (category) => String(category.id) === String(value)
-    );
-    const normalizedSearch = search.trim().toLowerCase();
-    const visibleValue = isOpen ? search : selectedCategory?.label ?? "None";
-    const filteredCategories = categories.filter((category) =>
-        category.searchText.includes(normalizedSearch)
-    );
-
-    const selectCategory = (category) => {
-        if (category.disabled) {
-            return;
-        }
-
-        onChange(category.id);
-        setSearch("");
-        setIsOpen(false);
-    };
-
-    return (
-        <div className="relative mt-1">
-            <input
-                type="text"
-                id="parent_id"
-                value={visibleValue}
-                onFocus={() => {
-                    setSearch("");
-                    setIsOpen(true);
-                }}
-                onChange={(event) => {
-                    setSearch(event.target.value);
-                    setIsOpen(true);
-                }}
-                onBlur={() => {
-                    window.setTimeout(() => {
-                        setSearch("");
-                        setIsOpen(false);
-                    }, 150);
-                }}
-                placeholder="Search parent category"
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                autoComplete="off"
-            />
-            <i className="absolute text-gray-500 -translate-y-1/2 pointer-events-none fas fa-angle-down right-3 top-1/2"></i>
-
-            {isOpen ? (
-                <div className="absolute left-0 right-0 z-30 mt-1 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg max-h-64">
-                    <button
-                        type="button"
-                        className="block w-full px-3 py-2 text-sm text-left hover:bg-gray-100 focus:bg-gray-100"
-                        onMouseDown={(event) => event.preventDefault()}
-                        onClick={() => {
-                            onChange("");
-                            setSearch("");
-                            setIsOpen(false);
-                        }}
-                    >
-                        None
-                    </button>
-
-                    {filteredCategories.length > 0 ? (
-                        filteredCategories.map((category) => (
-                            <button
-                                key={category.id}
-                                type="button"
-                                disabled={category.disabled}
-                                className={`block w-full px-3 py-2 text-left text-sm ${
-                                    category.disabled
-                                        ? "cursor-not-allowed text-gray-400"
-                                        : "hover:bg-gray-100 focus:bg-gray-100"
-                                }`}
-                                onMouseDown={(event) => event.preventDefault()}
-                                onClick={() => selectCategory(category)}
-                            >
-                                {category.label}
-                            </button>
-                        ))
-                    ) : (
-                        <div className="px-3 py-4 text-sm text-center text-gray-500">
-                            No category found.
-                        </div>
-                    )}
-                </div>
-            ) : null}
-        </div>
-    );
-}
-
-function flattenParentCategories(categories = [], currentCategoryId = null, depth = 0, blocked = false) {
-    return categories.flatMap((item) => {
-        const isCurrentCategory = String(item.id) === String(currentCategoryId);
-        const isBlocked = blocked || isCurrentCategory;
-        const prefix = depth === 0 ? "" : `${"-".repeat(depth * 2)} `;
-        const current = {
-            id: item.id,
-            label: `${prefix}${item.name}`,
-            searchText: `${item.name ?? ""} ${prefix}${item.name ?? ""}`.toLowerCase(),
-            disabled: isBlocked,
-        };
-
-        return [
-            current,
-            ...flattenParentCategories(
-                item.children ?? [],
-                currentCategoryId,
-                depth + 1,
-                isBlocked
-            ),
-        ];
-    });
 }

@@ -1,13 +1,15 @@
 import { usePage } from "@inertiajs/react";
 import HasRole from "../components/HasRole";
 import PageHeader from "../components/dashboard/PageHeader";
-import VendorDashboard from "../layouts/vendor/Vendor";
+import VendorDashboard from "../Layouts/vendor/Vendor";
 import RiderConsignmentIndex from "../livewire/rider/consignment/Index";
 import ResellerDashboard from "../livewire/reseller/Dashboard";
 import SystemDashboardIndex from "../livewire/system/dashboard/Index";
 import AppLayout from "../Layouts/App";
+import useTranslation from "../hooks/useTranslation";
 
 export default function Dashboard() {
+    const { t } = useTranslation();
     const {
         auth,
         resellerOverview,
@@ -33,11 +35,11 @@ export default function Dashboard() {
 
     return (
         <AppLayout
-            title="Dashboard"
+            title={t("Dashboard")}
             header={
                 <PageHeader>
-                    {headingPrefix ? `${headingPrefix} ` : ""}
-                    Dashboard
+                    {headingPrefix ? `${t(headingPrefix)} ` : ""}
+                    {t("Dashboard")}
                 </PageHeader>
             }
         >

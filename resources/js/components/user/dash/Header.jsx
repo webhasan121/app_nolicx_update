@@ -1,5 +1,4 @@
 import { Link, usePage, router } from "@inertiajs/react";
-import Container from "../../dashboard/Container";
 import ApplicationName from "../../ApplicationName";
 import Dropdown from "../../Dropdown";
 import DropdownLink from "../../DropdownLink";
@@ -8,9 +7,13 @@ import Hr from "../../Hr";
 import VendorResponsiveNavigation from "../../../Layouts/VendorResponsiveNavigation";
 import ResellerResponsiveNavigation from "../../../Layouts/ResellerResponsiveNavigation";
 import RiderResponsiveNavigation from "../../../Layouts/RiderResponsiveNavigation";
+import NoticeBell from "../../NoticeBell";
+import LanguageSwitcher from "../../LanguageSwitcher";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function Header() {
     const { auth, roles, active_nav, permissions = [] } = usePage().props;
+    const { t } = useTranslation();
     const user = auth.user;
 
 
@@ -25,7 +28,7 @@ export default function Header() {
     };
 
     return (
-        <header className="bg-white">
+        <header className="bg-white border-b border-gray-100">
             <style
                 dangerouslySetInnerHTML={{
                     __html: `
@@ -56,8 +59,8 @@ export default function Header() {
                 }}
             />
 
-            <Container>
-                <nav className="flex items-center justify-between">
+            <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
+                <nav className="flex h-16 items-center justify-between">
                     {/* LOGO */}
                     <Link href="/" className="flex items-center">
                         <img height="50" width="60" src="/icon.png" alt="" />
@@ -68,9 +71,8 @@ export default function Header() {
 
                     <div>
                         <ul className="flex items-center">
-                            {/* HOME */}
-                            <li>
-                                <Link href={route("home")}>Home</Link>
+                            <li className="hidden px-2 md:block">
+                                <LanguageSwitcher compact />
                             </li>
 
                             {/* CART */}
@@ -88,12 +90,16 @@ export default function Header() {
                                 </div>
                             </li>
 
+                            <li className="px-2">
+                                <NoticeBell role="user" />
+                            </li>
+
                             {/* DROPDOWN */}
                             <Dropdown
                                 align="right"
                                 width="48"
                                 trigger={
-                                    <button className="inline-flex items-center px-3 py-2 mx-2 text-sm font-medium text-gray-500 transition border rounded hover:text-gray-700 hover:border-gray-300">
+                                    <button className="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md border border-transparent text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                                         {user?.name?.slice(0, 8) + "..."}
                                         <svg
                                             className="w-4 h-4 fill-current ms-1"
@@ -110,8 +116,8 @@ export default function Header() {
                                 {/* Multiple Roles */}
                                 {roleNames.length > 1 && (
                                     <DropdownLink href={route("dashboard")}>
-                                        <i className="pr-2 fas fa-home"></i> Go
-                                        To Dashboard
+                                        <i className="pr-2 fas fa-home"></i>
+                                        {t("Go To Dashboard")}
                                     </DropdownLink>
                                 )}
 
@@ -126,7 +132,7 @@ export default function Header() {
                                             )}
                                         >
                                             <i className="pr-2 fas fa-shop"></i>
-                                            Open Vendor Shop
+                                            {t("Open Vendor Shop")}
                                         </DropdownLink>
 
                                         <DropdownLink
@@ -136,14 +142,14 @@ export default function Header() {
                                             )}
                                         >
                                             <i className="pr-2 fas fa-shop"></i>
-                                            Open Reseller Shop
+                                            {t("Open Reseller Shop")}
                                         </DropdownLink>
 
                                         <DropdownLink
                                             href={route("upgrade.rider.create")}
                                         >
                                             <i className="pr-2 fas fa-truck-fast"></i>
-                                            Request Rider
+                                            {t("Request Rider")}
                                         </DropdownLink>
                                     </>
                                 )}
@@ -159,7 +165,7 @@ export default function Header() {
                                                     href={route("system.users.view")}
                                                     active={route().current("system.users.*")}
                                                 >
-                                                    Users Manage
+                                                    {t("Users Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -168,7 +174,7 @@ export default function Header() {
                                                     href={route("system.admin")}
                                                     active={route().current("system.admin")}
                                                 >
-                                                    Admin Manage
+                                                    {t("Admin Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -177,7 +183,7 @@ export default function Header() {
                                                     href={route("system.vendor.index")}
                                                     active={route().current("system.vendor.*")}
                                                 >
-                                                    Vendor Manage
+                                                    {t("Vendor Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -186,7 +192,7 @@ export default function Header() {
                                                     href={route("system.reseller.index")}
                                                     active={route().current("system.reseller.*")}
                                                 >
-                                                    Reseller Manage
+                                                    {t("Reseller Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -195,7 +201,7 @@ export default function Header() {
                                                     href={route("system.rider.index")}
                                                     active={route().current("system.rider.*")}
                                                 >
-                                                    Rider Manage
+                                                    {t("Rider Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -204,7 +210,7 @@ export default function Header() {
                                                     href={route("system.role.list")}
                                                     active={route().current("system.role.*")}
                                                 >
-                                                    Role Manage
+                                                    {t("Role Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -215,7 +221,7 @@ export default function Header() {
                                                     href={route("system.products.index")}
                                                     active={route().current("system.products.*")}
                                                 >
-                                                    Products Manage
+                                                    {t("Products Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -224,7 +230,7 @@ export default function Header() {
                                                     href={route("system.categories.index")}
                                                     active={route().current("system.categories.*")}
                                                 >
-                                                    Categories Manage
+                                                    {t("Categories Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -233,7 +239,7 @@ export default function Header() {
                                                     href={route("system.vip.users")}
                                                     active={route().current("system.vip.*")}
                                                 >
-                                                    ViP Manage
+                                                    {t("ViP Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -242,7 +248,7 @@ export default function Header() {
                                                     href={route("system.slider.index")}
                                                     active={route().current("system.slider.*")}
                                                 >
-                                                    Slider Manage
+                                                    {t("Slider Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -251,7 +257,7 @@ export default function Header() {
                                                     href={route("system.store.index")}
                                                     active={route().current("system.store.*")}
                                                 >
-                                                    StoreManage
+                                                    {t("StoreManage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -262,7 +268,7 @@ export default function Header() {
                                                     href={route("system.deposit.index")}
                                                     active={route().current("system.deposit.*")}
                                                 >
-                                                    Deposit Manage
+                                                    {t("Deposit Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -271,7 +277,7 @@ export default function Header() {
                                                     href={route("system.comissions.index")}
                                                     active={route().current("system.comissions.*")}
                                                 >
-                                                    Comission Manage
+                                                    {t("Comission Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -280,7 +286,7 @@ export default function Header() {
                                                     href={route("system.orders.index")}
                                                     active={route().current("system.orders.*")}
                                                 >
-                                                    Orders Manage
+                                                    {t("Orders Manage")}
                                                 </ResponsiveNavLink>
                                             )}
 
@@ -289,7 +295,7 @@ export default function Header() {
                                                     href={route("system.withdraw.index")}
                                                     active={route().current("*.withdraw.*")}
                                                 >
-                                                    Withdraw Manage
+                                                    {t("Withdraw Manage")}
                                                 </ResponsiveNavLink>
                                             )}
                                         </div>
@@ -325,7 +331,7 @@ export default function Header() {
 
                                 {/* Profile */}
                                 <DropdownLink href={route("edit.profile")}>
-                                    <i className="pr-2 fas fa-user"></i> Profile
+                                    <i className="pr-2 fas fa-user"></i> {t("Profile")}
                                 </DropdownLink>
 
                                 {/* Logout */}
@@ -333,14 +339,13 @@ export default function Header() {
                                     onClick={logout}
                                     className="block w-full px-4 py-2 text-sm text-red-600 text-start hover:bg-gray-100"
                                 >
-                                    <i className="pr-2 fas fa-sign-out"></i> Log
-                                    Out
+                                    <i className="pr-2 fas fa-sign-out"></i> {t("Log Out")}
                                 </button>
                             </Dropdown>
                         </ul>
                     </div>
                 </nav>
-            </Container>
+            </div>
         </header>
     );
 }

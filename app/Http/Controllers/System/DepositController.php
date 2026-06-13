@@ -4,6 +4,7 @@ namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
 use App\Models\userDeposit;
+use App\Support\TableDateFilter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -18,8 +19,9 @@ class DepositController extends Controller
         $find = trim((string) $request->query('find', ''));
         $sdate = $request->query('sdate');
         $edate = $request->query('edate');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['status' => '*']);
 
-        $history = $this->queryDeposits($status, $find, $sdate, $edate)
+        $history = $this->queryDeposits($status, $find, $sdate, $edate, $defaultToday)
             ->orderBy('id', 'desc')
             ->paginate((int) config('app.paginate'))
             ->withQueryString();
@@ -55,8 +57,9 @@ class DepositController extends Controller
         $find = trim((string) $request->query('find', ''));
         $sdate = $request->query('sdate');
         $edate = $request->query('edate');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['status' => '*']);
 
-        $history = $this->queryDeposits($status, $find, $sdate, $edate)
+        $history = $this->queryDeposits($status, $find, $sdate, $edate, $defaultToday)
             ->orderBy('id', 'desc')
             ->get();
 
@@ -92,7 +95,7 @@ class DepositController extends Controller
         return redirect()->back()->with('success', 'Deleted !');
     }
 
-    private function queryDeposits(string $status, string $find, ?string $sdate, ?string $edate)
+    private function queryDeposits(string $status, string $find, ?string $sdate, ?string $edate, bool $defaultToday = false)
     {
         $query = userDeposit::query()->with('user');
 
@@ -118,7 +121,7 @@ class DepositController extends Controller
             });
         }
 
-        $this->applyDateFilter($query, $sdate, $edate);
+        $this->applyDateFilter($query, $sdate, $edate, $defaultToday);
 
         return $query;
     }
@@ -141,35 +144,8 @@ class DepositController extends Controller
         ];
     }
 
-    private function applyDateFilter($query, ?string $sdate, ?string $edate): void
+    private function applyDateFilter($query, ?string $sdate, ?string $edate, bool $defaultToday = false): void
     {
-        if (!empty($sdate) && !empty($edate)) {
-            $start = Carbon::parse($sdate)->startOfDay();
-            $end = Carbon::parse($edate)->endOfDay();
-
-            if ($start->gt($end)) {
-                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
-            }
-
-            $query->whereBetween('created_at', [$start, $end]);
-
-            return;
-        }
-
-        if (!empty($sdate)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($sdate)->startOfDay(),
-                Carbon::parse($sdate)->endOfDay(),
-            ]);
-
-            return;
-        }
-
-        if (!empty($edate)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($edate)->startOfDay(),
-                Carbon::parse($edate)->endOfDay(),
-            ]);
-        }
+        TableDateFilter::apply($query, $sdate, $edate, $defaultToday);
     }
 }

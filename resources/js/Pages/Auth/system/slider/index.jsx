@@ -1,7 +1,6 @@
 import { Head, router, useForm } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
-import DangerButton from "../../../../components/DangerButton";
 import InputLabel from "../../../../components/InputLabel";
 import Modal from "../../../../components/Modal";
 import NavLink from "../../../../components/NavLink";
@@ -15,6 +14,7 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { ActionIconButton, ActionIconLink } from "../../../../components/ActionIcon";
 
 export default function Index({ nav = "web", slider = {}, filters = {}, updateable = null }) {
     const { t } = useTranslation();
@@ -261,15 +261,10 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                                 {item.status ? "Active" : "Deactive"}
                                             </td>
                                             <td>
-                                                <div className="flex space-x-2">
-                                                    <DangerButton onClick={() => destroySlider(item)}>
-                                                        <i className="fas fa-trash"></i>
-                                                    </DangerButton>
-
-                                                    <PrimaryButton onClick={() => openUpdateModal(item)}>
-                                                        <i className="fas fa-edit"></i>
-                                                    </PrimaryButton>
-                                                    <NavLink href={route("system.slider.slides", { id: item.id })}>{t("slides")}</NavLink>
+                                                <div className="flex items-center gap-1">
+                                                    <ActionIconButton action="delete" title={t("Delete")} onClick={() => destroySlider(item)} />
+                                                    <ActionIconButton action="edit" title={t("Edit")} onClick={() => openUpdateModal(item)} />
+                                                    <ActionIconLink href={route("system.slider.slides", { id: item.id })} action="details" title={t("slides")} />
                                                 </div>
                                             </td>
                                         </tr>

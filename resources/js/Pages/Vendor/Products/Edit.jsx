@@ -7,32 +7,23 @@ import InputField from "../../../components/InputField";
 import InputFile from "../../../components/InputFile";
 import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
+import ProductAttributesInput from "../../../components/ProductAttributesInput";
+import CategorySelect from "../../../components/CategorySelect";
 import SecondaryButton from "../../../components/SecondaryButton";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Container from "../../../components/dashboard/Container";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
-import SectionSection from "../../../components/dashboard/section/Section";
+import Section from "../../../components/dashboard/section/Section";
 import {
     PRODUCT_VIDEO_DURATION_ERROR,
     validateProductVideoDuration,
 } from "../../../utils/videoValidation";
 import useTranslation from "../../../hooks/useTranslation";
 
-function renderCategoryOptions(categories = [], depth = 0) {
-    return categories.flatMap((category) => [
-        <option key={category.id} value={category.id}>
-            {"-".repeat(depth ? depth * 2 : 0)}
-            {depth ? " " : ""}
-            {category.name}
-        </option>,
-        ...(category.children?.length
-            ? renderCategoryOptions(category.children, depth + 1)
-            : []),
-    ]);
-}
+const MAX_OTHER_IMAGES = 8;
 
-function ProductNavigations({ productId, nav = "Product" }) {
+function ProductNavigations({ productId, nav = "Product", t }) {
     return (
         <div className="flex ">
             <NavLink
@@ -61,7 +52,6 @@ export default function Edit() {
     const [trixReady, setTrixReady] = useState(
         typeof window !== "undefined" && !!window.Trix
     );
-
     const form = useForm({
         name: productData?.name ?? "",
         title: productData?.title ?? "",
@@ -85,11 +75,23 @@ export default function Edit() {
         shipping_note: productData?.shipping_note ?? "",
         attr_name: productData?.attr?.name ?? "",
         attr_value: productData?.attr?.value ?? "",
+        attributes: productData?.attrs?.length
+            ? productData.attrs
+            : [{ name: productData?.attr?.name ?? "", value: productData?.attr?.value ?? "" }],
         thumb: null,
         video: productData?.video ?? "",
         newseothumb: null,
         newImage: [],
     });
+    const existingOtherImageCount = productData?.related_images?.length ?? 0;
+    const selectedOtherImageCount = Array.isArray(form.data.newImage)
+        ? form.data.newImage.length
+        : 0;
+    const remainingOtherImageSlots = Math.max(
+        0,
+        MAX_OTHER_IMAGES - existingOtherImageCount - selectedOtherImageCount
+    );
+
     useEffect(() => {
         let isMounted = true;
 
@@ -164,6 +166,22 @@ export default function Edit() {
         });
     };
 
+    const handleOtherImagesChange = (event) => {
+        const currentFiles = Array.isArray(form.data.newImage)
+            ? form.data.newImage
+            : [];
+        const selectedFiles = Array.from(event.target.files ?? []);
+
+        if (selectedFiles.length > remainingOtherImageSlots) {
+            window.alert(`You can upload ${remainingOtherImageSlots} more other image(s).`);
+            event.target.value = "";
+            return;
+        }
+
+        form.setData("newImage", [...currentFiles, ...selectedFiles]);
+        event.target.value = "";
+    };
+
     const moveToTrash = () => {
         if (!window.confirm("Are you sure you want to move this product to trash?")) {
             return;
@@ -197,13 +215,13 @@ export default function Edit() {
             title={t("Product Edit")}
             header={
                 <PageHeader>{t("Product Edit")}<br />
-                    <ProductNavigations productId={productData.encrypted_id} />
+                    <ProductNavigations productId={productData.encrypted_id} t={t} />
                 </PageHeader>
             }
         >
             <Head title={t("Product Edit")} />
             <Container>
-                <SectionSection>
+                <Section>
                     <SectionHeader
                         title={
                             <div className="flex justify-between text-xs">
@@ -266,11 +284,11 @@ export default function Edit() {
                             </div>
                         }
                     />
-                </SectionSection>
+                </Section>
 
                 <form onSubmit={save}>
-                    <div className="md:flex jusfity-between">
-                        <SectionSection>
+                    <div className="md:flex md:gap-4">
+                        <Section className="md:flex-1">
                             <SectionHeader title={t("Product Basic Info")} content="" />
                             <SectionInner>
                                 <InputField
@@ -293,7 +311,6 @@ export default function Edit() {
                                 >
                                     <textarea
                                         rows="3"
-                                        id=""
                                         className="w-full rounded"
                                         value={form.data.title}
                                         onChange={(e) =>
@@ -313,26 +330,25 @@ export default function Edit() {
                                         <strong>
                                             {productData.category_name ?? "N/A"}
                                         </strong>{t(". Change to another")}</div>
-                                    <select
+                                    <CategorySelect
+                                        categories={categories}
                                         value={form.data.category_id ?? ""}
-                                        onChange={(e) =>
+                                        onChange={(categoryId) =>
                                             form.setData(
                                                 "category_id",
-                                                e.target.value
+                                                categoryId
                                             )
                                         }
-                                    >
-                                        <option value="">
-                                            {" "}{t("-- Select Category --")}{" "}
-                                        </option>
-                                        {renderCategoryOptions(categories)}
-                                    </select>
+                                        placeholder={t("-- Select Category --")}
+                                        noneLabel={t("-- Select Category --")}
+                                        noResultsLabel={t("No category found.")}
+                                    />
                                 </InputFile>
                                 <Hr />
                             </SectionInner>
-                        </SectionSection>
+                        </Section>
 
-                        <SectionSection>
+                        <Section className="md:w-[324px] md:flex-none">
                             <SectionHeader title={t("Product Price")} content="" />
                             <SectionInner>
                                 <div>
@@ -440,10 +456,10 @@ export default function Edit() {
                                     </InputFile>
                                 </div>
                             </SectionInner>
-                        </SectionSection>
+                        </Section>
                     </div>
 
-                    <SectionSection>
+                    <Section>
                         <SectionHeader
                             title={t("Product Delevery")}
                             content={t("Define your product delevery option and charge from here.")}
@@ -572,9 +588,9 @@ export default function Edit() {
                                 </div>
                             </div>
                         </SectionInner>
-                    </SectionSection>
+                    </Section>
 
-                    <SectionSection>
+                    <Section>
                         <SectionHeader
                             title={t("SEO")}
                             content={t("Setup your product seo from here.")}
@@ -676,42 +692,22 @@ export default function Edit() {
                                 </div>
                             </InputFile>
                         </SectionInner>
-                    </SectionSection>
+                    </Section>
 
-                    <SectionSection>
+                    <Section>
                         <SectionHeader
                             title={t("Image Attributes")}
                             content={t("Give your products attributes, product different types, different product color package and quantity.")}
                         />
                         <SectionInner>
-                            <div className="md:flex">
-                                <input
-                                    type="text"
-                                    value={form.data.attr_name}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "attr_name",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder={t("Name")}
-                                />
-                                <input
-                                    type="text"
-                                    value={form.data.attr_value}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "attr_value",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder={t("Value")}
-                                />
-                            </div>
+                            <ProductAttributesInput
+                                attributes={form.data.attributes}
+                                onChange={(attributes) => form.setData("attributes", attributes)}
+                            />
                         </SectionInner>
-                    </SectionSection>
+                    </Section>
 
-                    <SectionSection>
+                    <Section>
                         <div className="justify-between md:flex flex-rowreverse">
                             <SectionHeader
                                 title={t("Image Thumbnail")}
@@ -731,7 +727,7 @@ export default function Edit() {
                                             />
                                             <label
                                                 htmlFor="prod_thumb"
-                                                className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
+                                                className="inline-flex items-center justify-center border rounded cursor-pointer w-9 h-9"
                                             >
                                                 <i className="fas fa-upload"></i>
                                             </label>
@@ -754,9 +750,9 @@ export default function Edit() {
                                 ) : null}
                             </SectionInner>
                         </div>
-                    </SectionSection>
+                    </Section>
 
-                    <SectionSection>
+                    <Section>
                         <SectionHeader
                             title={t("Product Video")}
                             content={t("Add an optional YouTube video URL for the details page.")}
@@ -770,9 +766,9 @@ export default function Edit() {
                                 error={errors.video}
                             />
                         </SectionInner>
-                    </SectionSection>
+                    </Section>
 
-                    <SectionSection>
+                    <Section>
                         <SectionHeader
                             title={t("Other Image")}
                             content={t("Other product image that showcase your product. other image mainly display at product details page.")}
@@ -817,8 +813,7 @@ export default function Edit() {
                                         >
                                             <img
                                                 src={URL.createObjectURL(ni)}
-                                                width="50px"
-                                                height="50px"
+                                                className="object-cover w-16 h-16 rounded"
                                                 alt=""
                                             />
                                         </div>
@@ -832,25 +827,33 @@ export default function Edit() {
                                     id="multi_prod_img"
                                     className="absolute hidden p-1 border"
                                     multiple
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "newImage",
-                                            Array.from(e.target.files ?? [])
-                                        )
-                                    }
+                                    accept="image/*"
+                                    disabled={remainingOtherImageSlots < 1}
+                                    onChange={handleOtherImagesChange}
                                 />
                                 <label
                                     htmlFor="multi_prod_img"
-                                    className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
+                                    className={`inline-flex items-center justify-center w-9 h-9 border rounded ${
+                                        remainingOtherImageSlots < 1
+                                            ? "cursor-not-allowed opacity-50"
+                                            : "cursor-pointer"
+                                    }`}
                                 >
                                     <i className="fas fa-upload"></i>
                                 </label>
-                                <div className="text-xs leading-5">{t("Please choose all image at once, if you plan to upload multiple image.")}</div>
+                                <div className="text-xs leading-5">
+                                    You can upload maximum {MAX_OTHER_IMAGES} images. You can add {remainingOtherImageSlots} more.
+                                </div>
+                                {errors.newImage ? (
+                                    <div className="text-xs text-red-500">
+                                        {errors.newImage}
+                                    </div>
+                                ) : null}
                             </div>
                         </SectionInner>
-                    </SectionSection>
+                    </Section>
 
-                    <SectionSection>
+                    <Section>
                         <SectionHeader
                             title={t("Description")}
                             content={t("Descrive your product as you need.")}
@@ -897,7 +900,7 @@ export default function Edit() {
                                 </main>
                             </InputFile>
                         </SectionInner>
-                    </SectionSection>
+                    </Section>
 
                     <PrimaryButton>{t("save")}</PrimaryButton>
                 </form>

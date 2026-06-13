@@ -8,11 +8,15 @@ import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import Hr from "../../../../components/Hr";
 import useTranslation from "../../../../hooks/useTranslation";
+import { formatAmount } from "../../../../utils/formatAmount";
 
 export default function WithdrawCreate() {
     const { t } = useTranslation();
     const {
+        wallet_balance,
         available_balance,
+        minimum_remaining_balance = 0,
+        minimum_remaining_balance_applies = false,
         phone,
         errors: pageErrors = {},
     } = usePage().props;
@@ -35,6 +39,14 @@ export default function WithdrawCreate() {
     const amountError = errors.amount || pageErrors.amount;
     const payToError = errors.pay_to || pageErrors.pay_to;
     const phoneError = errors.phone || pageErrors.phone;
+    const amountValue = Number(data.amount || 0);
+    const availableBalanceValue = Number(available_balance || 0);
+    const remainingBalance = availableBalanceValue - amountValue;
+    const showMinimumBalanceWarning =
+        minimum_remaining_balance_applies &&
+        (availableBalanceValue <= minimum_remaining_balance ||
+            (amountValue > 0 && remainingBalance <= minimum_remaining_balance));
+    const minimumBalanceMessage = `You cannot withdraw when the remaining withdrawable balance is ${formatAmount(minimum_remaining_balance)} TK or less.`;
 
     return (
         <UserDash>
@@ -47,12 +59,23 @@ export default function WithdrawCreate() {
                             title={t("Withdraw Request")}
                             content={
                                 available_balance > 1 ? (
-                                    <div>{t("Able to Withdraw :")}{available_balance}
+                                    <div>
+                                        <div>
+                                            Wallet Balance : {formatAmount(wallet_balance)} TK
+                                        </div>
+                                        <div>
+                                            Able to Withdraw : {formatAmount(available_balance)} TK
+                                        </div>
+                                        {showMinimumBalanceWarning && (
+                                            <div className="mt-2 text-sm font-semibold text-red-700">
+                                                {minimumBalanceMessage}
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
-                                    <span>{t("You need to meet minimum balance to make a successful withdraw. Withdrawable balance :")}{" "}
+                                    <span>{t("You need to meet minimum balance to make a successful withdraw. Wallet balance :")}{" "}
                                         <strong className="text-red-900">
-                                            {available_balance}
+                                            {formatAmount(wallet_balance)}
                                         </strong>{" "}{t("TK")}</span>
                                 )
                             }
@@ -60,7 +83,7 @@ export default function WithdrawCreate() {
 
                         <SectionInner>
                             <form onSubmit={submit}>
-                                <div className="mb-3 grid gap-4 md:grid-cols-2">
+                                <div className="grid gap-4 mb-3 md:grid-cols-2">
                                     <div className="md:col-span-2">
                                         <label className="block mb-1 text-sm font-medium text-gray-700">{t("Payment Method")}</label>
                                         <select
@@ -157,8 +180,17 @@ export default function WithdrawCreate() {
                                     <NavLink
                                         href={route("user.wallet.withdraw")}
                                     >
-                                        <i className="mr-2 fas fa-arrow-left"></i>{" "}{t("Back")}</NavLink>
-                                    <PrimaryButton disabled={processing}>{t("Submit")}</PrimaryButton>
+                                        <i className="mr-2 fas fa-arrow-left"></i>{" "}
+                                        Back
+                                    </NavLink>
+                                    <PrimaryButton
+                                        disabled={
+                                            processing ||
+                                            showMinimumBalanceWarning
+                                        }
+                                    >
+                                        Submit
+                                    </PrimaryButton>
                                 </div>
                             </form>
                         </SectionInner>

@@ -7,6 +7,8 @@ use App\Models\CartOrder;
 use App\Models\cod;
 use App\Models\Order;
 use App\Models\User;
+use App\Support\RiderAreaMatcher;
+use App\Support\RiderConsignmentIndexData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -29,13 +31,13 @@ class ConsignmentController extends Controller
             ];
         }
 
-        if (!empty($riderInfo) && trim((string) ($riderInfo['targeted_area'] ?? '')) !== '') {
-            $targetedArea = trim((string) ($riderInfo['targeted_area'] ?? ''));
+        $areaTerms = RiderAreaMatcher::termsForRider($user?->isRider()?->load('targetedArea'));
 
+        if (!empty($areaTerms)) {
             $orders = Order::query()
                 ->with(['cartOrders.product'])
                 ->where('status', 'Accept')
-                ->whereRaw('LOWER(TRIM(target_area)) = ?', [mb_strtolower($targetedArea)])
+                ->tap(fn ($query) => RiderAreaMatcher::applyOrderAreaScope($query, $areaTerms))
                 ->whereDoesntHave('hasRider')
                 ->get()
                 ->map(function ($order) use ($riderInfo) {
@@ -72,6 +74,9 @@ class ConsignmentController extends Controller
         return Inertia::render('Rider/Consignment/Index', [
             'riderInfo' => $riderInfo,
             'orders' => $orders,
+            'assignedConsignments' => RiderConsignmentIndexData::get($user, [
+                'status' => $request->query('status', 'Pending'),
+            ])['consignments'] ?? [],
         ]);
     }
 
@@ -81,7 +86,7 @@ class ConsignmentController extends Controller
             return back()->with('error', 'Your are not a Rider !');
         }
 
-        if (!$this->targetAreasMatch($order->target_area, auth()->user()?->isRider()?->targeted_area)) {
+        if (!RiderAreaMatcher::riderMatchesOrder(auth()->user()?->isRider()?->load('targetedArea'), $order)) {
             return back()->with('error', 'This order is outside your targeted area.');
         }
 
@@ -186,10 +191,5 @@ class ConsignmentController extends Controller
                 'phone' => $shop?->phone,
             ],
         ]);
-    }
-
-    private function targetAreasMatch(?string $orderArea, ?string $riderArea): bool
-    {
-        return mb_strtolower(trim((string) $orderArea)) === mb_strtolower(trim((string) $riderArea));
     }
 }

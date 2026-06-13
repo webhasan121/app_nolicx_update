@@ -36,7 +36,6 @@ use App\Http\Controllers\User\WithdrawCreateController;
 use App\Http\Controllers\User\WithdrawIndexController;
 use App\Http\Controllers\WithdrawController;
 use App\Http\Middleware\AbleTo;
-use App\Models\Products_has_comments;
 use App\Models\User;
 use App\Models\city;
 use App\Models\country;
@@ -108,6 +107,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/dashboard/notices/{notice}/read', [NoticeController::class, 'markRead'])->name('dashboard.notices.read');
     Route::post('/dashboard/notices', [NoticeController::class, 'store'])->name('dashboard.notices.store');
     Route::put('/dashboard/notices/{notice}', [NoticeController::class, 'update'])->name('dashboard.notices.update');
+    Route::delete('/dashboard/notices/bulk-delete', [NoticeController::class, 'bulkDestroy'])->name('dashboard.notices.bulk-destroy');
     Route::delete('/dashboard/notices/{notice}', [NoticeController::class, 'destroy'])->name('dashboard.notices.destroy');
 
 
@@ -231,16 +231,9 @@ Route::middleware('auth')->group(function () {
          */
 
         Route::post('/products/comments', [ProductController::class, 'storeComment'])->name('user.comment.store');
-        Route::post('/products/comments/{id}/destroy', function ($id) {
-            try {
-                //code...
-                Products_has_comments::destroy($id);
-            } catch (\Throwable $th) {
-                //throw $th;
-                return redirect()->back()->with('error', $th->getMessage());
-            }
-            return redirect()->back();
-        })->name('user.comment.destroy');
+        Route::post('/products/comments/{id}/update', [ProductController::class, 'updateComment'])->name('user.comment.update');
+        Route::post('/products/comments/{id}/like', [ProductController::class, 'toggleCommentLike'])->name('user.comment.like');
+        Route::post('/products/comments/{id}/destroy', [ProductController::class, 'destroyComment'])->name('user.comment.destroy');
     });
 
     Route::prefix('dashboard')->group(function () {

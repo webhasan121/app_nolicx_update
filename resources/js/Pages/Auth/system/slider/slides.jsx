@@ -81,7 +81,9 @@ export default function Slides({ slider, slides = [] }) {
         <AppLayout title={`Slider- ${slider?.name ?? ""}`}>
             <Head title={`Slider- ${slider?.name ?? ""}`} />
 
-            <PageHeader>{`Slider- ${slider?.name ?? ""}`}</PageHeader>
+            <div className="w-full px-2 mx-auto max-w-8xl sm:px-6 lg:px-8">
+                <PageHeader>{`Slider- ${slider?.name ?? ""}`}</PageHeader>
+            </div>
 
             <Container>
                 <Section>

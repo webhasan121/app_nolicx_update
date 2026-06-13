@@ -49,6 +49,8 @@ class UpgradeVendorCreateController extends Controller
                 'phone' => $user->phone,
                 'email' => $user->email,
                 'country' => 'Bangladesh',
+                'district' => $user->state,
+                'upozila' => $user->city,
             ],
             'states' => state::where('country_id', $countryId)->orderBy('name')->get(['id', 'name']),
         ]);

@@ -1,6 +1,5 @@
 import { Head } from "@inertiajs/react";
 import AppLayout from "../../../../Layouts/App";
-import NavLink from "../../../../components/NavLink";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import Container from "../../../../components/dashboard/Container";
 import Section from "../../../../components/dashboard/section/Section";
@@ -8,6 +7,7 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { ActionIconLink } from "../../../../components/ActionIcon";
 
 export default function Index({ roles = [] }) {
     const { t } = useTranslation();
@@ -45,7 +45,7 @@ export default function Index({ roles = [] }) {
                                         <td>{role.permissions_count ?? "No Permissions"}</td>
                                         <td>
                                             <div className="flex">
-                                                <NavLink href={route("system.role.edit", { role: role.encrypted_id })}>{t("Edit")}</NavLink>
+                                                <ActionIconLink href={route("system.role.edit", { role: role.encrypted_id })} action="edit" title={t("Edit")} />
                                             </div>
                                         </td>
                                     </tr>

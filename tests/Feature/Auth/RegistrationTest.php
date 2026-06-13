@@ -2,26 +2,28 @@
 
 namespace Tests\Feature\Auth;
 
-use Livewire\Volt\Volt;
+use Inertia\Testing\AssertableInertia as Assert;
 
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
     $response
         ->assertOk()
-        ->assertSeeVolt('pages.auth.register');
+        ->assertInertia(fn (Assert $page) => $page->component('Auth/Register'));
 });
 
 test('new users can register', function () {
-    $component = Volt::test('pages.auth.register')
-        ->set('name', 'Test User')
-        ->set('email', 'test@example.com')
-        ->set('password', 'password')
-        ->set('password_confirmation', 'password');
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'phone' => '01700000000',
+        'country_id' => 18,
+        'state_id' => 1,
+        'city_id' => 1,
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
 
-    $component->call('register');
-
-    $component->assertRedirect(route('dashboard', absolute: false));
-
+    $response->assertRedirect(route('dashboard'));
     $this->assertAuthenticated();
 });

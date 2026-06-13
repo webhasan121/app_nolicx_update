@@ -1,11 +1,9 @@
 import { router, usePage } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
-import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
-import Foreach from "../../../../components/dashboard/Foreach";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import Div from "../../../../components/dashboard/overview/Div";
 import OverviewSection from "../../../../components/dashboard/overview/Section";
@@ -14,6 +12,8 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { ActionIconLink } from "../../../../components/ActionIcon";
 
 const FILTERS = ["*", "Active", "Pending", "Disabled", "Suspended"];
 
@@ -23,6 +23,7 @@ export default function Index() {
     const [search, setSearch] = useState(filters.find ?? "");
     const [sd, setSd] = useState(filters.sd ?? "");
     const [ed, setEd] = useState(filters.ed ?? "");
+    const today = todayInputDate();
     const rows = resellers.data ?? [];
 
     const requestResellers = ({
@@ -45,6 +46,7 @@ export default function Index() {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                only: ["filters", "resellers", "printUrl"],
             }
         );
     };
@@ -105,6 +107,7 @@ export default function Index() {
         resellers?.total > 0
             ? `Showing ${resellers?.from ?? 0}-${resellers?.to ?? 0} of ${resellers?.total ?? 0} resellers`
             : "No resellers found";
+    const hasActiveFilters = Boolean(search.trim() || sd || ed || (filters.filter ?? "Active") !== "Active");
 
     return (
         <AppLayout title={t("Resellers")} header={<PageHeader>{t("Resellers")}</PageHeader>}>
@@ -151,7 +154,7 @@ export default function Index() {
                                         <TextInput
                                             type="date"
                                             className="my-1 py-1"
-                                            value={sd}
+                                    value={sd || today}
                                             onChange={(e) => {
                                                 const value = e.target.value;
 
@@ -167,7 +170,7 @@ export default function Index() {
                                         <TextInput
                                             type="date"
                                             className="my-1 py-1"
-                                            value={ed}
+                                    value={ed}
                                             onChange={(e) => {
                                                 const value = e.target.value;
 
@@ -195,6 +198,26 @@ export default function Index() {
                                                 requestResellers();
                                             }}
                                         />
+                                        {hasActiveFilters ? (
+                                            <button
+                                                type="button"
+                                                className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                                onClick={() => {
+                                                    setSearch("");
+                                                    setSd("");
+                                                    setEd("");
+                                                    requestResellers({
+                                                        nextSearch: "",
+                                                        nextFilter: "Active",
+                                                        nextSd: "",
+                                                        nextEd: "",
+                                                        page: undefined,
+                                                    });
+                                                }}
+                                            >
+                                                {t("Reset")}
+                                            </button>
+                                        ) : null}
                                         <PrimaryButton
                                             type="button"
                                             onClick={() => window.open(printUrl, "_blank")}
@@ -207,9 +230,8 @@ export default function Index() {
                             content=""
                         />
                         <SectionInner>
-                            <Foreach data={rows}>
-                                <div>
-                                    <Table data={rows}>
+                            <div>
+                                <Table data={rows}>
                                         <thead>
                                             <tr>
                                                 <th>{t("SL")}</th>
@@ -245,19 +267,21 @@ export default function Index() {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <NavLink
+                                                        <ActionIconLink
                                                             href={route("system.reseller.edit", {
                                                                 id: item.id,
                                                                 filter: filters.filter ?? "Active",
                                                             })}
-                                                        >{t("edit")}</NavLink>
+                                                            action="edit"
+                                                            title={t("edit")}
+                                                        />
                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
-                                    </Table>
+                                </Table>
 
-                                    {pagination.pages.length ? (
+                                {pagination.pages.length ? (
                                         <div className="w-full pt-4">
                                             <div className="flex w-full items-center justify-between gap-3">
                                                 <div className="text-sm text-slate-700">
@@ -296,9 +320,8 @@ export default function Index() {
                                                 </div>
                                             </div>
                                         </div>
-                                    ) : null}
-                                </div>
-                            </Foreach>
+                                ) : null}
+                            </div>
                         </SectionInner>
                     </SectionSection>
                 </Container>

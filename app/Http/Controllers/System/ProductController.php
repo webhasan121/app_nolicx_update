@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\product_has_attribute;
 use App\Models\product_has_image;
 use App\Rules\MaxVideoDuration;
+use App\Support\TableDateFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -19,6 +20,8 @@ class ProductController extends Controller
 {
     use HandleImageUpload;
 
+    private const MAX_SHOWCASE_IMAGES = 8;
+
     public function indexReact(Request $request)
     {
         $filter = $request->input('filter', 'Active');
@@ -27,13 +30,18 @@ class ProductController extends Controller
         $sd = $request->input('sd');
         $ed = $request->input('ed');
         $isIncludeResel = filter_var($request->input('isIncludeResel', true), FILTER_VALIDATE_BOOL);
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, [
+            'filter' => 'Active',
+            'from' => 'all',
+            'isIncludeResel' => true,
+        ]);
 
         $query = Product::query()
             ->with(['owner'])
             ->withCount(['isResel', 'resel'])
             ->orderBy('id', 'desc');
 
-        $this->applyProductFilters($query, $filter, $from, $find, $sd, $ed, $isIncludeResel);
+        $this->applyProductFilters($query, $filter, $from, $find, $sd, $ed, $isIncludeResel, $defaultToday);
 
         $products = $query
             ->paginate(config('app.paginate'))
@@ -112,13 +120,18 @@ class ProductController extends Controller
         $sd = $request->input('sd');
         $ed = $request->input('ed');
         $isIncludeResel = filter_var($request->input('isIncludeResel', true), FILTER_VALIDATE_BOOL);
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, [
+            'filter' => 'Active',
+            'from' => 'all',
+            'isIncludeResel' => true,
+        ]);
 
         $query = Product::query()
             ->with(['owner'])
             ->withCount(['isResel', 'resel'])
             ->orderBy('id', 'desc');
 
-        $this->applyProductFilters($query, $filter, $from, $find, $sd, $ed, $isIncludeResel);
+        $this->applyProductFilters($query, $filter, $from, $find, $sd, $ed, $isIncludeResel, $defaultToday);
 
         $products = $query->get()->map(function ($item) {
             $ownerName = match ($item->belongs_to_type) {
@@ -167,7 +180,7 @@ class ProductController extends Controller
 
     public function editReact($product)
     {
-        $data = Product::with(['category', 'showcase', 'attr', 'isResel'])->withTrashed()->findOrFail($product);
+        $data = Product::with(['category', 'showcase', 'attr', 'attrs', 'isResel'])->withTrashed()->findOrFail($product);
 
         return Inertia::render('Auth/system/products/Edit', [
             'productData' => [
@@ -214,6 +227,11 @@ class ProductController extends Controller
                     'name' => $data->attr?->name ?? '',
                     'value' => $data->attr?->value ?? '',
                 ],
+                'attrs' => $data->attrs->map(fn(product_has_attribute $attr) => [
+                    'id' => $attr->id,
+                    'name' => $attr->name ?? '',
+                    'value' => $attr->value ?? '',
+                ])->values()->all(),
             ],
             'categories' => Category::getAll()->toArray(),
         ]);
@@ -221,7 +239,8 @@ class ProductController extends Controller
 
     public function updateReact(Request $request, $product)
     {
-        $data = Product::with(['attr', 'showcase'])->withTrashed()->findOrFail($product);
+        $data = Product::with(['attr', 'attrs', 'showcase'])->withTrashed()->findOrFail($product);
+        $availableShowcaseSlots = max(0, self::MAX_SHOWCASE_IMAGES - $data->showcase->count());
 
         $payload = $request->validate([
             'name' => ['nullable', 'string'],
@@ -246,9 +265,13 @@ class ProductController extends Controller
             'shipping_note' => ['nullable', 'string'],
             'attr_name' => ['nullable', 'string'],
             'attr_value' => ['nullable', 'string'],
+            'attributes' => ['nullable', 'array'],
+            'attributes.*.name' => ['nullable', 'string'],
+            'attributes.*.value' => ['nullable', 'string'],
             'thumb' => [empty($data->thumbnail) ? 'required' : 'nullable', 'file', 'image'],
             'video' => ['nullable', 'url', 'max:2048'],
             'newseothumb' => ['nullable', 'file', 'image'],
+            'newImage' => ['nullable', 'array', 'max:' . $availableShowcaseSlots],
             'newImage.*' => ['nullable', 'file', 'image'],
         ]);
 
@@ -281,18 +304,7 @@ class ProductController extends Controller
         $data->shipping_note = $payload['shipping_note'] ?? $data->shipping_note;
         $data->save();
 
-        if ($data->attr) {
-            $data->attr->update([
-                'name' => $payload['attr_name'] ?? '',
-                'value' => $payload['attr_value'] ?? '',
-            ]);
-        } elseif (($payload['attr_name'] ?? null) || ($payload['attr_value'] ?? null)) {
-            product_has_attribute::create([
-                'product_id' => $data->id,
-                'name' => $payload['attr_name'] ?? '',
-                'value' => $payload['attr_value'] ?? '',
-            ]);
-        }
+        $this->syncProductAttributes($data, $request);
 
         if ($request->hasFile('newImage')) {
             foreach ($request->file('newImage') as $image) {
@@ -336,7 +348,7 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Image Deletd !');
     }
 
-    private function applyProductFilters($query, string $filter, string $from, ?string $find, ?string $sd, ?string $ed, bool $isIncludeResel): void
+    private function applyProductFilters($query, string $filter, string $from, ?string $find, ?string $sd, ?string $ed, bool $isIncludeResel, bool $defaultToday = false): void
     {
         if ($from && $from !== 'all' && $from !== 'id') {
             $query->where(['belongs_to_type' => $from]);
@@ -369,7 +381,7 @@ class ProductController extends Controller
             });
         }
 
-        $this->applyDateFilter($query, $sd, $ed);
+        $this->applyDateFilter($query, $sd, $ed, $defaultToday);
     }
 
     private function videoUrl(?string $video): ?string
@@ -383,35 +395,36 @@ class ProductController extends Controller
             : asset('storage/' . $video);
     }
 
-    private function applyDateFilter($query, ?string $sd, ?string $ed): void
+    private function syncProductAttributes(Product $product, Request $request): void
     {
-        if (!empty($sd) && !empty($ed)) {
-            $start = Carbon::parse($sd)->startOfDay();
-            $end = Carbon::parse($ed)->endOfDay();
+        $attributes = collect($request->input('attributes', []))
+            ->map(fn($row) => [
+                'name' => trim((string) ($row['name'] ?? '')),
+                'value' => trim((string) ($row['value'] ?? '')),
+            ])
+            ->filter(fn($row) => $row['name'] !== '' || $row['value'] !== '')
+            ->values();
 
-            if ($start->gt($end)) {
-                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
-            }
-
-            $query->whereBetween('created_at', [$start, $end]);
-
-            return;
+        if ($attributes->isEmpty() && ($request->filled('attr_name') || $request->filled('attr_value'))) {
+            $attributes = collect([[
+                'name' => trim((string) $request->input('attr_name', '')),
+                'value' => trim((string) $request->input('attr_value', '')),
+            ]]);
         }
 
-        if (!empty($sd)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($sd)->startOfDay(),
-                Carbon::parse($sd)->endOfDay(),
-            ]);
+        product_has_attribute::where('product_id', $product->id)->delete();
 
-            return;
-        }
-
-        if (!empty($ed)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($ed)->startOfDay(),
-                Carbon::parse($ed)->endOfDay(),
+        foreach ($attributes as $attribute) {
+            product_has_attribute::create([
+                'product_id' => $product->id,
+                'name' => $attribute['name'],
+                'value' => $attribute['value'],
             ]);
         }
+    }
+
+    private function applyDateFilter($query, ?string $sd, ?string $ed, bool $defaultToday = false): void
+    {
+        TableDateFilter::apply($query, $sd, $ed, $defaultToday);
     }
 }

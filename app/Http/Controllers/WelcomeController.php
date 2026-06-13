@@ -32,8 +32,7 @@ class WelcomeController extends Controller
 
         $categories = Category::getAll();
 
-        $sliders = Static_slider::query()
-            ->home()
+        $staticSliders = Static_slider::query()
             ->active()
             ->with('slides')
             ->get();
@@ -55,7 +54,12 @@ class WelcomeController extends Controller
             'active_nav' => auth()->user() ? auth()->user()->active_nav : null,
             'products' => $products,
             'categories' => $categories,
-            'ss' => $sliders,
+            'ss' => $staticSliders->where('home', true)->values(),
+            'grocerySliders' => $staticSliders->where('grocery_item', true)->values(),
+            'medicineSliders' => $staticSliders->where('medicine_products', true)->values(),
+            'foodSliders' => $staticSliders->where('food_items', true)->values(),
+            'topSalesSliders' => $staticSliders->where('top_sales', true)->values(),
+            'womensSliders' => $staticSliders->where('womens_item', true)->values(),
             'slides' => $slides,
             'developer_percentage' => SystemSettings::get('DEVELOPER_PERCENTAGE', '0'),
             'management_percentage' => SystemSettings::get('MANAGEMENT_PERCENTAGE', '0'),

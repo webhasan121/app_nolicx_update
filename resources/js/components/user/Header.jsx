@@ -7,16 +7,44 @@ import Dropdown from "../Dropdown";
 import DropdownLink from "../DropdownLink";
 import NavLink from "../NavLink";
 import useTranslation from "../../hooks/useTranslation";
+import CountrySearchSelect from "../CountrySearchSelect";
+import LanguageSwitcher from "../LanguageSwitcher";
 
 export default function Header() {
     const { auth, global, roles, activeNav } = usePage().props; // this global() load in AppServiceProvider
     const categories = global?.categories || [];
+    const countries = global?.countries || [];
     const user = auth?.user;
     const { t } = useTranslation();
     console.log("roles", roles);
+    const resolveCountry = (value) => {
+        const normalized = String(value ?? "").trim().toLowerCase();
+
+        if (!normalized) {
+            return "";
+        }
+
+        return (
+            countries.find((country) => (
+                String(country.name ?? "").trim().toLowerCase() === normalized ||
+                String(country.id) === String(value)
+            ))?.name ?? value
+        );
+    };
 
     const [open, setOpen] = useState(false);
     const [categoryQuery, setCategoryQuery] = useState("");
+    const [selectedCountry, setSelectedCountry] = useState(() => {
+        if (typeof window !== "undefined") {
+            const country = new URLSearchParams(window.location.search).get("country");
+
+            if (country) {
+                return resolveCountry(country);
+            }
+        }
+
+        return resolveCountry(user?.country);
+    });
     const currentCategorySlug = (() => {
         if (typeof window === "undefined") {
             return "";
@@ -34,8 +62,16 @@ export default function Header() {
     // Search
     const handleSearch = (e) => {
         e.preventDefault();
-        const q = e.target.q.value;
-        router.get(route("search"), { q });
+        const q = (e.target.q.value ?? "").trim();
+
+        if (!q) {
+            return;
+        }
+
+        router.get(route("search"), {
+            q,
+            country: selectedCountry || undefined,
+        });
     };
 
     const matchesCategory = (item, keyword) => {
@@ -87,7 +123,7 @@ export default function Header() {
 
                         {/* SEARCH */}
                         <div
-                            className="items-center justify-between flex-1 hidden w-full px-4 md:flex"
+                            className="items-center justify-between flex-1 hidden w-full gap-4 px-4 md:flex"
                             id="search_content"
                         >
                             <Link
@@ -97,17 +133,35 @@ export default function Header() {
                                 {t("Shops")}
                             </Link>
 
-                            <div className="relative flex-1 max-w-xl">
-                                <form onSubmit={handleSearch}>
-                                    <input
-                                        type="search"
-                                        name="q"
-                                        placeholder={t("Search Product By Title or Tags")}
-                                        className="w-full border border-gray-200 rounded-md shadow-0 focus:border-0 focus:shadow-0"
-                                        style={{ marginBottom: 0 }}
-                                        id="search"
+                            <div className="flex items-center justify-end gap-2">
+                                <div className="relative w-72">
+                                    <form onSubmit={handleSearch}>
+                                        <input
+                                            type="search"
+                                            name="q"
+                                            placeholder={t("Search Product By Title or Tags")}
+                                            className="h-10 w-full rounded-md border border-gray-200 px-3 pr-11 text-sm shadow-0 focus:border-gray-300 focus:shadow-0"
+                                            style={{ marginBottom: 0 }}
+                                            id="search"
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="absolute inset-y-0 right-0 flex items-center justify-center w-11 text-gray-500 hover:text-gray-800"
+                                            aria-label={t("Search")}
+                                        >
+                                            <i className="fas fa-search"></i>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {countries.length ? (
+                                    <CountrySearchSelect
+                                        value={selectedCountry}
+                                        options={countries}
+                                        onChange={setSelectedCountry}
+                                        placeholder={t("Country")}
                                     />
-                                </form>
+                                ) : null}
                             </div>
                         </div>
 
@@ -115,20 +169,22 @@ export default function Header() {
                         <div>
                             {auth?.user ? (
                                 <div className="flex items-center">
+                                    <LanguageSwitcher compact className="mx-1" />
+
                                     {/* CART */}
                                     <NavLink
                                         href={route("carts.view")}
-                                        className="mr-3"
+                                        className="mr-1"
                                         unstyled
                                     >
                                         <button
                                             type="button"
-                                            className="flex items-center btn"
+                                            className="flex h-10 items-center justify-center rounded-md px-2 text-sm"
                                         >
                                             <i className="fas fa-cart-plus"></i>
                                             <span
                                                 id="displayCartItem"
-                                                className="pb-3 text-green"
+                                                className="ml-1 text-green"
                                             >
                                                 {auth.cartCount ?? 0}
                                             </span>
@@ -137,12 +193,12 @@ export default function Header() {
 
                                     {/* DROPDOWN */}
                                     <div className="flex">
-                                        <div className="relative flex sm:items-center sm:ms-6">
+                                        <div className="relative flex sm:items-center sm:ms-2">
                                             <Dropdown
                                                 align="right"
                                                 width="48"
                                                 trigger={
-                                                    <button className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 transition bg-white border rounded-md hover:text-gray-700">
+                                                    <button className="flex h-10 items-center rounded-md border bg-white px-3 text-sm font-medium text-gray-500 transition hover:text-gray-700">
                                                         <div>
                                                             {user?.name
                                                                 ? `${user.name.slice(0, 8)}...`
@@ -231,6 +287,15 @@ export default function Header() {
                                                         >
                                                             <i className="pr-2 fas fa-shop"></i>
                                                             {t("Request Reseller")}
+                                                        </DropdownLink>
+
+                                                        <DropdownLink
+                                                            href={route(
+                                                                "upgrade.rider.create",
+                                                            )}
+                                                        >
+                                                            <i className="pr-2 fas fa-motorcycle"></i>
+                                                            {t("Request Rider")}
                                                         </DropdownLink>
 
                                                         <hr />

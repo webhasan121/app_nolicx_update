@@ -7,6 +7,7 @@ use App\Models\DistributeComissions;
 use App\Models\TakeComissions;
 use App\Models\UserTask;
 use App\Models\Withdraw;
+use App\Support\TableDateFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -16,6 +17,7 @@ class WalletController extends Controller
     public function index(Request $request)
     {
         $find = trim((string) $request->query('find', ''));
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request);
         $query = Withdraw::query()
             ->where(['user_id' => Auth::id(), 'status' => 'Pending'])
             ->latest('id');
@@ -28,6 +30,8 @@ class WalletController extends Controller
                     ->orWhere('pay_by', 'like', '%' . $find . '%')
                     ->orWhere('pay_to', 'like', '%' . $find . '%');
             });
+        } elseif ($defaultToday) {
+            $query->whereDate('created_at', today());
         }
 
         $withdraw = $query->paginate(config('app.paginate'))->withQueryString();
@@ -68,6 +72,7 @@ class WalletController extends Controller
             'printUrl' => route('user.wallet.print', [
                 'find' => $find,
             ]),
+            'wallet_balance' => auth()->user()->coin ?? 0,
             'available_balance' => auth()->user()->abailCoin(),
         ]);
     }
@@ -75,6 +80,7 @@ class WalletController extends Controller
     public function print(Request $request)
     {
         $find = trim((string) $request->query('find', ''));
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request);
         $query = Withdraw::query()
             ->where(['user_id' => Auth::id(), 'status' => 'Pending'])
             ->latest('id');
@@ -87,6 +93,8 @@ class WalletController extends Controller
                     ->orWhere('pay_by', 'like', '%' . $find . '%')
                     ->orWhere('pay_to', 'like', '%' . $find . '%');
             });
+        } elseif ($defaultToday) {
+            $query->whereDate('created_at', today());
         }
 
         $withdraw = $query->get()->map(function ($cus) {
@@ -104,6 +112,7 @@ class WalletController extends Controller
                 'find' => $find,
             ],
             'withdraw' => $withdraw,
+            'wallet_balance' => auth()->user()->coin ?? 0,
             'available_balance' => auth()->user()->abailCoin(),
         ]);
     }

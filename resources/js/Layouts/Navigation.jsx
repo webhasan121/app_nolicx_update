@@ -158,10 +158,10 @@ export default function Navigation() {
                                 {t("Profile")}
                             </DropdownLink>
 
-                            <div className="block w-full px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 transition duration-150 ease-in-out">
+                            <DropdownLink href={route("system.settings.index")}>
                                 <i className="pr-2 fas fa-gear"></i>
                                 {t("Settings")}
-                            </div>
+                            </DropdownLink>
 
                             <DropdownLink href={route("dashboard.notices.index")}>
                                 <i className="pr-2 fas fa-bell"></i>
@@ -197,7 +197,8 @@ export default function Navigation() {
                         </Dropdown>
                     </div>
 
-                    <div className="-me-2 flex items-center md:hidden">
+                    <div className="-me-2 flex items-center gap-2 md:hidden">
+                        <NoticeBell />
                         <button
                             onClick={() => setOpen((value) => !value)}
                             className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
@@ -342,6 +343,10 @@ export default function Navigation() {
 
                             <ResponsiveNavLink href={route("profile")}>
                                 <i className="fas fa-user pr-2"> </i> {t("Profile")}
+                            </ResponsiveNavLink>
+
+                            <ResponsiveNavLink href={route("system.settings.index")}>
+                                <i className="fas fa-gear pr-2"></i> {t("Settings")}
                             </ResponsiveNavLink>
 
                             <ResponsiveNavLink href={route("dashboard.notices.index")}>

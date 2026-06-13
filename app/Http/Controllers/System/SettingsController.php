@@ -25,6 +25,7 @@ class SettingsController extends Controller
                 'dbid_no' => SystemSettings::get('DBID_NO'),
                 'trade_license' => SystemSettings::get('TRADE_LICENSE'),
                 'playstore_link' => SystemSettings::get('PLAYSTORE_LINK'),
+                'deposit_pay_numbers' => $this->depositPayNumbers(),
                 'developer_percentage' => SystemSettings::get('DEVELOPER_PERCENTAGE'),
                 'management_percentage' => SystemSettings::get('MANAGEMENT_PERCENTAGE'),
                 'management_team_percentage' => SystemSettings::get('MANAGEMENT_TEAM_PERCENTAGE'),
@@ -99,6 +100,28 @@ class SettingsController extends Controller
         return redirect()->back()->with('success', 'Playstore link updated successfully!');
     }
 
+    public function updateDepositPayNumbers(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'deposit_pay_numbers' => ['nullable', 'array'],
+            'deposit_pay_numbers.*.name' => ['nullable', 'string', 'max:100'],
+            'deposit_pay_numbers.*.value' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $numbers = collect($validated['deposit_pay_numbers'] ?? [])
+            ->map(fn ($item) => [
+                'name' => trim((string) ($item['name'] ?? '')),
+                'value' => trim((string) ($item['value'] ?? '')),
+            ])
+            ->filter(fn ($item) => $item['name'] !== '' && $item['value'] !== '')
+            ->values()
+            ->all();
+
+        SystemSettings::set('DEPOSIT_PAY_NUMBERS', json_encode($numbers, JSON_UNESCAPED_SLASHES));
+
+        return redirect()->back()->with('success', 'Deposit payment numbers updated successfully!');
+    }
+
     public function updateDeveloperPercentage(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -130,6 +153,24 @@ class SettingsController extends Controller
         SystemSettings::set('MANAGEMENT_TEAM_PERCENTAGE', (string) $validated['management_team_percentage']);
 
         return redirect()->back()->with('success', 'Management TM percentage updated successfully!');
+    }
+
+    private function depositPayNumbers(): array
+    {
+        $decoded = json_decode(SystemSettings::get('DEPOSIT_PAY_NUMBERS', '[]'), true);
+
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        return collect($decoded)
+            ->map(fn ($item) => [
+                'name' => trim((string) ($item['name'] ?? '')),
+                'value' => trim((string) ($item['value'] ?? '')),
+            ])
+            ->filter(fn ($item) => $item['name'] !== '' && $item['value'] !== '')
+            ->values()
+            ->all();
     }
 
 }

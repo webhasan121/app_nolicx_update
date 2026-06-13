@@ -7,6 +7,22 @@ import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
 
 export default function Print({ products = [], filters = {} }) {
+    const toNumber = (value) => Number(value || 0) || 0;
+    const totals = products.reduce(
+        (carry, product) => ({
+            orders: carry.orders + toNumber(product.orders_count),
+            cost: carry.cost + toNumber(product.buying_price),
+            price: carry.price + toNumber(product.price),
+            sellPrice: carry.sellPrice + toNumber(product.sell_price),
+        }),
+        {
+            orders: 0,
+            cost: 0,
+            price: 0,
+            sellPrice: 0,
+        }
+    );
+
     useEffect(() => {
         const timer = window.setTimeout(() => {
             window.print();
@@ -62,12 +78,15 @@ export default function Print({ products = [], filters = {} }) {
                                         <td>{product.created_at_human}</td>
                                     </tr>
                                 ))}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colSpan="10">Total {products.length} Items</td>
+                                <tr className="font-bold">
+                                    <td colSpan="5">Total {products.length} Items</td>
+                                    <td>{totals.orders}</td>
+                                    <td>{totals.cost}</td>
+                                    <td>{totals.price}</td>
+                                    <td>{totals.sellPrice}</td>
+                                    <td></td>
                                 </tr>
-                            </tfoot>
+                            </tbody>
                         </Table>
                     </Section>
                 </Container>

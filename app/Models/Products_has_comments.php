@@ -10,6 +10,7 @@ class Products_has_comments extends Model
     protected $casts = [
         'rating' => 'integer',
         'approved' => 'boolean',
+        'images' => 'array',
     ];
 
 
@@ -21,5 +22,15 @@ class Products_has_comments extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function cartOrder()
+    {
+        return $this->belongsTo(CartOrder::class);
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(ProductCommentLike::class, 'products_has_comment_id');
     }
 }

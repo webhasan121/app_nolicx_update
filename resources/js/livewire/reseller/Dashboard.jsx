@@ -10,6 +10,8 @@ import SectionInner from "../../components/dashboard/section/Inner";
 import SectionSection from "../../components/dashboard/section/Section";
 import VendorOrdersIndex from "../vendor/orders/Index";
 import Container from "../../components/dashboard/Container";
+import useTranslation from "../../hooks/useTranslation";
+import { formatAmount } from "../../utils/formatAmount";
 
 function CategoryItem({ item, depth = 0 }) {
     if (!item || item.slug === "default-category") {
@@ -118,9 +120,10 @@ function OverviewDiv({ title, children }) {
     );
 }
 
-const money = (value) => `Tk ${Number(value ?? 0).toLocaleString()}`;
+const money = (value) => `Tk ${formatAmount(value)}`;
 
 function ProductCard({ product }) {
+    const { t } = useTranslation();
     const salePrice =
         product?.offer_type && product?.discount
             ? product.discount
@@ -129,7 +132,7 @@ function ProductCard({ product }) {
     return (
         <div className="relative overflow-hidden bg-white rounded shadow">
             {product?.offer_type ? (
-                <div className="bg-orange-600 discount-badge ">
+                <div className="bg-orange-500 discount-badge ">
                     {product?.price
                         ? Math.round(
                               (((product.price - product.discount) /
@@ -159,7 +162,7 @@ function ProductCard({ product }) {
                     })}
                     className="p-0 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                 >
-                    <div className="text-sm text-start">
+                    <div className="text-sm text-start product-title-clamp-3">
                         {product?.name ?? "N/A"}
                     </div>
                 </NavLink>
@@ -194,7 +197,7 @@ function ProductCard({ product }) {
                                 type="button"
                                 className="flex justify-between w-full text-center "
                             >
-                                Purchase <i className="pl-2 fas fa-angle-right"></i>
+                                {t("Purchase")} <i className="pl-2 fas fa-angle-right"></i>
                             </PrimaryButton>
                         </NavLink>
                     </div>
@@ -214,6 +217,7 @@ export default function Dashboard({
     vendorOrdersIndex,
     activeNav,
 }) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [categorySearch, setCategorySearch] = useState("");
     const filteredCategories = useMemo(
@@ -227,55 +231,52 @@ export default function Dashboard({
     };
 
     return (
-        <div>
-            <div>
+            <Container>
                 <div>
-                    <div>
-                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                            <OverviewDiv title="Product">{tp}</OverviewDiv>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                        <OverviewDiv title={t("Product")}>{tp}</OverviewDiv>
 
-                            <OverviewDiv title="Vendor Shops">
-                                {vendor}
-                            </OverviewDiv>
-                            <OverviewDiv title="Today sell">
-                                {money(dashboardOverview?.today_sell)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Monthly sell">
-                                {money(dashboardOverview?.monthly_sell)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Product stock">
-                                {dashboardOverview?.product_stock ?? "0"}
-                            </OverviewDiv>
-                            <OverviewDiv title="Total product stock price">
-                                {money(dashboardOverview?.total_product_stock_price)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Yearly sell amount">
-                                {money(dashboardOverview?.yearly_sell_amount)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Total amount">
-                                {money(dashboardOverview?.total_amount)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Monthly profit">
-                                {money(dashboardOverview?.monthly_profit)}
-                            </OverviewDiv>
-                            <OverviewDiv title="Daily profit">
-                                {money(dashboardOverview?.daily_profit)}
-                            </OverviewDiv>
-                        </div>
+                        <OverviewDiv title={t("Vendor Shops")}>
+                            {vendor}
+                        </OverviewDiv>
+                        <OverviewDiv title={t("Today sell")}>
+                            {money(dashboardOverview?.today_sell)}
+                        </OverviewDiv>
+                        <OverviewDiv title={t("Monthly sell")}>
+                            {money(dashboardOverview?.monthly_sell)}
+                        </OverviewDiv>
+                        <OverviewDiv title={t("Product stock")}>
+                            {dashboardOverview?.product_stock ?? "0"}
+                        </OverviewDiv>
+                        <OverviewDiv title={t("Total product stock price")}>
+                            {money(dashboardOverview?.total_product_stock_price)}
+                        </OverviewDiv>
+                        <OverviewDiv title={t("Yearly sell amount")}>
+                            {money(dashboardOverview?.yearly_sell_amount)}
+                        </OverviewDiv>
+                        <OverviewDiv title={t("Total amount")}>
+                            {money(dashboardOverview?.total_amount)}
+                        </OverviewDiv>
+                        <OverviewDiv title={t("Monthly profit")}>
+                            {money(dashboardOverview?.monthly_profit)}
+                        </OverviewDiv>
+                        <OverviewDiv title={t("Daily profit")}>
+                            {money(dashboardOverview?.daily_profit)}
+                        </OverviewDiv>
                     </div>
                     <Hr />
 
                     <SectionSection>
                         <SectionHeader
-                            title="Chose From Different Category"
-                            content={`We have ${category} categories, chose as you need from our different category.`}
+                            title={t("Chose From Different Category")}
+                            content={t("We have :count categories, chose as you need from our different category.", { count: category ?? 0 })}
                         />
                         <SectionInner>
                             <PrimaryButton
                                 type="button"
                                 onClick={() => setOpen(true)}
                             >
-                                categories
+                                {t("Categories")}
                             </PrimaryButton>
                         </SectionInner>
                     </SectionSection>
@@ -288,7 +289,7 @@ export default function Dashboard({
 
                     <Hr />
                     <SectionInner>
-                        <p className="mb-2 text-xs">Resel Products from vendor</p>
+                        <p className="mb-2 text-xs">{t("Resel Products from vendor")}</p>
                         <div
                             style={{
                                 display: "grid",
@@ -311,20 +312,19 @@ export default function Dashboard({
                         href={route("reseller.resel-product.index")}
                         active={route().current("reseller.resel-product.*")}
                     >
-                        <i className="w-6 pr-2 fas fa-sync"></i> View All
+                        <i className="w-6 pr-2 fas fa-sync"></i> {t("View All")}
                     </ResponsiveNavLink>
                 </div>
-
                 <Modal show={open} onClose={closeCategoryModal}>
                     <div className="flex flex-col gap-3 p-3 border-b sm:flex-row sm:items-center sm:justify-between">
-                        <div>Explore Category</div>
+                        <div>{t("Explore Category")}</div>
                         <input
                             type="search"
                             value={categorySearch}
                             onChange={(event) =>
                                 setCategorySearch(event.target.value)
                             }
-                            placeholder="Search category"
+                            placeholder={t("Search category")}
                             className="w-full text-sm border-gray-300 rounded sm:w-56 focus:border-orange-500 focus:ring-orange-500"
                             autoComplete="off"
                         />
@@ -335,7 +335,7 @@ export default function Dashboard({
                                 href={route("reseller.resel-product.index")}
                                 className="p-0 text-sm border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                             >
-                                View All Products
+                                {t("View All Products")}
                             </NavLink>
                         </div>
                         {filteredCategories.length > 0 ? (
@@ -344,18 +344,17 @@ export default function Dashboard({
                             ))
                         ) : (
                             <div className="py-6 text-center text-gray-500">
-                                No category found.
+                                {t("No category found.")}
                             </div>
                         )}
                     </div>
                     <hr className="my-1" />
                     <div className="flex items-center justify-end p-3">
                         <DangerButton onClick={closeCategoryModal}>
-                            close
+                            {t("Close")}
                         </DangerButton>
                     </div>
                 </Modal>
-            </div>
-        </div>
+            </Container>
     );
 }

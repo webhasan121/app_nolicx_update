@@ -1,58 +1,63 @@
 import { Head, router } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
-import Modal from "../../../../components/Modal";
-import Hr from "../../../../components/Hr";
-import NavLink from "../../../../components/NavLink";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../../components/PrimaryButton";
-import SecondaryButton from "../../../../components/SecondaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import OverviewDiv from "../../../../components/dashboard/overview/Div";
+import { formatAmount } from "../../../../utils/formatAmount";
 import OverviewSection from "../../../../components/dashboard/overview/Section";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import Table from "../../../../components/dashboard/table/Table";
 import AppLayout from "../../../../Layouts/App";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { ActionIconLink } from "../../../../components/ActionIcon";
 
 export default function Index({ filters, stats, withdraw }) {
     const { t } = useTranslation();
-    const [showFilterModal, setShowFilterModal] = useState(false);
+    const controlClass =
+        "h-9 rounded-md border border-gray-300 bg-white px-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500";
     const [queryValue, setQueryValue] = useState(filters?.q ?? "");
-    const [modalWhere, setModalWhere] = useState(filters?.where ?? "find");
-    const [modalSdate, setModalSdate] = useState(filters?.sdate ?? "");
-    const [modalEdate, setModalEdate] = useState(filters?.edate ?? "");
+    const [inlineSdate, setInlineSdate] = useState(filters?.sdate ?? "");
+    const [inlineEdate, setInlineEdate] = useState(filters?.edate ?? "");
+    const today = todayInputDate();
 
     const apply = (next = {}) => {
         router.get(
             route("system.withdraw.index"),
             {
+                fst: next.fst ?? filters?.fst ?? "All",
                 where: next.where ?? filters?.where ?? "",
                 q: next.q ?? filters?.q ?? "",
-                fst: next.fst ?? filters?.fst ?? "All",
                 sdate: next.sdate ?? filters?.sdate ?? "",
                 edate: next.edate ?? filters?.edate ?? "",
                 page: next.page ?? undefined,
             },
-            { preserveScroll: true, preserveState: true }
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+                only: ["filters", "stats", "withdraw"],
+            }
         );
     };
 
     useEffect(() => {
         setQueryValue(filters?.q ?? "");
-    }, [filters?.q]);
-
-    useEffect(() => {
-        setModalWhere(filters?.where ?? "find");
-        setModalSdate(filters?.sdate ?? "");
-        setModalEdate(filters?.edate ?? "");
-    }, [filters?.where, filters?.sdate, filters?.edate]);
+        setInlineSdate(filters?.sdate ?? "");
+        setInlineEdate(filters?.edate ?? "");
+    }, [filters?.q, filters?.sdate, filters?.edate]);
 
     useEffect(() => {
         const timer = window.setTimeout(() => {
             if (queryValue !== (filters?.q ?? "")) {
-                apply({ q: queryValue });
+                apply({
+                    where: queryValue ? "query" : "",
+                    q: queryValue,
+                    page: undefined,
+                });
             }
         }, 400);
 
@@ -62,8 +67,9 @@ export default function Index({ filters, stats, withdraw }) {
     const print = () => {
         window.open(
             route("system.withdraw.print", {
-                where: filters?.where ?? "",
-                fst: filters?.fst ?? "Pending",
+                fst: filters?.fst ?? "All",
+                where: queryValue ? "query" : (filters?.where ?? ""),
+                q: queryValue ?? "",
                 sdate: filters?.sdate ?? "",
                 edate: filters?.edate ?? "",
             }),
@@ -79,9 +85,9 @@ export default function Index({ filters, stats, withdraw }) {
         const nextUrl = new URL(url);
 
         apply({
+            fst: nextUrl.searchParams.get("fst") ?? filters?.fst,
             where: nextUrl.searchParams.get("where") ?? filters?.where,
             q: nextUrl.searchParams.get("q") ?? filters?.q,
-            fst: nextUrl.searchParams.get("fst") ?? filters?.fst,
             sdate: nextUrl.searchParams.get("sdate") ?? filters?.sdate,
             edate: nextUrl.searchParams.get("edate") ?? filters?.edate,
             page: nextUrl.searchParams.get("page") ?? undefined,
@@ -102,6 +108,13 @@ export default function Index({ filters, stats, withdraw }) {
         withdraw?.total > 0
             ? `Showing ${withdraw?.from ?? 0}-${withdraw?.to ?? 0} of ${withdraw?.total ?? 0} withdraws`
             : "No withdraws found";
+    const hasActiveFilters = Boolean(
+        queryValue.trim() ||
+            inlineSdate ||
+            inlineEdate ||
+            (filters?.fst ?? "All") !== "All" ||
+            (filters?.where ?? "") !== ""
+    );
 
     return (
         <AppLayout title={t("Withdraws")} header={<PageHeader>{t("Withdraws")}</PageHeader>}>
@@ -109,33 +122,85 @@ export default function Index({ filters, stats, withdraw }) {
 
             <Container>
                 <OverviewSection>
-                    <OverviewDiv title={t("Amount")} content={stats?.amount ?? 0} />
-                    <OverviewDiv title={t("Payable")} content={stats?.payable ?? 0} />
-                    <OverviewDiv title={t("Comission")} content={`${stats?.server_fee ?? 0} | ${stats?.maintenance_fee ?? 0}`} />
-                    <OverviewDiv title={t("Paid")} content={stats?.paid ?? 0} />
+                    <OverviewDiv title={t("Amount")} content={formatAmount(stats?.amount)} />
+                    <OverviewDiv title={t("Payable")} content={formatAmount(stats?.payable)} />
+                    <OverviewDiv title={t("Comission")} content={`${formatAmount(stats?.server_fee)} | ${formatAmount(stats?.maintenance_fee)}`} />
+                    <OverviewDiv title={t("Paid")} content={formatAmount(stats?.paid)} />
                 </OverviewSection>
 
                 <Section>
                     <SectionHeader
                         title=""
                         content={
-                            <div className="flex items-center justify-between overflow-x-scroll" style={{ scrollBehavior: "smooth" }}>
-                                <div>
-                                    <select value={filters?.fst ?? "All"} onChange={(e) => apply({ fst: e.target.value })} className="py-1 mb-2 border rounded" id="filter_status">
+                            <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
+                                    <select
+                                        value={filters?.fst ?? "All"}
+                                        onChange={(e) => apply({ fst: e.target.value, page: undefined })}
+                                        className={`${controlClass} w-full md:w-36`}
+                                        id="filter_status"
+                                    >
                                         <option value="All">{t("All")}{stats?.total ?? 0}</option>
                                         <option value="Pending">{t("Pending")}{stats?.pending ?? 0}</option>
                                         <option value="Accept">{t("Accepted")}{stats?.paid ?? 0}</option>
                                         <option value="Reject">{t("Rejected")}{stats?.reject ?? 0}</option>
                                     </select>
+                                    <TextInput
+                                        type="text"
+                                        value={queryValue}
+                                        onChange={(e) => setQueryValue(e.target.value)}
+                                        placeholder={t("Search user...")}
+                                        className={`${controlClass} w-full md:w-56`}
+                                    />
                                 </div>
 
-                                <div className="flex space-x-2">
-                                    <SecondaryButton onClick={() => setShowFilterModal(true)}>
-                                        <i className="fas fa-filter"></i>
-                                    </SecondaryButton>
-                                    <PrimaryButton type="button" onClick={print}>
+                                <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                                    <TextInput
+                                        type="date"
+                                        value={inlineSdate || today}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setInlineSdate(value);
+                                            apply({ sdate: value, edate: inlineEdate, page: undefined });
+                                        }}
+                                        className={`${controlClass} w-full md:w-44`}
+                                        title={t("Start Date")}
+                                    />
+                                    <TextInput
+                                        type="date"
+                                        value={inlineEdate}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setInlineEdate(value);
+                                            apply({ sdate: inlineSdate, edate: value, page: undefined });
+                                        }}
+                                        className={`${controlClass} w-full md:w-44`}
+                                        title={t("End Date")}
+                                    />
+                                    <PrimaryButton type="button" onClick={print} className="h-9 min-w-10 justify-center px-3">
                                         <i className="fas fa-print"></i>
                                     </PrimaryButton>
+                                    {hasActiveFilters ? (
+                                        <button
+                                            type="button"
+                                            className="h-9 rounded-md border border-gray-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            onClick={() => {
+                                                setQueryValue("");
+                                                setInlineSdate("");
+                                                setInlineEdate("");
+                                                apply({
+                                                    fst: "All",
+                                                    where: "",
+                                                    q: "",
+                                                    sdate: "",
+                                                    edate: "",
+                                                    page: undefined,
+                                                });
+                                            }}
+                                        >
+                                            {t("Reset")}
+                                        </button>
+                                    ) : null}
                                 </div>
                             </div>
                         }
@@ -187,7 +252,7 @@ export default function Index({ filters, stats, withdraw }) {
                                     <td>{item.created_at_formatted}</td>
                                     <td>
                                         <div className="flex">
-                                            <NavLink href={route("system.withdraw.view", { id: item.id })}>{t("Details")}</NavLink>
+                                            <ActionIconLink href={route("system.withdraw.view", { id: item.id })} action="details" title={t("Details")} />
                                         </div>
                                     </td>
                                 </tr>
@@ -244,44 +309,6 @@ export default function Index({ filters, stats, withdraw }) {
 
                 </Section>
             </Container>
-
-            <Modal show={showFilterModal} onClose={() => setShowFilterModal(false)} maxWidth="sm">
-                <div className="p-3">{t("Filter")}</div>
-                <Hr />
-                <div className="p-3">
-                    <div>
-                        <p>{t("Search Criteria")}</p>
-                        <select value={modalWhere} onChange={(e) => setModalWhere(e.target.value)} id="search_where" className="py-1 border-0 rounded-md shadow-none">
-                            <option value="find">{t("ID")}</option>
-                            <option value="query">{t("User")}</option>
-                        </select>
-                        <br />
-                        <TextInput type="text" className="w-full" value={queryValue} onChange={(e) => setQueryValue(e.target.value)} placeholder={t("Search by User Name or ID")} />
-                    </div>
-                    <Hr className="my-2" />
-                    <div className="flex items-center justify-between">
-                        <TextInput type="date" value={modalSdate} onChange={(e) => setModalSdate(e.target.value)} placeholder={t("From Date")} />
-                        <TextInput type="date" value={modalEdate} onChange={(e) => setModalEdate(e.target.value)} placeholder={t("To Date")} />
-                    </div>
-                </div>
-                <Hr className="my-2" />
-                <div className="p-3">
-                    <SecondaryButton className="mr-1" onClick={() => setShowFilterModal(false)}>{t("Close")}</SecondaryButton>
-                    <PrimaryButton
-                        type="button"
-                        onClick={() => {
-                            setShowFilterModal(false);
-                            apply({
-                                where: modalWhere,
-                                q: queryValue,
-                                sdate: modalSdate,
-                                edate: modalEdate,
-                                page: undefined,
-                            });
-                        }}
-                    >{t("Filter")}</PrimaryButton>
-                </div>
-            </Modal>
         </AppLayout>
     );
 }

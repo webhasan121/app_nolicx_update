@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductComissionController;
 use App\Jobs\UpdateProductSalesIndex;
 use App\Models\Order;
 use App\Models\syncOrder;
+use App\Support\TableDateFilter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,11 +20,18 @@ class OrdersController extends Controller
         $nav = $request->query('nav', 'Pending');
         $account = auth()->user()->account_type();
         $baseQuery = auth()->user()->orderToMe()->where(['belongs_to_type' => $account]);
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, [
+            'nav' => 'Pending',
+        ]);
 
         if ($nav === 'Trashed') {
             $query = (clone $baseQuery)->onlyTrashed();
         } else {
             $query = (clone $baseQuery)->where(['status' => $nav]);
+        }
+
+        if ($defaultToday) {
+            $query->whereDate('created_at', today());
         }
 
         $orders = $query
@@ -181,13 +189,16 @@ class OrdersController extends Controller
             ->findOrFail($order);
 
         if ($data->status === 'Pending') {
+            $ct = new ProductComissionController();
+            $ct->refreshPendingOrderComissions($data);
+            $data->load('comissionsInfo');
+
             $requiredBalance = $data->comissionsInfo->sum('take_comission');
 
             if (auth()->user()->abailCoin() > $requiredBalance) {
                 $data->status = $payload['status'];
                 $data->save();
 
-                $ct = new ProductComissionController();
                 $ct->confirmTakeComissions($data->id);
                 UpdateProductSalesIndex::dispatch();
 

@@ -95,6 +95,120 @@ function EnvCard({ title, content, label, form, field, type = "text", routeName 
     );
 }
 
+function DepositPayNumbersCard({ form }) {
+    const { t } = useTranslation();
+    const rows = form.data.deposit_pay_numbers?.length
+        ? form.data.deposit_pay_numbers
+        : [{ name: "", value: "" }];
+
+    const updateRow = (index, field, value) => {
+        form.setData(
+            "deposit_pay_numbers",
+            rows.map((row, rowIndex) =>
+                rowIndex === index ? { ...row, [field]: value } : row
+            )
+        );
+    };
+
+    const addRow = () => {
+        form.setData("deposit_pay_numbers", [
+            ...rows,
+            { name: "", value: "" },
+        ]);
+    };
+
+    const removeRow = (index) => {
+        const nextRows = rows.filter((_, rowIndex) => rowIndex !== index);
+        form.setData(
+            "deposit_pay_numbers",
+            nextRows.length ? nextRows : [{ name: "", value: "" }]
+        );
+    };
+
+    const save = (e) => {
+        e.preventDefault();
+        form.post("/dashboard/system/settings/deposit-pay-numbers", {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    };
+
+    return (
+        <Section>
+            <SectionHeader
+                title={t("Deposit Payment Numbers")}
+                content={t("Add the mobile bank or bank account numbers shown on the user deposit page.")}
+            />
+
+            <SectionInner>
+                <form onSubmit={save}>
+                    <div className="space-y-2">
+                        {rows.map((row, index) => (
+                            <div
+                                key={index}
+                                className="flex flex-wrap items-center gap-2"
+                            >
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded-md sm:w-52"
+                                    placeholder={t("Name")}
+                                    value={row.name}
+                                    onChange={(e) =>
+                                        updateRow(index, "name", e.target.value)
+                                    }
+                                />
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded-md sm:w-56"
+                                    placeholder={t("Value")}
+                                    value={row.value}
+                                    onChange={(e) =>
+                                        updateRow(index, "value", e.target.value)
+                                    }
+                                />
+                                <button
+                                    type="button"
+                                    className="inline-flex items-center justify-center w-8 h-8 text-gray-600 border rounded hover:bg-gray-100"
+                                    onClick={() => removeRow(index)}
+                                    aria-label={t("Remove")}
+                                >
+                                    <i className="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <button
+                            type="button"
+                            className="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
+                            onClick={addRow}
+                        >
+                            <i className="mr-2 fas fa-plus"></i>
+                            {t("Add Attribute")}
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={form.processing}
+                            className="px-4 py-2 text-white bg-green-500 rounded-md disabled:opacity-50"
+                        >
+                            {form.processing ? t("Saving...") : t("Save")}
+                        </button>
+                    </div>
+                    <InputError
+                        messages={
+                            form.errors.deposit_pay_numbers ||
+                            form.errors["deposit_pay_numbers.0.name"] ||
+                            form.errors["deposit_pay_numbers.0.value"]
+                        }
+                        className="mt-2"
+                    />
+                </form>
+            </SectionInner>
+        </Section>
+    );
+}
+
 export default function Index({ settings }) {
     const { t } = useTranslation();
     const supportMailForm = useForm({
@@ -115,6 +229,11 @@ export default function Index({ settings }) {
 
     const playstoreForm = useForm({
         playstore_link: settings?.playstore_link ?? "",
+    });
+    const depositPayNumbersForm = useForm({
+        deposit_pay_numbers: settings?.deposit_pay_numbers?.length
+            ? settings.deposit_pay_numbers
+            : [{ name: "", value: "" }],
     });
 
     const developerPercentageForm = useForm({
@@ -167,6 +286,8 @@ export default function Index({ settings }) {
                         buttonText="Go To Setup"
                     />
                 </section>
+
+                <DepositPayNumbersCard form={depositPayNumbersForm} />
 
                 <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     <EnvCard

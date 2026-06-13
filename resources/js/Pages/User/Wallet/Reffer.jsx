@@ -5,6 +5,7 @@ import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
 import UserDash from "../../../components/user/dash/UserDash";
+import { formatAmount } from "../../../utils/formatAmount";
 
 export default function Reffer() {
     const { refs = [] } = usePage().props;
@@ -32,7 +33,7 @@ export default function Reffer() {
                                 {refs.map((item, index) => (
                                     <tr key={item.id}>
                                         <td>{index + 1}</td>
-                                        <td>{item.comission}</td>
+                                        <td>{formatAmount(item.comission)}</td>
                                         <td>{item.user}</td>
                                         <td>{item.date}</td>
                                     </tr>
@@ -45,4 +46,3 @@ export default function Reffer() {
         </UserDash>
     );
 }
-

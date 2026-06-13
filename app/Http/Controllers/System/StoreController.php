@@ -33,6 +33,7 @@ class StoreController extends Controller
         $startDate = $this->dateQueryValue($request, 'start_date');
         $endDate = $this->dateQueryValue($request, 'end_date');
         $tabs = ['commissions', 'withdrawals'];
+        $defaultToday = $search === '' && $startDate === '' && $endDate === '';
 
         $metrics = $this->buildStoreMetrics();
         $store = $metrics['current'];
@@ -58,8 +59,10 @@ class StoreController extends Controller
 
         $commissions = DistributeComissions::query()
             ->with('user')
+            ->confirmed()
             ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
             ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
+            ->when($defaultToday, fn ($query) => $query->whereDate('created_at', today()))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
                     $builder
@@ -83,6 +86,7 @@ class StoreController extends Controller
             ->where('type', 'debit')
             ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
             ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
+            ->when($defaultToday, fn ($query) => $query->whereDate('created_at', today()))
             ->when($search !== '', fn ($query) => $this->applyWithdrawSearch($query, $search))
             ->latest('id')
             ->paginate(20)
@@ -187,11 +191,14 @@ class StoreController extends Controller
         $endDate = $this->dateQueryValue($request, 'end_date');
         $tabs = ['commissions', 'withdrawals'];
         $activeTab = in_array($activeTab, $tabs, true) ? $activeTab : 'commissions';
+        $defaultToday = $search === '' && $startDate === '' && $endDate === '';
 
         $commissions = DistributeComissions::query()
             ->with('user')
+            ->confirmed()
             ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
             ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
+            ->when($defaultToday, fn ($query) => $query->whereDate('created_at', today()))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
                     $builder
@@ -214,6 +221,7 @@ class StoreController extends Controller
             ->where('type', 'debit')
             ->when($startDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) >= ?', [$startDate]))
             ->when($endDate !== '', fn ($query) => $query->whereRaw('DATE(created_at) <= ?', [$endDate]))
+            ->when($defaultToday, fn ($query) => $query->whereDate('created_at', today()))
             ->when($search !== '', fn ($query) => $this->applyWithdrawSearch($query, $search))
             ->latest('id')
             ->get();
@@ -270,8 +278,8 @@ class StoreController extends Controller
             return back()->with('error', 'Distribution already generated');
         }
 
-        if (now()->day !== 5) {
-            return back()->with('error', 'Distribution is available only on the 5th of each month');
+        if (!$this->isDistributionWindowOpen()) {
+            return back()->with('error', 'Distribution is available from the 5th of each month');
         }
 
         $balance = (float) ($targetStore['total_balance'] ?? 0);
@@ -279,23 +287,38 @@ class StoreController extends Controller
             return back()->with('error', 'No balance available for distribution');
         }
 
-        $developerPercentage = (float) ($metrics['percentages']['developer'] ?? 0);
-        $managementPercentage = (float) ($metrics['percentages']['management'] ?? 0);
-        $managementTeamPercentage = (float) ($metrics['percentages']['management_team'] ?? 0);
+        $developers = $this->approvedPartnershipUsers(DeveloperAccess::class);
+        $managers = $this->approvedPartnershipUsers(ManagementAccess::class);
+        $managementTeams = $this->approvedPartnershipUsers(ManagementTeam::class);
+
+        $developerPercentage = $developers->count() > 0 ? (float) ($metrics['percentages']['developer'] ?? 0) : 0;
+        $managementPercentage = $managers->count() > 0 ? (float) ($metrics['percentages']['management'] ?? 0) : 0;
+        $managementTeamPercentage = $managementTeams->count() > 0 ? (float) ($metrics['percentages']['management_team'] ?? 0) : 0;
         $developerPool = round(($balance * $developerPercentage) / 100, 8);
         $managementPool = round(($balance * $managementPercentage) / 100, 8);
         $managementTeamPool = round(($balance * $managementTeamPercentage) / 100, 8);
         $levelCap = max(0, round($balance - $developerPool - $managementPool - $managementTeamPool, 8));
 
-        $developers = $this->approvedPartnershipUsers(DeveloperAccess::class);
-        $managers = $this->approvedPartnershipUsers(ManagementAccess::class);
-        $managementTeams = $this->approvedPartnershipUsers(ManagementTeam::class);
         $levelUsers = $this->refreshQualifiedLevelUsers();
+        $starShares = $this->buildStarSystemShares($levelUsers, $balance, $levelCap);
+        $totalShareAmount = round(
+            $developerPool
+                + $managementPool
+                + $managementTeamPool
+                + (float) $starShares->sum('amount'),
+            8
+        );
+
+        if ($totalShareAmount <= 0) {
+            return back()->with('error', 'This month has no share amount.');
+        }
 
         DB::transaction(function () use (
             $developers,
             $managers,
+            $managementTeams,
             $levelUsers,
+            $starShares,
             $developerPool,
             $managementPool,
             $managementTeamPool,
@@ -331,8 +354,6 @@ class StoreController extends Controller
                     $totalDistributed += $share;
                 }
             }
-
-            $starShares = $this->buildStarSystemShares($levelUsers, $balance, $levelCap);
 
             foreach ($starShares as $shareData) {
                 $share = round($shareData['amount'], 8);
@@ -620,6 +641,9 @@ class StoreController extends Controller
         $store = $this->syncStoreSnapshot($start, $totalBalance);
         $distributedBalance = $this->sumDistributedForStore($store, $start, $end);
         $currentBalance = max(0, round($totalBalance - $distributedBalance, 2));
+        $developerPercentage = $this->activePartnershipCount(DeveloperAccess::class) > 0 ? $developerPercentage : 0;
+        $managementPercentage = $this->activePartnershipCount(ManagementAccess::class) > 0 ? $managementPercentage : 0;
+        $managementTeamPercentage = $this->activePartnershipCount(ManagementTeam::class) > 0 ? $managementTeamPercentage : 0;
         $developerBalance = round(($totalBalance * $developerPercentage) / 100, 2);
         $managementBalance = round(($totalBalance * $managementPercentage) / 100, 2);
         $managementTeamBalance = round(($totalBalance * $managementTeamPercentage) / 100, 2);
@@ -823,9 +847,14 @@ class StoreController extends Controller
     {
         return !empty($store['id'])
             && empty($store['generate'])
-            && now()->day === 5
+            && $this->isDistributionWindowOpen()
             && (float) ($store['total_balance'] ?? 0) > 0
             && (float) ($store['current_balance'] ?? 0) > 0;
+    }
+
+    private function isDistributionWindowOpen(): bool
+    {
+        return now()->day >= 5;
     }
 
     private function lockBalance(): ?array
@@ -1092,6 +1121,15 @@ class StoreController extends Controller
         return User::query()
             ->whereIn('id', $userIds)
             ->get();
+    }
+
+    private function activePartnershipCount(string $modelClass): int
+    {
+        return $modelClass::query()
+            ->where('status', 1)
+            ->whereNotNull('applied_id')
+            ->distinct('applied_id')
+            ->count('applied_id');
     }
 
     private function formatStoreLabel($store): string

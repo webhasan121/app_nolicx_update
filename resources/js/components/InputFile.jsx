@@ -16,7 +16,7 @@ export default function InputFile({
             <div className={`my-3 form-group ${className}`}>
                 <div className="justify-start md:flex">
 
-                    <div style={{ width: labelWidth }}>
+                    <div style={{ width: labelWidth }} className="shrink-0">
 
                         <InputLabel
                             htmlFor={name ?? label}
@@ -33,7 +33,7 @@ export default function InputFile({
 
                     </div>
 
-                    <div style={{ width: "100%" }} className={`flex-1 ${inputClass}`}>
+                    <div className={`flex-1 min-w-0 ${inputClass}`}>
                         {children}
                     </div>
 

@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         if (Schema::hasColumn('stores', 'total_share')) {
             DB::statement('ALTER TABLE stores MODIFY total_share DECIMAL(15,8) NOT NULL DEFAULT 0');
         }
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         if (Schema::hasColumn('stores', 'total_share')) {
             DB::statement('ALTER TABLE stores MODIFY total_share DECIMAL(8,2) NOT NULL DEFAULT 0');
         }

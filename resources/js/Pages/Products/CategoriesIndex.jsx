@@ -3,17 +3,19 @@ import NavLinkBtn from "../../components/NavLinkBtn";
 import CatLoop from "../../components/client/CatLoop";
 import UserLayout from "../../Layouts/User/App";
 import NavLink from "../../components/NavLink";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function CategoriesIndex({ categories = [] }) {
+    const { t } = useTranslation();
+
     return (
-        <UserLayout title="Category">
+        <UserLayout title={t("Category")}>
             <Container>
-                <div>
-                    <div>
+                <div className="py-4">
+                    <div className="mb-3">
                         <NavLinkBtn href={route("products.index")}>
-                            All Product
+                            {t("All Product")}
                         </NavLinkBtn>
-                        <br />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 xl:grid-cols-10">
@@ -22,7 +24,7 @@ export default function CategoriesIndex({ categories = [] }) {
                         .map((item) => (
                             <div
                                 key={item.id}
-                                className="text-center bg-white rounded-md cat_item"
+                                className="relative overflow-hidden text-center bg-white rounded-md cat_item aspect-square"
                                 style={{
                                     backdropFilter: "blur(3px)",
                                 }}
@@ -37,7 +39,7 @@ export default function CategoriesIndex({ categories = [] }) {
                                     <img
                                         src={`/storage/${item.image}`}
                                         alt={item.name}
-                                        className="w-full h-full rounded-md"
+                                        className="object-cover w-full h-full rounded-md"
                                     />
 
                                     <div

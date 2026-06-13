@@ -8,12 +8,14 @@ import PrimaryButton from "../../../../components/PrimaryButton";
 import Container from "../../../../components/dashboard/Container";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import OverviewDiv from "../../../../components/dashboard/overview/Div";
+import { formatTk } from "../../../../utils/formatAmount";
 import OverviewSection from "../../../../components/dashboard/overview/Section";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
 
 const statusClass = {
     Pending: "text-xs p-1 border rounded-md bg-yellow-200 text-yellow-900",
@@ -48,6 +50,7 @@ export default function Index({ filters, overview, products, printUrl }) {
     const [fd, setFd] = useState(filters?.fd_value ?? "");
     const [lastDate, setLastDate] = useState(filters?.lastDate_value ?? "");
     const [search, setSearch] = useState(filters?.find ?? "");
+    const today = todayInputDate();
 
     useEffect(() => {
         setFd(filters?.fd_value ?? "");
@@ -60,6 +63,7 @@ export default function Index({ filters, overview, products, printUrl }) {
             preserveScroll: true,
             preserveState: true,
             replace: true,
+            only: ["filters", "overview", "products", "printUrl"],
         });
     };
 
@@ -109,6 +113,13 @@ export default function Index({ filters, overview, products, printUrl }) {
             pages: links.slice(1, -1),
         };
     }, [products?.links]);
+    const hasActiveFilters = Boolean(
+        search.trim() ||
+            fd ||
+            lastDate ||
+            (filters?.nav ?? "sold") !== "sold" ||
+            (filters?.user_type ?? "user") !== "user"
+    );
 
     return (
         <AppLayout title={t("Earn By Sell")} header={<PageHeader>{t("Earn By Sell")}</PageHeader>}>
@@ -117,9 +128,9 @@ export default function Index({ filters, overview, products, printUrl }) {
             <Container>
                 <p className="text-xl">{t("Sell and Profit")}</p>
                 <OverviewSection>
-                    <OverviewDiv title={t("Total Sell")} content={`${overview?.totalSell ?? 0} TK`} />
-                    <OverviewDiv title={t("Profit")} content={`${overview?.tp ?? 0} TK`} />
-                    <OverviewDiv title={t("Neet")} content={`${overview?.tn ?? 0} TK`} />
+                    <OverviewDiv title={t("Total Sell")} content={formatTk(overview?.totalSell)} />
+                    <OverviewDiv title={t("Profit")} content={formatTk(overview?.tp)} />
+                    <OverviewDiv title={t("Neet")} content={formatTk(overview?.tn)} />
                     <OverviewDiv title={t("Shop")} content={overview?.shop ?? 0} />
                     <OverviewDiv title={t("Vendor Shop")} content={overview?.tpr ?? 0} />
                     <OverviewDiv title={t("Reseller Shop")} content={overview?.tprr ?? 0} />
@@ -151,7 +162,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                     <TextInput
                                         type="date"
                                         className="py-1"
-                                        value={fd}
+                                    value={fd || today}
                                         onChange={(e) => {
                                             const value = e.target.value;
 
@@ -167,7 +178,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                     <TextInput
                                         type="date"
                                         className="py-1"
-                                        value={lastDate}
+                                    value={lastDate}
                                         onChange={(e) => {
                                             const value = e.target.value;
 
@@ -206,6 +217,26 @@ export default function Index({ filters, overview, products, printUrl }) {
                                     >
                                         <i className="fas fa-print"></i>
                                     </PrimaryButton>
+                                    {hasActiveFilters ? (
+                                        <button
+                                            type="button"
+                                            className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            onClick={() => {
+                                                setFd("");
+                                                setLastDate("");
+                                                setSearch("");
+                                                visit({
+                                                    nav: "sold",
+                                                    fd_value: "",
+                                                    lastDate_value: "",
+                                                    user_type: "user",
+                                                    find: "",
+                                                });
+                                            }}
+                                        >
+                                            {t("Reset")}
+                                        </button>
+                                    ) : null}
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <select

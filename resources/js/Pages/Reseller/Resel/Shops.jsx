@@ -1,7 +1,6 @@
 import { Head, router, usePage } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../Layouts/App";
-import Modal from "../../../components/Modal";
 import Hr from "../../../components/Hr";
 import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
@@ -22,8 +21,9 @@ export default function Shops({
     const { auth } = usePage().props;
     const [q, setQ] = useState(filters.q ?? "");
     const [location, setLocation] = useState(filters.location ?? "");
-    const [showModal, setShowModal] = useState(false);
     const [get, setGet] = useState(filters.get ?? "");
+    const userLocation =
+        auth?.user?.city || auth?.user?.state || auth?.user?.country || "";
 
     useEffect(() => {
         setQ(filters.q ?? "");
@@ -33,17 +33,19 @@ export default function Shops({
 
     useEffect(() => {
         const timeout = setTimeout(() => {
+            const locationChanged = location !== (filters.location ?? "");
+            const nextState = locationChanged ? "" : (filters.state || undefined);
             const nextParams = {
                 q: q || undefined,
                 location: location || undefined,
-                state: filters.state || undefined,
+                state: nextState,
                 get: get || undefined,
             };
 
             const sameAsCurrent =
                 (filters.q ?? "") === (q ?? "") &&
                 (filters.location ?? "") === (location ?? "") &&
-                (filters.state ?? "") === (nextParams.state ?? "") &&
+                !locationChanged &&
                 (filters.get ?? "") === (get ?? "");
 
             if (sameAsCurrent) {
@@ -59,19 +61,17 @@ export default function Shops({
                     replace: true,
                 }
             );
-        }, 400);
+        }, 1000);
 
         return () => clearTimeout(timeout);
     }, [q, location, get, filters.q, filters.location, filters.state, filters.get]);
 
     const getShopByMyLocation = () => {
-        const city = auth?.user?.city ?? "";
         router.get(
             route("shops"),
-            { location: city, state: "me", q: "", get: undefined },
+            { location: userLocation, state: "me", q: "", get: undefined },
             { preserveState: true, preserveScroll: true }
         );
-        setShowModal(false);
     };
 
     const getAllShops = () => {
@@ -80,7 +80,25 @@ export default function Shops({
             { location: "Bangladesh", state: "all", q: "", get: undefined },
             { preserveState: true, preserveScroll: true }
         );
-        setShowModal(false);
+    };
+
+    const applySearch = () => {
+        const locationChanged = location !== (filters.location ?? "");
+
+        router.get(
+            route("shops"),
+            {
+                q: q || undefined,
+                location: location || undefined,
+                state: locationChanged ? undefined : (filters.state || undefined),
+                get: get || undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        );
     };
 
     const cleanLabel = (label) =>
@@ -136,13 +154,40 @@ export default function Shops({
                         </NavLink>
                     </div>
 
-                    <div className="flex items-center w-full max-w-xl ms-auto">
+                    <div className="flex w-full flex-col gap-2 rounded-md bg-white/70 p-2 shadow-sm md:max-w-2xl md:flex-row md:items-center md:justify-end md:bg-transparent md:p-0 md:shadow-none ms-auto">
+                        <div className="flex shrink-0 items-center gap-2">
+                            {auth?.user ? (
+                                <PrimaryButton
+                                    type="button"
+                                    onClick={getShopByMyLocation}
+                                    className="h-9 whitespace-nowrap bg-orange-500 px-3 py-1 text-xs uppercase tracking-wide text-white hover:bg-orange-600"
+                                >
+                                    My Location ({userLocation || "ANY"}){" "}
+                                    <i className="ps-1 fas fa-location"></i>
+                                </PrimaryButton>
+                            ) : null}
+                            <SecondaryButton
+                                type="button"
+                                onClick={getAllShops}
+                                className="h-9 whitespace-nowrap px-3 py-1 text-xs uppercase tracking-wide"
+                            >
+                                All Shops
+                            </SecondaryButton>
+                        </div>
                         <input
                             type="search"
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key !== "Enter") {
+                                    return;
+                                }
+
+                                e.preventDefault();
+                                applySearch();
+                            }}
                             className="w-full px-3 py-1 text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
-                            placeholder={selectedShop ? "Search products..." : "Search shops..."}
+                            placeholder={selectedShop ? "Search products..." : "Search shops, state, city or town..."}
                             style={{ minWidth: 0, fontSize: '16px' }}
                         />
                         <PrimaryButton
@@ -152,26 +197,6 @@ export default function Shops({
                         >
                             <i className="fas fa-print"></i>
                         </PrimaryButton>
-                        <div>
-                            {auth?.user ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(true)}
-                                    className="inline-flex px-3 py-2 text-xs bg-white border rounded ms-1"
-                                >
-                                    {location || auth.user.city || "ANY"}{" "}
-                                    <i className="ps-2 fas fa-chevron-down"></i>
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(true)}
-                                    className="px-2"
-                                >
-                                    <i className="fas fa-location"></i>
-                                </button>
-                            )}
-                        </div>
                     </div>
                 </div>
 
@@ -348,27 +373,17 @@ export default function Shops({
                                 shops.data.map((shop) => (
                                     <div key={shop.id}>
                                         <div className="overflow-hidden bg-white rounded-lg shadow">
-                                            <div className="relative">
-                                                {shop.banner_url ? (
-                                                    <img
-                                                        className="w-full bg-indigo-900"
-                                                        style={{ height: "100px" }}
-                                                        src={shop.banner_url}
-                                                        alt=""
-                                                    />
-                                                ) : null}
+                                            <div className="relative p-3">
                                                 {shop.logo_url ? (
                                                     <img
-                                                        className="absolute top-0 right-0 m-2 bg-white rounded-full"
+                                                        className="absolute object-cover bg-white rounded-full top-2 right-2"
                                                         style={{ height: "50px", width: "50px" }}
                                                         src={shop.logo_url}
-                                                        alt=""
+                                                        alt={shop.shop_name_en}
                                                     />
                                                 ) : null}
-                                            </div>
-                                            <div className="p-3">
-                                                <div>{shop.shop_name_en}</div>
-                                                <p className="text-xs">
+                                                <div className="pr-16">{shop.shop_name_en}</div>
+                                                <p className="pr-16 text-xs">
                                                     {shop.village}, {shop.upozila},{" "}
                                                     {shop.district}
                                                 </p>
@@ -457,46 +472,6 @@ export default function Shops({
                     </>
                 )}
 
-                <Modal show={showModal} onClose={() => setShowModal(false)} maxWidth="sm">
-                    <div className="p-3">
-                        <p className="text-xs">
-                            Shop will be displayed based on you expectation.
-                            From where you want to get the shop.
-                        </p>
-                        <br />
-                        <div className="space-y-3 text-center">
-                            {auth?.user ? (
-                                <PrimaryButton
-                                    type="button"
-                                    onClick={getShopByMyLocation}
-                                    className="flex items-center justify-center w-full p-3 text-white bg-indigo-300 rounded"
-                                >
-                                    My Location ({auth.user.city}){" "}
-                                    <i className="px-2 fas fa-location"></i>
-                                </PrimaryButton>
-                            ) : null}
-
-                            <SecondaryButton
-                                type="button"
-                                onClick={getAllShops}
-                                className="flex justify-center w-full p-3 items-centere"
-                            >
-                                All Shops
-                            </SecondaryButton>
-
-                            <div className="p-2 bg-gray-200 rounded">
-                                <input
-                                    type="search"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    id="find_shop"
-                                    className="w-full py-1 mb-1 rounded"
-                                    placeholder="search shop by state, city or town"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </Modal>
             </Container>
         </AppLayout>
     );

@@ -4,9 +4,11 @@ import AppLayout from "../../Layouts/App";
 import Hr from "../../components/Hr";
 import PrimaryButton from "../../components/PrimaryButton";
 import Container from "../../components/dashboard/Container";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Shop({ shop = {} }) {
     const { auth } = usePage().props;
+    const { t } = useTranslation();
     const inputId = useId().replace(/:/g, "");
     const editorRef = useRef(null);
     const [trixReady, setTrixReady] = useState(typeof window !== "undefined" && !!window.Trix);
@@ -134,8 +136,8 @@ export default function Shop({ shop = {} }) {
     const bannerSrc = bannerPreview || shop?.banner_url || (shop?.banner ? `/storage/${shop.banner}` : "");
 
     return (
-        <AppLayout title="Shop">
-            <Head title="Shop" />
+        <AppLayout title={t("Shop")}>
+            <Head title={t("Shop")} />
 
             <Container>
                 <div className="relative">
@@ -212,31 +214,31 @@ export default function Shop({ shop = {} }) {
                         <div className="w-full bg-white rounded-md shadow-sm">
                             <hr />
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Shop ID: </div>
+                                <div className="font-bold">{t("Shop ID:")} </div>
                                 <div>{form.data.id ?? "N/A"}</div>
                             </div>
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Shop Owner Name: </div>
+                                <div className="font-bold">{t("Shop Owner Name:")} </div>
                                 <div>{auth?.user?.name ?? "N/A"}</div>
                             </div>
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Shop Owner Email: </div>
+                                <div className="font-bold">{t("Shop Owner Email:")} </div>
                                 <div>{auth?.user?.email ?? "N/A"}</div>
                             </div>
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Shop Owner Phone: </div>
+                                <div className="font-bold">{t("Shop Owner Phone:")} </div>
                                 <div>{auth?.user?.phone ?? "N/A"}</div>
                             </div>
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Shop Comission (%) : </div>
+                                <div className="font-bold">{t("Shop Comission (%) :")} </div>
                                 <div>{form.data.system_get_comission ?? "N/A"}</div>
                             </div>
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Product Upload Capability : </div>
+                                <div className="font-bold">{t("Product Upload Capability :")} </div>
                                 <div>{form.data.max_product_upload ?? "N/A"}</div>
                             </div>
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Product Resel Capability : </div>
+                                <div className="font-bold">{t("Product Resel Capability :")} </div>
                                 <div>{form.data.max_resell_product ?? "N/A"}</div>
                             </div>
                         </div>
@@ -245,7 +247,7 @@ export default function Shop({ shop = {} }) {
                             <hr />
 
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Shop: </div>
+                                <div className="font-bold">{t("Shop:")} </div>
                                 <input
                                     type="text"
                                     className="w-full rounded-md ring-0"
@@ -255,7 +257,7 @@ export default function Shop({ shop = {} }) {
                             </div>
 
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Shop Email: </div>
+                                <div className="font-bold">{t("Shop Email:")} </div>
                                 <input
                                     type="text"
                                     className="w-full rounded-md ring-0"
@@ -264,7 +266,7 @@ export default function Shop({ shop = {} }) {
                                 />
                             </div>
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Shop Phone: </div>
+                                <div className="font-bold">{t("Shop Phone:")} </div>
                                 <input
                                     type="text"
                                     className="w-full rounded-md ring-0"
@@ -273,7 +275,7 @@ export default function Shop({ shop = {} }) {
                                 />
                             </div>
                             <div className="w-full p-3 border-b text-md">
-                                <div className="font-bold">Shop Address: </div>
+                                <div className="font-bold">{t("Shop Address:")} </div>
                                 <input
                                     type="text"
                                     className="w-full rounded-md ring-0"
@@ -282,16 +284,16 @@ export default function Shop({ shop = {} }) {
                                 />
                             </div>
                             <div className="w-full p-3 space-y-2 border-b text-md">
-                                <div className="font-bold">Shop Location: </div>
+                                <div className="font-bold">{t("Shop Location:")} </div>
                                 <div className="my-1">
                                     <label className="my-1" htmlFor="dis">
-                                        District
+                                        {t("District")}
                                     </label>
                                     <input
                                         type="text"
                                         id="dis"
                                         className="w-full rounded-md ring-0"
-                                        placeholder="district"
+                                        placeholder={t("district")}
                                         value={form.data.district}
                                         onChange={(e) => form.setData("district", e.target.value)}
                                     />
@@ -299,13 +301,13 @@ export default function Shop({ shop = {} }) {
 
                                 <div className="my-1">
                                     <label className="my-1" htmlFor="up">
-                                        Upozila
+                                        {t("Upozila")}
                                     </label>
                                     <input
                                         type="text"
                                         id="up"
                                         className="w-full rounded-md ring-0"
-                                        placeholder="upozila"
+                                        placeholder={t("upozila")}
                                         value={form.data.upozila}
                                         onChange={(e) => form.setData("upozila", e.target.value)}
                                     />
@@ -313,13 +315,13 @@ export default function Shop({ shop = {} }) {
 
                                 <div className="my-1">
                                     <label className="my-1" htmlFor="vil">
-                                        Village
+                                        {t("Village")}
                                     </label>
                                     <input
                                         type="text"
                                         id="vil"
                                         className="w-full rounded-md ring-0"
-                                        placeholder="village"
+                                        placeholder={t("village")}
                                         value={form.data.village}
                                         onChange={(e) => form.setData("village", e.target.value)}
                                     />
@@ -327,13 +329,13 @@ export default function Shop({ shop = {} }) {
 
                                 <div className="my-1">
                                     <label className="my-1" htmlFor="zip">
-                                        Zip
+                                        {t("Zip")}
                                     </label>
                                     <input
                                         type="text"
                                         id="zip"
                                         className="w-full rounded-md ring-0"
-                                        placeholder="zip"
+                                        placeholder={t("zip")}
                                         value={form.data.zip}
                                         onChange={(e) => form.setData("zip", e.target.value)}
                                     />
@@ -343,7 +345,7 @@ export default function Shop({ shop = {} }) {
                                     <input
                                         type="text"
                                         className="w-full rounded-md ring-0"
-                                        placeholder="road no"
+                                        placeholder={t("road no")}
                                         value={form.data.road_no}
                                         onChange={(e) => form.setData("road_no", e.target.value)}
                                     />
@@ -360,7 +362,7 @@ export default function Shop({ shop = {} }) {
                     onClick={updateInfo}
                     disabled={form.processing}
                 >
-                    update
+                    {t("update")}
                 </PrimaryButton>
             </Container>
         </AppLayout>

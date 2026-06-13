@@ -9,9 +9,11 @@ import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import OverviewSection from "../../../components/dashboard/overview/Section";
 import OverviewDiv from "../../../components/dashboard/overview/Div";
+import { formatTk } from "../../../utils/formatAmount";
 import Table from "../../../components/dashboard/table/Table";
 import NavLink from "../../../components/NavLink";
 import useTranslation from "../../../hooks/useTranslation";
+import { todayInputDate } from "../../../utils/dateInput";
 
 function statusClass(status) {
     switch (status) {
@@ -49,6 +51,7 @@ export default function Index({
     const [fd, setFd] = useState(filters.fd ?? "");
     const [lastDate, setLastDate] = useState(filters.lastDate ?? "");
     const [search, setSearch] = useState(filters.search ?? "");
+    const today = todayInputDate();
 
     const cleanLabel = (label) =>
         String(label)
@@ -75,6 +78,7 @@ export default function Index({
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                only: ["filters", "overview", "products", "counts", "printUrl"],
                 ...options,
             },
         );
@@ -164,6 +168,7 @@ export default function Index({
         products?.total > 0
             ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} items`
             : "No items found";
+    const hasActiveFilters = Boolean(search.trim() || fd || lastDate || nav !== "sold");
 
     const updateStartDate = (value) => {
         setFd(value);
@@ -185,15 +190,15 @@ export default function Index({
                 <OverviewSection>
                     <OverviewDiv
                         title={t("Total Sell")}
-                        content={`${overview.totalSell ?? 0} TK`}
+                        content={formatTk(overview.totalSell)}
                     />
                     <OverviewDiv
                         title={t("Profit")}
-                        content={`${overview.tp ?? 0} TK`}
+                        content={formatTk(overview.tp)}
                     />
                     <OverviewDiv
                         title={t("Neet")}
-                        content={`${overview.tn ?? 0} TK`}
+                        content={formatTk(overview.tn)}
                     />
                     <OverviewDiv
                         title={t("Shop")}
@@ -222,7 +227,7 @@ export default function Index({
                                     <div>
                                         <input
                                             type="date"
-                                            value={fd}
+                                            value={fd || today}
                                             onChange={(e) =>
                                                 updateStartDate(e.target.value)
                                             }
@@ -241,11 +246,25 @@ export default function Index({
                                             title={formattedLastDate}
                                         />
                                     </div>
-                                    <button
-                                        type="button"
-                                        className="rounded border px-3 py-1 text-sm text-slate-700"
-                                        onClick={resetFilters}
-                                    >{t("Reset")}</button>
+                                    {hasActiveFilters ? (
+                                        <button
+                                            type="button"
+                                            className="rounded border px-3 py-1 text-sm text-slate-700"
+                                            onClick={() => {
+                                                setSearch("");
+                                                setNav("sold");
+                                                setFd("");
+                                                setLastDate("");
+                                                requestProducts({
+                                                    nav: "sold",
+                                                    fd: "",
+                                                    lastDate: "",
+                                                    search: "",
+                                                    page: undefined,
+                                                });
+                                            }}
+                                        >{t("Reset")}</button>
+                                    ) : null}
                                     <TextInput
                                         type="search"
                                         value={search}

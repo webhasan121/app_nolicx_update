@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Packages;
 use App\Models\UserTask;
 use App\Models\Vip;
+use App\Support\VipReferralCommission;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,21 +24,21 @@ class UserVipController extends Controller
                 ->get()
                 ->map(fn (Vip $vip) => $this->vipPayload($vip, $user->id))
                 ->values(),
-            'packages' => Packages::all()->map(fn (Packages $package) => $this->packagePayload($package))->values(),
+            'packages' => Packages::active()->get()->map(fn (Packages $package) => $this->packagePayload($package))->values(),
         ], 'VIP fetched');
     }
 
     public function packages()
     {
         return ApiResponse::success(
-            Packages::all()->map(fn (Packages $package) => $this->packagePayload($package))->values(),
+            Packages::active()->get()->map(fn (Packages $package) => $this->packagePayload($package))->values(),
             'Packages fetched'
         );
     }
 
     public function packageDetails(int $package)
     {
-        $item = Packages::with('payOption')->findOrFail($package);
+        $item = Packages::active()->with('payOption')->findOrFail($package);
 
         return ApiResponse::success([
             'package' => $this->packageDetailsPayload($item),
@@ -59,10 +60,13 @@ class UserVipController extends Controller
             'nid_back' => ['required', 'image'],
         ]);
 
+        $package = Packages::active()->findOrFail($validated['package_id']);
+
         $validated['user_id'] = $request->user()->id;
         $validated['status'] = 0;
         $validated['nid_front'] = $request->file('nid_front')->store('vips', 'public');
         $validated['nid_back'] = $request->file('nid_back')->store('vips', 'public');
+        $validated = VipReferralCommission::purchaseData($validated, $request->user(), $package);
 
         $vip = Vip::create($validated);
 

@@ -4,9 +4,10 @@ import PrintLayout from "../../../Layouts/Print";
 import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
 import Table from "../../../components/dashboard/table/Table";
+import { formatAmount } from "../../../utils/formatAmount";
 
 export default function Print() {
-    const { withdraw = [], filters = {}, available_balance } = usePage().props;
+    const { withdraw = [], filters = {}, wallet_balance, available_balance } = usePage().props;
 
     useEffect(() => {
         const timer = window.setTimeout(() => {
@@ -25,7 +26,8 @@ export default function Print() {
                             <ApplicationName />
                         </h1>
                         <p>Wallet Withdraw Requests</p>
-                        <p>Available Balance: {available_balance ?? 0} TK</p>
+                        <p>Wallet Balance: {formatAmount(wallet_balance)} TK</p>
+                        <p>Withdrawable Balance: {formatAmount(available_balance)} TK</p>
                         {filters?.find ? <p>Search: {filters.find}</p> : null}
                     </div>
                     <hr className="my-2" />
@@ -43,7 +45,7 @@ export default function Print() {
                             {withdraw.map((item, index) => (
                                 <tr key={item.id}>
                                     <td>#{index + 1}</td>
-                                    <td>{item.amount} TK</td>
+                                    <td>{formatAmount(item.amount)} TK</td>
                                     <td>{item.status}</td>
                                     <td>
                                         {item.created_at} - {item.created_at_human}

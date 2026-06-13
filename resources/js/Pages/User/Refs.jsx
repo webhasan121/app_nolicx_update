@@ -40,6 +40,7 @@ export default function Refs() {
                     preserveScroll: true,
                     preserveState: true,
                     replace: true,
+                    only: ["filters", "refUsers", "totalRefUsers", "printUrl"],
                 }
             );
         }, 400);
@@ -64,6 +65,7 @@ export default function Refs() {
                 preserveScroll: true,
                 preserveState: true,
                 replace: true,
+                only: ["filters", "refUsers", "totalRefUsers", "printUrl"],
             }
         );
     };

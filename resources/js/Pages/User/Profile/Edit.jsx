@@ -1,5 +1,6 @@
 import { useForm, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import Container from "../../../components/dashboard/Container";
 import SectionSection from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
@@ -11,6 +12,102 @@ import InputError from "../../../components/InputError";
 import PrimaryButton from "../../../components/PrimaryButton";
 import Hr from "../../../components/Hr";
 import useTranslation from "../../../hooks/useTranslation";
+
+function SearchableSelect({
+    id,
+    value,
+    options = [],
+    onChange,
+    placeholder,
+    disabled = false,
+}) {
+    const selected = options.find((option) => String(option.id) === String(value));
+    const [query, setQuery] = useState(selected?.name ?? "");
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        setQuery(selected?.name ?? "");
+    }, [selected?.id, selected?.name]);
+
+    const filteredOptions = query.trim()
+        ? options.filter((option) =>
+              String(option.name ?? "")
+                  .toLowerCase()
+                  .includes(query.trim().toLowerCase()),
+          )
+        : options;
+
+    const updateQuery = (nextQuery) => {
+        setQuery(nextQuery);
+        setOpen(true);
+
+        const exactMatch = options.find(
+            (option) =>
+                String(option.name ?? "").toLowerCase() ===
+                nextQuery.trim().toLowerCase(),
+        );
+
+        onChange(exactMatch?.id ?? "");
+    };
+
+    const selectOption = (option) => {
+        setQuery(option.name ?? "");
+        onChange(option.id);
+        setOpen(false);
+    };
+
+    return (
+        <div className="relative mt-1">
+            <input
+                id={id}
+                type="text"
+                value={query}
+                onChange={(e) => updateQuery(e.target.value)}
+                onFocus={() => !disabled && setOpen(true)}
+                onBlur={() => window.setTimeout(() => setOpen(false), 150)}
+                placeholder={placeholder}
+                disabled={disabled}
+                autoComplete="off"
+                className="block w-full border-0 rounded ring-1 disabled:bg-gray-100 disabled:text-gray-500"
+            />
+            <button
+                type="button"
+                disabled={disabled}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    setOpen((current) => !current);
+                }}
+                className="absolute inset-y-0 right-0 flex items-center justify-center w-10 text-gray-500 disabled:text-gray-300"
+            >
+                <i className="fas fa-chevron-down text-xs"></i>
+            </button>
+
+            {open && !disabled ? (
+                <div className="absolute z-50 w-full mt-1 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg max-h-52">
+                    {filteredOptions.length ? (
+                        filteredOptions.map((option) => (
+                            <button
+                                key={option.id}
+                                type="button"
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    selectOption(option);
+                                }}
+                                className="block w-full px-3 py-2 text-sm text-left hover:bg-gray-100"
+                            >
+                                {option.name}
+                            </button>
+                        ))
+                    ) : (
+                        <div className="px-3 py-2 text-sm text-gray-500">
+                            No results found
+                        </div>
+                    )}
+                </div>
+            ) : null}
+        </div>
+    );
+}
 
 export default function ProfileEdit() {
     const { t } = useTranslation();
@@ -59,7 +156,8 @@ export default function ProfileEdit() {
             .get(route("edit.profile.states", { country: profileForm.data.country }))
             .then((res) => {
                 setStates(res.data || []);
-            });
+            })
+            .catch(() => setStates([]));
     }, [profileForm.data.country]);
 
     useEffect(() => {
@@ -72,7 +170,8 @@ export default function ProfileEdit() {
             .get(route("edit.profile.cities", { state: profileForm.data.state }))
             .then((res) => {
                 setCities(res.data || []);
-            });
+            })
+            .catch(() => setCities([]));
     }, [profileForm.data.state]);
 
     const submitProfile = (e) => {
@@ -229,59 +328,46 @@ export default function ProfileEdit() {
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="relative">
                                             <InputLabel htmlFor="country">Country</InputLabel>
-                                            <select
+                                            <SearchableSelect
+                                                id="country"
                                                 value={profileForm.data.country || ""}
-                                                onChange={(e) => {
-                                                    profileForm.setData("country", e.target.value);
+                                                options={countries}
+                                                onChange={(value) => {
+                                                    profileForm.setData("country", value);
                                                     profileForm.setData("state", "");
                                                     profileForm.setData("city", "");
                                                 }}
-                                                className="block w-full mt-1 border-0 rounded ring-1"
-                                            >
-                                                <option value="">{t("Select Country")}</option>
-                                                {countries.map((country) => (
-                                                    <option key={country.id} value={country.id}>
-                                                        {country.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                placeholder={t("Select Country")}
+                                            />
                                             <InputError className="mt-2" messages={profileForm.errors.country} />
                                         </div>
 
                                         <div className="relative">
                                             <InputLabel htmlFor="state">State</InputLabel>
-                                            <select
+                                            <SearchableSelect
+                                                id="state"
                                                 value={profileForm.data.state || ""}
-                                                onChange={(e) => {
-                                                    profileForm.setData("state", e.target.value);
+                                                options={states}
+                                                onChange={(value) => {
+                                                    profileForm.setData("state", value);
                                                     profileForm.setData("city", "");
                                                 }}
-                                                className="block w-full mt-1 border-0 rounded ring-1"
-                                            >
-                                                <option value="">{t("Select State")}</option>
-                                                {states.map((stateItem) => (
-                                                    <option key={stateItem.id} value={stateItem.id}>
-                                                        {stateItem.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                placeholder={t("Select State")}
+                                                disabled={!states.length}
+                                            />
                                             <InputError className="mt-2" messages={profileForm.errors.state} />
                                         </div>
 
                                         <div className="relative">
                                             <InputLabel htmlFor="city">City</InputLabel>
-                                            <select
+                                            <SearchableSelect
+                                                id="city"
                                                 value={profileForm.data.city || ""}
-                                                onChange={(e) => profileForm.setData("city", e.target.value)}
-                                                className="block w-full mt-1 border-0 rounded ring-1"
-                                            >
-                                                <option value="">{t("Select City")}</option>
-                                                {cities.map((city) => (
-                                                    <option key={city.id} value={city.id}>
-                                                        {city.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                options={cities}
+                                                onChange={(value) => profileForm.setData("city", value)}
+                                                placeholder={t("Select City")}
+                                                disabled={!cities.length}
+                                            />
                                             <InputError className="mt-2" messages={profileForm.errors.city} />
                                         </div>
 

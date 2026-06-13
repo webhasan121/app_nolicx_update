@@ -1,9 +1,8 @@
 import { router } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Container from "../../../components/dashboard/Container";
-import Hr from "../../../components/Hr";
-import Modal from "../../../components/Modal";
-import PrimaryButton from "../../../components/PrimaryButton";
+import { todayInputDate } from "../../../utils/dateInput";
+import useTranslation from "../../../hooks/useTranslation";
 
 function buildQuery(filters, updates = {}) {
     return Object.fromEntries(
@@ -19,11 +18,27 @@ function updateFilter(filters, updates) {
     });
 }
 
+function SummaryCard({ title, children }) {
+    return (
+        <div
+            className="relative overflow-hidden rounded p-3 shadow"
+            style={{ backgroundColor: "orange", color: "white", zIndex: 1 }}
+        >
+            <div className="mb-3 text-md">{title}</div>
+            <div className="text-end text-2xl">{children}</div>
+            <div className="rider-summary-card-accent"></div>
+        </div>
+    );
+}
+
 export default function Index({ riderConsignmentIndex }) {
-    const [open, setOpen] = useState(false);
+    const { t } = useTranslation();
     const filters = riderConsignmentIndex?.filters ?? {};
     const consignments = riderConsignmentIndex?.consignments ?? [];
+    const pagination = riderConsignmentIndex?.pagination ?? {};
     const totals = riderConsignmentIndex?.totals ?? {};
+    const [search, setSearch] = useState(filters.find ?? "");
+    const today = todayInputDate();
 
     const changeStatus = (id, status) => {
         router.post(
@@ -36,63 +51,174 @@ export default function Index({ riderConsignmentIndex }) {
         );
     };
 
+    useEffect(() => {
+        const nextSearch = search.trim();
+        const currentSearch = (filters.find ?? "").trim();
+
+        if (nextSearch === currentSearch) {
+            return undefined;
+        }
+
+        const timeout = setTimeout(() => {
+            updateFilter(filters, { find: nextSearch, page: undefined });
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search]);
+
+    useEffect(() => {
+        setSearch(filters.find ?? "");
+    }, [filters.find]);
+
+
+    const goToPage = (url) => {
+        if (!url) {
+            return;
+        }
+
+        const nextUrl = new URL(url);
+
+        updateFilter(filters, {
+            find: nextUrl.searchParams.get("find") ?? filters.find,
+            page: nextUrl.searchParams.get("page") ?? undefined,
+        });
+    };
+
+    const dateFilters = [
+        ["Today", t("Today")],
+        ["Yesterday", t("Yesterday")],
+        ["Weak", t("This Week")],
+        ["Month", t("This Month")],
+        ["between", t("Date Between")],
+        ["any", t("Any Time")],
+    ];
+
     return (
         <div>
             <Container>
-                <div className="flex justify-between items-center">
-                    <div className="flex gap-2 items-center">
+                <style
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                            .rider-summary-card-accent {
+                                position: absolute;
+                                bottom: -100px;
+                                right: -100px;
+                                width: 200px;
+                                height: 200px;
+                                border-radius: 50%;
+                                background: radial-gradient(rgb(12, 165, 94), transparent);
+                                z-index: -1;
+                            }
+
+                            .rider-summary-card-accent::after {
+                                content: "";
+                                position: absolute;
+                                width: 80px;
+                                height: 80px;
+                                top: 50%;
+                                left: 50%;
+                                transform: translate(-50%, -50%);
+                                border-radius: 50%;
+                                background: radial-gradient(green, transparent);
+                            }
+                        `,
+                    }}
+                />
+
+                <div className="mb-3 grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", maxWidth: 350 }}>
+                    <SummaryCard title={t("Delivery")}>{totals.delivery ?? 0} TK</SummaryCard>
+                    <SummaryCard title={t("Earn")}>{totals.earn ?? 0} TK</SummaryCard>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
                         <select
                             value={filters.status ?? "All"}
-                            onChange={(e) => updateFilter(filters, { status: e.target.value })}
+                            onChange={(e) => updateFilter(filters, { status: e.target.value, page: undefined })}
                             className="py-1 mt-1 rounded"
                             id="select_status"
                         >
-                            <option value="All"> -- All -- </option>
-                            <option value="Pending">Pending</option>
-                            <option value="Received">Received</option>
-                            <option value="Completed">Delivered</option>
-                            <option value="Returned">Returned</option>
+                            <option value="All"> -- {t("All")} -- </option>
+                            <option value="Pending">{t("Pending")}</option>
+                            <option value="Received">{t("Received")}</option>
+                            <option value="Completed">{t("Delivered")}</option>
+                            <option value="Returned">{t("Returned")}</option>
                         </select>
+
+                        <input
+                            type="search"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder={t("Search consignments...")}
+                            className="w-64 rounded border-gray-300 py-1 text-sm"
+                        />
                     </div>
 
-                    <div>
-                        <PrimaryButton type="button" onClick={() => setOpen(true)}>
-                            <i className="fas fa-filter"></i>
-                        </PrimaryButton>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                        <select
+                            value={filters.created_at ?? "Today"}
+                            onChange={(e) => updateFilter(filters, { created_at: e.target.value, page: undefined })}
+                            className="rounded border-gray-300 py-1 text-sm"
+                        >
+                            {dateFilters.map(([value, label]) => (
+                                <option key={value} value={value}>
+                                    {label}
+                                </option>
+                            ))}
+                        </select>
+
+                        {filters.created_at === "between" ? (
+                            <div className="flex flex-wrap items-center gap-2">
+                                <label className="flex items-center gap-1 text-xs text-gray-600">
+                                    {t("From")}
+                                    <input
+                                        type="date"
+                                        name="start_time"
+                                        value={filters.start_time || today}
+                                        onChange={(e) => updateFilter(filters, { start_time: e.target.value, page: undefined })}
+                                        className="rounded border-gray-300 py-1 text-sm"
+                                    />
+                                </label>
+                                <label className="flex items-center gap-1 text-xs text-gray-600">
+                                    {t("To")}
+                                    <input
+                                        type="date"
+                                        name="end_time"
+                                        value={filters.end_time ?? ""}
+                                        onChange={(e) => updateFilter(filters, { end_time: e.target.value, page: undefined })}
+                                        className="rounded border-gray-300 py-1 text-sm"
+                                    />
+                                </label>
+                            </div>
+                        ) : null}
                     </div>
                 </div>
 
                 {consignments.length > 0 ? (
                     <>
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, 160px)",
-                                gap: "1rem",
-                            }}
-                        >
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                             {consignments.map((cod) => (
-                                <div key={cod.id} className="relative bg-white rounded shadow text-center flex flex-col justify-between">
+                                <div key={cod.id} className="relative flex flex-col justify-between text-center bg-white rounded shadow">
                                     <div className="py-2 bg-gray-200">
                                         <h3 className="text-xs text-gray-500">
-                                            Order ID
+                                            {t("Order ID")}
                                             <a
                                                 href={route("rider.consignment.view", { id: cod.id })}
-                                                className="cursor-pointer text-xs px-2 inline-block rounded-xl bg-indigo-900 text-white shadow"
+                                                className="inline-block px-2 text-xs text-white bg-indigo-900 shadow cursor-pointer rounded-xl"
                                             >
-                                                View
+                                                {t("View")}
                                             </a>
                                         </h3>
                                         <div className="font-bold">{cod.order_id}</div>
                                     </div>
 
                                     <div className="p-2">
-                                        <div className="flex justify-center items-center -space-x-2 overflow-hidden">
+                                        <div className="flex items-center justify-center -space-x-2 overflow-hidden">
                                             {cod.images.map((image, index) => (
                                                 <img
                                                     key={`${cod.id}-${index}`}
                                                     src={`/storage/${image}`}
-                                                    className="inline-block size-10 rounded-full ring-2 ring-white outline -outline-offset-1 outline-black/5"
+                                                    className="inline-block rounded-full size-10 ring-2 ring-white outline -outline-offset-1 outline-black/5"
                                                     alt=""
                                                 />
                                             ))}
@@ -100,14 +226,17 @@ export default function Index({ riderConsignmentIndex }) {
                                     </div>
 
                                     <div className="px-3 py-2">
-                                        <div className="text-2xl font-bold flex justify-center ">
+                                        <div className="flex justify-center text-2xl font-bold ">
                                             {cod.display_total} Tk
                                         </div>
-                                        <div className="text-sm text-gray-500 flex justify-center items-center text-center">
-                                            <div className="pl-1 font-bold">{cod.total_for_not_resel ?? "N/A"}</div>
-                                            <div className="px-1" style={{ lineHeight: "8px" }}>+</div>
-                                            <div className="flex justify-center items-cenrer">
-                                                <div>{cod.system_comission ?? "N/A"}</div>
+                                        <div className="text-sm text-center text-gray-500">
+                                            <div>
+                                                <span className="pl-1 font-bold">{cod.total_for_not_resel ?? "N/A"}</span>
+                                                <span className="px-1" style={{ lineHeight: "8px" }}>+</span>
+                                                <span>{cod.system_comission ?? "N/A"}</span>
+                                            </div>
+                                            <div className="text-xs text-red-500">
+                                                {t("Commission")} {cod.system_comission ?? "N/A"}
                                             </div>
                                         </div>
                                     </div>
@@ -115,7 +244,7 @@ export default function Index({ riderConsignmentIndex }) {
                                     <div className="px-3 py-2">
                                         <p className="text-xswwww">{cod.created_at_formatted}</p>
                                         <div className="text-xs text-gray-500">
-                                            <i className="fas fa-map-marker-alt pr-1"></i>
+                                            <i className="pr-1 fas fa-map-marker-alt"></i>
                                             {cod.location ?? "N/A"}
                                         </div>
                                     </div>
@@ -124,14 +253,14 @@ export default function Index({ riderConsignmentIndex }) {
                                         <>
                                             <div className="pb-2">
                                                 <button
-                                                    className="rounded border px-2 py-1 bg-indigo-900 text-white shadow text-sm"
+                                                    className="px-2 py-1 text-sm text-white bg-indigo-900 border rounded shadow"
                                                     onClick={() => changeStatus(cod.id, "Received")}
                                                 >
-                                                    Mark as Received
+                                                    {t("Mark as Received")}
                                                 </button>
                                             </div>
                                             <div className="absolute p-1" style={{ top: 43, left: "50%", transform: "translatex(-50%)" }}>
-                                                <div className="text-xs px-2 rounded-xl bg-white shadow"> Pending </div>
+                                                <div className="px-2 text-xs bg-white shadow rounded-xl"> {t("Pending")} </div>
                                             </div>
                                         </>
                                     ) : null}
@@ -140,99 +269,62 @@ export default function Index({ riderConsignmentIndex }) {
                                         <>
                                             <div className="pb-2">
                                                 <button
-                                                    className="rounded border px-2 py-1 bg-indigo-900 text-white shadow text-sm"
+                                                    className="px-2 py-1 text-sm text-white bg-indigo-900 border rounded shadow"
                                                     onClick={() => changeStatus(cod.id, "Completed")}
                                                 >
-                                                    Mark as Delivered
+                                                    {t("Mark as Delivered")}
                                                 </button>
                                             </div>
                                             <div className="absolute p-1" style={{ top: 43, left: "50%", transform: "translatex(-50%)" }}>
-                                                <div className="text-xs px-2 rounded-xl bg-indigo-200 shadow"> Received </div>
+                                                <div className="px-2 text-xs bg-indigo-200 shadow rounded-xl"> {t("Received")} </div>
                                             </div>
                                         </>
                                     ) : null}
 
                                     {cod.status === "Completed" ? (
                                         <>
-                                            <p className="p-2 bg-green-200 text-green-900 font-bold">
-                                                <i className="fas fa-check-circle ps-2"></i> Earn ({cod.shipping}TK)
+                                            <p className="p-2 font-bold text-green-900 bg-green-200">
+                                                <i className="fas fa-check-circle ps-2"></i> {t("Earn")} ({cod.shipping}TK)
                                             </p>
                                             <div className="absolute p-1" style={{ top: 43, left: "50%", transform: "translatex(-50%)" }}>
-                                                <div className="text-xs px-2 rounded-xl bg-green-900 text-white shadow"> Done </div>
+                                                <div className="px-2 text-xs text-white bg-green-900 shadow rounded-xl"> {t("Done")} </div>
                                             </div>
                                         </>
                                     ) : null}
                                 </div>
                             ))}
                         </div>
-                        <table className="w-full border p-2">
-                            <tbody>
-                                <tr className="p-2">
-                                    <td>Delivery</td>
-                                    <td>{totals.delivery} TK</td>
-                                </tr>
-                                <tr className="p-2">
-                                    <td>Earn</td>
-                                    <td>{totals.earn}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        {pagination?.links?.length ? (
+                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                                <div className="text-sm text-gray-600">
+                                    {t("Showing :from-:to of :total", {
+                                        from: pagination.from ?? 0,
+                                        to: pagination.to ?? 0,
+                                        total: pagination.total ?? 0,
+                                    })}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-1">
+                                    {pagination.links.map((link, index) => (
+                                        <button
+                                            key={`${link.label}-${index}`}
+                                            type="button"
+                                            disabled={!link.url || link.active}
+                                            onClick={() => goToPage(link.url)}
+                                            className={`min-w-9 rounded border px-3 py-1 text-sm ${
+                                                link.active
+                                                    ? "border-orange-500 bg-orange-500 text-white"
+                                                    : "border-gray-300 bg-white text-gray-700"
+                                            } disabled:cursor-not-allowed disabled:opacity-50`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
                     </>
                 ) : (
-                    <p className="bg-gray-50 p-1">No Consignment Found !</p>
+                    <p className="p-1 bg-gray-50">{t("No Consignment Found !")}</p>
                 )}
-
-                <Modal show={open} onClose={() => setOpen(false)} maxWidth="md">
-                    <div className="p-4 border-b flex justify-between items-center">
-                        Filter
-                        <div onClick={() => setOpen(false)}>
-                            <i className="fas fa-close"></i>
-                        </div>
-                    </div>
-                    <div className="p-4">
-                        <div className="md:flex justify-between items-start">
-                            <div className="p-2">
-                                {[['All', 'All'], ['Pending', 'Pending'], ['Received', 'Rececived'], ['Completed', 'Delivered'], ['Returned', 'Returned']].map(([value, label]) => (
-                                    <div key={value} className="flex p-2 border-b mb-1">
-                                        <input
-                                            type="radio"
-                                            checked={filters.status === value}
-                                            onChange={() => updateFilter(filters, { status: value })}
-                                            style={{ width: 20, height: 20 }}
-                                            className="mr-3"
-                                        /> {label}
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="p-2">
-                                {[['Today', 'Today'], ['Yesterday', 'Yestarday'], ['Weak', 'This Weak'], ['Month', 'This Monty'], ['between', 'Date Between'], ['any', 'Any Time']].map(([value, label]) => (
-                                    <div key={value} className={`flex p-2 border-b mb-1 ${value === 'any' ? 'bg-gray-100' : ''}`}>
-                                        <input
-                                            type="radio"
-                                            checked={filters.created_at === value}
-                                            onChange={() => updateFilter(filters, { created_at: value })}
-                                            style={{ width: 20, height: 20 }}
-                                            className="mr-3"
-                                        /> {label}
-                                    </div>
-                                ))}
-                                {filters.created_at === "between" ? (
-                                    <div>
-                                        <hr />
-                                        <div className="mb-1">
-                                            <p>From </p>
-                                            <input type="date" name="start_time" value={filters.start_time ?? ""} onChange={(e) => updateFilter(filters, { start_time: e.target.value })} id="start_time" />
-                                        </div>
-                                        <div className="mb-1">
-                                            <p>to </p>
-                                            <input type="date" name="end_time" value={filters.end_time ?? ""} onChange={(e) => updateFilter(filters, { end_time: e.target.value })} id="end_time" />
-                                        </div>
-                                    </div>
-                                ) : null}
-                            </div>
-                        </div>
-                    </div>
-                </Modal>
             </Container>
         </div>
     );

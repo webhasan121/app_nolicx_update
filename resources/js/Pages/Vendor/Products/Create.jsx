@@ -1,11 +1,12 @@
 import { Head, useForm } from "@inertiajs/react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import AppLayout from "../../../Layouts/App";
 import Hr from "../../../components/Hr";
 import InputField from "../../../components/InputField";
 import InputFile from "../../../components/InputFile";
 import PrimaryButton from "../../../components/PrimaryButton";
-import TextInput from "../../../components/TextInput";
+import ProductAttributesInput from "../../../components/ProductAttributesInput";
+import CategorySelect from "../../../components/CategorySelect";
 import Container from "../../../components/dashboard/Container";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Section from "../../../components/dashboard/section/Section";
@@ -16,6 +17,8 @@ import {
     validateProductVideoDuration,
 } from "../../../utils/videoValidation";
 import useTranslation from "../../../hooks/useTranslation";
+
+const MAX_OTHER_IMAGES = 8;
 
 export default function Create({ categories = [], shop, ableToCreate = true }) {
     const { t } = useTranslation();
@@ -50,12 +53,12 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         newImage: [],
         attr_name: "",
         attr_value: "",
+        attributes: [{ name: "", value: "" }],
     });
 
     const [thumbPreview, setThumbPreview] = useState(null);
     const [metaThumbPreview, setMetaThumbPreview] = useState(null);
     const [newImagePreviews, setNewImagePreviews] = useState([]);
-    const categoryItems = useMemo(() => flattenCategories(categories), [categories]);
 
     useEffect(() => {
         let isMounted = true;
@@ -185,6 +188,23 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
         });
     };
 
+    const handleOtherImagesChange = (event) => {
+        const currentFiles = Array.isArray(form.data.newImage)
+            ? form.data.newImage
+            : [];
+        const selectedFiles = Array.from(event.target.files ?? []);
+        const nextFiles = [...currentFiles, ...selectedFiles];
+
+        if (nextFiles.length > MAX_OTHER_IMAGES) {
+            window.alert(`You can upload a maximum of ${MAX_OTHER_IMAGES} other images.`);
+            event.target.value = "";
+            return;
+        }
+
+        form.setData("newImage", nextFiles);
+        event.target.value = "";
+    };
+
     return (
         <AppLayout title={t("Add Products")} header={<PageHeader>{t("Add Products")}</PageHeader>}>
             <Head title={t("Add Products")} />
@@ -209,50 +229,59 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                 </Section>
 
                 <form onSubmit={submit}>
-                    <div className="justify-between md:flex">
-                        <Section>
-                            <SectionHeader
-                                title={t("Basic Information")}
-                                content={t("Provide your products related basic infromation.")}
-                            />
+                    <div className="md:flex md:gap-4">
+                        <Section className="md:flex-1">
+                            <SectionHeader title={t("Product Basic Info")} content="" />
                             <SectionInner>
                                 <InputField
-                                    inputClass="w-full"
-                                    labelWidth="250px"
-                                    label={t("Product Name")}
-                                    name="name"
                                     error={form.errors.name}
+                                    labelWidth="350px"
+                                    label={t("Products Name")}
+                                    name="name"
+                                    inputClass="w-full"
                                     value={form.data.name}
                                     onChange={(e) => form.setData("name", e.target.value)}
                                 />
-                                <InputField
-                                    inputClass="w-full"
-                                    label={t("Product Title")}
-                                    name="title"
-                                    error={form.errors.title}
-                                    value={form.data.title}
-                                    onChange={(e) => form.setData("title", e.target.value)}
-                                />
-
                                 <InputFile
-                                    label={t("Chose Category")}
-                                    name="category_id"
+                                    labelWidth="250px"
+                                    error="title"
+                                    label={t("Products title")}
+                                    name="title"
+                                    errors={form.errors}
+                                >
+                                    <textarea
+                                        rows="3"
+                                        className="w-full rounded"
+                                        value={form.data.title}
+                                        onChange={(e) => form.setData("title", e.target.value)}
+                                    ></textarea>
+                                </InputFile>
+
+                                <Hr />
+                                <InputFile
+                                    labelWidth="250px"
+                                    label={t("Products Category")}
                                     error="category_id"
                                     errors={form.errors}
-                                    labelWidth={''}
                                 >
-                                    <SearchableCategorySelect
-                                        categories={categoryItems}
-                                        value={form.data.category_id}
+                                    <div className="text-xs">{t("Category :")}{" "}
+                                        <strong>{t("N/A")}</strong>{t(". Change to another")}</div>
+                                    <CategorySelect
+                                        categories={categories}
+                                        value={form.data.category_id ?? ""}
                                         onChange={(categoryId) =>
                                             form.setData("category_id", categoryId)
                                         }
+                                        placeholder={t("-- Select Category --")}
+                                        noneLabel={t("-- Select Category --")}
+                                        noResultsLabel={t("No category found.")}
                                     />
                                 </InputFile>
+                                <Hr />
                             </SectionInner>
                         </Section>
 
-                        <Section>
+                        <Section className="md:w-[324px] md:flex-none">
                             <SectionHeader title={t("Product Price")} content="" />
                             <SectionInner>
                                 <div>
@@ -278,7 +307,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                         className="mx-1"
                                         labelWidth="100px"
                                         type="number"
-                                        label={t("Product Unit")}
+                                        label={t("Product Unite")}
                                         name="unit"
                                         error={form.errors.unit}
                                         value={form.data.unit}
@@ -394,6 +423,10 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                         </Section>
 
                         <Section>
+                            <SectionHeader
+                                title={t("SEO")}
+                                content={t("Setup your product seo from here.")}
+                            />
                             <SectionInner>
                                 <InputField
                                     error={form.errors.meta_keyword}
@@ -458,56 +491,48 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
 
                         <Section>
                             <SectionHeader
-                                title={t("Products Attributes")}
+                                title={t("Image Attributes")}
                                 content={t("Give your products attributes, product different types, different product color package and quantity.")}
                             />
                             <SectionInner>
-                                <div className="md:flex">
-                                    <TextInput
-                                        value={form.data.attr_name}
-                                        onChange={(e) => form.setData("attr_name", e.target.value)}
-                                        placeholder={t("Name")}
-                                    />
-                                    <TextInput
-                                        value={form.data.attr_value}
-                                        onChange={(e) => form.setData("attr_value", e.target.value)}
-                                        placeholder={t("Value")}
-                                    />
-                                </div>
+                                <ProductAttributesInput
+                                    attributes={form.data.attributes}
+                                    onChange={(attributes) => form.setData("attributes", attributes)}
+                                />
                             </SectionInner>
                         </Section>
 
                         <Section>
-                            <SectionHeader
-                                title={t("Image Thumbnail")}
-                                content={t("Provide a mendatory thumbnail image for your products. This image consider for the thumbnail for social media platform.")}
-                            />
-                            <SectionInner>
-                                <InputFile label={t("Thumbnail")} className="md:flex" labelWidth="250px" error="thumb" errors={form.errors}>
+                            <div className="justify-between md:flex flex-rowreverse">
+                                <SectionHeader
+                                    title={t("Image Thumbnail")}
+                                    content={
+                                        <div>{t("Provide a mendatory thumbnail image for your products. This image consider for the thumbnail for social media platform.")}
+                                            <div className="relative mt-3">
+                                                <p className="mb-2 text-xs">{t("600 x 600 image thumbnail")}</p>
+                                                <input
+                                                    type="file"
+                                                    className="absolute hidden p-1 border"
+                                                    id="prod_thumbnail"
+                                                    onChange={(e) => form.setData("thumb", e.target.files?.[0] ?? null)}
+                                                />
+                                                <label
+                                                    htmlFor="prod_thumbnail"
+                                                    className="inline-flex items-center justify-center border rounded cursor-pointer w-9 h-9"
+                                                >
+                                                    <i className="fas fa-upload"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                />
+
+                                <SectionInner>
                                     {thumbPreview ? (
-                                        <img
-                                            src={thumbPreview}
-                                            className="w-full max-w-[300px] rounded border object-cover"
-                                            style={{ aspectRatio: "1 / 1" }}
-                                            alt=""
-                                        />
+                                        <img src={thumbPreview} width="100px" height="200px" alt="" />
                                     ) : null}
-                                    <div className="relative mt-3">
-                                        <input
-                                            type="file"
-                                            className="absolute hidden"
-                                            id="prod_thumbnail"
-                                            onChange={(e) => form.setData("thumb", e.target.files?.[0] ?? null)}
-                                        />
-                                        <label
-                                            htmlFor="prod_thumbnail"
-                                            className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
-                                        >
-                                            <i className="fas fa-upload"></i>
-                                        </label>
-                                    </div>
-                                </InputFile>
-                            </SectionInner>
+                                </SectionInner>
+                            </div>
                         </Section>
 
                         <Section>
@@ -532,7 +557,13 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 content={t("Other product image that showcase your product. other image mainly display at product details page.")}
                             />
                             <SectionInner>
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,50px)", gridGap: "10px" }}>
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(auto-fit,50px)",
+                                        gridGap: "10px",
+                                    }}
+                                >
                                     {newImagePreviews.map((src, index) => (
                                         <div key={`${src}-${index}`} className="p-2 border rounded">
                                             <img src={src} width="50px" height="50px" alt="" />
@@ -547,17 +578,22 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                         className="absolute hidden"
                                         multiple
                                         accept="image/*"
-                                        onChange={(e) =>
-                                            form.setData("newImage", Array.from(e.target.files ?? []))
-                                        }
+                                        onChange={handleOtherImagesChange}
                                     />
                                     <label
                                         htmlFor="multi_prod_img"
-                                        className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
+                                        className="inline-flex items-center justify-center border rounded cursor-pointer w-9 h-9"
                                     >
                                         <i className="fas fa-upload"></i>
                                     </label>
-                                    <div className="text-xs leading-5">{t("Please choose all image at once, if you plan to upload multiple image.")}</div>
+                                    <div className="text-xs leading-5">
+                                        {t("Please choose all image at once, if you plan to upload multiple image.")}
+                                    </div>
+                                    {form.errors.newImage ? (
+                                        <div className="text-xs text-red-500">
+                                            {form.errors.newImage}
+                                        </div>
+                                    ) : null}
                                 </div>
                             </SectionInner>
                         </Section>
@@ -568,9 +604,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 content={t("Descrive your product as you need.")}
                             />
                             <SectionInner>
-                                <div className="flex flex-wrap items-center gap-2 p-3 border-b bg-gray-50"></div>
-                                <InputFile label={t("Description")} className="md:flex" labelWidth="250px" error="description" errors={form.errors}>
-                                    <hr />
+                                <InputFile label={t("Description")} labelWidth="250px" error="description" errors={form.errors}>
                                     <main>
                                         {trixReady && <trix-toolbar id={`my_toolbar_${inputId}`}></trix-toolbar>}
                                         <div className="more-stuff-inbetween"></div>
@@ -589,102 +623,21 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             ></trix-editor>
                                         ) : (
                                             <textarea
-                                                className="w-full border-gray-300 rounded-md shadow-sm"
+                                                className="w-full border-gray-300 rounded"
                                                 rows="10"
                                                 value={form.data.description}
                                                 onChange={(e) => form.setData("description", e.target.value)}
                                             />
                                         )}
                                     </main>
-                                    <br />
-                                    <PrimaryButton type="submit" className="block" disabled={form.processing}>{t("create")}</PrimaryButton>
                                 </InputFile>
                             </SectionInner>
                         </Section>
+
+                        <PrimaryButton type="submit" disabled={form.processing}>{t("create")}</PrimaryButton>
                     </div>
                 </form>
             </Container>
         </AppLayout>
     );
-}
-
-function SearchableCategorySelect({ categories = [], value, onChange }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [search, setSearch] = useState("");
-    const selectedCategory = categories.find(
-        (category) => String(category.id) === String(value)
-    );
-    const visibleValue = isOpen ? search : selectedCategory?.label ?? "";
-    const filteredCategories = categories.filter((category) =>
-        category.searchText.includes(search.trim().toLowerCase())
-    );
-
-    const chooseCategory = (category) => {
-        onChange(category.id);
-        setSearch("");
-        setIsOpen(false);
-    };
-
-    return (
-        <div className="relative">
-            <input
-                type="text"
-                value={visibleValue}
-                onFocus={() => {
-                    setSearch("");
-                    setIsOpen(true);
-                }}
-                onChange={(event) => {
-                    setSearch(event.target.value);
-                    onChange("");
-                    setIsOpen(true);
-                }}
-                onBlur={() => {
-                    window.setTimeout(() => {
-                        setSearch("");
-                        setIsOpen(false);
-                    }, 150);
-                }}
-                placeholder={t("-- Chose an category --")}
-                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                autoComplete="off"
-            />
-
-            {isOpen && (
-                <div className="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
-                    {filteredCategories.length > 0 ? (
-                        filteredCategories.map((category) => (
-                            <button
-                                key={category.id}
-                                type="button"
-                                className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100"
-                                onMouseDown={(event) => event.preventDefault()}
-                                onClick={() => chooseCategory(category)}
-                            >
-                                {category.label}
-                            </button>
-                        ))
-                    ) : (
-                        <div className="px-3 py-4 text-center text-sm text-gray-500">{t("No category found.")}</div>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-}
-
-function flattenCategories(categories = [], depth = 0) {
-    return categories.flatMap((category) => {
-        const prefix = depth === 0 ? "" : `${"-".repeat(depth * 2)} `;
-        const current = {
-            id: category.id,
-            label: `${prefix}${category.name}`,
-            searchText: String(category.name ?? "").toLowerCase(),
-        };
-
-        return [
-            current,
-            ...flattenCategories(category.children ?? [], depth + 1),
-        ];
-    });
 }

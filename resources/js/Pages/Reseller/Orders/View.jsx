@@ -4,13 +4,13 @@ import AppLayout from "../../../Layouts/App";
 import Hr from "../../../components/Hr";
 import Modal from "../../../components/Modal";
 import NavLink from "../../../components/NavLink";
-import NavLinkBtn from "../../../components/NavLinkBtn";
 import Container from "../../../components/dashboard/Container";
 import Div from "../../../components/dashboard/overview/Div";
 import OverviewSection from "../../../components/dashboard/overview/Section";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
+import { ActionIconLink } from "../../../components/ActionIcon";
 
 const progressFlow = ["Pending", "Accept", "Picked", "Delivery", "Delivered", "Confirm"];
 const progressLabels = ["Placed", "Accept", "Collecting", "Delivery", "Delivered", "Confirm"];
@@ -141,7 +141,7 @@ export default function View({ order }) {
                             <div>
                                 Date: <span className="text-xs"> {order?.created_at_daytime}</span>
                             </div>
-                            <NavLinkBtn href={route("vendor.orders.cprint", { order: order?.id })}>Print</NavLinkBtn>
+                            <ActionIconLink href={route("vendor.orders.cprint", { order: order?.id })} action="print" title="Print" />
                         </div>
                         <div className="order-total text-end">
                             <table className="table">

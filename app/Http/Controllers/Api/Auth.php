@@ -10,6 +10,7 @@ use App\Models\country;
 use App\Models\state;
 use App\Models\UserHasRefs;
 use App\Models\User;
+use App\Support\RegistrationIdentityGuard;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
@@ -25,12 +26,16 @@ class Auth extends Controller
     public function register(Request $request)
     {
         $this->mergeConfirmedPassword($request);
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+            'phone' => trim((string) $request->input('phone')),
+        ]);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class, RegistrationIdentityGuard::uniqueEmailAliasRule()],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'phone' => ['required', 'string', 'max:25'],
+            'phone' => ['required', 'string', 'max:25', RegistrationIdentityGuard::uniquePhoneRule()],
             'reference' => ['nullable', 'string', 'max:255'],
             'country_id' => ['required', 'integer', 'exists:countries,id'],
             'state_id' => [
@@ -50,16 +55,14 @@ class Auth extends Controller
             $state = state::findOrFail($validated['state_id']);
             $city = !empty($validated['city_id']) ? city::find($validated['city_id']) : null;
             $reference = config('app.ref');
-            $referenceAcceptedAt = null;
 
             if (!empty($validated['reference']) && $validated['reference'] !== config('app.ref')) {
                 if (UserHasRefs::where('ref', $validated['reference'])->exists()) {
                     $reference = $validated['reference'];
-                    $referenceAcceptedAt = now();
                 }
             }
 
-            $user = DB::transaction(function () use ($validated, $country, $state, $city, $reference, $referenceAcceptedAt) {
+            $user = DB::transaction(function () use ($validated, $country, $state, $city, $reference) {
                 return User::create([
                     'name' => $validated['name'],
                     'email' => $validated['email'],
@@ -70,7 +73,6 @@ class Auth extends Controller
                     'state' => $state->name,
                     'city' => $city?->name,
                     'reference' => $reference,
-                    'reference_accepted_at' => $referenceAcceptedAt,
                 ]);
             });
 

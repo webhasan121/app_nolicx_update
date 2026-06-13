@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Modal from "../../../../components/Modal";
 import Hr from "../../../../components/Hr";
+import InputField from "../../../../components/InputField";
+import InputFile from "../../../../components/InputFile";
 import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import SecondaryButton from "../../../../components/SecondaryButton";
@@ -11,7 +13,7 @@ import Container from "../../../../components/dashboard/Container";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import useTranslation from "../../../../hooks/useTranslation";
 
-function CategoryTree({ categories = [], activeCat, search = "" }) {
+function CategoryTree({ categories = [], activeCat, search = "", t }) {
     const normalizedSearch = search.trim().toLowerCase();
 
     const matchesCategory = (category) => {
@@ -32,7 +34,7 @@ function CategoryTree({ categories = [], activeCat, search = "" }) {
         .map((item) => (
             <div
                 key={item.id}
-                className="p-2 border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
+                className="p-2 border-b border-gray-200 cursor-pointer hover:bg-gray-50"
             >
                 <div>
                     <NavLink
@@ -100,7 +102,7 @@ function CategoryTree({ categories = [], activeCat, search = "" }) {
         ));
 }
 
-function ProductCard({ product, onPurchase }) {
+function ProductCard({ product, onPurchase, t }) {
     const discountPercent = useMemo(() => {
         if (!product.offer_type || !product.price) return 0;
         const diff = product.price - (product.discount ?? 0);
@@ -108,34 +110,36 @@ function ProductCard({ product, onPurchase }) {
     }, [product]);
 
     return (
-        <div className="bg-white rounded shadow overflow-hidden relative">
+        <div className="relative overflow-hidden bg-white rounded shadow">
             {product.offer_type ? (
-                <div className="discount-badge bg-orange-600">
+                <div className="bg-orange-500 discount-badge">
                     {discountPercent}%</div>
             ) : null}
 
-            <div className="overflow-hidden shadow-md p-1">
+            <div className="p-1 overflow-hidden shadow-md">
                 {product.thumbnail_url ? (
                     <img
                         style={{ height: "120px" }}
                         src={product.thumbnail_url}
-                        className="w-full object-cover"
+                        className="object-cover w-full"
                         alt="image"
                     />
                 ) : null}
             </div>
 
-            <div className="p-2 bg-white h-34 flex flex-col justify-between">
+            <div className="flex flex-col justify-between p-2 bg-white h-34">
                 <NavLink
                     href={route("reseller.resel-product.veiw", {
                         pd: product.id,
                     })}
                 >
-                    <div className="text-sm">{product.name ?? "N/A"}</div>
+                    <div className="text-sm product-title-clamp-3">
+                        {product.name ?? "N/A"}
+                    </div>
                 </NavLink>
 
                 <div>
-                    <div className="text-md mb-3">
+                    <div className="mb-3 text-md">
                         {product.offer_type ? (
                             <>
                                 <div className="bold">
@@ -150,14 +154,14 @@ function ProductCard({ product, onPurchase }) {
                         )}
                     </div>
 
-                    <div className="flex justify-center items-center text-sm">
+                    <div className="flex items-center justify-center text-sm">
                         <Hr />
                         <PrimaryButton
                             type="button"
-                            className="text-center w-full flex justify-between"
+                            className="flex justify-between w-full text-center"
                             onClick={() => onPurchase(product)}
                         >{t("Purchase")}{" "}
-                            <i className="fas fa-angle-right pl-2"></i>
+                            <i className="pl-2 fas fa-angle-right"></i>
                         </PrimaryButton>
                     </div>
                 </div>
@@ -350,11 +354,10 @@ export default function Index({
                 </PageHeader>
             }
         >
-            <Head title={t("Resel Products")} />
-
+            <Head title="Resel Products" />
             <Container>
                 {!ableToAdd ? (
-                    <div className="p-2 bg-red-200 text-red-800">{t("You have reached the maximum number of products you can upload")}{shop?.max_resell_product ?? 0}{t(". Please delete some products to add new ones or upgrade your plan.")}</div>
+                    <div className="p-2 text-red-800 bg-red-200">{t("You have reached the maximum number of products you can upload")}{shop?.max_resell_product ?? 0}{t(". Please delete some products to add new ones or upgrade your plan.")}</div>
                 ) : null}
 
                 <div>
@@ -363,7 +366,7 @@ export default function Index({
                             <button
                                 type="button"
                                 onClick={() => setShowCategoryModal(true)}
-                                className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm hover:bg-white"
+                                className="flex items-center justify-between gap-3 px-3 py-2 text-sm border rounded-md hover:bg-white"
                             >
                                 <span>{t("Categories")}</span>
                                 <i className="fas fa-angle-right"></i>
@@ -399,27 +402,28 @@ export default function Index({
                                     key={product.id}
                                     product={product}
                                     onPurchase={openOrderModal}
+                                    t={t}
                                 />
                             ))}
                         </div>
                     </div>
 
                     {(products?.data ?? []).length < 1 ? (
-                        <div className="p-2 bg-gray-200 h-auto">{t("No Products Found !")}</div>
+                        <div className="h-auto p-2 bg-gray-200">{t("No Products Found !")}</div>
                     ) : null}
 
                     {pagination.pages.length ? (
                         <div className="w-full pt-4">
-                            <div className="flex w-full items-center justify-between gap-3">
+                            <div className="flex items-center justify-between w-full gap-3">
                                 <div className="text-sm text-slate-700">
                                     {resultSummary}
                                 </div>
                                 <div className="flex items-center md:justify-end">
-                                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                    <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                         <button
                                             type="button"
                                             disabled={!pagination.prev?.url}
-                                            className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                            className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                             onClick={() => goToPage(pagination.prev?.url)}
                                         >{t("Previous")}</button>
                                         {pagination.pages.map((link, index) => (
@@ -440,7 +444,7 @@ export default function Index({
                                         <button
                                             type="button"
                                             disabled={!pagination.next?.url}
-                                            className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                            className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                             onClick={() => goToPage(pagination.next?.url)}
                                         >{t("Next")}</button>
                                     </div>
@@ -455,7 +459,7 @@ export default function Index({
                 show={showCategoryModal}
                 onClose={() => setShowCategoryModal(false)}
             >
-                <div className="p-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-b border-gray-200">
                     <div className="text-base font-medium">{t("Explore Categories")}</div>
                     <div className="flex w-full max-w-sm items-center gap-2 sm:w-auto sm:min-w-[320px]">
                         <TextInput
@@ -464,13 +468,13 @@ export default function Index({
                             onChange={(e) =>
                                 setCategorySearch(e.target.value)
                             }
-                            className="mb-0 w-full py-2"
+                            className="w-full py-2 mb-0"
                             placeholder={t("Search categories...")}
                         />
                         <button
                             type="button"
                             onClick={() => setShowCategoryModal(false)}
-                            className="flex h-10 w-10 items-center justify-center rounded-md text-slate-700 transition hover:bg-slate-100"
+                            className="flex items-center justify-center w-10 h-10 transition rounded-md text-slate-700 hover:bg-slate-100"
                         >
                             <i className="fas fa-times"></i>
                         </button>
@@ -481,20 +485,21 @@ export default function Index({
                         href={route("reseller.resel-product.index")}
                     >{t("View All Products")}</NavLink>
                 </div>
-                <div className="p-3 flex-1 overflow-y-scroll">
+                <div className="flex-1 p-3 overflow-y-scroll">
                     <CategoryTree
                         categories={categories}
                         activeCat={filters?.cat}
                         search={categorySearch}
+                        t={t}
                     />
                 </div>
                 <hr />
-                <div className="w-full text-end p-3">
+                <div className="w-full p-3 text-end">
                     <SecondaryButton
                         type="button"
                         onClick={() => setShowCategoryModal(false)}
                     >
-                        <i className="fas fa-times mr-2"></i>{t("Close")}</SecondaryButton>
+                        <i className="mr-2 fas fa-times"></i>{t("Close")}</SecondaryButton>
                 </div>
             </Modal>
 
@@ -505,17 +510,17 @@ export default function Index({
             >
                 {activeProduct ? (
                     <div>
-                        <div className="p-3 bold border-b flex justify-between items-center">
+                        <div className="flex items-center justify-between p-3 border-b bold">
                             <div>{t("Purchase")}</div>
-                            <div className="bold text-lg">
+                            <div className="text-lg bold">
                                 {activeProduct.total_price}{t("TK")}</div>
                         </div>
-                        <div className="flex items-start justify-start mb-3 p-5 bg-gray-100">
+                        <div className="flex items-start justify-start p-5 mb-3 bg-gray-100">
                             <div className="flex">
                                 {activeProduct.thumbnail_url ? (
                                     <img
                                         src={activeProduct.thumbnail_url}
-                                        className="w-12 h-12 rounded shadow mr-3"
+                                        className="w-12 h-12 mr-3 rounded shadow"
                                         alt=""
                                     />
                                 ) : null}
@@ -549,37 +554,37 @@ export default function Index({
                         </div>
 
                         <form onSubmit={submitOrder} className="p-5">
-                            <input
-                                className="w-full rounded-md p-2 mb-2"
-                                placeholder={t("Name")}
+                            <InputField
+                                className="md:flex"
+                                labelWidth="140px"
+                                label={t("Name")}
+                                name="name"
+                                inputClass="w-full"
+                                error={orderForm.errors.name}
                                 value={orderForm.data.name}
                                 onChange={(e) =>
                                     orderForm.setData("name", e.target.value)
                                 }
                             />
-                            {orderForm.errors.name ? (
-                                <div className="text-red-900 text-xs">
-                                    {orderForm.errors.name}
-                                </div>
-                            ) : null}
-
-                            <input
-                                className="w-full rounded-md p-2 mb-2"
-                                placeholder={t("Phone")}
+                            <InputField
+                                className="md:flex"
+                                labelWidth="140px"
+                                label={t("Phone")}
+                                name="phone"
+                                inputClass="w-full"
+                                error={orderForm.errors.phone}
                                 value={orderForm.data.phone}
                                 onChange={(e) =>
                                     orderForm.setData("phone", e.target.value)
                                 }
                             />
-                            {orderForm.errors.phone ? (
-                                <div className="text-red-900 text-xs">
-                                    {orderForm.errors.phone}
-                                </div>
-                            ) : null}
-
-                            <input
-                                className="w-full rounded-md p-2 mb-2"
-                                placeholder={t("District")}
+                            <InputField
+                                className="md:flex"
+                                labelWidth="140px"
+                                label={t("District")}
+                                name="district"
+                                inputClass="w-full"
+                                error={orderForm.errors.district}
                                 value={orderForm.data.district}
                                 onChange={(e) =>
                                     orderForm.setData(
@@ -588,14 +593,13 @@ export default function Index({
                                     )
                                 }
                             />
-                            {orderForm.errors.district ? (
-                                <div className="text-red-900 text-xs">
-                                    {orderForm.errors.district}
-                                </div>
-                            ) : null}
-                            <input
-                                className="w-full rounded-md p-2 mb-2"
-                                placeholder={t("Upozila")}
+                            <InputField
+                                className="md:flex"
+                                labelWidth="140px"
+                                label={t("Upozila")}
+                                name="upozila"
+                                inputClass="w-full"
+                                error={orderForm.errors.upozila}
                                 value={orderForm.data.upozila}
                                 onChange={(e) =>
                                     orderForm.setData(
@@ -604,30 +608,33 @@ export default function Index({
                                     )
                                 }
                             />
-                            {orderForm.errors.upozila ? (
-                                <div className="text-red-900 text-xs">
-                                    {orderForm.errors.upozila}
-                                </div>
-                            ) : null}
-                            <textarea
-                                className="w-full rounded-md p-2 mb-2"
-                                placeholder={t("Full Address")}
-                                value={orderForm.data.location}
-                                onChange={(e) =>
-                                    orderForm.setData(
-                                        "location",
-                                        e.target.value
-                                    )
-                                }
-                            ></textarea>
-                            {orderForm.errors.location ? (
-                                <div className="text-red-900 text-xs">
-                                    {orderForm.errors.location}
-                                </div>
-                            ) : null}
-                            <input
-                                className="w-full rounded-md p-2 mb-2"
-                                placeholder={t("Road No")}
+                            <InputFile
+                                labelWidth="140px"
+                                label={t("Full Address")}
+                                name="location"
+                                error="location"
+                                errors={orderForm.errors}
+                            >
+                                <textarea
+                                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    rows="3"
+                                    placeholder={t("Full Address")}
+                                    value={orderForm.data.location}
+                                    onChange={(e) =>
+                                        orderForm.setData(
+                                            "location",
+                                            e.target.value
+                                        )
+                                    }
+                                ></textarea>
+                            </InputFile>
+                            <InputField
+                                className="md:flex"
+                                labelWidth="140px"
+                                label={t("Road No")}
+                                name="road_no"
+                                inputClass="w-full"
+                                error={orderForm.errors.road_no}
                                 value={orderForm.data.road_no}
                                 onChange={(e) =>
                                     orderForm.setData(
@@ -636,9 +643,13 @@ export default function Index({
                                     )
                                 }
                             />
-                            <input
-                                className="w-full rounded-md p-2 mb-2"
-                                placeholder={t("House No")}
+                            <InputField
+                                className="md:flex"
+                                labelWidth="140px"
+                                label={t("House No")}
+                                name="house_no"
+                                inputClass="w-full"
+                                error={orderForm.errors.house_no}
                                 value={orderForm.data.house_no}
                                 onChange={(e) =>
                                     orderForm.setData(
@@ -648,9 +659,15 @@ export default function Index({
                                 }
                             />
 
-                            <div className="mb-2">
+                            <InputFile
+                                labelWidth="140px"
+                                label={t("Quantity")}
+                                name="quantity"
+                                error="quantity"
+                                errors={orderForm.errors}
+                            >
                                 <select
-                                    className="rounded-md py-1 border w-full"
+                                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     value={orderForm.data.quantity}
                                     onChange={(e) =>
                                         orderForm.setData(
@@ -666,20 +683,15 @@ export default function Index({
                                         </option>
                                     ))}
                                 </select>
-                            </div>
-                            {orderForm.errors.quantity ? (
-                                <div className="text-red-900 text-xs">
-                                    {orderForm.errors.quantity}
-                                </div>
-                            ) : null}
+                            </InputFile>
 
-                            <div className="p-2 bg-indigo-100 mb-2">
+                            <div className="p-3 my-3 text-sm rounded-md shadow-sm bg-indigo-50">
                                 <div className="text-xs">
                                     {Number(activeProduct.unit) < 1
                                         ? "Stock Out"
                                         : `You can order maximum ${activeProduct.unit} item`}
                                 </div>
-                                <div className="flex justify-between items-center">
+                                <div className="flex items-center justify-between">
                                     <div>{t("Total")}</div>
                                     <div>
                                         {orderForm.data.quantity || 0} *{" "}
@@ -688,9 +700,15 @@ export default function Index({
                                 </div>
                             </div>
 
-                            <div className="mb-2">
+                            <InputFile
+                                labelWidth="140px"
+                                label={t("Size/Attribute")}
+                                name="attr"
+                                error="attr"
+                                errors={orderForm.errors}
+                            >
                                 <select
-                                    className="rounded-md py-1 border w-full"
+                                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     value={orderForm.data.attr}
                                     onChange={(e) =>
                                         orderForm.setData(
@@ -710,18 +728,19 @@ export default function Index({
                                         <option value="N/A">{t("N/A")}</option>
                                     )}
                                 </select>
-                            </div>
-                            {orderForm.errors.attr ? (
-                                <div className="text-red-900 text-xs">
-                                    {orderForm.errors.attr}
-                                </div>
-                            ) : null}
+                            </InputFile>
 
                             <Hr />
 
-                            <div className="mb-2">
+                            <InputFile
+                                labelWidth="140px"
+                                label={t("Area")}
+                                name="area_condition"
+                                error="area_condition"
+                                errors={orderForm.errors}
+                            >
                                 <select
-                                    className="rounded py-1 w-full"
+                                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     value={orderForm.data.area_condition}
                                     onChange={(e) =>
                                         orderForm.setData(
@@ -734,16 +753,17 @@ export default function Index({
                                     <option value="Dhaka">{t("Inside Dhaka")}</option>
                                     <option value="Other">{t("Out side of Dhaka")}</option>
                                 </select>
-                            </div>
-                            {orderForm.errors.area_condition ? (
-                                <div className="text-red-900 text-xs">
-                                    {orderForm.errors.area_condition}
-                                </div>
-                            ) : null}
+                            </InputFile>
 
-                            <div className="mb-2">
+                            <InputFile
+                                labelWidth="140px"
+                                label={t("Shipping Type")}
+                                name="delevery"
+                                error="delevery"
+                                errors={orderForm.errors}
+                            >
                                 <select
-                                    className="rounded py-1 w-full"
+                                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     value={orderForm.data.delevery}
                                     onChange={(e) =>
                                         orderForm.setData(
@@ -757,12 +777,7 @@ export default function Index({
                                     <option value="Home">{t("Home Delivery")}</option>
                                     <option value="Hand">{t("Hand-To-Hand")}</option>
                                 </select>
-                            </div>
-                            {orderForm.errors.delevery ? (
-                                <div className="text-red-900 text-xs">
-                                    {orderForm.errors.delevery}
-                                </div>
-                            ) : null}
+                            </InputFile>
 
                             <PrimaryButton type="submit">{t("Order")}</PrimaryButton>
                         </form>

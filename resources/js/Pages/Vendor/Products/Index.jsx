@@ -7,13 +7,13 @@ import NavLinkBtn from "../../../components/NavLinkBtn";
 import PrimaryButton from "../../../components/PrimaryButton";
 import TextInput from "../../../components/TextInput";
 import Container from "../../../components/dashboard/Container";
-import Foreach from "../../../components/dashboard/Foreach";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
 import useTranslation from "../../../hooks/useTranslation";
+import { ActionIconLink } from "../../../components/ActionIcon";
 
 function buildQuery(filters, updates = {}) {
     return Object.fromEntries(
@@ -41,6 +41,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
             preserveState: true,
             preserveScroll: true,
             replace: true,
+            only: ["filters", "products", "printUrl", "selectedCount"],
         });
     };
 
@@ -200,8 +201,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                         content=""
                     />
                     <SectionInner>
-                        <Foreach data={rows}>
-                            <Table data={rows}>
+                        <Table data={rows}>
                                 <thead>
                                     <tr>
                                         <th></th>
@@ -243,16 +243,14 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                             <td>{product.status}</td>
                                             <td>{product.created_at_human}</td>
                                             <td>
-                                                <NavLinkBtn href={route("vendor.products.edit", { product: product.encrypted_id })}>
-                                                    view
-                                                </NavLinkBtn>
+                                                <ActionIconLink href={route("vendor.products.edit", { product: product.encrypted_id })} action="view" title="View" />
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
-                            </Table>
+                        </Table>
 
-                            {pagination.pages.length ? (
+                        {pagination.pages.length ? (
                                 <div className="w-full pt-4">
                                     <div className="flex w-full items-center justify-between gap-3">
                                         <div className="text-sm text-slate-700">
@@ -291,8 +289,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                         </div>
                                     </div>
                                 </div>
-                            ) : null}
-                        </Foreach>
+                        ) : null}
                     </SectionInner>
                 </Section>
             </Container>

@@ -7,6 +7,7 @@ use App\Models\DistributeComissions;
 use App\Models\Order;
 use App\Models\ResellerResellProfits;
 use App\Models\TakeComissions;
+use App\Models\UserHasRefs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
@@ -47,8 +48,12 @@ class ProductComissionController extends Controller
             try {
                 $orderData = Order::findOrFail($id); // get order table
                 $cartOrders = $orderData->cartOrders; // a single order has multiple products.
-                $buyer = User::findOrFail($orderData->user_id); // product buyer
-                $seller = User::findOrFail($orderData->belongs_to); // product seller
+                $buyer = User::find($orderData->user_id); // product buyer
+                $seller = User::find($orderData->belongs_to); // product seller
+
+                if (!$buyer || !$seller) {
+                    return;
+                }
 
                 $shop = [];
 
@@ -68,19 +73,22 @@ class ProductComissionController extends Controller
                     $products = $ord->product; // get the relevent products from order details
                     // echo $products->id;
 
-                    if ($orderData->belongs_to_type == 'vendor') {
-                        // if ($orderData?->name == "Purchase") {
-                        //     $profit = ($ord->buying_price - $products?->buying_price) * $ord->quantity;
-                        // } else {
-                        //     $profit = ($products?->totalPrice() - $products?->buying_price) * $ord->quantity; // total profit of selling product
-                        // }
-                        $profit = ($products?->totalPrice() - $products?->buying_price) * $ord->quantity; // total profit of selling product
-                    } else {
-                        $profit = ($ord->price - $ord->buying_price) * $ord->quantity; // total profit of selling product
+                    if (!$products || !$shop || !is_numeric($shop->system_get_comission) || (float) $shop->system_get_comission <= 0) {
+                        continue;
                     }
-                    $comission = round(($profit * $shop->system_get_comission) / 100, 8); // system comissions take form the reseller/vendor
-                    $distribute = round(($comission * 30) / 100, 8);
 
+                    $quantity = max(1, (int) ($ord->quantity ?? 1));
+                    $lineTotal = is_numeric($ord->total)
+                        ? (float) $ord->total
+                        : ((float) ($ord->price ?? 0) * $quantity);
+                    $lineBuyingTotal = self::lineBuyingTotal($ord, $products, $quantity);
+                    $profit = round(max(0, $lineTotal - $lineBuyingTotal), 8);
+
+                    if ($lineTotal <= 0 || $profit <= 0) {
+                        continue;
+                    }
+
+                    $comission = round(($profit * (float) $shop->system_get_comission) / 100, 8); // system commission from seller profit
                     /**
                      * calculate the reseller profit
                      * if the seller is vendor
@@ -120,7 +128,7 @@ class ProductComissionController extends Controller
                     /**
                      * calculate comissions
                      */
-                    if ($products && $shop->system_get_comission) {
+                    if ($comission > 0) {
 
                         // $slp = 0;
                         // if ($orderData->belongs_to_type == 'vendor') {
@@ -139,11 +147,11 @@ class ProductComissionController extends Controller
                                 'user_id' => $ord->belongs_to,
                                 'product_id' => $products->id,
                                 'order_id' => $orderData->id,
-                                'buying_price' => $products->buying_price,
-                                'selling_price' => $orderData->belongs_to_type == 'vendor' ? $products->totalPrice() : $ord->total, // 
+                                'buying_price' => round($lineBuyingTotal, 8),
+                                'selling_price' => $lineTotal,
                                 'take_comission' => round($comission, 8),
-                                'distribute_comission' => round($distribute, 8),
-                                'store' => round($comission - $distribute, 8),
+                                'distribute_comission' => 0,
+                                'store' => round($comission, 8),
                                 'return' => round($profit - $comission, 8),
                                 'profit' => round($profit, 8),
                                 'confirmed' => false,
@@ -153,86 +161,7 @@ class ProductComissionController extends Controller
 
                         $takeComissions->save();
 
-                        // distribute the comissions
-                        // if $takeComissions id geet
-                        if ($takeComissions->id) {
-
-                            /**
-                             * comission distributed among those ....
-                             * 
-                             * buyer
-                             * buyer referrer user
-                             * seller and 
-                             * seller reffer user
-                             */
-                            $data = array(
-                                'buyer' => $buyer,
-                                'buyerRef' => $buyer->getReffOwner?->owner,
-                                'seller' => $seller,
-                                'sellerRef' => $seller->getReffOwner?->owner,
-                            );
-
-                            // $distributeData = array(
-                            //     'product_id' => $products->id,
-                            //     'order_id' => $orderData->id,
-                            //     'parent_id' => $ord->id,
-                            //     $data,
-                            // );
-
-                            foreach ($data as $key => $item) {
-                                $dcm = new DistributeComissions();
-                                $info = '';
-                                $am = '';
-                                $rng = '';
-
-
-                                if ($key == 'buyer' || $key == 'seller') {
-                                    $rng = 10;
-                                    $am = round(($comission * $rng) / 100, 8);
-                                } else {
-                                    $rng = 5;
-                                    $am = round(($comission * $rng) / 100, 8);
-                                }
-
-                                switch ($key) {
-                                    case 'buyer':
-                                        $info = 'Purchase Product';
-                                        break;
-                                    case 'seller':
-                                        $info = 'Sel Product';
-                                        break;
-
-                                    case 'buyerRef':
-                                        $info = 'Ref User Purchase Product';
-                                        break;
-
-                                    case 'sellerRef':
-                                        $info = 'Ref Uer Sell Product';
-                                        break;
-
-                                    default:
-                                        $info = 'Comissions';
-                                        break;
-                                }
-
-
-                                $dcm->forceFill(
-                                    [
-                                        'product_id' => $products->id,
-                                        'order_id' => $orderData->id,
-                                        'parent_id' => $takeComissions->id,
-                                        'user_id' => $item->id,
-                                        'info' => $info,
-                                        'range' => $rng,
-                                        'amount' => $am,
-                                    ]
-                                );
-
-
-
-                                $dcm->save();
-                            }
-                        }
+                        // Distribution rows are created only when the order is finished.
                     }
                 }
                 logger("ProductComissionsTake Done");
@@ -243,14 +172,122 @@ class ProductComissionController extends Controller
         }
     }
 
+    private static function buildProductCommissionDistributions(User $seller, User $buyer, float $comission): array
+    {
+        $items = [
+            self::distributionItem($buyer, 'Buyer Product Purchase', 10, $comission),
+            self::distributionItem($seller, 'Seller Product Sale', 10, $comission),
+        ];
+
+        return array_values(array_filter(array_merge(
+            $items,
+            self::referralDistributionItems($seller, 'Seller', $comission),
+            self::referralDistributionItems($buyer, 'Buyer', $comission),
+        )));
+    }
+
+    private static function referralDistributionItems(User $user, string $side, float $comission): array
+    {
+        $items = [];
+        $current = $user;
+        $visited = [$user->id => true];
+        $rules = [
+            1 => ['range' => 5, 'info' => "{$side} Referrer Product Commission"],
+            2 => ['range' => 1, 'info' => "{$side} Generation Level 1 Product Commission"],
+            3 => ['range' => 1, 'info' => "{$side} Generation Level 2 Product Commission"],
+            4 => ['range' => 1, 'info' => "{$side} Generation Level 3 Product Commission"],
+        ];
+
+        foreach ($rules as $rule) {
+            $referrer = self::referrerOf($current);
+
+            if (!$referrer || isset($visited[$referrer->id])) {
+                break;
+            }
+
+            $visited[$referrer->id] = true;
+            $items[] = self::distributionItem(
+                $referrer,
+                $rule['info'],
+                $rule['range'],
+                $comission
+            );
+            $current = $referrer;
+        }
+
+        return $items;
+    }
+
+    private static function referrerOf(User $user): ?User
+    {
+        if (!$user->reference) {
+            return null;
+        }
+
+        $ref = UserHasRefs::query()
+            ->where('ref', $user->reference)
+            ->where('status', 1)
+            ->first();
+
+        if (!$ref || !$ref->user_id || (int) $ref->user_id === (int) $user->id) {
+            return null;
+        }
+
+        return User::find($ref->user_id);
+    }
+
+    private static function distributionItem(?User $user, string $info, float $range, float $comission): ?array
+    {
+        if (!$user || !$user->id) {
+            return null;
+        }
+
+        return [
+            'user_id' => $user->id,
+            'info' => $info,
+            'range' => $range,
+            'amount' => round(($comission * $range) / 100, 8),
+        ];
+    }
+
+    private static function lineBuyingTotal($cartOrder, $product, int $quantity): float
+    {
+        if (is_numeric($cartOrder->buying_price)) {
+            return (float) $cartOrder->buying_price * $quantity;
+        }
+
+        if ($product && is_numeric($product->buying_price)) {
+            return (float) $product->buying_price * $quantity;
+        }
+
+        return 0;
+    }
+
+    public function refreshPendingOrderComissions(Order $order): void
+    {
+        if (TakeComissions::query()->where(['order_id' => $order->id])->confirmed()->exists()) {
+            return;
+        }
+
+        DistributeComissions::query()->where(['order_id' => $order->id])->pending()->delete();
+        TakeComissions::query()->where(['order_id' => $order->id])->pending()->delete();
+
+        self::dispatchProductComissionsListeners($order->id);
+    }
+
     public function confirmTakeComissions($id)
     {
         $order = Order::findOrFail($id);
         if ($order) {
+            $this->refreshPendingOrderComissions($order);
+
             $tc = TakeComissions::query()->where(['order_id' => $id])->pending()->get(); // pending
 
             if ($tc) {
                 foreach ($tc as $item) {
+                    $distribute = $this->createDistributionsForTake($item);
+                    $item->distribute_comission = round($distribute, 8);
+                    $item->store = round((float) $item->take_comission - $distribute, 8);
                     $item->confirmed = true;
                     $item->save();
                 }
@@ -271,18 +308,30 @@ class ProductComissionController extends Controller
     public function confirmSingleTakeComissions($takeId)
     {
         try {
-            $tc = TakeComissions::query()->where(['id' => $takeId])->pending()->get();
+            $take = TakeComissions::query()->with('order')->find($takeId);
+
+            if (!$take || !$take->order) {
+                return;
+            }
+
+            $order = $take->order;
+            $this->refreshPendingOrderComissions($order);
+
+            $tc = TakeComissions::query()->where(['order_id' => $order->id])->pending()->get();
 
             if ($tc) {
                 foreach ($tc as $item) {
+                    $distribute = $this->createDistributionsForTake($item);
+                    $item->distribute_comission = round($distribute, 8);
+                    $item->store = round((float) $item->take_comission - $distribute, 8);
                     $item->confirmed = true;
                     $item->save();
                 }
             }
 
-            if ($tc->order?->user_type == 'reseller') {
+            if ($order->user_type == 'reseller') {
                 // ResellerResellProfits::query()->where(['order_id' => $order->id])->pending()->update(['confirmed' => true]);
-                $rcp = ResellerResellProfits::query()->where(['order_id' => $tc->order_id])->pending()->get();
+                $rcp = ResellerResellProfits::query()->where(['order_id' => $order->id])->pending()->get();
                 foreach ($rcp as $rcpi) {
 
                     $rcpi->confirmed = true;
@@ -306,6 +355,42 @@ class ProductComissionController extends Controller
         foreach ($distributes as $items) {
             UserWalletController::add($items->user_id, $items->total_amount);
         }
+    }
+
+    private function createDistributionsForTake(TakeComissions $take): float
+    {
+        if (DistributeComissions::query()->where('parent_id', $take->id)->exists()) {
+            return (float) DistributeComissions::query()
+                ->where('parent_id', $take->id)
+                ->sum('amount');
+        }
+
+        $order = $take->order;
+        $seller = $order ? User::find($order->belongs_to) : null;
+        $buyer = $order ? User::find($order->user_id) : null;
+
+        if (!$order || !$seller || !$buyer || (float) $take->take_comission <= 0) {
+            return 0;
+        }
+
+        $distributions = self::buildProductCommissionDistributions($seller, $buyer, (float) $take->take_comission);
+
+        foreach ($distributions as $distribution) {
+            $dcm = new DistributeComissions();
+            $dcm->forceFill([
+                'product_id' => $take->product_id,
+                'order_id' => $take->order_id,
+                'parent_id' => $take->id,
+                'user_id' => $distribution['user_id'],
+                'info' => $distribution['info'],
+                'range' => $distribution['range'],
+                'amount' => $distribution['amount'],
+                'confirmed' => false,
+            ]);
+            $dcm->save();
+        }
+
+        return round(array_sum(array_column($distributions, 'amount')), 8);
     }
 
 

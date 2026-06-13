@@ -7,8 +7,8 @@ use App\Models\Level;
 use App\Models\LevelHistory;
 use App\Models\User;
 use App\Models\UserHasRefs;
+use App\Support\ReferralChangePolicy;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
 class DashController extends Controller
@@ -91,11 +91,13 @@ class DashController extends Controller
             ],
         ];
 
+        $refClaim = ReferralChangePolicy::status($user);
+
         return Inertia::render('User/Dash', [
             'user_my_ref' => $myRef?->ref ?? null,
-            'hide_claim' => $user->created_at->diffInHours(
-                Carbon::now()
-            ) > 72,
+            'applied_ref' => $user->reference && $user->reference !== config('app.ref') ? $user->reference : '',
+            'hide_claim' => false,
+            'ref_claim' => $refClaim,
             'joined' => $user->created_at->diffForHumans(),
             'roles' => $user->roles->pluck('name') ?? [],
             'active_nav' => $user->active_nav,
@@ -126,14 +128,15 @@ class DashController extends Controller
         $reference = $request->newRef;
 
         $reff = UserHasRefs::where('ref', $reference)->first();
+        $refClaim = ReferralChangePolicy::status($user);
 
-        if ($user->created_at->diffInHours(Carbon::now()) > 72 || $user->reference_accepted_at) {
-            return back()->with('info', 'Time Up. You can not update your ref');
+        if (!$refClaim['can_apply']) {
+            return back()->with('info', $refClaim['message'] ?? 'You can not update your ref');
         }
 
         if ($reff && $reff->owner->id != $user->id) {
             $user->reference = $reference;
-            $user->reference_accepted_at = today();
+            ReferralChangePolicy::markApplied($user);
             $user->save();
 
             return back()->with('success', 'Ref Accepted');

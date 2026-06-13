@@ -1,8 +1,10 @@
 import NavLink from "../NavLink";
 import { useState } from "react";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function UserDropdown({ user }) {
     const [open, setOpen] = useState(false);
+    const { t } = useTranslation();
 
     return (
         <div className="relative">
@@ -12,10 +14,10 @@ export default function UserDropdown({ user }) {
 
             {open && (
                 <div className="absolute right-0 w-48 bg-white shadow-md">
-                    <NavLink href="/user">User Panel</NavLink>
-                    <NavLink href="/user/orders">Orders</NavLink>
-                    <NavLink href="/profile">Profile</NavLink>
-                    <NavLink href={route("logout")}>Logout</NavLink>
+                    <NavLink href="/user">{t("User Panel")}</NavLink>
+                    <NavLink href="/user/orders">{t("Orders")}</NavLink>
+                    <NavLink href="/profile">{t("Profile")}</NavLink>
+                    <NavLink href={route("logout")}>{t("Logout")}</NavLink>
                 </div>
             )}
         </div>

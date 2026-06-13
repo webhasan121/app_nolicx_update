@@ -1,5 +1,5 @@
 import { usePage, router, Link } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PrimaryButton from "@/Components/PrimaryButton";
 import Container from "../../components/dashboard/Container";
 import SectionSection from "../../components/dashboard/section/Section";
@@ -8,17 +8,25 @@ import SectionInner from "../../components/dashboard/section/Inner";
 import UserDash from "../../components/user/dash/UserDash";
 import MembershipActivateBox from "../../components/client/MembershipActivateBox";
 import NavLink from "../../components/NavLink";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Dash() {
     const { props } = usePage();
     const { vendorActive, resellerActive, widgets = [] } = usePage().props;
+    const { t } = useTranslation();
     const user = props.auth.user;
     const user_my_ref = props.user_my_ref;
     const hide_claim = props.hide_claim;
+    const refClaim = props.ref_claim || { can_apply: !hide_claim, status: "open" };
+    const appliedRef = props.applied_ref || "";
     const joined = props.joined;
 
-    const [newRef, setNewRef] = useState("");
+    const [newRef, setNewRef] = useState(appliedRef);
     const [copied, setCopied] = useState(false);
+
+    useEffect(() => {
+        setNewRef(appliedRef);
+    }, [appliedRef]);
 
     const copyRef = async () => {
         const value = user_my_ref || "";
@@ -57,7 +65,7 @@ export default function Dash() {
                     <div className="p-6 bg-white rounded-md shadow-md">
                         <div className="flex items-center justify-between gap-6">
                             <div className="relative">
-                                <h5 className="text-lg">Welcome, back!</h5>
+                                <h5 className="text-lg">{t("Welcome, back!")}</h5>
                                 <h3 className="px-0">
                                     <strong
                                         className="text-green-900"
@@ -68,7 +76,7 @@ export default function Dash() {
                                 </h3>
                             </div>
                             <div className="relative">
-                                <p className="mb-2 text-xs text-right">Wallet Balance</p>
+                                <p className="mb-2 text-xs text-right">{t("Wallet Balance")}</p>
                                 <NavLink
                                     href={route("user.wallet.index")}
                                     className="px-3 py-1 text-indigo-900 border rounded-lg shadow ring-1"
@@ -78,13 +86,13 @@ export default function Dash() {
                             </div>
                         </div>
                         <p className="mt-1 text-sm text-gray-600">
-                            We&apos;re glad to see you again. Check your dashboard for updates, tasks, and rewards waiting for you today.
+                            {t("We're glad to see you again. Check your dashboard for updates, tasks, and rewards waiting for you today.")}
                         </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
                         {widgets.map((widget, index) => {
-                            const title = index === 0 ? "Current Level" : "Upcoming";
+                            const title = index === 0 ? t("Current Level") : t("Upcoming");
 
                             return (
                                 <div
@@ -101,20 +109,20 @@ export default function Dash() {
                                         <>
                                             {index === 0 ? (
                                                 <p className="mt-2 mb-1 text-sm font-semibold text-gray-600">
-                                                    Achievement
+                                                    {t("Achievement")}
                                                 </p>
                                             ) : null}
                                             <p className="flex items-center justify-between text-xs">
-                                                <strong>Normal Users</strong>
+                                                <strong>{t("Normal Users")}</strong>
                                                 <span>{widget.data?.req_users}</span>
                                             </p>
                                             <p className="flex items-center justify-between text-xs">
-                                                <strong>VIP Users</strong>
+                                                <strong>{t("VIP Users")}</strong>
                                                 <span>{widget.data?.vip_users}</span>
                                             </p>
                                             {widget.rewards !== null && widget.rewards !== undefined ? (
                                                 <p className="flex flex-col mt-2 text-xs text-gray-600">
-                                                    <strong>Level-Up Rewards</strong>
+                                                    <strong>{t("Level-Up Rewards")}</strong>
                                                     <span>{widget.rewards}</span>
                                                 </p>
                                             ) : null}
@@ -131,8 +139,8 @@ export default function Dash() {
                     {/* Refer Box */}
                     <SectionSection>
                         <SectionHeader
-                            title="Refer and Claim"
-                            content="Refer your friends and get 5% of every purchase!"
+                            title={t("Refer and Claim")}
+                            content={t("Refer your friends and get 5% of every purchase!")}
                         />
 
                         <SectionInner>
@@ -151,11 +159,11 @@ export default function Dash() {
                                     className="my-1 text-right btn btn-success btn-sm PX-3"
                                 >
                                     <i className="mr-1 fas fa-copy"></i>
-                                    {copied ? "copied" : "copy"}
+                                    {copied ? t("copied") : t("copy")}
                                 </PrimaryButton>
 
                                 <NavLink href={route("user.ref.view")} className="text-xs">
-                                    View Your Referred User
+                                    {t("View Your Referred User")}
                                 </NavLink>
                             </div>
                         </SectionInner>
@@ -165,28 +173,46 @@ export default function Dash() {
                     {!hide_claim && (
                         <SectionSection>
                             <SectionHeader
-                                title="Claim Your Reward"
-                                content="Your friend may give you a referral code."
+                                title={t("Claim Your Reward")}
+                                content={t("Your friend may give you a referral code.")}
                             />
 
                             <SectionInner>
-                                <form onSubmit={checkRef}>
-                                    <input
-                                        type="text"
-                                        value={newRef}
-                                        onChange={(e) =>
-                                            setNewRef(e.target.value)
-                                        }
-                                        disabled={user.reference_accepted_at}
-                                        placeholder="Give Referred Code"
-                                        className="w-full border rounded"
-                                    />
+                                {refClaim.can_apply ? (
+                                    <form onSubmit={checkRef}>
+                                        <input
+                                            type="text"
+                                            value={newRef}
+                                            onChange={(e) =>
+                                                setNewRef(e.target.value)
+                                            }
+                                            placeholder={t("Give Referred Code")}
+                                            className="w-full border rounded"
+                                        />
 
-                                    <div className="flex items-center justify-between mt-2">
-                                        <PrimaryButton>Apply</PrimaryButton>
-                                        <div className="text-xs">{joined}</div>
+                                        <div className="flex items-center justify-between mt-2">
+                                            <PrimaryButton>{t("Apply")}</PrimaryButton>
+                                            <div className="text-xs">{joined}</div>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    <div>
+                                        <input
+                                            type="text"
+                                            value={refClaim.status === "applied" ? t("Applied") : refClaim.message}
+                                            readOnly
+                                            disabled
+                                            className="w-full border rounded bg-gray-100 text-gray-600"
+                                        />
+
+                                        <div className="flex items-center justify-between mt-2">
+                                            <PrimaryButton disabled>
+                                                {refClaim.status === "applied" ? t("Applied") : t("Locked")}
+                                            </PrimaryButton>
+                                            <div className="text-xs">{joined}</div>
+                                        </div>
                                     </div>
-                                </form>
+                                )}
                             </SectionInner>
                         </SectionSection>
                     )}
@@ -237,11 +263,11 @@ export default function Dash() {
                             }}
                         >
                             <div className="text-lg font-semibold text-green-600">
-                                Be a Vendor
+                                {t("Be a Vendor")}
                             </div>
                             <div className="text-sm">
-                                Upgrade your account to <strong>VENDOR</strong>,
-                                sell product and earn commission.
+                                {t("Upgrade your account to")} <strong>{t("VENDOR")}</strong>,
+                                {t("sell product and earn commission.")}
                             </div>
                             <div className="wrapAdd"></div>
                         </Link>
@@ -257,12 +283,11 @@ export default function Dash() {
                             }}
                         >
                             <div className="text-lg font-semibold text-green-600">
-                                Be Reseller
+                                {t("Be Reseller")}
                             </div>
                             <div className="text-sm">
-                                Upgrade your account to{" "}
-                                <strong>Reseller</strong> now. Chose product and
-                                sel as yours.
+                                {t("Upgrade your account to")}{" "}
+                                <strong>{t("Reseller")}</strong> {t("now. Chose product and sel as yours.")}
                             </div>
                             <div className="wrapAdd"></div>
                         </Link>
@@ -276,11 +301,10 @@ export default function Dash() {
                             }}
                         >
                             <div className="text-lg font-semibold text-green-600">
-                                Be a Rider
+                                {t("Be a Rider")}
                             </div>
                             <div className="text-sm">
-                                Be a <strong>Delevary Man</strong>, collect
-                                product and shipped to destination.
+                                {t("Be a")} <strong>{t("Delevary Man")}</strong>, {t("collect product and shipped to destination.")}
                             </div>
                             <div className="wrapAdd"></div>
                         </Link>

@@ -3,7 +3,6 @@ import { usePage, router } from "@inertiajs/react";
 import AppLayout from "../../../../Layouts/App";
 import Container from "../../../../components/dashboard/Container";
 import Hr from "../../../../components/Hr";
-import PageHeader from "../../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import SectionInner from "../../../../components/dashboard/section/Inner";
@@ -14,6 +13,10 @@ import CoinStore from "../../../../livewire/system/store/CoinStore";
 import CoastStore from "../../../../livewire/system/store/CoastStore";
 import DonationStore from "../../../../livewire/system/store/DonationStore";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { formatAmount } from "../../../../utils/formatAmount";
+
+const formatCoin = (value) => formatAmount(value);
 
 export default function Index() {
     const { t } = useTranslation();
@@ -51,6 +54,7 @@ export default function Index() {
     const [startDate, setStartDate] = useState(filters.start_date ?? "");
     const [endDate, setEndDate] = useState(filters.end_date ?? "");
     const [distributing, setDistributing] = useState(false);
+    const today = todayInputDate();
     const shareFilters = {
         "Developer Share": "Developer Commission",
         "Management Share": "Management Commission",
@@ -78,6 +82,17 @@ export default function Index() {
                 preserveScroll: true,
                 preserveState: true,
                 replace: true,
+                only: [
+                    "activeTab",
+                    "filters",
+                    "storeMeta",
+                    "coinStore",
+                    "coastStore",
+                    "donationStore",
+                    "commissions",
+                    "withdrawals",
+                    "printUrl",
+                ],
             }
         );
     };
@@ -139,7 +154,7 @@ export default function Index() {
     };
 
     const distribute = () => {
-        if (!window.confirm("Distribute the previous month commission to qualified users?")) {
+        if (!window.confirm(t("Distribute the previous month commission to qualified users?"))) {
             return;
         }
 
@@ -201,20 +216,28 @@ export default function Index() {
     const resultLabel = activeTab === "withdrawals" ? "withdrawals" : "commissions";
     const resultSummary =
         activeCollection?.total > 0
-            ? `Showing ${activeCollection?.from ?? 0}-${activeCollection?.to ?? 0} of ${activeCollection?.total ?? 0} ${resultLabel}`
-            : `No ${resultLabel} found`;
+            ? t("Showing :from-:to of :total :type", {
+                  from: activeCollection?.from ?? 0,
+                  to: activeCollection?.to ?? 0,
+                  total: activeCollection?.total ?? 0,
+                  type: t(resultLabel),
+              })
+            : t("No :type found", { type: t(resultLabel) });
+    const hasActiveFilters = Boolean(search.trim() || startDate || endDate);
+    const toolbarInputClass = "h-9 rounded-md border border-gray-300 bg-white px-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500";
+    const toolbarButtonClass = "inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-semibold";
     const dateFilterControls = (
         <>
             <TextInput
                 type="date"
-                className="py-1"
-                value={startDate}
+                className={`${toolbarInputClass} w-36`}
+                value={startDate || today}
                 onChange={(e) => updateDateFilter("start", e.target.value)}
                 title={t("Start date")}
             />
             <TextInput
                 type="date"
-                className="py-1"
+                className={`${toolbarInputClass} w-36`}
                 value={endDate}
                 onChange={(e) => updateDateFilter("end", e.target.value)}
                 title={t("End date")}
@@ -223,11 +246,11 @@ export default function Index() {
     );
 
     return (
-        <AppLayout title={pageTitle} header={<PageHeader>{pageTitle}</PageHeader>}>
+        <AppLayout title={t(pageTitle)}>
             <Container>
                 <div className="flex flex-col gap-3 mb-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-800">{pageTitle}</h3>
+                        <h3 className="text-lg font-semibold text-gray-800">{t(pageTitle)}</h3>
                         {targetStore?.range_label ? (
                             <p className="text-sm text-gray-500">{t("Previous distribution period:")}{targetStore.range_label}
                             </p>
@@ -240,11 +263,11 @@ export default function Index() {
                             disabled={distributing}
                             className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white transition bg-blue-500 rounded-md hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            {distributing ? "Distributing..." : "Distribute"}
+                            {distributing ? t("Distributing...") : t("Distribute")}
                         </button>
                     ) : (
                         <span className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md">
-                            {distributionStatusLabel}
+                            {t(distributionStatusLabel)}
                         </span>
                     )}
                 </div>
@@ -252,10 +275,10 @@ export default function Index() {
                     {widgets.map((widget, index) => (
                         <OverviewDiv
                             key={`${widget.label}-${index}`}
-                            title={widget.label}
-                            content={widget.value ?? 0}
+                            title={t(widget.label)}
+                            content={formatCoin(widget.value)}
                             onClick={shareFilters[widget.label] ? () => openShareList(widget.label) : null}
-                            titleText={shareFilters[widget.label] ? `View ${shareFilters[widget.label]} list` : ""}
+                            titleText={shareFilters[widget.label] ? t("View :item list", { item: t(shareFilters[widget.label]) }) : ""}
                         />
                     ))}
                 </section>
@@ -267,17 +290,17 @@ export default function Index() {
                 <section className="grid grid-cols-1 gap-6 mt-6 mb-6 lg:grid-cols-2">
                     <div className="relative p-6 bg-white rounded-md shadow-md">
                         <CoinStore
-                            store={coinStore.store}
-                            take={coinStore.take}
-                            give={coinStore.give}
+                            store={formatCoin(coinStore.store)}
+                            take={formatCoin(coinStore.take)}
+                            give={formatCoin(coinStore.give)}
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-6">
                         <div className="relative p-6 bg-white rounded-md shadow-md">
-                            <CoastStore store={coastStore.store} />
+                            <CoastStore store={formatCoin(coastStore.store)} />
                         </div>
                         <div className="relative p-6 bg-white rounded-md shadow-md">
-                            <DonationStore store={donationStore.store} />
+                            <DonationStore store={formatCoin(donationStore.store)} />
                         </div>
                     </div>
                 </section>
@@ -298,7 +321,7 @@ export default function Index() {
                                     : "bg-gray-200 text-gray-700"
                             }`}
                         >
-                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            {t(tab.charAt(0).toUpperCase() + tab.slice(1))}
                         </button>
                     ))}
                 </div>
@@ -307,14 +330,14 @@ export default function Index() {
                     <SectionSection>
                         <SectionHeader
                             title={
-                                <div className="flex flex-col gap-3 pb-4 border-b lg:flex-row lg:items-center lg:justify-between">
-                                    <h4>{t("Distributed Commissions")}</h4>
-                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="flex flex-col gap-3 border-b pb-4 xl:flex-row xl:items-center xl:justify-between">
+                                    <h4 className="shrink-0 text-lg font-semibold leading-6">{t("Distributed Commissions")}</h4>
+                                    <div className="flex flex-wrap items-center justify-end gap-2 xl:flex-nowrap">
                                         {dateFilterControls}
                                         <TextInput
                                             type="search"
                                             placeholder={t("Search commissions...")}
-                                            className="py-1"
+                                            className={`${toolbarInputClass} w-44`}
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                             onKeyDown={(e) => {
@@ -328,24 +351,43 @@ export default function Index() {
                                         />
                                         <PrimaryButton
                                             type="button"
+                                            className={`${toolbarButtonClass} min-w-10`}
                                             onClick={() => window.open(printUrl, "_blank")}
                                         >
                                             <i className="fas fa-print"></i>
                                         </PrimaryButton>
+                                        {hasActiveFilters ? (
+                                            <button
+                                                type="button"
+                                                className={`${toolbarButtonClass} border border-gray-300 bg-white text-slate-700 shadow-sm hover:bg-gray-50`}
+                                                onClick={() => {
+                                                    setSearch("");
+                                                    setStartDate("");
+                                                    setEndDate("");
+                                                    requestStore({
+                                                        nextTab: activeTab,
+                                                        nextSearch: "",
+                                                        nextStartDate: "",
+                                                        nextEndDate: "",
+                                                        page: undefined,
+                                                    });
+                                                }}
+                                            >
+                                                {t("Reset")}
+                                            </button>
+                                        ) : null}
                                         {canDistribute ? (
                                             <button
                                                 type="button"
                                                 onClick={distribute}
                                                 disabled={distributing}
-                                                className="inline-block px-4 py-1 bg-blue-500 rounded-md hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                                className={`${toolbarButtonClass} bg-blue-500 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60`}
                                             >
-                                                <span className="text-sm text-white">
-                                                    {distributing ? "Distributing..." : "Distribute"}
-                                                </span>
+                                                {distributing ? t("Distributing...") : t("Distribute")}
                                             </button>
                                         ) : (
-                                            <div className="inline-block px-4 py-1 bg-blue-500 rounded-md hover:bg-blue-600">
-                                                <span className="text-sm text-white">{distributionStatusLabel}</span>
+                                            <div className={`${toolbarButtonClass} bg-blue-500 text-white`}>
+                                                {t(distributionStatusLabel)}
                                             </div>
                                         )}
                                     </div>
@@ -364,7 +406,7 @@ export default function Index() {
                                                     key={`${column}-${index}`}
                                                     className="px-4 py-3 font-semibold text-left text-gray-600"
                                                 >
-                                                    <strong>{column}</strong>
+                                                    <strong>{t(column)}</strong>
                                                 </th>
                                             ))}
                                         </tr>
@@ -379,10 +421,10 @@ export default function Index() {
                                                     <td className="px-4 py-3 font-medium text-gray-700">
                                                         <strong>{item.user_name}</strong>
                                                     </td>
-                                                    <td className="px-4 py-3 font-medium text-gray-700">{item.store}</td>
-                                                    <td className="px-4 py-3 font-medium text-gray-700">{item.amount}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-700">{t(item.store)}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-700">{formatAmount(item.amount)}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{item.range}</td>
-                                                    <td className="px-4 py-3 font-medium text-gray-700">{item.info}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-700">{t(item.info)}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{item.created_at}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">
                                                         <span>-</span>
@@ -447,14 +489,14 @@ export default function Index() {
                     <SectionSection>
                         <SectionHeader
                             title={
-                                <div className="flex flex-col gap-3 pb-4 border-b lg:flex-row lg:items-center lg:justify-between">
-                                    <h4>{t("Withdrawal History")}</h4>
-                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="flex flex-col gap-3 border-b pb-4 xl:flex-row xl:items-center xl:justify-between">
+                                    <h4 className="shrink-0 text-lg font-semibold leading-6">{t("Withdrawal History")}</h4>
+                                    <div className="flex flex-wrap items-center justify-end gap-2 xl:flex-nowrap">
                                         {dateFilterControls}
                                         <TextInput
                                             type="search"
                                             placeholder={t("Search withdrawals...")}
-                                            className="py-1"
+                                            className={`${toolbarInputClass} w-44`}
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                             onKeyDown={(e) => {
@@ -468,10 +510,31 @@ export default function Index() {
                                         />
                                         <PrimaryButton
                                             type="button"
+                                            className={`${toolbarButtonClass} min-w-10`}
                                             onClick={() => window.open(printUrl, "_blank")}
                                         >
                                             <i className="fas fa-print"></i>
                                         </PrimaryButton>
+                                        {hasActiveFilters ? (
+                                            <button
+                                                type="button"
+                                                className={`${toolbarButtonClass} border border-gray-300 bg-white text-slate-700 shadow-sm hover:bg-gray-50`}
+                                                onClick={() => {
+                                                    setSearch("");
+                                                    setStartDate("");
+                                                    setEndDate("");
+                                                    requestStore({
+                                                        nextTab: activeTab,
+                                                        nextSearch: "",
+                                                        nextStartDate: "",
+                                                        nextEndDate: "",
+                                                        page: undefined,
+                                                    });
+                                                }}
+                                            >
+                                                {t("Reset")}
+                                            </button>
+                                        ) : null}
                                     </div>
                                 </div>
                             }
@@ -488,7 +551,7 @@ export default function Index() {
                                                     key={`${column}-${index}`}
                                                     className="px-4 py-3 font-semibold text-left text-gray-600"
                                                 >
-                                                    <strong>{column}</strong>
+                                                    <strong>{t(column)}</strong>
                                                 </th>
                                             ))}
                                         </tr>
@@ -503,7 +566,7 @@ export default function Index() {
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.maintenance_fee}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.server_fee}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.pay_by}</td>
-                                                    <td className="px-4 py-3 font-medium text-gray-700">{withdraw.status}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-700">{t(withdraw.status)}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.requested_at}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{withdraw.remarks}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">-</td>

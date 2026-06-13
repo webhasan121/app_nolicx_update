@@ -1,5 +1,6 @@
 import { useForm, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import Container from "../../../../components/dashboard/Container";
 import SectionSection from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
@@ -12,6 +13,108 @@ import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import UserDash from "../../../../components/user/dash/UserDash";
 import useTranslation from "../../../../hooks/useTranslation";
+
+function SearchableSelect({
+    id,
+    value,
+    options = [],
+    onChange,
+    placeholder,
+    disabled = false,
+}) {
+    const selected = options.find(
+        (item) =>
+            String(item.name ?? "").trim().toLowerCase() ===
+            String(value ?? "").trim().toLowerCase(),
+    );
+    const [query, setQuery] = useState(selected?.name ?? "");
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        setQuery(selected?.name ?? "");
+    }, [selected?.name]);
+
+    const filteredOptions = query.trim()
+        ? options.filter((item) =>
+              String(item.name ?? "")
+                  .toLowerCase()
+                  .includes(query.trim().toLowerCase()),
+          )
+        : options;
+
+    const updateQuery = (nextQuery) => {
+        setQuery(nextQuery);
+        setOpen(true);
+
+        const exactMatch = options.find(
+            (item) =>
+                String(item.name ?? "").trim().toLowerCase() ===
+                nextQuery.trim().toLowerCase(),
+        );
+
+        onChange(exactMatch?.name ?? "");
+    };
+
+    const selectOption = (item) => {
+        setQuery(item.name ?? "");
+        onChange(item.name ?? "");
+        setOpen(false);
+    };
+
+    return (
+        <div className="relative">
+            <input
+                id={id}
+                type="text"
+                value={query}
+                onChange={(e) => updateQuery(e.target.value)}
+                onFocus={() => !disabled && setOpen(true)}
+                onBlur={() => window.setTimeout(() => setOpen(false), 150)}
+                placeholder={placeholder}
+                disabled={disabled}
+                autoComplete="off"
+                className="w-full rounded-md border-gray-300 pr-10 disabled:bg-gray-100 disabled:text-gray-500"
+            />
+            <button
+                type="button"
+                disabled={disabled}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    setOpen((current) => !current);
+                }}
+                className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-gray-500 disabled:text-gray-300"
+            >
+                <i className="fas fa-chevron-down text-xs"></i>
+            </button>
+
+            {open && !disabled ? (
+                <div className="absolute left-0 top-full z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                    {filteredOptions.length ? (
+                        filteredOptions.map((item) => (
+                            <button
+                                key={item.id ?? item.name}
+                                type="button"
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    selectOption(item);
+                                }}
+                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
+                                    selected?.name === item.name ? "bg-gray-100" : ""
+                                }`}
+                            >
+                                {item.name}
+                            </button>
+                        ))
+                    ) : (
+                        <div className="px-3 py-2 text-sm text-gray-500">
+                            No results found
+                        </div>
+                    )}
+                </div>
+            ) : null}
+        </div>
+    );
+}
 
 export default function UpgradeRiderCreate() {
     const { t } = useTranslation();
@@ -41,7 +144,11 @@ export default function UpgradeRiderCreate() {
     const [areas, setAreas] = useState([]);
 
     useEffect(() => {
-        const selectedState = states.find((item) => item.name === data.state_name);
+        const selectedState = states.find(
+            (item) =>
+                String(item.name ?? "").trim().toLowerCase() ===
+                String(data.state_name ?? "").trim().toLowerCase(),
+        );
 
         if (!selectedState) {
             setCities([]);
@@ -53,11 +160,16 @@ export default function UpgradeRiderCreate() {
             .get(route("upgrade.rider.cities", { state: selectedState.id }))
             .then((res) => {
                 setCities(res.data || []);
-            });
+            })
+            .catch(() => setCities([]));
     }, [data.state_name, states]);
 
     useEffect(() => {
-        const selectedCity = cities.find((item) => item.name === data.city_name);
+        const selectedCity = cities.find(
+            (item) =>
+                String(item.name ?? "").trim().toLowerCase() ===
+                String(data.city_name ?? "").trim().toLowerCase(),
+        );
 
         if (!selectedCity) {
             setAreas([]);
@@ -68,7 +180,8 @@ export default function UpgradeRiderCreate() {
             .get(route("upgrade.rider.areas", { city: selectedCity.id }))
             .then((res) => {
                 setAreas(res.data || []);
-            });
+            })
+            .catch(() => setAreas([]));
     }, [data.city_name, cities]);
 
     const submit = (e) => {
@@ -98,10 +211,10 @@ export default function UpgradeRiderCreate() {
                         encType="multipart/form-data"
                         className="w-full"
                     >
-                        <div className="gap-2 md:flex">
-                            <SectionSection>
+                        <div className="grid w-full grid-cols-1 gap-4 overflow-hidden lg:grid-cols-2">
+                            <SectionSection className="min-w-0">
                                 <SectionInner>
-                                    <div className="flex-1 p-2">
+                                    <div className="min-w-0 p-2">
                                         <InputFile label={t("Your Phone No")} name="phone" error="phone" errors={errors}>
                                             <TextInput
                                                 name="phone"
@@ -188,80 +301,63 @@ export default function UpgradeRiderCreate() {
                                 </SectionInner>
                             </SectionSection>
 
-                            <SectionSection>
+                            <SectionSection className="min-w-0">
                                 <SectionInner>
-                                    <div className="flex-1 p-2">
+                                    <div className="min-w-0 p-2">
                                         <div className="p-2 rounded bg-gray-50">
                                             <div>
                                                 <InputFile label={t("Country")} name="country" error="country" errors={errors}>
-                                                    <select
-                                                        value={data.country}
-                                                        onChange={(e) => setData("country", e.target.value)}
+                                                    <SearchableSelect
                                                         id="country"
-                                                        className="w-full rounded-md "
-                                                    >
-                                                        <option value="Bangladesh">{t("Bangladesh")}</option>
-                                                    </select>
+                                                        value={data.country}
+                                                        options={[{ id: "Bangladesh", name: t("Bangladesh") }]}
+                                                        onChange={(value) => setData("country", value)}
+                                                        placeholder={t("Country")}
+                                                    />
                                                 </InputFile>
                                                 <Hr />
                                                 <InputFile label={t("State")} name="state_name" error="state_name" errors={errors}>
-                                                    <select
+                                                    <SearchableSelect
+                                                        id="states"
                                                         value={data.state_name}
-                                                        onChange={(e) => {
-                                                            setData("state_name", e.target.value);
+                                                        options={states}
+                                                        onChange={(value) => {
+                                                            setData("state_name", value);
                                                             setData("city_name", "");
                                                             setData("area_name", "");
                                                         }}
-                                                        id="states"
-                                                        className="w-full rounded-md "
-                                                    >
-                                                        <option value="">{t("-- Select State --")}</option>
-                                                        {states.map((state) => (
-                                                            <option key={state.id} value={state.name}>
-                                                                {state.name}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                        placeholder={t("-- Select State --")}
+                                                    />
                                                 </InputFile>
                                                 <Hr />
-                                        <InputFile label={t("City")} name="city_name" error="city_name" errors={errors}>
-                                            <select
-                                                value={data.city_name}
-                                                onChange={(e) => {
-                                                    setData("city_name", e.target.value);
-                                                    setData("area_name", "");
-                                                }}
-                                                id="city"
-                                                className="w-full rounded-md "
-                                            >
-                                                <option value="">{t("-- Select City --")}</option>
-                                                {cities.map((item) => (
-                                                    <option key={item.id} value={item.name}>
-                                                        {item.name}
-                                                    </option>
-                                                ))}
-                                                    </select>
+                                                <InputFile label={t("City")} name="city_name" error="city_name" errors={errors}>
+                                                    <SearchableSelect
+                                                        id="city"
+                                                        value={data.city_name}
+                                                        options={cities}
+                                                        onChange={(value) => {
+                                                            setData("city_name", value);
+                                                            setData("area_name", "");
+                                                        }}
+                                                        placeholder={t("-- Select City --")}
+                                                        disabled={!cities.length}
+                                                    />
                                                 </InputFile>
                                                 <Hr />
                                                 <InputFile label={t("Area")} name="area_name" error="area_name" errors={errors}>
-                                            <select
-                                                value={data.area_name}
-                                                onChange={(e) => setData("area_name", e.target.value)}
-                                                id="area"
-                                                className="w-full rounded-md "
-                                            >
-                                                <option value="">{t("-- Select Area --")}</option>
-                                                {areas.map((item) => (
-                                                    <option key={item.id} value={item.name}>
-                                                        {item.name}
-                                                    </option>
-                                                ))}
-                                                    </select>
+                                                    <SearchableSelect
+                                                        id="area"
+                                                        value={data.area_name}
+                                                        options={areas}
+                                                        onChange={(value) => setData("area_name", value)}
+                                                        placeholder={t("-- Select Area --")}
+                                                        disabled={!areas.length}
+                                                    />
                                                 </InputFile>
                                                 <Hr />
                                             </div>
                                             <InputFile label={t("Chose Your Area")} name="area_condition" error="area_condition" errors={errors}>
-                                                <div className="w-48 space-y-2">
+                                                <div className="w-full max-w-xs space-y-2">
                                                     <div className="flex items-center justify-start px-3 py-2 border rounded-lg shadow-sm">
                                                         <TextInput
                                                             style={{ width: "20px", height: "20px" }}

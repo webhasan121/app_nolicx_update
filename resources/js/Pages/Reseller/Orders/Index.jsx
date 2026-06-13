@@ -4,10 +4,8 @@ import AppLayout from "../../../Layouts/App";
 import Hr from "../../../components/Hr";
 import Modal from "../../../components/Modal";
 import NavLink from "../../../components/NavLink";
-import NavLinkBtn from "../../../components/NavLinkBtn";
 import SecondaryButton from "../../../components/SecondaryButton";
 import Container from "../../../components/dashboard/Container";
-import Foreach from "../../../components/dashboard/Foreach";
 import Div from "../../../components/dashboard/overview/Div";
 import OverviewSection from "../../../components/dashboard/overview/Section";
 import PageHeader from "../../../components/dashboard/PageHeader";
@@ -16,6 +14,8 @@ import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
 import useTranslation from "../../../hooks/useTranslation";
+import { todayInputDate } from "../../../utils/dateInput";
+import { ActionIconLink } from "../../../components/ActionIcon";
 
 const statusItems = [
     ["Pending", "Pending"],
@@ -39,6 +39,7 @@ export default function Index({
     const [filterOpen, setFilterOpen] = useState(false);
     const rows = orders?.data ?? [];
     const nav = filters.nav ?? "Pending";
+    const today = todayInputDate();
 
     const pagination = useMemo(() => {
         const links = orders?.links ?? [];
@@ -126,8 +127,7 @@ export default function Index({
                     />
 
                     <SectionInner>
-                        <Foreach data={rows}>
-                            {pagination.pages.length ? (
+                        {pagination.pages.length ? (
                                 <div className="flex flex-wrap gap-1 mb-3">
                                     <button
                                         type="button"
@@ -153,9 +153,9 @@ export default function Index({
                                         onClick={() => goToPage(pagination.next?.url)}
                                     >{t("Next")}</button>
                                 </div>
-                            ) : null}
+                        ) : null}
 
-                            <Table data={rows}>
+                        <Table data={rows}>
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -176,10 +176,10 @@ export default function Index({
                                         <tr key={item.id}>
                                             <td>{item.sl}</td>
                                             <td>
-                                                <NavLinkBtn href={item.view_url}>
-                                                    view
-                                                </NavLinkBtn>
-                                                <NavLink href={item.print_url}>{t("Pint")}</NavLink>
+                                                <div className="flex items-center gap-1">
+                                                    <ActionIconLink href={item.view_url} action="view" title={t("view")} />
+                                                    <ActionIconLink href={item.print_url} action="print" title={t("Print")} />
+                                                </div>
                                             </td>
                                             <td>{item.id ?? "N/A"}</td>
                                             <td>
@@ -216,8 +216,7 @@ export default function Index({
                                         </tr>
                                     ))}
                                 </tbody>
-                            </Table>
-                        </Foreach>
+                        </Table>
                     </SectionInner>
                 </Section>
             </Container>
@@ -275,7 +274,7 @@ export default function Index({
                                 </div>
 
                                 <div className="flex justify-between items-center p-2">
-                                    <div>{t("Start")}<input className="rounded-md" type="date" name="start_date" />
+                                    <div>{t("Start")}<input className="rounded-md" type="date" name="start_date" defaultValue={today} />
                                     </div>
                                     <div>{t("End")}<input className="rounded-md" type="date" name="end_date" />
                                     </div>

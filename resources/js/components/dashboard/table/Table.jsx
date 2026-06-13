@@ -1,4 +1,33 @@
-export default function Table({ data = [], children, ...props }) {
+import { Children, isValidElement } from "react";
+
+const countColumns = (children) => {
+  let count = 0;
+
+  Children.forEach(children, (child) => {
+    if (!isValidElement(child)) {
+      return;
+    }
+
+    if (child.type === "th") {
+      count += 1;
+      return;
+    }
+
+    count += countColumns(child.props.children);
+  });
+
+  return count;
+};
+
+export default function Table({
+  data = [],
+  children,
+  emptyMessage = "Data Not Found",
+  ...props
+}) {
+  const hasData = Array.isArray(data) ? data.length > 0 : Boolean(data?.length);
+  const columnCount = Math.max(countColumns(children), 1);
+
   return (
     <div {...props} className={`overflow-hidden overflow-x-scroll ${props.className ?? ""}`}>
 
@@ -18,15 +47,21 @@ export default function Table({ data = [], children, ...props }) {
         `}
       </style>
 
-      {data && data.length > 0 ? (
-        <table id="myTable" className="w-full mb-2 border-collapse border">
-          {children}
-        </table>
-      ) : (
-        <div className="alert alert-danger">
-          No Data Found !
-        </div>
-      )}
+      <table id="myTable" className="w-full mb-2 border-collapse border">
+        {children}
+        {!hasData && (
+          <tbody>
+            <tr>
+              <td
+                colSpan={columnCount}
+                className="py-8 font-medium text-center text-slate-500"
+              >
+                {emptyMessage}
+              </td>
+            </tr>
+          </tbody>
+        )}
+      </table>
     </div>
   );
 }

@@ -9,21 +9,24 @@ use App\Models\country;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\state;
+use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ProductOrderController extends Controller
 {
-    public function create($id, $slug)
+    public function create(Request $request, $id, $slug)
     {
         $product = Product::query()
             ->with([
                 'category:id,name,slug',
                 'attr:id,product_id,name,value',
+                'attrs:id,product_id,name,value',
                 'showcase:id,product_id,image',
                 'comments.user:id,name',
                 'owner:id,name',
+                'isResel.mainProduct:id,video',
             ])
             ->where('id', $id)
             ->active()
@@ -34,6 +37,11 @@ class ProductOrderController extends Controller
         $country = country::where('name', 'Bangladesh')->firstOrFail();
         $states = state::where('country_id', $country->id)->orderBy('name')->get();
         $price = $product->offer_type ? $product->discount : $product->price;
+        $selectedAttrs = json_decode((string) $request->query('selected_attrs', '{}'), true);
+
+        if (!is_array($selectedAttrs)) {
+            $selectedAttrs = [];
+        }
 
         return Inertia::render('Products/Order', [
             'product' => [
@@ -43,8 +51,8 @@ class ProductOrderController extends Controller
                 'slug' => $product->slug,
                 'description' => $product->description,
                 'thumbnail' => $product->thumbnail,
-                'video' => $product->video,
-                'video_url' => $this->videoUrl($product->video),
+                'video' => $product->video ?: $product->isResel?->mainProduct?->video,
+                'video_url' => $this->videoUrl($product->video ?: $product->isResel?->mainProduct?->video),
                 'offer_type' => $product->offer_type,
                 'discount' => $product->discount,
                 'price' => $product->price,
@@ -64,6 +72,10 @@ class ProductOrderController extends Controller
                     'name' => $product->attr->name,
                     'value' => $product->attr->value,
                 ] : null,
+                'attrs' => $product->attrs->map(fn($attr) => [
+                    'name' => $attr->name,
+                    'value' => $attr->value,
+                ])->values(),
                 'showcase' => $product->showcase->map(fn($image) => [
                     'id' => $image->id,
                     'image' => $image->image,
@@ -91,6 +103,7 @@ class ProductOrderController extends Controller
                         ],
                     ]),
             ],
+            'selectedAttrs' => $selectedAttrs,
             'states' => $states,
             'initialPrice' => $price,
         ]);
@@ -175,6 +188,7 @@ class ProductOrderController extends Controller
         ]);
 
         ProductComissionController::dispatchProductComissionsListeners($order->id);
+        OrderNotice::orderPlaced($order, auth()->id());
 
         return redirect()->route('user.orders.view');
     }
@@ -183,6 +197,14 @@ class ProductOrderController extends Controller
     {
         if (empty($video)) {
             return null;
+        }
+
+        $video = trim($video);
+
+        if (Str::contains($video, ['youtube.com', 'youtu.be'])) {
+            return Str::startsWith($video, ['http://', 'https://'])
+                ? $video
+                : 'https://' . ltrim($video, '/');
         }
 
         return Str::startsWith($video, ['http://', 'https://'])

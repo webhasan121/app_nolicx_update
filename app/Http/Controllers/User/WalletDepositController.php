@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Package_pays;
-use App\Models\Packages;
 use App\Models\userDeposit;
+use App\Support\SystemSettings;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,6 +19,7 @@ class WalletDepositController extends Controller
         }
 
         $history = $user->myDeposit()
+            ->whereDate('created_at', today())
             ->latest('id')
             ->get()
             ->map(function ($item) {
@@ -35,15 +35,10 @@ class WalletDepositController extends Controller
                 ];
             });
 
-        $packageId = Packages::query()->value('id');
-        $payNumbers = $packageId
-            ? Package_pays::where(['package_id' => $packageId])->pluck('pay_to', 'pay_type')
-            : collect();
-
         return Inertia::render('User/Wallet/Deposit/History', [
             'coin' => $user->coin,
             'history' => $history,
-            'payNumbers' => $payNumbers,
+            'payNumbers' => $this->depositPayNumbers(),
         ]);
     }
 
@@ -78,5 +73,22 @@ class WalletDepositController extends Controller
 
         return redirect()->back()->with('success', 'Deposit has been requested !');
     }
-}
 
+    private function depositPayNumbers(): array
+    {
+        $decoded = json_decode(SystemSettings::get('DEPOSIT_PAY_NUMBERS', '[]'), true);
+
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        return collect($decoded)
+            ->map(fn ($item) => [
+                'name' => trim((string) ($item['name'] ?? '')),
+                'value' => trim((string) ($item['value'] ?? '')),
+            ])
+            ->filter(fn ($item) => $item['name'] !== '' && $item['value'] !== '')
+            ->values()
+            ->all();
+    }
+}

@@ -11,13 +11,19 @@ class RiderConsignmentIndexData
     public static function get(User $user, array $filters = []): array
     {
         $status = $filters['status'] ?? 'All';
-        $createdAt = $filters['created_at'] ?? 'any';
+        $createdAt = $filters['created_at'] ?? 'Today';
         $startTime = $filters['start_time'] ?? null;
         $endTime = $filters['end_time'] ?? null;
+        $find = trim((string) ($filters['find'] ?? ''));
+        $page = max((int) ($filters['page'] ?? 1), 1);
+
+        $rider = $user->isRider()?->load('targetedArea');
+        $areaTerms = RiderAreaMatcher::termsForRider($rider);
 
         $query = cod::query()
             ->with(['order.cartOrders.product'])
-            ->where('rider_id', $user->id);
+            ->where('rider_id', $user->id)
+            ->whereHas('order', fn ($orderQuery) => RiderAreaMatcher::applyOrderAreaScope($orderQuery, $areaTerms));
 
         if ($status !== 'All') {
             $query->where('status', $status);
@@ -40,12 +46,46 @@ class RiderConsignmentIndexData
             }
         }
 
-        $consignments = $query->orderBy('id', 'desc')->get();
+        if ($find !== '') {
+            $query->where(function ($builder) use ($find) {
+                $builder
+                    ->where('id', 'like', '%' . $find . '%')
+                    ->orWhere('order_id', 'like', '%' . $find . '%')
+                    ->orWhere('status', 'like', '%' . $find . '%')
+                    ->orWhereHas('order', function ($orderQuery) use ($find) {
+                        $orderQuery
+                            ->where('id', 'like', '%' . $find . '%')
+                            ->orWhere('number', 'like', '%' . $find . '%')
+                            ->orWhere('location', 'like', '%' . $find . '%')
+                            ->orWhere('district', 'like', '%' . $find . '%')
+                            ->orWhere('upozila', 'like', '%' . $find . '%')
+                            ->orWhere('target_area', 'like', '%' . $find . '%');
+                    });
+            });
+        }
 
         $deliveryTotal = 0;
         $earnTotal = 0;
 
-        $items = $consignments->map(function ($cod) use (&$deliveryTotal, &$earnTotal) {
+        (clone $query)->get()->each(function ($cod) use (&$deliveryTotal, &$earnTotal) {
+            $totalForNotResel = 0;
+
+            foreach ($cod->order?->cartOrders ?? [] as $item) {
+                if (!$item->product?->isResel) {
+                    $totalForNotResel += $item->total;
+                }
+            }
+
+            $deliveryTotal += $totalForNotResel;
+            $earnTotal += $cod->order->shipping ?? 0;
+        });
+
+        $paginator = $query
+            ->orderBy('id', 'desc')
+            ->paginate(18, ['*'], 'page', $page)
+            ->withQueryString();
+
+        $items = $paginator->getCollection()->map(function ($cod) {
             $totalForNotResel = 0;
             $images = [];
 
@@ -55,9 +95,6 @@ class RiderConsignmentIndexData
                     $images[] = $item->product?->thumbnail;
                 }
             }
-
-            $deliveryTotal += $totalForNotResel;
-            $earnTotal += $cod->order->shipping ?? 0;
 
             return [
                 'id' => $cod->id,
@@ -79,8 +116,17 @@ class RiderConsignmentIndexData
                 'created_at' => $createdAt,
                 'start_time' => $startTime,
                 'end_time' => $endTime,
+                'find' => $find,
             ],
             'consignments' => $items,
+            'pagination' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+                'total' => $paginator->total(),
+                'links' => $paginator->linkCollection()->values()->all(),
+            ],
             'totals' => [
                 'delivery' => $deliveryTotal,
                 'earn' => $earnTotal,

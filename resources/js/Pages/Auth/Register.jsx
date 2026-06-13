@@ -9,8 +9,104 @@ import InputError from "../../components/InputError";
 import NavLink from "../../components/NavLink";
 import PrimaryButton from "../../components/PrimaryButton";
 
+function SearchableSelect({
+    id,
+    value,
+    options = [],
+    onChange,
+    placeholder,
+    disabled = false,
+}) {
+    const selected = options.find((option) => String(option.id) === String(value));
+    const [query, setQuery] = useState(selected?.name ?? "");
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        setQuery(selected?.name ?? "");
+    }, [selected?.id, selected?.name]);
+
+    const filteredOptions = query.trim()
+        ? options.filter((option) =>
+              String(option.name ?? "")
+                  .toLowerCase()
+                  .includes(query.trim().toLowerCase()),
+          )
+        : options;
+
+    const updateQuery = (nextQuery) => {
+        setQuery(nextQuery);
+        setOpen(true);
+
+        const exactMatch = options.find(
+            (option) =>
+                String(option.name ?? "").toLowerCase() ===
+                nextQuery.trim().toLowerCase(),
+        );
+
+        onChange(exactMatch?.id ?? "");
+    };
+
+    const selectOption = (option) => {
+        setQuery(option.name ?? "");
+        onChange(option.id);
+        setOpen(false);
+    };
+
+    return (
+        <div className="relative mt-1">
+            <input
+                id={id}
+                type="text"
+                value={query}
+                onChange={(e) => updateQuery(e.target.value)}
+                onFocus={() => !disabled && setOpen(true)}
+                onBlur={() => window.setTimeout(() => setOpen(false), 150)}
+                placeholder={placeholder}
+                disabled={disabled}
+                autoComplete="off"
+                className="w-full border-gray-300 rounded-md disabled:bg-gray-100 disabled:text-gray-500"
+            />
+            <button
+                type="button"
+                disabled={disabled}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    setOpen((current) => !current);
+                }}
+                className="absolute inset-y-0 right-0 flex items-center justify-center w-10 text-gray-500 disabled:text-gray-300"
+            >
+                <i className="fas fa-chevron-down text-xs"></i>
+            </button>
+
+            {open && !disabled ? (
+                <div className="absolute z-50 w-full mt-1 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg max-h-52">
+                    {filteredOptions.length ? (
+                        filteredOptions.map((option) => (
+                            <button
+                                key={option.id}
+                                type="button"
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    selectOption(option);
+                                }}
+                                className="block w-full px-3 py-2 text-sm text-left hover:bg-gray-100"
+                            >
+                                {option.name}
+                            </button>
+                        ))
+                    ) : (
+                        <div className="px-3 py-2 text-sm text-gray-500">
+                            No results found
+                        </div>
+                    )}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
 export default function Register() {
-    const { countries } = usePage().props;
+    const { countries = [] } = usePage().props;
 
     const { data, setData, post, processing, errors } = useForm({
         name: "",
@@ -39,6 +135,11 @@ export default function Register() {
                 setData("state_id", "");
                 setData("city_id", "");
             });
+        } else {
+            setStates([]);
+            setCities([]);
+            setData("state_id", "");
+            setData("city_id", "");
         }
     }, [data.country_id]);
 
@@ -49,6 +150,9 @@ export default function Register() {
                 setCities(res.data);
                 setData("city_id", "");
             });
+        } else {
+            setCities([]);
+            setData("city_id", "");
         }
     }, [data.state_id]);
 
@@ -184,22 +288,13 @@ export default function Register() {
                         <div className="relative">
                             <InputLabel htmlFor="country">Country</InputLabel>
 
-                            <select
+                            <SearchableSelect
                                 id="country"
-                                className="w-full mt-1 border-gray-300 rounded-md"
                                 value={data.country_id}
-                                onChange={(e) =>
-                                    setData("country_id", e.target.value)
-                                }
-                            >
-                                <option value="">-- Select Country --</option>
-
-                                {countries.map((country) => (
-                                    <option key={country.id} value={country.id}>
-                                        {country.name}
-                                    </option>
-                                ))}
-                            </select>
+                                options={countries}
+                                onChange={(value) => setData("country_id", value)}
+                                placeholder="-- Select Country --"
+                            />
 
                             <InputError messages={errors.country_id} />
                         </div>
@@ -210,23 +305,14 @@ export default function Register() {
                                 State / District
                             </InputLabel>
 
-                            <select
+                            <SearchableSelect
                                 id="state"
-                                className="w-full mt-1 border-gray-300 rounded-md"
                                 value={data.state_id}
-                                onChange={(e) =>
-                                    setData("state_id", e.target.value)
-                                }
+                                options={states}
+                                onChange={(value) => setData("state_id", value)}
+                                placeholder="-- Select State --"
                                 disabled={!states.length}
-                            >
-                                <option value="">-- Select State --</option>
-
-                                {states.map((state) => (
-                                    <option key={state.id} value={state.id}>
-                                        {state.name}
-                                    </option>
-                                ))}
-                            </select>
+                            />
 
                             <InputError messages={errors.state_id} />
                         </div>
@@ -237,23 +323,14 @@ export default function Register() {
                                 City (optional)
                             </InputLabel>
 
-                            <select
+                            <SearchableSelect
                                 id="city"
-                                className="w-full mt-1 border-gray-300 rounded-md"
                                 value={data.city_id}
-                                onChange={(e) =>
-                                    setData("city_id", e.target.value)
-                                }
+                                options={cities}
+                                onChange={(value) => setData("city_id", value)}
+                                placeholder="-- Select City --"
                                 disabled={!cities.length}
-                            >
-                                <option value="">-- Select City --</option>
-
-                                {cities.map((city) => (
-                                    <option key={city.id} value={city.id}>
-                                        {city.name}
-                                    </option>
-                                ))}
-                            </select>
+                            />
                         </div>
                     </div>
 

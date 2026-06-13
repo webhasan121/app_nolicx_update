@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Reseller;
 
 use App\Http\Controllers\Controller;
+use App\Models\city as CityModel;
 use App\Models\country;
 use App\Models\Product;
+use App\Models\state as StateModel;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +23,10 @@ class ReselShopsController extends Controller
         $state = $request->query('state', '');
         $get = $request->query('get');
         $slug = $request->query('slug');
+
+        if ($state === 'me') {
+            $location = $this->currentUserLocation();
+        }
 
         $query = Vendor::query()->where('status', 'Active');
 
@@ -41,7 +47,11 @@ class ReselShopsController extends Controller
             $keyword = mb_strtolower($q);
             $query->where(function ($builder) use ($keyword) {
                 $builder->whereRaw('LOWER(shop_name_en) LIKE ?', ["%{$keyword}%"])
-                    ->orWhereRaw('LOWER(shop_name_bn) LIKE ?', ["%{$keyword}%"]);
+                    ->orWhereRaw('LOWER(shop_name_bn) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(district) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(upozila) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(village) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(country) LIKE ?', ["%{$keyword}%"]);
             });
         }
 
@@ -179,6 +189,44 @@ class ReselShopsController extends Controller
         ]);
     }
 
+    private function currentUserLocation(): string
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return '';
+        }
+
+        foreach ([
+            ['value' => $user->city, 'model' => CityModel::class],
+            ['value' => $user->state, 'model' => StateModel::class],
+            ['value' => $user->country, 'model' => country::class],
+        ] as $candidate) {
+            $location = $this->locationName($candidate['value'], $candidate['model']);
+
+            if ($location !== '') {
+                return $location;
+            }
+        }
+
+        return '';
+    }
+
+    private function locationName($value, string $model): string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        if (ctype_digit($value)) {
+            return trim((string) $model::query()->find((int) $value)?->name);
+        }
+
+        return $value;
+    }
+
     public function print(Request $request): Response
     {
         $q = trim((string) $request->query('q', ''));
@@ -202,10 +250,14 @@ class ReselShopsController extends Controller
         }
 
         if ($q !== '') {
-            $keyword = Str::ucfirst($q);
+            $keyword = mb_strtolower($q);
             $query->where(function ($builder) use ($keyword) {
-                $builder->where('shop_name_en', 'like', '%' . $keyword . '%')
-                    ->orWhere('shop_name_bn', 'like', '%' . $keyword . '%');
+                $builder->whereRaw('LOWER(shop_name_en) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(shop_name_bn) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(district) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(upozila) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(village) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(country) LIKE ?', ["%{$keyword}%"]);
             });
         }
 

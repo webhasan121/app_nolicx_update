@@ -1,13 +1,37 @@
-import { Link, usePage } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { useEffect } from "react";
 import Swal from "sweetalert2";
 import SupportButton from "../../SupportButton";
 import Header from "../dash/Header";
-import Container from "../../dashboard/Container";
 import NavLink from "../../NavLink";
+import useTranslation from "../../../hooks/useTranslation";
+
+const USER_PAGE_TITLES = [
+    { title: "Dashboard", matches: ["user.dash"] },
+    { title: "Orders", matches: ["user.orders.*"] },
+    { title: "VIP", matches: ["user.vip.*", "user.package.*"] },
+    { title: "Wallet", matches: ["user.wallet.*", "user.withdraw.*"] },
+    { title: "Developer", matches: ["user.developer", "user.developer.*"] },
+    { title: "My Shop", matches: ["my-shop", "my-shop.*"] },
+    { title: "Management", matches: ["user.management", "user.management.*"] },
+    { title: "Management TM", matches: ["user.management-team", "user.management-team.*"] },
+    { title: "Profile", matches: ["edit.profile", "edit.profile.*"] },
+    { title: "Carts", matches: ["carts.view", "user.carts.*", "cart.qty.*"] },
+    { title: "Referral", matches: ["user.ref.*"] },
+    { title: "Notices", matches: ["dashboard.notices.*"] },
+    { title: "Upgrade Vendor", matches: ["upgrade.vendor.*"] },
+    { title: "Upgrade Rider", matches: ["upgrade.rider.*"] },
+];
+
+function activeUserPageTitle() {
+    return USER_PAGE_TITLES.find((item) =>
+        item.matches.some((pattern) => route().current(pattern))
+    )?.title ?? "Dashboard";
+}
 
 export default function UserDash({ children }) {
     const { auth, flash, appConfig } = usePage().props;
+    const { t } = useTranslation();
     const user = auth?.user;
     const roles = user?.roles?.map((r) => r.name) ?? [];
     const activeNav = user?.active_nav;
@@ -15,21 +39,22 @@ export default function UserDash({ children }) {
     // Flash Message SweetAlert
     useEffect(() => {
         if (flash?.success) {
-            Swal.fire("Success", flash.success, "success");
+            Swal.fire(t("Success"), flash.success, "success");
         }
         if (flash?.warning) {
-            Swal.fire("Warning", flash.warning, "warning");
+            Swal.fire(t("Warning"), flash.warning, "warning");
         }
         if (flash?.error) {
-            Swal.fire("Error", flash.error, "error");
+            Swal.fire(t("Error"), flash.error, "error");
         }
         if (flash?.info) {
-            Swal.fire("Info", flash.info, "info");
+            Swal.fire(t("Info"), flash.info, "info");
         }
     }, [flash]);
 
     return (
-        <div style={{ marginBottom: "100px" }}>
+        <div className="h-screen overflow-hidden">
+            <Head title={activeUserPageTitle()} />
             <style
                 dangerouslySetInnerHTML={{
                     __html: `
@@ -104,12 +129,15 @@ export default function UserDash({ children }) {
             />
 
             <SupportButton whatsapp={appConfig?.whatsapp_no} />
-            <Header />
-            <Container>
-                <div className="flex">
+            <div className="fixed top-0 left-0 right-0 z-50">
+                <Header />
+            </div>
+            <div className="h-screen pt-16">
+                <div className="w-full pl-4 pr-1 sm:pl-6 lg:pl-8">
+                <div className="flex h-[calc(100vh-5.5rem)] overflow-hidden">
                     <div
                         id="user_asside"
-                        className="py-3 rounded position-sm-absolute col-md-3"
+                        className="py-3 rounded position-sm-absolute col-md-3 md:h-full md:overflow-y-auto"
                     >
                         <NavLink
                             href={route("user.dash")}
@@ -118,7 +146,7 @@ export default function UserDash({ children }) {
                         >
                             <i className="fas fa-home"></i>
                             <span className="hidden pl-2 md:block">
-                                Dashboard
+                                {t("Dashboard")}
                             </span>
                         </NavLink>
 
@@ -129,7 +157,7 @@ export default function UserDash({ children }) {
                         >
                             <i className="pr-2 fas fa-shopping-cart"></i>
                             <span className="hidden pl-2 md:block">
-                                Order ({user?.my_order_as_user_count ?? 0})
+                                {t("Order")} ({user?.my_order_as_user_count ?? 0})
                             </span>
                         </NavLink>
 
@@ -139,7 +167,7 @@ export default function UserDash({ children }) {
                             className="asside_link vip"
                         >
                             <i className="pr-2 fas fa-user-check"></i>
-                            <span className="hidden pl-2 md:block">VIP</span>
+                            <span className="hidden pl-2 md:block">{t("VIP")}</span>
                         </NavLink>
 
                         <NavLink
@@ -148,7 +176,7 @@ export default function UserDash({ children }) {
                             className="asside_link wallet"
                         >
                             <i className="pr-2 fas fa-coins"></i>
-                            <span className="hidden pl-2 md:block">Wallet</span>
+                            <span className="hidden pl-2 md:block">{t("Wallet")}</span>
                         </NavLink>
 
                         <NavLink
@@ -161,7 +189,7 @@ export default function UserDash({ children }) {
                         >
                             <i className="pr-2 fas fa-coins"></i>
                             <span className="hidden pl-2 md:block">
-                                Developer
+                                {t("Developer")}
                             </span>
                         </NavLink>
 
@@ -177,7 +205,7 @@ export default function UserDash({ children }) {
                                 >
                                     <i className="pr-2 fas fa-shop"></i>
                                     <span className="hidden pl-2 md:block">
-                                        My Shop
+                                        {t("My Shop")}
                                     </span>
                                 </NavLink>
                             )}
@@ -192,7 +220,7 @@ export default function UserDash({ children }) {
                         >
                             <i className="pr-2 fas fa-coins"></i>
                             <span className="hidden pl-2 md:block">
-                                Management
+                                {t("Management")}
                             </span>
                         </NavLink>
 
@@ -206,18 +234,19 @@ export default function UserDash({ children }) {
                         >
                             <i className="pr-2 fas fa-users-cog"></i>
                             <span className="hidden pl-2 md:block">
-                                Management TM
+                                {t("Management TM")}
                             </span>
                         </NavLink>
                     </div>
                     <div
                         id="user_content"
-                        className="col-md-9 py-2 p-lg-3 w-full mb-[50px]"
+                        className="col-md-9 py-2 p-lg-3 w-full mb-[50px] md:h-full md:overflow-y-auto"
                     >
                         {children}
                     </div>
                 </div>
-            </Container>
+                </div>
+            </div>
         </div>
     );
 }

@@ -1,11 +1,9 @@
 import { router, usePage } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
-import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import Container from "../../../../components/dashboard/Container";
 import PageHeader from "../../../../components/dashboard/PageHeader";
-import Foreach from "../../../../components/dashboard/Foreach";
 import OverviewDiv from "../../../../components/dashboard/overview/Div";
 import OverviewSection from "../../../../components/dashboard/overview/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
@@ -14,6 +12,8 @@ import SectionSection from "../../../../components/dashboard/section/Section";
 import Table from "../../../../components/dashboard/table/Table";
 import TextInput from "../../../../components/TextInput";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { ActionIconLink } from "../../../../components/ActionIcon";
 
 const FILTERS = ["all", "Active", "Pending", "Disabled", "Suspended"];
 
@@ -23,6 +23,7 @@ export default function Index() {
     const [search, setSearch] = useState(filters.find ?? "");
     const [sd, setSd] = useState(filters.sd ?? "");
     const [ed, setEd] = useState(filters.ed ?? "");
+    const today = todayInputDate();
 
     const requestRiders = ({
         nextSearch = search,
@@ -44,6 +45,7 @@ export default function Index() {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                only: ["filters", "riders", "printUrl"],
             }
         );
     };
@@ -104,6 +106,7 @@ export default function Index() {
         riders?.total > 0
             ? `Showing ${riders?.from ?? 0}-${riders?.to ?? 0} of ${riders?.total ?? 0} riders`
             : "No riders found";
+    const hasActiveFilters = Boolean(search.trim() || sd || ed || (filters.condition ?? "Active") !== "Active");
 
     return (
         <AppLayout
@@ -155,7 +158,7 @@ export default function Index() {
                                             <TextInput
                                                 type="date"
                                                 className="py-1"
-                                                value={sd}
+                                    value={sd || today}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
 
@@ -171,7 +174,7 @@ export default function Index() {
                                             <TextInput
                                                 type="date"
                                                 className="py-1"
-                                                value={ed}
+                                    value={ed}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
 
@@ -199,6 +202,26 @@ export default function Index() {
                                                     requestRiders();
                                                 }}
                                             />
+                                            {hasActiveFilters ? (
+                                                <button
+                                                    type="button"
+                                                    className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                                    onClick={() => {
+                                                        setSearch("");
+                                                        setSd("");
+                                                        setEd("");
+                                                        requestRiders({
+                                                            nextSearch: "",
+                                                            nextCondition: "Active",
+                                                            nextSd: "",
+                                                            nextEd: "",
+                                                            page: undefined,
+                                                        });
+                                                    }}
+                                                >
+                                                    {t("Reset")}
+                                                </button>
+                                            ) : null}
                                             <PrimaryButton
                                                 type="button"
                                                 onClick={() => window.open(printUrl, "_blank")}
@@ -212,8 +235,7 @@ export default function Index() {
                         />
 
                         <SectionInner>
-                            <Foreach data={riders?.data ?? []}>
-                                <Table data={riders?.data ?? []}>
+                            <Table data={riders?.data ?? []}>
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -238,14 +260,14 @@ export default function Index() {
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <NavLink href={route("system.rider.edit", { id: item.id })}>{t("edit")}</NavLink>
+                                                    <ActionIconLink href={route("system.rider.edit", { id: item.id })} action="edit" title={t("edit")} />
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
-                                </Table>
+                            </Table>
 
-                                {pagination.pages.length ? (
+                            {pagination.pages.length ? (
                                     <div className="w-full pt-4">
                                         <div className="flex w-full items-center justify-between gap-3">
                                             <div className="text-sm text-slate-700">
@@ -284,8 +306,7 @@ export default function Index() {
                                             </div>
                                         </div>
                                     </div>
-                                ) : null}
-                            </Foreach>
+                            ) : null}
                         </SectionInner>
                     </SectionSection>
                 </Container>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
 use App\Models\CartOrder;
+use App\Support\TableDateFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -95,6 +96,10 @@ class EarnBySellController extends Controller
             'lastDate' => trim((string) $request->query('lastDate', '')),
             'user_type' => (string) $request->query('user_type', 'user'),
             'find' => trim((string) $request->query('find', '')),
+            'default_today' => TableDateFilter::hasOnlyDefaultFilters($request, [
+                'nav' => 'sold',
+                'user_type' => 'user',
+            ]),
         ];
     }
 
@@ -116,6 +121,13 @@ class EarnBySellController extends Controller
 
         if ($filters['lastDate'] !== '') {
             $query->where('created_at', '<=', Carbon::parse($filters['lastDate'])->endOfDay());
+        }
+
+        if ($filters['fd'] === '' && $filters['lastDate'] === '' && $filters['default_today']) {
+            $query->whereBetween('created_at', [
+                Carbon::today()->startOfDay(),
+                Carbon::today()->endOfDay(),
+            ]);
         }
 
         if ($filters['find'] !== '') {

@@ -19,9 +19,13 @@ class ProductDetailsController extends Controller
             ->with([
                 'category:id,name,slug',
                 'attr:id,product_id,name,value',
+                'attrs:id,product_id,name,value',
                 'showcase:id,product_id,image',
                 'comments.user:id,name',
+                'comments.cartOrder:id,size',
+                'comments.likes:id,products_has_comment_id,user_id',
                 'owner:id,name',
+                'isResel.mainProduct:id,video',
             ])
             ->where([
                 'id' => (int) $id,
@@ -71,8 +75,8 @@ class ProductDetailsController extends Controller
                 'slug' => $product->slug,
                 'description' => $product->description,
                 'thumbnail' => $product->thumbnail,
-                'video' => $product->video,
-                'video_url' => $this->videoUrl($product->video),
+                'video' => $product->video ?: $product->isResel?->mainProduct?->video,
+                'video_url' => $this->videoUrl($product->video ?: $product->isResel?->mainProduct?->video),
                 'offer_type' => $product->offer_type,
                 'discount' => $product->discount,
                 'price' => $product->price,
@@ -97,6 +101,10 @@ class ProductDetailsController extends Controller
                     'name' => $product->attr->name,
                     'value' => $product->attr->value,
                 ] : null,
+                'attrs' => $product->attrs->map(fn($attr) => [
+                    'name' => $attr->name,
+                    'value' => $attr->value,
+                ])->values(),
                 'showcase' => $product->showcase->map(fn($image) => [
                     'id' => $image->id,
                     'image' => $image->image,
@@ -120,8 +128,9 @@ class ProductDetailsController extends Controller
                 'comments' => $product->comments
                     ->sortByDesc('created_at')
                     ->values()
-                    ->map(function ($comment) {
+                    ->map(function ($comment) use ($request) {
                         $message = trim((string) ($comment->review ?: $comment->comments));
+                        $isOwner = $request->user() && (int) $request->user()->id === (int) $comment->user_id;
 
                         if ($comment->rating && $message === (string) $comment->rating) {
                             $message = '';
@@ -132,6 +141,17 @@ class ProductDetailsController extends Controller
                             'user_id' => $comment->user_id,
                             'comments' => $message,
                             'rating' => $comment->rating,
+                            'image' => $comment->image,
+                            'images' => collect($comment->images ?: ($comment->image ? [$comment->image] : []))->filter()->values(),
+                            'is_verified_purchase' => (bool) ($comment->is_verified_user || $comment->order_id),
+                            'variant_label' => $comment->cartOrder?->size ? 'Color Family: ' . $comment->cartOrder->size : null,
+                            'like' => (int) ($comment->likes_count ?? $comment->likes->count() ?: $comment->like ?? 0),
+                            'liked_by_me' => $request->user()
+                                ? $comment->likes->contains('user_id', $request->user()->id)
+                                : false,
+                            'can_edit' => $isOwner,
+                            'can_delete' => $isOwner || (bool) $request->user()?->can('users_manage'),
+                            'created_at_date' => $comment->created_at?->format('d M Y'),
                             'created_at_human' => $comment->created_at?->diffForHumans(),
                             'user' => [
                                 'name' => $comment->user?->name,
@@ -354,6 +374,14 @@ class ProductDetailsController extends Controller
     {
         if (empty($video)) {
             return null;
+        }
+
+        $video = trim($video);
+
+        if (Str::contains($video, ['youtube.com', 'youtu.be'])) {
+            return Str::startsWith($video, ['http://', 'https://'])
+                ? $video
+                : 'https://' . ltrim($video, '/');
         }
 
         return Str::startsWith($video, ['http://', 'https://'])

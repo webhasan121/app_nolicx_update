@@ -4,6 +4,7 @@ import PrintLayout from "../../../../Layouts/Print";
 import ApplicationName from "../../../../components/ApplicationName";
 import Container from "../../../../components/dashboard/Container";
 import Table from "../../../../components/dashboard/table/Table";
+import { formatAmount } from "../../../../utils/formatAmount";
 
 export default function PrintSummery() {
     const { vip = [], sdate, edate, totals = {} } = usePage().props;
@@ -86,8 +87,8 @@ export default function PrintSummery() {
                                                 {item.task_type}{" "}
                                             </div>
                                         </td>
-                                        <td>{item.amount}</td>
-                                        <td>{item.comission}</td>
+                                        <td>{formatAmount(item.amount)}</td>
+                                        <td>{formatAmount(item.comission)}</td>
                                         <td>
                                             {item.status}
                                             <br />
@@ -116,10 +117,10 @@ export default function PrintSummery() {
                                 <tr>
                                     <td colSpan="3">{totals.count ?? vip.length} Items </td>
                                     <td className="font-bold">
-                                        {totals.package_price ?? 0}
+                                        {formatAmount(totals.package_price)}
                                     </td>
                                     <td className="font-bold">
-                                        {totals.comission ?? 0}
+                                        {formatAmount(totals.comission)}
                                     </td>
                                     <td></td>
                                     <td></td>

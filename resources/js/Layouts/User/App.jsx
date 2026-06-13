@@ -1,6 +1,7 @@
 import { Head, usePage } from "@inertiajs/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2"; // npm install sweetalert2 kore niben
+import AutoTranslate from "../../components/AutoTranslate";
 import SupportButton from "../../components/SupportButton";
 import Header from "../../components/user/Header";
 import Footer from "../../components/user/Footer";
@@ -9,6 +10,7 @@ import Footer from "../../components/user/Footer";
 export default function UserLayout({ children, title }) {
     // Inertia theke flash message receive korar jonno
     const { flash, appConfig } = usePage().props;
+    const [showScrollTop, setShowScrollTop] = useState(false);
 
 
     // Handle SweetAlert Notifications (Livewire er bodole)
@@ -64,8 +66,27 @@ export default function UserLayout({ children, title }) {
         }
     });
 
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowScrollTop(window.scrollY > 160);
+        };
+
+        handleScroll();
+        window.addEventListener("scroll", handleScroll, { passive: true });
+
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
+
     return (
         <div className="relative">
+            <AutoTranslate />
             <Head>
                 <title>{title ? `${title} - Nolicx` : "Nolicx"}</title>
 
@@ -150,6 +171,17 @@ export default function UserLayout({ children, title }) {
             <div className="relative">{children}</div>
 
             <Footer />
+            {showScrollTop ? (
+                <button
+                    type="button"
+                    title="Go to top"
+                    onClick={scrollToTop}
+                    className="fixed flex items-center justify-center w-12 h-12 text-2xl text-white bg-gray-800 rounded-full shadow-xl hover:bg-gray-900"
+                    style={{ zIndex: 99998, bottom: "38px", right: "82px" }}
+                >
+                    <i className="fas fa-arrow-up"></i>
+                </button>
+            ) : null}
             <SupportButton whatsapp={appConfig?.whatsapp_no} />
         </div>
     );

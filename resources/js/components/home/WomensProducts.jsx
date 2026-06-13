@@ -1,18 +1,21 @@
 import NavLink from "../NavLink";
 import ProductsLoop from "../client/ProductsLoop";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function WomensProducts({ products = [] }) {
+    const { t } = useTranslation();
+
     if (!products.length) return null;
 
     return (
         <div className="pb-6">
             <div className="flex items-center justify-between px-2 py-4">
-                <h2 className="text-xl font-bold">Women's Item</h2>
+                <h2 className="text-xl font-bold">{t("Women's Item")}</h2>
                 <NavLink
                     href={route("category.products", { cat: "womens-item" })}
                     className="px-3 py-2 rounded hover:text-indigo-600"
                 >
-                    View All
+                    {t("View All")}
                 </NavLink>
             </div>
 

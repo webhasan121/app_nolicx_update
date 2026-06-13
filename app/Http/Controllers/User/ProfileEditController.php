@@ -17,10 +17,11 @@ class ProfileEditController extends Controller
     public function edit(Request $request)
     {
         $user = $request->user();
-        $countries = country::where('name', 'Bangladesh')->get(['id', 'name']);
+        $countries = country::orderBy('name')->get(['id', 'name']);
 
-        $countryId = $this->resolveId(country::class, $user->country);
-        $stateId = $this->resolveId(state::class, $user->state);
+        $countryId = $this->resolveCountryId($user->country);
+        $stateId = $this->resolveStateId($user->state, $countryId);
+        $cityId = $this->resolveCityId($user->city, $stateId);
 
         return Inertia::render('User/Profile/Edit', [
             'userProfile' => [
@@ -32,7 +33,7 @@ class ProfileEditController extends Controller
                 'gender' => $user->gender,
                 'country' => $countryId,
                 'state' => $stateId,
-                'city' => $this->resolveId(city::class, $user->city),
+                'city' => $cityId,
                 'targeted_area' => $user->requestsToBeRider()->where('status', 'Active')->value('targeted_area'),
                 'line1' => $user->line1,
                 'line2' => $user->line2,
@@ -41,8 +42,8 @@ class ProfileEditController extends Controller
                 'must_verify_email' => $user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail,
             ],
             'countries' => $countries,
-            'states' => $countryId ? state::where('country_id', $countryId)->get(['id', 'name']) : [],
-            'cities' => $stateId ? city::where('state_id', $stateId)->get(['id', 'name']) : [],
+            'states' => $countryId ? state::where('country_id', $countryId)->orderBy('name')->get(['id', 'name']) : [],
+            'cities' => $stateId ? city::where('state_id', $stateId)->orderBy('name')->get(['id', 'name']) : [],
             'genders' => [
                 'Male' => 'Male',
                 'Female' => 'Female',
@@ -58,7 +59,7 @@ class ProfileEditController extends Controller
         ]);
     }
 
-    protected function resolveId($model, $value)
+    protected function resolveCountryId($value)
     {
         if (!$value) {
             return null;
@@ -68,20 +69,50 @@ class ProfileEditController extends Controller
             return (int) $value;
         }
 
-        return $model::where('name', $value)->value('id');
+        return country::whereRaw('LOWER(name) = ?', [strtolower($value)])->value('id');
+    }
+
+    protected function resolveStateId($value, $countryId = null)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return (int) $value;
+        }
+
+        return state::when($countryId, fn ($query) => $query->where('country_id', $countryId))
+            ->whereRaw('LOWER(name) = ?', [strtolower($value)])
+            ->value('id');
+    }
+
+    protected function resolveCityId($value, $stateId = null)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return (int) $value;
+        }
+
+        return city::when($stateId, fn ($query) => $query->where('state_id', $stateId))
+            ->whereRaw('LOWER(name) = ?', [strtolower($value)])
+            ->value('id');
     }
 
     public function loadStates($country)
     {
         return response()->json(
-            state::where('country_id', $country)->get(['id', 'name'])
+            state::where('country_id', $country)->orderBy('name')->get(['id', 'name'])
         );
     }
 
     public function loadCities($state)
     {
         return response()->json(
-            city::where('state_id', $state)->get(['id', 'name'])
+            city::where('state_id', $state)->orderBy('name')->get(['id', 'name'])
         );
     }
 
@@ -105,8 +136,15 @@ class ProfileEditController extends Controller
             'zip' => ['nullable', 'string', 'max:20'],
         ]);
 
+        $countryName = $validated['country'] ? country::find($validated['country'])?->name : null;
+        $stateName = $validated['state'] ? state::find($validated['state'])?->name : null;
+        $cityName = $validated['city'] ? city::find($validated['city'])?->name : null;
+
         $profileData = $validated;
         unset($profileData['targeted_area']);
+        $profileData['country'] = $countryName;
+        $profileData['state'] = $stateName;
+        $profileData['city'] = $cityName;
 
         $user->fill($profileData);
 
@@ -115,10 +153,6 @@ class ProfileEditController extends Controller
         }
 
         if ($user->requestsToBeRider()->where('status', 'Active')->exists()) {
-            $cityName = $validated['city'] ? city::find($validated['city'])?->name : $user->city;
-            $stateName = $validated['state'] ? state::find($validated['state'])?->name : $user->state;
-            $countryName = $validated['country'] ? country::find($validated['country'])?->name : $user->country;
-
             $user->requestsToBeRider()->where('status', 'Active')->update([
                 'phone' => $validated['phone'] ?? $user->phone,
                 'email' => $validated['email'] ?? $user->email,

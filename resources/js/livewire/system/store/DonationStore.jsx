@@ -5,8 +5,10 @@ import InputLabel from "../../../components/InputLabel";
 import NavLink from "../../../components/NavLink";
 import TextInput from "../../../components/TextInput";
 import PrimaryButton from "../../../components/PrimaryButton";
+import useTranslation from "../../../hooks/useTranslation";
 
 export default function DonationStore({ store = 0 }) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const form = useForm({
         method: "",
@@ -46,7 +48,7 @@ export default function DonationStore({ store = 0 }) {
                                 }}
                             >
                                 <i className="fas fa-store fs-6 pe-2"></i>
-                                Donation
+                                {t("Donation")}
                             </NavLink>
                         </div>
                         <div className="hidden flex items-center text-xs">
@@ -70,42 +72,42 @@ export default function DonationStore({ store = 0 }) {
                     onClick={() => setOpen(true)}
                     className="inline-block bg-blue-500 hover:bg-blue-600 rounded-md px-3 py-1"
                 >
-                    <span className="text-sm text-white font-bold">Withdraw</span>
+                    <span className="text-sm text-white font-bold">{t("Withdraw")}</span>
                 </button>
             </div>
 
             <Modal show={open} onClose={() => setOpen(false)} maxWidth="md">
-                <div className="p-3">Withdraw</div>
+                <div className="p-3">{t("Withdraw")}</div>
                 <hr className="my-2" />
                 <div className="p-4">
                     <form onSubmit={submit}>
                         <div className="grid grid-cols-2 gap-6">
                             <div className="relative w-full">
-                                <InputLabel htmlFor="donation-method">Payment Method</InputLabel>
+                                <InputLabel htmlFor="donation-method">{t("Payment Method")}</InputLabel>
                                 <select
                                     id="donation-method"
                                     value={form.data.method}
                                     onChange={(e) => form.setData("method", e.target.value)}
                                     className="py-2 rounded-md w-full"
                                 >
-                                    <option value=""> -- Choose -- </option>
+                                    <option value=""> {t("-- Choose --")} </option>
                                     {["Bkash", "Nogod", "Rocket", "Bank"].map((item) => (
                                         <option key={item} value={item}>
-                                            {item}
+                                            {t(item)}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
                             <div className="relative">
-                                <InputLabel htmlFor="donation-amount">Withdraw Amount</InputLabel>
+                                <InputLabel htmlFor="donation-amount">{t("Withdraw Amount")}</InputLabel>
                                 <TextInput
                                     id="donation-amount"
                                     type="number"
                                     value={form.data.amount}
                                     onChange={(e) => form.setData("amount", e.target.value)}
                                     className="w-full"
-                                    placeholder="Enter withdraw amount"
+                                    placeholder={t("Enter withdraw amount")}
                                 />
                                 {form.errors.amount ? (
                                     <span className="text-red-500 text-sm">{form.errors.amount}</span>
@@ -116,83 +118,83 @@ export default function DonationStore({ store = 0 }) {
                         {form.data.method === "Bank" ? (
                             <>
                                 <div className="relative my-4">
-                                    <InputLabel htmlFor="donation-bankAccount">Bank Account</InputLabel>
+                                    <InputLabel htmlFor="donation-bankAccount">{t("Bank Account")}</InputLabel>
                                     <TextInput
                                         id="donation-bankAccount"
                                         type="text"
                                         value={form.data.bankAccount}
                                         onChange={(e) => form.setData("bankAccount", e.target.value)}
                                         className="w-full"
-                                        placeholder="Enter bank account"
+                                        placeholder={t("Enter bank account")}
                                     />
                                 </div>
 
                                 <div className="relative my-4">
-                                    <InputLabel htmlFor="donation-accountholder">Account Holder Name</InputLabel>
+                                    <InputLabel htmlFor="donation-accountholder">{t("Account Holder Name")}</InputLabel>
                                     <TextInput
                                         id="donation-accountholder"
                                         type="text"
                                         value={form.data.accountholder}
                                         onChange={(e) => form.setData("accountholder", e.target.value)}
                                         className="w-full"
-                                        placeholder="Account holder name"
+                                        placeholder={t("Account holder name")}
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-6 my-4">
                                     <div className="relative">
-                                        <InputLabel htmlFor="donation-bankBranch">Bank Branch</InputLabel>
+                                        <InputLabel htmlFor="donation-bankBranch">{t("Bank Branch")}</InputLabel>
                                         <TextInput
                                             id="donation-bankBranch"
                                             type="text"
                                             value={form.data.bankBranch}
                                             onChange={(e) => form.setData("bankBranch", e.target.value)}
                                             className="w-full"
-                                            placeholder="Enter bank branch"
+                                            placeholder={t("Enter bank branch")}
                                         />
                                     </div>
 
                                     <div className="relative">
-                                        <InputLabel htmlFor="donation-swiftCode">Swift Code</InputLabel>
+                                        <InputLabel htmlFor="donation-swiftCode">{t("Swift Code")}</InputLabel>
                                         <TextInput
                                             id="donation-swiftCode"
                                             type="text"
                                             value={form.data.swiftCode}
                                             onChange={(e) => form.setData("swiftCode", e.target.value)}
                                             className="w-full"
-                                            placeholder="Enter swift code"
+                                            placeholder={t("Enter swift code")}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="relative my-4">
-                                    <InputLabel htmlFor="donation-accountNumber">Account Number</InputLabel>
+                                    <InputLabel htmlFor="donation-accountNumber">{t("Account Number")}</InputLabel>
                                     <TextInput
                                         id="donation-accountNumber"
                                         type="text"
                                         value={form.data.accountNumber}
                                         onChange={(e) => form.setData("accountNumber", e.target.value)}
                                         className="w-full"
-                                        placeholder="Enter account number"
+                                        placeholder={t("Enter account number")}
                                     />
                                 </div>
                             </>
                         ) : (
                             <div className="relative my-4">
-                                <InputLabel htmlFor="donation-phone">Phone Number</InputLabel>
+                                <InputLabel htmlFor="donation-phone">{t("Phone Number")}</InputLabel>
                                 <TextInput
                                     id="donation-phone"
                                     type="number"
                                     value={form.data.phone}
                                     onChange={(e) => form.setData("phone", e.target.value)}
                                     className="w-full"
-                                    placeholder="Enter phone number"
+                                    placeholder={t("Enter phone number")}
                                 />
                             </div>
                         )}
 
                         <div className="relative my-4">
-                            <InputLabel htmlFor="donation-remarks">Remarks</InputLabel>
+                            <InputLabel htmlFor="donation-remarks">{t("Remarks")}</InputLabel>
                             <textarea
                                 id="donation-remarks"
                                 rows="3"
@@ -204,7 +206,7 @@ export default function DonationStore({ store = 0 }) {
 
                         <div className="flex justify-end">
                             <PrimaryButton type="submit" disabled={form.processing}>
-                                Submit
+                                {t("Submit")}
                             </PrimaryButton>
                         </div>
                     </form>

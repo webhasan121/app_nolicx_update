@@ -1,15 +1,12 @@
 import AppLayout from "../../Layouts/App";
 import Container from "../../components/dashboard/Container";
-import Section from "../../components/dashboard/section/Section";
-import SectionHeader from "../../components/dashboard/section/Header";
-import SectionInner from "../../components/dashboard/section/Inner";
-import Hr from "../../components/Hr";
+import useTranslation from "../../hooks/useTranslation";
 
 function DetailRow({ label, value, children }) {
     return (
-        <div className="items-center justify-between mb-1 bg-gray-100 border-b md:flex">
-            <div className="p-2">{label}</div>
-            <div className="p-2">
+        <div className="grid gap-1 border-b border-gray-100 px-4 py-3 last:border-b-0 md:grid-cols-[180px_1fr] md:items-start">
+            <div className="text-sm font-medium text-gray-500">{label}</div>
+            <div className="min-w-0 text-sm font-semibold text-gray-900 md:text-right">
                 {value}
                 {children}
             </div>
@@ -17,66 +14,76 @@ function DetailRow({ label, value, children }) {
     );
 }
 
-export default function RiderInfoPage({ rider = {} }) {
+function NidImage({ title, src, alt }) {
+    if (!src) {
+        return null;
+    }
+
     return (
-        <AppLayout title="My Rider">
+        <div className="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+            <div className="border-b border-gray-100 px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">
+                {title}
+            </div>
+            <div className="bg-gray-50 p-3">
+                <img
+                    src={src}
+                    className="h-40 w-full rounded border border-gray-100 bg-white object-contain"
+                    alt={alt}
+                />
+            </div>
+        </div>
+    );
+}
+
+export default function RiderInfoPage({ rider = {} }) {
+    const { t } = useTranslation();
+
+    return (
+        <AppLayout title={t("My Rider")}>
             <Container>
-                <Section>
-                    <SectionHeader
-                        title={
-                            <div className="flex items-center justify-between">
-                                <div>{rider.name}</div>
-                                <div className="text-sm">from {rider.joined ?? "N/A"}</div>
-                            </div>
-                        }
-                        content={
-                            rider.is_reject ? (
-                                <div>
-                                    <div className="inline-flex px-3 py-1 text-xs text-white bg-red-700 rounded shadow">
-                                        Rejected
+                <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 bg-white px-5 py-4">
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-900">{rider.name}</h2>
+                            <div className="mt-2">
+                                {rider.is_reject ? (
+                                    <div>
+                                        <span className="inline-flex rounded bg-red-700 px-3 py-1 text-xs font-semibold text-white shadow">
+                                            {t("Rejected")}
+                                        </span>
+                                        <div className="mt-1 text-xs text-red-600">{rider.reject_fo}</div>
                                     </div>
-                                    <div className="text-xs">{rider.reject_fo}</div>
-                                </div>
-                            ) : (
-                                <div className="inline-block px-3 py-1 text-xs text-white bg-gray-800 rounded shadow">
-                                    {rider.status}
-                                </div>
-                            )
-                        }
-                    />
-
-                    <SectionInner>
-                        <div className="items-center justify-between mb-1 bg-green-100 border-b md:flex">
-                            <div className="p-2">Target Area</div>
-                            <div className="p-2 text-bold">{rider.targeted_area ?? "N/A"}</div>
+                                ) : (
+                                    <span className="inline-flex rounded bg-gray-900 px-3 py-1 text-xs font-semibold text-white shadow">
+                                        {t(rider.status)}
+                                    </span>
+                                )}
+                            </div>
                         </div>
+                        <div className="text-sm text-gray-500">{t("from")} {rider.joined ?? t("N/A")}</div>
+                    </div>
 
-                        <Hr />
+                    <div className="bg-green-50 px-5 py-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="text-sm font-medium text-green-800">{t("Target Area")}</div>
+                            <div className="text-sm font-bold text-green-950">{rider.targeted_area ?? t("N/A")}</div>
+                        </div>
+                    </div>
 
-                        <DetailRow label="Name" value={rider.name} />
-                        <DetailRow label="Email" value={rider.email} />
-                        <DetailRow label="Phone" value={rider.phone} />
-                        <DetailRow label="Permanent Address" value={rider.fixed_address} />
-                        <DetailRow label="Current Address" value={rider.current_address} />
-                        <DetailRow label="NID" value={rider.nid}>
-                            <hr />
-                            {rider.nid_photo_front_url ? (
-                                <img
-                                    src={rider.nid_photo_front_url}
-                                    className="w-12 h-12 rounded shadow"
-                                    alt=""
-                                />
-                            ) : null}
-                            {rider.nid_photo_back_url ? (
-                                <img
-                                    src={rider.nid_photo_back_url}
-                                    className="w-12 h-12 rounded shadow"
-                                    alt=""
-                                />
-                            ) : null}
+                    <div className="divide-y divide-gray-100">
+                        <DetailRow label={t("Name")} value={rider.name} />
+                        <DetailRow label={t("Email")} value={rider.email} />
+                        <DetailRow label={t("Phone")} value={rider.phone} />
+                        <DetailRow label={t("Permanent Address")} value={rider.fixed_address} />
+                        <DetailRow label={t("Current Address")} value={rider.current_address} />
+                        <DetailRow label={t("NID")} value={rider.nid}>
+                            <div className="mt-3 grid w-full gap-4 text-left sm:grid-cols-2 lg:ml-auto lg:w-[760px]">
+                                <NidImage title={t("Front")} src={rider.nid_photo_front_url} alt={t("NID front")} />
+                                <NidImage title={t("Back")} src={rider.nid_photo_back_url} alt={t("NID back")} />
+                            </div>
                         </DetailRow>
-                    </SectionInner>
-                </Section>
+                    </div>
+                </div>
             </Container>
         </AppLayout>
     );

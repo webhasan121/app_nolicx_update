@@ -7,20 +7,47 @@ import CatLoop from "../../components/client/CatLoop";
 import HeroSlider from "../../components/home/HeroSlider";
 import TextInput from "../../components/TextInput";
 import UserLayout from "../../Layouts/User/App";
+import useTranslation from "../../hooks/useTranslation";
 
 function Heading() {
+    const { t } = useTranslation();
+
     return (
         <div>
             <div className="w-full mb-3 text-3xl text-center heading_center">
                 <h2 className="flex justify-center gap-3">
                     <ApplicationName />
                     <span className="font-bold text-green-900">
-                        Marketplace
+                        {t("Marketplace")}
                     </span>
                 </h2>
             </div>
         </div>
     );
+}
+
+function findCategoryBySlug(categories = [], slug = "") {
+    for (const category of categories) {
+        if (category.slug === slug) {
+            return category;
+        }
+
+        const match = findCategoryBySlug(category.children ?? [], slug);
+        if (match) {
+            return match;
+        }
+    }
+
+    return null;
+}
+
+function formatCategoryTitle(categories = [], slug = "") {
+    const category = findCategoryBySlug(categories, slug);
+    const title = category?.name || slug;
+
+    return String(title)
+        .replace(/[-_]+/g, " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export default function CategoryIndex({
@@ -31,9 +58,11 @@ export default function CategoryIndex({
     filters = {},
     loadMore = false,
 }) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState(filters.search || "");
     const rows = products ?? [];
+    const pageTitle = formatCategoryTitle(categories, cat);
 
     const visitCategory = (
         nextSearch,
@@ -83,7 +112,7 @@ export default function CategoryIndex({
     }, [search, filters.search, filters.sort, cat]);
 
     return (
-        <UserLayout title={cat}>
+        <UserLayout title={pageTitle}>
             <HeroSlider slides={slides} />
 
             <Container>
@@ -95,14 +124,14 @@ export default function CategoryIndex({
                             style={{ width: "300px" }}
                             className="hidden bg-white rounded-lg md:block max-h-[calc(100vh-110px)] overflow-y-auto"
                         >
-                            <div className="py-3">
-                                <div className="px-3">
+                            <div className="py-2">
+                                <div className="px-2">
                                     <div>
                                         <Link
                                             href={route("products.index")}
-                                            className="inline-flex items-center px-4 py-2 mb-4 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                                            className="inline-flex items-center px-4 py-2 mb-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                                         >
-                                            All Product
+                                            {t("All Product")}
                                         </Link>
                                         <br />
                                     </div>
@@ -124,7 +153,7 @@ export default function CategoryIndex({
                                 onClick={() => setOpen((v) => !v)}
                                 className="flex items-center justify-between cursor-pointer"
                             >
-                                <div>Categories</div>
+                                <div>{t("Categories")}</div>
                                 <div>
                                     {open ? (
                                         <i className="fas fa-chevron-down"></i>
@@ -136,13 +165,13 @@ export default function CategoryIndex({
                             {open ? (
                                 <div className="mt-2 overflow-x-scroll border-t">
                                     <div className="my-3">
-                                        <div className="w-full px-2 mx-auto space-y-6 max-w-8xl sm:px-6 lg:px-8">
+                                        <div className="w-full px-2 mx-auto space-y-3 max-w-8xl sm:px-4 lg:px-6">
                                             <div>
                                                 <Link
                                                     href={route("products.index")}
-                                                    className="inline-flex items-center px-4 py-2 mb-4 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                                                    className="inline-flex items-center px-4 py-2 mb-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                                                 >
-                                                    All Product
+                                                    {t("All Product")}
                                                 </Link>
                                                 <br />
                                             </div>
@@ -165,7 +194,7 @@ export default function CategoryIndex({
                                 <div className="min-w-[220px]">
                                     <TextInput
                                         type="search"
-                                        placeholder="Search ...."
+                                        placeholder={t("Search ....")}
                                         className="w-full py-1 mb-0"
                                         value={search}
                                         onChange={(e) =>
@@ -183,8 +212,8 @@ export default function CategoryIndex({
                                             id="sort_by"
                                             className="w-32 py-2 pl-4 pr-10 text-sm text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm appearance-none focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                                         >
-                                            <option value="desc">Newest</option>
-                                            <option value="asc">Oldest</option>
+                                            <option value="desc">{t("Newest")}</option>
+                                            <option value="asc">{t("Oldest")}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -210,7 +239,7 @@ export default function CategoryIndex({
 
                             {!rows.length ? (
                                 <div className="alert alert-info">
-                                    No Product Found !
+                                    {t("No Product Found !")}
                                 </div>
                             ) : null}
 
@@ -221,7 +250,7 @@ export default function CategoryIndex({
                                         onClick={handleLoadMore}
                                         className="px-6 py-2 font-semibold text-white transition bg-green-600 rounded-md hover:bg-green-700"
                                     >
-                                        Load More
+                                        {t("Load More")}
                                     </button>
                                 </div>
                             ) : null}

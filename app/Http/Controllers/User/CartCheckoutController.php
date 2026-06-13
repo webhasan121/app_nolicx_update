@@ -10,6 +10,7 @@ use App\Models\cart;
 use App\Models\country;
 use App\Models\state;
 use App\Models\city;
+use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -184,6 +185,7 @@ class CartCheckoutController extends Controller
                 ]);
 
                 ProductComissionController::dispatchProductComissionsListeners($order->id);
+                OrderNotice::orderPlaced($order, $user->id);
             }
 
             DB::commit();

@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductComissionController;
 use App\Models\CartOrder;
 use App\Models\Order;
 use App\Models\Product;
+use App\Support\OrderNotice;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -125,6 +126,7 @@ class UserOrderController extends Controller
             ]);
 
             ProductComissionController::dispatchProductComissionsListeners($order->id);
+            OrderNotice::orderPlaced($order, $user->id);
 
             return $order->fresh(['cartOrders.product', 'hasRider.rider']);
         });

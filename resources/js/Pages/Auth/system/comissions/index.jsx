@@ -2,17 +2,18 @@ import { Head, router } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Hr from "../../../../components/Hr";
-import Modal from "../../../../components/Modal";
 import NavLink from "../../../../components/NavLink";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../../components/PrimaryButton";
-import SecondaryButton from "../../../../components/SecondaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import Section from "../../../../components/dashboard/section/Section";
-import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import OverviewDiv from "../../../../components/dashboard/overview/Div";
+import { formatAmount } from "../../../../utils/formatAmount";
+import OverviewSection from "../../../../components/dashboard/overview/Section";
 
 function SummaryBadge({ value, className = "" }) {
     return (
@@ -26,11 +27,8 @@ function SummaryBadge({ value, className = "" }) {
 
 export default function Index({ filters, comissions }) {
     const { t } = useTranslation();
-    const [showFilterModal, setShowFilterModal] = useState(false);
-    const [where, setWhere] = useState(filters?.where ?? "");
-    const [confirm, setConfirm] = useState(filters?.confirm ?? "All");
-    const [wid, setWid] = useState(filters?.wid ?? "");
     const [search, setSearch] = useState(filters?.wid ?? "");
+    const today = todayInputDate();
 
     const apply = (next = {}) => {
         router.get(
@@ -43,7 +41,12 @@ export default function Index({ filters, comissions }) {
                 wid: next.wid ?? filters?.wid ?? "",
                 page: next.page ?? undefined,
             },
-            { preserveScroll: true, preserveState: true }
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+                only: ["filters", "comissions"],
+            }
         );
     };
 
@@ -52,7 +55,7 @@ export default function Index({ filters, comissions }) {
     }, [filters?.wid]);
 
     useEffect(() => {
-        if ((where ?? "") !== "") {
+        if ((filters?.where ?? "") !== "") {
             return;
         }
 
@@ -68,7 +71,7 @@ export default function Index({ filters, comissions }) {
         }, 400);
 
         return () => clearTimeout(timeout);
-    }, [search, where]);
+    }, [search, filters?.where]);
 
     const goToPage = (url) => {
         if (!url) {
@@ -101,6 +104,8 @@ export default function Index({ filters, comissions }) {
         comissions?.total > 0
             ? `Showing ${comissions?.from ?? 0}-${comissions?.to ?? 0} of ${comissions?.total ?? 0} comissions`
             : "No comissions found";
+    const urlParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+    const hasDateFilters = Boolean(urlParams.get("from") || urlParams.get("to"));
 
     const openPrintable = () => {
         window.open(
@@ -136,80 +141,88 @@ export default function Index({ filters, comissions }) {
             <Head title={t("Comissions")} />
 
             <Container>
-                <div className="flex justify-between items-end mb-4">
-                    <div>
-                        <PrimaryButton type="button" onClick={() => setShowFilterModal(true)}>
-                            <i className="fas fa-filter"></i>
-                        </PrimaryButton>
-                    </div>
-                    <div className="flex justify-start items-end mb-2 space-x-1">
-                        <div>
-                            <TextInput
-                                className=" py-1 w-full "
-                                type="date"
-                                value={filters?.from ?? ""}
-                                onChange={(e) => apply({ from: e.target.value })}
-                            />
-                        </div>
+                <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                    <OverviewSection>
+                    <OverviewDiv
+                        title={t("Seller Total Profit")}
+                        content={formatAmount(comissions?.summary?.profit)}
+                    />
+                    <OverviewDiv
+                        title={t("Cut comission")}
+                        content={formatAmount(comissions?.summary?.take_comission)}
+                    />
+                    <OverviewDiv
+                        title={t("Distribute")}
+                        content={formatAmount(comissions?.summary?.distribute_comission)}
+                    />
+                    <OverviewDiv
+                        title={t("Store")}
+                        content={formatAmount(comissions?.summary?.store)}
+                    />
+                    <OverviewDiv
+                        title={t("Return")}
+                        content={formatAmount(comissions?.summary?.return)}
+                    />
+                    </OverviewSection>
+                </div>
 
-                        <div>
-                            <TextInput
-                                className=" py-1 w-full "
-                                type="date"
-                                value={filters?.to ?? ""}
-                                onChange={(e) => apply({ to: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <TextInput
-                                className="py-1 w-full"
-                                type="search"
-                                placeholder={t("Search comissions...")}
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key !== "Enter") {
-                                        return;
-                                    }
+                <div className="mb-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="flex flex-wrap items-end justify-end gap-2">
+                        <TextInput
+                            className="w-full py-1 sm:w-40"
+                            type="date"
+                            value={filters?.from || today}
+                            onChange={(e) => apply({ from: e.target.value })}
+                        />
 
-                                    e.preventDefault();
-                                    apply({ wid: search.trim(), where: "", page: undefined });
-                                }}
-                            />
-                        </div>
+                        <TextInput
+                            className="w-full py-1 sm:w-40"
+                            type="date"
+                            value={filters?.to ?? ""}
+                            onChange={(e) => apply({ to: e.target.value })}
+                        />
+
+                        <TextInput
+                            className="w-full py-1 sm:w-56"
+                            type="search"
+                            placeholder={t("Search comissions...")}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key !== "Enter") {
+                                    return;
+                                }
+
+                                e.preventDefault();
+                                apply({ wid: search.trim(), where: "", page: undefined });
+                            }}
+                        />
+
                         <PrimaryButton type="button" onClick={openPrintable} className="btn">
                             <i className="fas fa-print"></i>
                         </PrimaryButton>
+
+                        {hasDateFilters ? (
+                            <button
+                                type="button"
+                                className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                onClick={() => {
+                                    setSearch("");
+                                    apply({
+                                        confirm: "",
+                                        where: "",
+                                        from: "",
+                                        to: "",
+                                        wid: "",
+                                        page: undefined,
+                                    });
+                                }}
+                            >
+                                {t("Reset")}
+                            </button>
+                        ) : null}
                     </div>
                 </div>
-
-                <Hr className="my-2" />
-
-                <SectionInner>
-                    <div>
-                        <Table data={[comissions?.summary ?? {}]}>
-                            <thead>
-                                <tr>
-                                    <th>{t("Seller Total Profit")}</th>
-                                    <th>{t("Cut comission")}</th>
-                                    <th>{t("Distribute")}</th>
-                                    <th>{t("Store")}</th>
-                                    <th>{t("Return")}</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr>
-                                    <td>{comissions?.summary?.profit ?? 0}</td>
-                                    <td>{comissions?.summary?.take_comission ?? 0}</td>
-                                    <td>{comissions?.summary?.distribute_comission ?? 0}</td>
-                                    <td>{comissions?.summary?.store ?? 0}</td>
-                                    <td>{comissions?.summary?.return ?? 0}</td>
-                                </tr>
-                            </tbody>
-                        </Table>
-                    </div>
-                </SectionInner>
 
                 <Section id="pdf-content">
                     <Hr />
@@ -375,61 +388,6 @@ export default function Index({ filters, comissions }) {
                 </Section>
             </Container>
 
-            <Modal show={showFilterModal} onClose={() => setShowFilterModal(false)}>
-                <div className="p-3">{t("Filter Comissions")}</div>
-                <Hr className="my-1" />
-
-                <div className="p-3">
-                    <div className="flex items-start justify-between my-2 space-x-1">
-                        <div>
-                            <select
-                                value={where}
-                                onChange={(e) => {
-                                    setWhere(e.target.value);
-                                    apply({ where: e.target.value, wid, confirm, page: undefined });
-                                }}
-                                className="w-full rounded-md py-1"
-                            >
-                                <option value="">{t("-- Select --")}</option>
-                                <option value="user_id">{t("User")}</option>
-                                <option value="product_id">{t("Product")}</option>
-                                <option value="order_id">{t("Order")}</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select
-                                value={confirm}
-                                onChange={(e) => {
-                                    setConfirm(e.target.value);
-                                    apply({ confirm: e.target.value, where, wid, page: undefined });
-                                }}
-                                className="py-1 rounded-md"
-                            >
-                                <option value="All">{t("Both")}</option>
-                                <option value="true">{t("Confirmed")}</option>
-                                <option value="false">{t("Pending")}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <TextInput
-                            className="w-full"
-                            placeholder={t("Search By ID")}
-                            value={wid}
-                            onChange={(e) => {
-                                setWid(e.target.value);
-                                apply({ wid: e.target.value, where, confirm, page: undefined });
-                            }}
-                        />
-                    </div>
-                </div>
-                <Hr className="my-1" />
-                <div className="p-3">
-                    <div className="flex items-center justify-end w-full space-x-1">
-                        <SecondaryButton type="button" onClick={() => setShowFilterModal(false)}>{t("Cancel")}</SecondaryButton>
-                    </div>
-                </div>
-            </Modal>
         </AppLayout>
     );
 }

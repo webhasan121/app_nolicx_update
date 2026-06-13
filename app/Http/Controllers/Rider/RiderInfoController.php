@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Rider;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class RiderInfoController extends Controller
@@ -12,6 +13,8 @@ class RiderInfoController extends Controller
     {
         $user = $request->user();
         $rider = $user?->isRider();
+        $frontImageUrl = $rider?->nid_photo_front ? Storage::url($rider->nid_photo_front) : null;
+        $backImageUrl = $rider?->nid_photo_back ? Storage::url($rider->nid_photo_back) : null;
 
         return Inertia::render('Rider/Info', [
             'rider' => [
@@ -28,8 +31,8 @@ class RiderInfoController extends Controller
                 'nid' => $rider?->nid,
                 'nid_photo_front' => $rider?->nid_photo_front,
                 'nid_photo_back' => $rider?->nid_photo_back,
-                'nid_photo_front_url' => $rider?->nid_photo_front ? asset('storage/' . $rider->nid_photo_front) : null,
-                'nid_photo_back_url' => $rider?->nid_photo_back ? asset('storage/' . $rider->nid_photo_back) : null,
+                'nid_photo_front_url' => $frontImageUrl,
+                'nid_photo_back_url' => $backImageUrl,
             ],
         ]);
     }

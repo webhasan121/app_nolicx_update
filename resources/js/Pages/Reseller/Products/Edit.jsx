@@ -7,6 +7,8 @@ import InputField from "../../../components/InputField";
 import InputFile from "../../../components/InputFile";
 import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
+import ProductAttributesInput from "../../../components/ProductAttributesInput";
+import CategorySelect from "../../../components/CategorySelect";
 import SecondaryButton from "../../../components/SecondaryButton";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Container from "../../../components/dashboard/Container";
@@ -19,20 +21,9 @@ import {
 } from "../../../utils/videoValidation";
 import useTranslation from "../../../hooks/useTranslation";
 
-function renderCategoryOptions(categories = [], depth = 0) {
-    return categories.flatMap((category) => [
-        <option key={category.id} value={category.id}>
-            {"-".repeat(depth ? depth * 2 : 0)}
-            {depth ? " " : ""}
-            {category.name}
-        </option>,
-        ...(category.children?.length
-            ? renderCategoryOptions(category.children, depth + 1)
-            : []),
-    ]);
-}
+const MAX_OTHER_IMAGES = 8;
 
-function ProductNavigations({ productId, nav = "Product" }) {
+function ProductNavigations({ productId, nav = "Product", t }) {
     return (
         <div className="flex ">
             <NavLink
@@ -86,11 +77,23 @@ export default function Edit() {
         shipping_note: productData?.shipping_note ?? "",
         attr_name: productData?.attr?.name ?? "",
         attr_value: productData?.attr?.value ?? "",
+        attributes: productData?.attrs?.length
+            ? productData.attrs
+            : [{ name: productData?.attr?.name ?? "", value: productData?.attr?.value ?? "" }],
         thumb: null,
         video: productData?.video ?? "",
         newseothumb: null,
         newImage: [],
     });
+    const existingOtherImageCount = productData?.related_images?.length ?? 0;
+    const selectedOtherImageCount = Array.isArray(form.data.newImage)
+        ? form.data.newImage.length
+        : 0;
+    const remainingOtherImageSlots = Math.max(
+        0,
+        MAX_OTHER_IMAGES - existingOtherImageCount - selectedOtherImageCount
+    );
+
     useEffect(() => {
         let isMounted = true;
 
@@ -165,6 +168,22 @@ export default function Edit() {
         });
     };
 
+    const handleOtherImagesChange = (event) => {
+        const currentFiles = Array.isArray(form.data.newImage)
+            ? form.data.newImage
+            : [];
+        const selectedFiles = Array.from(event.target.files ?? []);
+
+        if (selectedFiles.length > remainingOtherImageSlots) {
+            window.alert(`You can upload ${remainingOtherImageSlots} more other image(s).`);
+            event.target.value = "";
+            return;
+        }
+
+        form.setData("newImage", [...currentFiles, ...selectedFiles]);
+        event.target.value = "";
+    };
+
     const moveToTrash = () => {
         if (!window.confirm("Are you sure you want to move this product to trash?")) {
             return;
@@ -198,7 +217,7 @@ export default function Edit() {
             title={t("Product Edit")}
             header={
                 <PageHeader>{t("Product Edit")}<br />
-                    <ProductNavigations productId={productData.encrypted_id} />
+                    <ProductNavigations productId={productData.encrypted_id} t={t} />
                 </PageHeader>
             }
         >
@@ -229,13 +248,13 @@ export default function Edit() {
                                             type="button"
                                             onClick={restoreFromTrash}
                                         >
-                                            <i className="fa-solid fa-sync mr-2"></i>{" "}{t("Restore")}</SecondaryButton>
+                                            <i className="mr-2 fa-solid fa-sync"></i>{" "}{t("Restore")}</SecondaryButton>
                                     ) : (
                                         <SecondaryButton
                                             type="button"
                                             onClick={moveToTrash}
                                         >
-                                            <i className="fa-solid fa-trash mr-2"></i>{" "}{t("Trash")}</SecondaryButton>
+                                            <i className="mr-2 fa-solid fa-trash"></i>{" "}{t("Trash")}</SecondaryButton>
                                     )}
                                 </div>
                             </div>
@@ -258,9 +277,9 @@ export default function Edit() {
                                 </div>
                                 <div>
                                     <div className="text-sm">{t("Type :")}{productData.is_resel ? (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">{t("Resel")}</span>
+                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">{t("Resel")}</span>
                                         ) : (
-                                            <span className="bg-indigo-900 text-md text-white rounded-lg px-2">{t("Owner")}</span>
+                                            <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">{t("Owner")}</span>
                                         )}
                                     </div>
                                 </div>
@@ -270,8 +289,8 @@ export default function Edit() {
                 </SectionSection>
 
                 <form onSubmit={save}>
-                    <div className="md:flex jusfity-between">
-                        <SectionSection>
+                    <div className="md:flex md:gap-4">
+                        <SectionSection className="md:flex-1">
                             <SectionHeader title={t("Product Basic Info")} content="" />
                             <SectionInner>
                                 <InputField
@@ -314,31 +333,30 @@ export default function Edit() {
                                         <strong>
                                             {productData.category_name ?? "N/A"}
                                         </strong>{t(". Change to another")}</div>
-                                    <select
+                                    <CategorySelect
+                                        categories={categories}
                                         value={form.data.category_id ?? ""}
-                                        onChange={(e) =>
+                                        onChange={(categoryId) =>
                                             form.setData(
                                                 "category_id",
-                                                e.target.value
+                                                categoryId
                                             )
                                         }
-                                    >
-                                        <option value="">
-                                            {" "}{t("-- Select Category --")}{" "}
-                                        </option>
-                                        {renderCategoryOptions(categories)}
-                                    </select>
+                                        placeholder={t("-- Select Category --")}
+                                        noneLabel={t("-- Select Category --")}
+                                        noResultsLabel={t("No category found.")}
+                                    />
                                 </InputFile>
                                 <Hr />
                             </SectionInner>
                         </SectionSection>
 
-                        <SectionSection>
+                        <SectionSection className="md:w-[324px] md:flex-none">
                             <SectionHeader title={t("Product Price")} content="" />
                             <SectionInner>
                                 <div>
                                     <InputField
-                                        className=" mx-1"
+                                        className="mx-1 "
                                         labelWidth="100px"
                                         label={t("Product Buying Price")}
                                         name="buying_price"
@@ -352,7 +370,7 @@ export default function Edit() {
                                         }
                                     />
                                     <InputField
-                                        className=" mx-1"
+                                        className="mx-1 "
                                         labelWidth="100px"
                                         label={t("Product Sell Price")}
                                         name="price"
@@ -450,7 +468,7 @@ export default function Edit() {
                             content={t("Define your product delevery option and charge from here.")}
                         />
                         <SectionInner>
-                            <div className="md:flex justify-between  ">
+                            <div className="justify-between md:flex ">
                                 <div>
                                     <InputFile
                                         error="cod"
@@ -621,7 +639,7 @@ export default function Edit() {
                                 errors={errors}
                             >
                                 <textarea
-                                    className="rounded-md p-2 shadow w-full"
+                                    className="w-full p-2 rounded-md shadow"
                                     rows="4"
                                     placeholder={t("Meta Description ....")}
                                     value={form.data.meta_description}
@@ -672,7 +690,7 @@ export default function Edit() {
                                         }
                                     />
                                     <label htmlFor="newseothumb">
-                                        <i className="fas fa-upload px-2"></i>
+                                        <i className="px-2 fas fa-upload"></i>
                                     </label>
                                 </div>
                             </InputFile>
@@ -685,35 +703,15 @@ export default function Edit() {
                             content={t("Give your products attributes, product different types, different product color package and quantity.")}
                         />
                         <SectionInner>
-                            <div className="md:flex">
-                                <input
-                                    type="text"
-                                    value={form.data.attr_name}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "attr_name",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder={t("Name")}
-                                />
-                                <input
-                                    type="text"
-                                    value={form.data.attr_value}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "attr_value",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder={t("Value")}
-                                />
-                            </div>
+                            <ProductAttributesInput
+                                attributes={form.data.attributes}
+                                onChange={(attributes) => form.setData("attributes", attributes)}
+                            />
                         </SectionInner>
                     </SectionSection>
 
                     <SectionSection>
-                        <div className="md:flex flex-rowreverse justify-between">
+                        <div className="justify-between md:flex flex-rowreverse">
                             <SectionHeader
                                 title={t("Image Thumbnail")}
                                 content={
@@ -722,7 +720,7 @@ export default function Edit() {
                                             <input
                                                 id="prod_thumb"
                                                 type="file"
-                                                className="absolute hidden border p-1"
+                                                className="absolute hidden p-1 border"
                                                 onChange={(e) =>
                                                     form.setData(
                                                         "thumb",
@@ -732,7 +730,7 @@ export default function Edit() {
                                             />
                                             <label
                                                 htmlFor="prod_thumb"
-                                                className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
+                                                className="inline-flex items-center justify-center border rounded cursor-pointer w-9 h-9"
                                             >
                                                 <i className="fas fa-upload"></i>
                                             </label>
@@ -818,8 +816,7 @@ export default function Edit() {
                                         >
                                             <img
                                                 src={URL.createObjectURL(ni)}
-                                                width="50px"
-                                                height="50px"
+                                                className="object-cover w-16 h-16 rounded"
                                                 alt=""
                                             />
                                         </div>
@@ -831,22 +828,30 @@ export default function Edit() {
                                 <input
                                     type="file"
                                     id="multi_prod_img"
-                                    className="absolute hidden border p-1"
+                                    className="absolute hidden p-1 border"
                                     multiple
-                                    onChange={(e) =>
-                                        form.setData(
-                                            "newImage",
-                                            Array.from(e.target.files ?? [])
-                                        )
-                                    }
+                                    accept="image/*"
+                                    disabled={remainingOtherImageSlots < 1}
+                                    onChange={handleOtherImagesChange}
                                 />
                                 <label
                                     htmlFor="multi_prod_img"
-                                    className="inline-flex items-center justify-center w-9 h-9 border rounded cursor-pointer"
+                                    className={`inline-flex items-center justify-center w-9 h-9 border rounded ${
+                                        remainingOtherImageSlots < 1
+                                            ? "cursor-not-allowed opacity-50"
+                                            : "cursor-pointer"
+                                    }`}
                                 >
                                     <i className="fas fa-upload"></i>
                                 </label>
-                                <div className="text-xs leading-5">{t("Please choose all image at once, if you plan to upload multiple image.")}</div>
+                                <div className="text-xs leading-5">
+                                    You can upload maximum {MAX_OTHER_IMAGES} images. You can add {remainingOtherImageSlots} more.
+                                </div>
+                                {errors.newImage ? (
+                                    <div className="text-xs text-red-500">
+                                        {errors.newImage}
+                                    </div>
+                                ) : null}
                             </div>
                         </SectionInner>
                     </SectionSection>
@@ -883,7 +888,7 @@ export default function Edit() {
                                         ></trix-editor>
                                     ) : (
                                         <textarea
-                                            className="w-full rounded border-gray-300"
+                                            className="w-full border-gray-300 rounded"
                                             id="editor"
                                             rows="10"
                                             value={form.data.description}

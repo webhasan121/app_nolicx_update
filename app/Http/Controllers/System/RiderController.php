@@ -5,6 +5,7 @@ namespace App\Http\Controllers\System;
 use App\Http\Controllers\Controller;
 use App\Models\rider;
 use App\Models\User;
+use App\Support\TableDateFilter;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,6 +20,7 @@ class RiderController extends Controller
         $find = $request->input('find');
         $sd = $request->input('sd');
         $ed = $request->input('ed');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['condition' => 'Active']);
 
         $query = rider::query()
             ->with('user')
@@ -44,7 +46,7 @@ class RiderController extends Controller
             });
         }
 
-        $this->applyDateFilter($query, $sd, $ed);
+        $this->applyDateFilter($query, $sd, $ed, $defaultToday);
 
         $riders = $query->paginate(config('app.paginate'))->withQueryString();
 
@@ -100,6 +102,7 @@ class RiderController extends Controller
         $find = $request->input('find');
         $sd = $request->input('sd');
         $ed = $request->input('ed');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['condition' => 'Active']);
 
         $query = rider::query()
             ->with('user')
@@ -125,7 +128,7 @@ class RiderController extends Controller
             });
         }
 
-        $this->applyDateFilter($query, $sd, $ed);
+        $this->applyDateFilter($query, $sd, $ed, $defaultToday);
 
         $riders = $query->get()->values()->map(function ($item, $index) {
             return [
@@ -210,35 +213,8 @@ class RiderController extends Controller
         return redirect()->back()->with('success', 'Status Updated !');
     }
 
-    private function applyDateFilter($query, ?string $sd, ?string $ed): void
+    private function applyDateFilter($query, ?string $sd, ?string $ed, bool $defaultToday = false): void
     {
-        if (!empty($sd) && !empty($ed)) {
-            $start = Carbon::parse($sd)->startOfDay();
-            $end = Carbon::parse($ed)->endOfDay();
-
-            if ($start->gt($end)) {
-                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
-            }
-
-            $query->whereBetween('created_at', [$start, $end]);
-
-            return;
-        }
-
-        if (!empty($sd)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($sd)->startOfDay(),
-                Carbon::parse($sd)->endOfDay(),
-            ]);
-
-            return;
-        }
-
-        if (!empty($ed)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($ed)->startOfDay(),
-                Carbon::parse($ed)->endOfDay(),
-            ]);
-        }
+        TableDateFilter::apply($query, $sd, $ed, $defaultToday);
     }
 }

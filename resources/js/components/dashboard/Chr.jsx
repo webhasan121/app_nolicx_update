@@ -1,5 +1,5 @@
 import { useState } from "react";
-import NavLink from "../NavLink";
+import { ActionIconButton, ActionIconLink } from "../ActionIcon";
 
 export default function Chr({
     item,
@@ -66,19 +66,16 @@ export default function Chr({
                         }`}
                     ></i>
                 </button>
-                <NavLink
+                <ActionIconLink
                     href={route("system.categories.edit", { cid: item?.id })}
-                    className="text-blue-500 hover:underline mr-2"
-                >
-                    <i className="fas fa-edit"></i>
-                </NavLink>
-                <button
-                    type="button"
+                    action="edit"
+                    title="Edit"
+                />
+                <ActionIconButton
+                    action="delete"
+                    title="Delete"
                     onClick={() => onDelete?.(item?.id)}
-                    className="text-red-500 hover:underline"
-                >
-                    <i className="fas fa-trash"></i>
-                </button>
+                />
             </div>
         </div>
     );

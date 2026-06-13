@@ -1,15 +1,18 @@
 import NavLink from "../NavLink";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function ProductSection({ title, products, viewAll }) {
+    const { t } = useTranslation();
+
     return (
         <div className="py-10">
             <div className="flex justify-between mb-6">
-                <h2 className="text-xl font-bold">{title}</h2>
+                <h2 className="text-xl font-bold">{t(title)}</h2>
                 <NavLink
                     href={viewAll}
                     className="border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                 >
-                    View All
+                    {t("View All")}
                 </NavLink>
             </div>
 

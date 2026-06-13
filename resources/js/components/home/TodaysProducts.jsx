@@ -1,18 +1,20 @@
 import NavLink from "../NavLink";
 import ProductsLoop from "../client/ProductsLoop";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function TodaysProducts({ products = [] }) {
+    const { t } = useTranslation();
+
     return (
         <div className="pb-6">
             {/* Header */}
             <div className="flex items-center justify-between px-2 py-4">
-                <h2 className="text-xl font-bold">Today's</h2>
-
+                <h2 className="text-xl font-bold">{t("Today's")}</h2>
                 <NavLink
                     href={`${route("products.index")}?tag=today`}
                     className="px-3 py-2 rounded hover:text-indigo-600"
                 >
-                    View All
+                    {t("View All")}
                 </NavLink>
             </div>
 

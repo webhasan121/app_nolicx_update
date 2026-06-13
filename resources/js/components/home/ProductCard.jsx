@@ -3,6 +3,8 @@ import { useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import NavLink from "../NavLink";
+import useTranslation from "../../hooks/useTranslation";
+import { formatAmount } from "../../utils/formatAmount";
 
 export default function ProductCard({
     product,
@@ -10,6 +12,7 @@ export default function ProductCard({
     savedForLater = false,
     onSaveForLaterChange = null,
 }) {
+    const { t } = useTranslation();
     const { auth } = usePage().props;
     const [isSaved, setIsSaved] = useState(Boolean(savedForLater));
     const [saving, setSaving] = useState(false);
@@ -33,9 +36,9 @@ export default function ProductCard({
 
             Swal.fire({
                 icon: isAlreadyInCart ? "info" : "success",
-                title: isAlreadyInCart ? "Look At!" : "Congrass !",
-                text: response.data?.message || "Product Added to cart",
-                confirmButtonText: "OK",
+                title: isAlreadyInCart ? t("Look At!") : t("Congrass !"),
+                text: response.data?.message || t("Product Added to cart"),
+                confirmButtonText: t("OK"),
                 confirmButtonColor: "#6c5ce7",
             }).then(() => {
                 if (!isAlreadyInCart && response.data.cartCount !== undefined) {
@@ -46,9 +49,9 @@ export default function ProductCard({
             if (error.response?.status === 401) {
                 Swal.fire({
                     icon: "warning",
-                    title: "Alert !",
-                    text: "Login to add Cart",
-                    confirmButtonText: "OK",
+                    title: t("Alert !"),
+                    text: t("Login to add Cart"),
+                    confirmButtonText: t("OK"),
                     confirmButtonColor: "#6c5ce7",
                 }).then(() => {
                     router.get(route("login"));
@@ -84,8 +87,8 @@ export default function ProductCard({
                 title:
                     response.data?.message ||
                     (saved
-                        ? "Product saved for later"
-                        : "Product removed from saved list"),
+                        ? t("Product saved for later")
+                        : t("Product removed from saved list")),
                 toast: true,
                 timer: 1800,
                 showConfirmButton: false,
@@ -99,7 +102,7 @@ export default function ProductCard({
 
             Swal.fire({
                 icon: "error",
-                title: "Unable to update saved product",
+                title: t("Unable to update saved product"),
                 toast: true,
                 timer: 1800,
                 showConfirmButton: false,
@@ -125,7 +128,7 @@ export default function ProductCard({
                     className="absolute top-2 right-2 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm shadow disabled:opacity-70"
                     onClick={toggleSaveForLater}
                     disabled={saving}
-                    title={isSaved ? "Remove from For You" : "Save for later"}
+                    title={isSaved ? t("Remove from For You") : t("Save for later")}
                 >
                     <i
                         className={`${isSaved ? "fas" : "far"} fa-heart`}
@@ -143,14 +146,14 @@ export default function ProductCard({
                             className="w-full p-2 mb-4 text-sm bg-white"
                         >
                             <i className="mx-2 fas fa-cart-plus"></i>
-                            To Cart
+                            {t("To Cart")}
                         </button>
 
                        <Link
                             href={`/product/${product.id}/${product.slug}`}
                             className="text-xs"
                         >
-                            View Details
+                            {t("View Details")}
                             <i className="mx-2 fas fa-arrow-right"></i>
                         </Link>
                     </div>
@@ -159,7 +162,7 @@ export default function ProductCard({
                         href={route("product.makeOrder", { id: product.id, slug: product.slug })}
                         className="flex items-center justify-center w-full py-2 font-bold text-center bg-white border-b-0 text_primary hover:bg-white hover:border-transparent"
                     >
-                        Order Now
+                        {t("Order Now")}
                         <i className="mx-2 fas fa-arrow-right"></i>
                     </NavLink>
                 </div>
@@ -197,15 +200,15 @@ export default function ProductCard({
                     {hasOffer ? (
                         <>
                             <span className="text-md">
-                                {product.discount} TK
+                                {formatAmount(product.discount)} {t("TK")}
                             </span>
 
                             <span className="text-xs">
-                                <del>MRP {product.price} TK</del>
+                                <del>{t("MRP")} {formatAmount(product.price)} {t("TK")}</del>
                             </span>
                         </>
                     ) : (
-                        <span>{product.price} TK</span>
+                        <span>{formatAmount(product.price)} {t("TK")}</span>
                     )}
                 </div>
 
@@ -215,7 +218,7 @@ export default function ProductCard({
                     className="flex items-center justify-center block text-sm font-bold text-center transition bg-white border-b-0 text_primary hover:bg_primary hover:text-white hover:border-transparent"
                 >
                     <i className="mr-2 fas fa-cart-plus"></i>
-                    Order Now
+                    {t("Order Now")}
                 </NavLink>
             </div>
 
@@ -223,7 +226,7 @@ export default function ProductCard({
             {isSoldOut && (
                 <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full bg-black/30">
                     <div className="w-full py-1 text-sm font-bold text-center uppercase bg-white">
-                        Sold Out
+                        {t("Sold Out")}
                     </div>
                 </div>
             )}

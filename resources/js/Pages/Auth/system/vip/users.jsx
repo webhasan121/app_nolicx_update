@@ -1,26 +1,26 @@
 import { router, usePage } from "@inertiajs/react";
 import { useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
-import Modal from "../../../../components/Modal";
-import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
-import SecondaryButton from "../../../../components/SecondaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
-import Foreach from "../../../../components/dashboard/Foreach";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import SectionSection from "../../../../components/dashboard/section/Section";
 import Table from "../../../../components/dashboard/table/Table";
+import { ActionIconLink } from "../../../../components/ActionIcon";
+import useTranslation from "../../../../hooks/useTranslation";
+import { formatAmount } from "../../../../utils/formatAmount";
 
 export default function Users() {
+    const { t } = useTranslation();
     const { vip, filters = {}, printUrl } = usePage().props;
-    const [showFilterModal, setShowFilterModal] = useState(false);
     const [search, setSearch] = useState(filters.search ?? "");
     const [nav, setNav] = useState(filters.nav ?? "All");
     const [type, setType] = useState(filters.type ?? "All");
     const [validity, setValidity] = useState(filters.validity ?? "All");
+    const [quickFilter, setQuickFilter] = useState("task:All");
     const [sdate, setSdate] = useState(filters.sdate ?? "");
     const [edate, setEdate] = useState(filters.edate ?? "");
 
@@ -36,7 +36,12 @@ export default function Users() {
                 validity,
                 ...next,
             },
-            { preserveState: true, preserveScroll: true }
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ["filters", "vip", "printUrl"],
+            }
         );
     };
 
@@ -70,16 +75,28 @@ export default function Users() {
 
     const resultSummary =
         vip?.total > 0
-            ? `Showing ${vip?.from ?? 0}-${vip?.to ?? 0} of ${vip?.total ?? 0} vip users`
-            : "No vip users found";
+            ? t("Showing :from-:to of :total vip users", {
+                  from: vip?.from ?? 0,
+                  to: vip?.to ?? 0,
+                  total: vip?.total ?? 0,
+              })
+            : t("No vip users found");
+    const hasActiveFilters = Boolean(
+        search.trim() ||
+            sdate ||
+            edate ||
+            nav !== "All" ||
+            type !== "All" ||
+            validity !== "All"
+    );
 
     return (
         <AppLayout
-            title="VIP Users"
+            title={t("VIP Users")}
             header={
                 <PageHeader>
                     <div className="md:flex items-center justify-between">
-                        <div className="mb-1">VIP Users</div>
+                        <div className="mb-1">{t("VIP Users")}</div>
                     </div>
                 </PageHeader>
             }
@@ -88,65 +105,154 @@ export default function Users() {
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex flex-wrap justify-between items-start">
-                                <div className="flex items-center gap-2">
-                                    <SecondaryButton
+                            <div className="flex w-full flex-nowrap items-center gap-2 overflow-x-auto">
+                                <select
+                                    className="h-9 w-32 shrink-0 rounded-md border-gray-300 py-1 text-sm"
+                                    value={nav}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setNav(value);
+
+                                        if (value === "All") {
+                                            setSearch("");
+                                            setType("All");
+                                            setValidity("All");
+                                            setQuickFilter("task:All");
+                                            setSdate("");
+                                            setEdate("");
+                                            applyFilters({
+                                                nav: "All",
+                                                search: "",
+                                                sdate: "",
+                                                edate: "",
+                                                type: "All",
+                                                validity: "All",
+                                                page: undefined,
+                                            });
+                                            return;
+                                        }
+
+                                        applyFilters({ nav: value, page: undefined });
+                                    }}
+                                >
+                                    <option value="All">{t("All")}</option>
+                                    <option value="Pending">{t("Pending")}</option>
+                                    <option value="Confirmed">{t("Active")}</option>
+                                    <option value="Trash">{t("Trash")}</option>
+                                </select>
+                                <select
+                                    className="h-9 w-52 shrink-0 rounded-md border-gray-300 py-1 text-sm"
+                                    value={quickFilter}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        const [filterType, filterValue] = value.split(":");
+
+                                        setQuickFilter(value);
+
+                                        if (filterType === "task") {
+                                            setType(filterValue);
+                                            applyFilters({ type: filterValue, page: undefined });
+                                            return;
+                                        }
+
+                                        setValidity(filterValue);
+                                        applyFilters({ validity: filterValue, page: undefined });
+                                    }}
+                                    title={t("Task Type and Validity")}
+                                >
+                                    <optgroup label={t("Task Type")}>
+                                        <option value="task:daily">{t("Daily Tasks")}</option>
+                                        <option value="task:monthly">{t("Monthly Tasks")}</option>
+                                        <option value="task:All">{t("Both")}</option>
+                                    </optgroup>
+                                    <optgroup label={t("Package Validity")}>
+                                        <option value="validity:valid">{t("Only Valid")}</option>
+                                        <option value="validity:invalid">{t("Only Invalid")}</option>
+                                        <option value="validity:All">{t("Both")}</option>
+                                    </optgroup>
+                                </select>
+                                <TextInput
+                                    type="date"
+                                    className="h-9 w-36 shrink-0 py-1 text-sm"
+                                    value={sdate}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setSdate(value);
+                                        applyFilters({ sdate: value, page: undefined });
+                                    }}
+                                    title={t("Start Date")}
+                                />
+                                <TextInput
+                                    type="date"
+                                    className="h-9 w-36 shrink-0 py-1 text-sm"
+                                    value={edate}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setEdate(value);
+                                        applyFilters({ edate: value, page: undefined });
+                                    }}
+                                    title={t("End Date")}
+                                />
+                                <input
+                                    type="search"
+                                    className="h-9 w-52 shrink-0 rounded-lg border-gray-400 py-1"
+                                    placeholder={t("find name, id")}
+                                    value={search}
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        applyFilters({ search: e.target.value, page: undefined });
+                                    }}
+                                />
+                                <PrimaryButton
+                                    type="button"
+                                    className="h-9 shrink-0"
+                                    onClick={() => window.open(printUrl, "_blank")}
+                                >
+                                    <i className="fas fa-print"></i>
+                                </PrimaryButton>
+                                {hasActiveFilters ? (
+                                    <button
                                         type="button"
-                                        onClick={() => setShowFilterModal(true)}
-                                    >
-                                        <i className="fa-solid fa-filter"></i>
-                                    </SecondaryButton>
-                                    <select
-                                        className="rounded-md py-1"
-                                        value={nav}
-                                        onChange={(e) => {
-                                            setNav(e.target.value);
-                                            applyFilters({ nav: e.target.value });
+                                        className="h-9 shrink-0 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                        onClick={() => {
+                                            setSearch("");
+                                            setNav("All");
+                                            setType("All");
+                                            setValidity("All");
+                                            setQuickFilter("task:All");
+                                            setSdate("");
+                                            setEdate("");
+                                            applyFilters({
+                                                nav: "All",
+                                                search: "",
+                                                sdate: "",
+                                                edate: "",
+                                                type: "All",
+                                                validity: "All",
+                                                page: undefined,
+                                            });
                                         }}
                                     >
-                                        <option value="All">All</option>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Confirmed">Active</option>
-                                        <option value="Trash">Trash</option>
-                                    </select>
-                                </div>
-                                <div className="flex items-center">
-                                    <input
-                                        type="search"
-                                        className="ms-2 rounded-lg border-gray-400 py-1"
-                                        placeholder="find name, id"
-                                        value={search}
-                                        onChange={(e) => {
-                                            setSearch(e.target.value);
-                                            applyFilters({ search: e.target.value });
-                                        }}
-                                    />
-                                    <PrimaryButton
-                                        type="button"
-                                        className="ms-2"
-                                        onClick={() => window.open(printUrl, "_blank")}
-                                    >
-                                        <i className="fas fa-print"></i>
-                                    </PrimaryButton>
-                                </div>
+                                        {t("Reset")}
+                                    </button>
+                                ) : null}
                             </div>
                         }
                         content=""
                     />
 
                     <SectionInner>
-                        <Foreach data={vip?.data ?? []}>
-                            <div>
-                                <Table data={vip?.data ?? []}>
+                        <div>
+                            <Table data={vip?.data ?? []}>
                                     <thead>
                                         <tr>
                                             <th></th>
-                                            <th>Name</th>
-                                            <th>VIP</th>
-                                            <th>Wallet</th>
-                                            <th>Status</th>
-                                            <th>Date</th>
-                                            <th>Validity</th>
+                                            <th>{t("Name")}</th>
+                                            <th>{t("VIP")}</th>
+                                            <th>{t("Wallet")}</th>
+                                            <th>{t("Status")}</th>
+                                            <th>{t("Date")}</th>
+                                            <th>{t("Validity")}</th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -156,22 +262,22 @@ export default function Users() {
                                             <tr key={item.id}>
                                                 <td>{item.sl}</td>
                                                 <td>
-                                                    {item.name ?? "N/A"}
+                                                    {item.name ?? t("N/A")}
                                                     <br />
                                                     <div className="text-xs ">
-                                                        {item.user_email ?? "N/A"}
+                                                        {item.user_email ?? t("N/A")}
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    {item.package_name ?? "N/A"}
+                                                    {item.package_name ?? t("N/A")}
                                                     <div className="text-xs">
                                                         {" "}
-                                                        {item.task_type ?? "N/A"}{" "}
+                                                        {item.task_type ? t(item.task_type) : t("N/A")}{" "}
                                                     </div>
                                                 </td>
-                                                <td>{item.user_coin ?? "0"}</td>
+                                                <td>{formatAmount(item.user_coin)}</td>
                                                 <td>
-                                                    {item.status}
+                                                    {t(item.status)}
                                                     <br />
                                                     {item.deleted_at_formatted ? (
                                                         <span className="text-xs text-red-900 text-bold ">
@@ -191,23 +297,27 @@ export default function Users() {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div className="flex space-x-3">
-                                                        <NavLink
+                                                    <div className="flex items-center gap-1">
+                                                        <ActionIconLink
                                                             href={route("system.vip.edit", {
                                                                 vip: item.id,
                                                             })}
-                                                        >
-                                                            View
-                                                        </NavLink>
-                                                        <NavLink href="#">User</NavLink>
+                                                            action="view"
+                                                            title={t("View")}
+                                                        />
+                                                        <ActionIconLink
+                                                            href="#"
+                                                            action="details"
+                                                            title={t("User")}
+                                                        />
                                                     </div>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
-                                </Table>
+                            </Table>
 
-                                {pagination.pages.length ? (
+                            {pagination.pages.length ? (
                                     <div className="w-full pt-4">
                                         <div className="flex w-full items-center justify-between gap-3">
                                             <div className="text-sm text-slate-700">
@@ -221,7 +331,7 @@ export default function Users() {
                                                         className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.prev?.url)}
                                                     >
-                                                        Previous
+                                                        {t("Previous")}
                                                     </button>
                                                     {pagination.pages.map((link, index) => (
                                                         <button
@@ -244,141 +354,18 @@ export default function Users() {
                                                         className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.next?.url)}
                                                     >
-                                                        Next
+                                                        {t("Next")}
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                ) : null}
-                            </div>
-                        </Foreach>
+                            ) : null}
+                        </div>
                     </SectionInner>
                 </SectionSection>
             </Container>
 
-            <Modal
-                show={showFilterModal}
-                onClose={() => setShowFilterModal(false)}
-                maxWidth="2xl"
-            >
-                <div className="p-2">User Filter</div>
-                <hr className="my-1" />
-                <div className="p-3">
-                    <div className="md:flex justify-between items-start mb-2 border-b">
-                        <p>Taks Type</p>
-
-                        <div className="md:flex items-center gap-2">
-                            <div className="flex items-center mb-2 border rounded-md p-2">
-                                <input
-                                    type="radio"
-                                    className="w-4 h-4 rounded mr-2"
-                                    id="daily"
-                                    value="daily"
-                                    checked={type === "daily"}
-                                    onChange={(e) => setType(e.target.value)}
-                                />
-                                <p>Daily Taks</p>
-                            </div>
-                            <div className="flex items-center mb-2 border rounded-md p-2">
-                                <input
-                                    type="radio"
-                                    className="w-4 h-4 rounded mr-2"
-                                    id="monthly"
-                                    value="monthly"
-                                    checked={type === "monthly"}
-                                    onChange={(e) => setType(e.target.value)}
-                                />
-                                <p>Monthly Taks</p>
-                            </div>
-                            <div className="flex items-center mb-2 border rounded-md p-2">
-                                <input
-                                    type="radio"
-                                    className="w-4 h-4 rounded mr-2"
-                                    id="type_all"
-                                    value="All"
-                                    checked={type === "All"}
-                                    onChange={(e) => setType(e.target.value)}
-                                />
-                                <p>Both</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="md:flex items-start justify-between gap-2 mb-2 border-b">
-                        <p>Package Validity</p>
-                        <div className="md:flex items-center gap-2">
-                            <div className="flex items-center mb-2 border rounded-md p-2">
-                                <input
-                                    type="radio"
-                                    className="w-4 h-4 rounded mr-2"
-                                    id="valid"
-                                    value="valid"
-                                    checked={validity === "valid"}
-                                    onChange={(e) => setValidity(e.target.value)}
-                                />
-                                <p>Only Valid</p>
-                            </div>
-                            <div className="flex items-center mb-2 border rounded-md p-2">
-                                <input
-                                    type="radio"
-                                    className="w-4 h-4 rounded mr-2"
-                                    id="invalid"
-                                    value="invalid"
-                                    checked={validity === "invalid"}
-                                    onChange={(e) => setValidity(e.target.value)}
-                                />
-                                <p>Only Invalid</p>
-                            </div>
-                            <div className="flex items-center mb-2 border rounded-md p-2">
-                                <input
-                                    type="radio"
-                                    className="w-4 h-4 rounded mr-2"
-                                    id="validity_all"
-                                    value="All"
-                                    checked={validity === "All"}
-                                    onChange={(e) => setValidity(e.target.value)}
-                                />
-                                <p>Both</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="md:flex items-start justify-between gap-2">
-                        <p>Between Date</p>
-                        <div className="flex text-xs gap-2">
-                            <TextInput
-                                type="date"
-                                className="py-1"
-                                value={sdate}
-                                onChange={(e) => setSdate(e.target.value)}
-                            />
-                            <TextInput
-                                type="date"
-                                className="py-1"
-                                value={edate}
-                                onChange={(e) => setEdate(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                </div>
-                <hr className="my-1" />
-                <div className="p-3 flex gap-2">
-                    <SecondaryButton
-                        type="button"
-                        onClick={() => setShowFilterModal(false)}
-                    >
-                        Close
-                    </SecondaryButton>
-                    <PrimaryButton
-                        type="button"
-                        onClick={() => {
-                            setShowFilterModal(false);
-                            applyFilters();
-                        }}
-                    >
-                        Apply
-                    </PrimaryButton>
-                </div>
-            </Modal>
         </AppLayout>
     );
 }

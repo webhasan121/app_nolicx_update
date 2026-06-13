@@ -9,13 +9,12 @@ use App\Models\Products_has_comments;
 use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $nav = $request->query('nav', 'Pending');
+        $nav = $request->query('nav', 'All');
         $find = trim((string) $request->query('find', ''));
 
         $query = Order::with('cartOrders')
@@ -24,6 +23,10 @@ class OrderController extends Controller
                 // 'user_type' => 'user',
             ])
             ->latest('id');
+
+        if ($nav !== 'All') {
+            $query->where('status', $nav);
+        }
 
         if ($find !== '') {
             $query->where(function ($subQuery) use ($find) {
@@ -79,6 +82,7 @@ class OrderController extends Controller
             ],
             'nav' => $nav,
             'printUrl' => route('user.orders.print', [
+                'nav' => $nav,
                 'find' => $find,
             ]),
             // 'roleNames' => auth()->user()->getRoleNames(),
@@ -88,13 +92,17 @@ class OrderController extends Controller
     public function print(Request $request)
     {
         $find = trim((string) $request->query('find', ''));
+        $nav = $request->query('nav', 'All');
 
         $query = Order::with('cartOrders')
             ->where([
                 'user_id' => $request->user()->id,
-                'user_type' => 'user',
             ])
             ->latest('id');
+
+        if ($nav !== 'All') {
+            $query->where('status', $nav);
+        }
 
         if ($find !== '') {
             $query->where(function ($subQuery) use ($find) {
@@ -132,6 +140,7 @@ class OrderController extends Controller
 
         return Inertia::render('User/Orders/Print', [
             'filters' => [
+                'nav' => $nav,
                 'find' => $find,
             ],
             'orders' => $orders,
@@ -201,6 +210,11 @@ class OrderController extends Controller
                             'id' => $review->id,
                             'rating' => (int) $review->rating,
                             'comments' => $review->comments,
+                            'image' => $review->image,
+                            'images' => collect($review->images ?: ($review->image ? [$review->image] : []))
+                                ->filter()
+                                ->values()
+                                ->all(),
                         ] : null,
                     ];
                 })->values(),
@@ -224,6 +238,8 @@ class OrderController extends Controller
             'reviews.*.product_id' => ['required', 'integer'],
             'reviews.*.rating' => ['required', 'integer', 'min:1', 'max:5'],
             'reviews.*.comments' => ['required', 'string', 'max:500'],
+            'reviews.*.images' => ['nullable', 'array', 'max:3'],
+            'reviews.*.images.*' => ['file', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'],
         ]);
 
         $cartOrders = $order->cartOrders->keyBy('id');
@@ -240,6 +256,12 @@ class OrderController extends Controller
                 ->where('order_id', $order->id)
                 ->where('cart_order_id', $cartOrder->id)
                 ->first() ?? new Products_has_comments();
+            $images = $this->storeReviewImages($reviewData['images'] ?? []);
+            $existingImages = collect($review->images ?: ($review->image ? [$review->image] : []))
+                ->filter()
+                ->values()
+                ->all();
+            $reviewImages = count($images) ? $images : $existingImages;
 
             $review->forceFill([
                 'product_id' => $cartOrder->product_id,
@@ -250,6 +272,8 @@ class OrderController extends Controller
                 'rating' => (int) $reviewData['rating'],
                 'comments' => trim($reviewData['comments']),
                 'review' => trim($reviewData['comments']),
+                'image' => $reviewImages[0] ?? null,
+                'images' => $reviewImages,
                 'approved' => true,
             ])->save();
         }
@@ -262,5 +286,14 @@ class OrderController extends Controller
         }
 
         return back()->with('success', 'Order successfully marked as received.');
+    }
+
+    private function storeReviewImages(array $images): array
+    {
+        return collect($images)
+            ->filter()
+            ->map(fn($image) => $image->store('product-comments', 'public'))
+            ->values()
+            ->all();
     }
 }

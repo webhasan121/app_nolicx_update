@@ -1,8 +1,11 @@
 import Container from "../../components/dashboard/Container";
 import VendorOrdersIndex from "../../livewire/vendor/orders/Index";
 import Overview from "./overview/Overview";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Vendor({ vendorOverview, vendorOrdersIndex, activeNav }) {
+    const { t } = useTranslation();
+
     return (
         <>
             <Container>
@@ -21,7 +24,7 @@ export default function Vendor({ vendorOverview, vendorOrdersIndex, activeNav })
             </Container>
 
             <Container>
-                <p className="text-xs mb-2">Recent Orders</p>
+                <p className="text-xs mb-2">{t("Recent Orders")}</p>
             </Container>
 
             <VendorOrdersIndex

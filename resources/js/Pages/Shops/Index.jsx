@@ -1,7 +1,6 @@
 import { router, usePage } from "@inertiajs/react";
 import { useEffect, useRef, useState } from "react";
 import ApplicationName from "@/components/ApplicationName";
-import Modal from "@/components/Modal";
 import NavLink from "@/components/NavLink";
 import PrimaryButton from "@/components/PrimaryButton";
 import SecondaryButton from "@/components/SecondaryButton";
@@ -15,17 +14,23 @@ export default function Index({
     slides = [],
     shops,
     filters = {},
+    userLocation = "",
     showFiltered = false,
 }) {
     const { t } = useTranslation();
     const { auth } = usePage().props;
     const [q, setQ] = useState(filters.q ?? "");
     const [location, setLocation] = useState(filters.location ?? "");
-    const [showModal, setShowModal] = useState(false);
     const [shopItems, setShopItems] = useState(shops?.data ?? []);
     const [pagination, setPagination] = useState(shops ?? {});
     const [loadingMore, setLoadingMore] = useState(false);
     const loadingMoreRef = useRef(false);
+    const fallbackUserLocation =
+        auth?.user?.city || auth?.user?.state || auth?.user?.country || "";
+    const userLocationName = userLocation || fallbackUserLocation;
+    const hasMoreShops =
+        Boolean(pagination?.next_page_url) ||
+        ((pagination?.current_page ?? 1) < (pagination?.last_page ?? 1));
 
     useEffect(() => {
         setQ(filters.q ?? "");
@@ -43,34 +48,52 @@ export default function Index({
 
     useEffect(() => {
         const timeout = setTimeout(() => {
-            if (
-                q === (filters.q ?? "") &&
-                location === (filters.location ?? "")
-            ) {
+            const locationChanged = location !== (filters.location ?? "");
+            const nextState = locationChanged ? "" : (filters.state ?? "");
+
+            if (q === (filters.q ?? "") && !locationChanged) {
                 return;
             }
 
             router.get(
                 route("shops.reseller"),
-                { q, location, state: filters.state ?? "" },
+                { q, location, state: nextState },
                 {
                     preserveState: true,
                     preserveScroll: true,
                     replace: true,
                 },
             );
-        }, 400);
+        }, 900);
 
         return () => clearTimeout(timeout);
     }, [q, location, filters.q, filters.location, filters.state]);
 
     const getShopByMyLocation = () => {
-        const city = auth?.user?.city ?? "";
-
         router.get(
             route("shops.reseller"),
-            { location: city, state: "me", q: "" },
+            { location: userLocationName, state: "me", q: "" },
             { preserveState: true, preserveScroll: true },
+        );
+    };
+
+    const handleSearchChange = (event) => {
+        setQ(event.target.value);
+
+        if (location !== "") {
+            setLocation("");
+        }
+    };
+
+    const submitSearch = () => {
+        router.get(
+            route("shops.reseller"),
+            { q, location: "", state: "" },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            },
         );
     };
 
@@ -83,14 +106,23 @@ export default function Index({
     };
 
     const loadMore = () => {
-        if (!pagination?.next_page_url || loadingMore) {
+        if (!hasMoreShops || loadingMore) {
             return;
         }
+
+        const nextPageUrl =
+            pagination?.next_page_url ??
+            route("shops.reseller", {
+                q,
+                location,
+                state: filters.state ?? "",
+                page: (pagination?.current_page ?? 1) + 1,
+            });
 
         loadingMoreRef.current = true;
         setLoadingMore(true);
 
-        router.visit(pagination.next_page_url, {
+        router.visit(nextPageUrl, {
             preserveScroll: true,
             preserveState: true,
             only: ["shops", "filters", "showFiltered"],
@@ -126,7 +158,7 @@ export default function Index({
             </div>
 
             <Container>
-                <div className="items-center justify-between space-y-2 md:flex">
+                <div className="items-center gap-3 space-y-2 md:flex md:space-y-0">
                     <div className="flex items-center justify-start py-3">
                         <NavLink href="/">
                             <i className="fas fa-home pe-2"></i>
@@ -138,34 +170,40 @@ export default function Index({
                         </NavLink>
                     </div>
 
-                    <div className="flex items-center">
+                    <div className="flex w-full flex-col gap-2 md:ms-auto md:w-auto md:flex-row md:items-center md:justify-end">
+                        <SecondaryButton
+                            type="button"
+                            onClick={getAllShops}
+                            className="flex min-h-9 items-center justify-center whitespace-nowrap px-4 py-2 text-xs md:w-auto"
+                        >
+                            {t("All Shops")}
+                        </SecondaryButton>
+
+                        {auth?.user && (
+                            <PrimaryButton
+                                type="button"
+                                onClick={getShopByMyLocation}
+                                className="flex min-h-9 items-center justify-center whitespace-nowrap bg-orange-500 px-4 py-2 text-xs text-white hover:bg-orange-600 md:w-auto"
+                            >
+                                {t("My Location")} ({userLocationName || "ANY"})
+                                <i className="px-2 fas fa-location"></i>
+                            </PrimaryButton>
+                        )}
+
                         <input
                             type="search"
+                            id="find_shop"
                             value={q}
-                            onChange={(e) => setQ(e.target.value)}
-                            className="py-1 rounded-md"
-                            placeholder={t("search shops by name")}
+                            onChange={handleSearchChange}
+                            onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                    event.preventDefault();
+                                    submitSearch();
+                                }
+                            }}
+                            className="min-h-9 w-full rounded-md border border-gray-300 px-3 py-1 md:w-80"
+                            placeholder={t("search shop by state, city or town")}
                         />
-                        <div>
-                            {auth?.user ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(true)}
-                                    className="px-3 py-2 text-xs bg-white border rounded ms-1"
-                                >
-                                    {location || auth.user.city || "ANY"}{" "}
-                                    <i className="ps-2 fas fa-chevron-down"></i>
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(true)}
-                                    className="px-2"
-                                >
-                                    <i className="fas fa-location"></i>
-                                </button>
-                            )}
-                        </div>
                     </div>
                 </div>
 
@@ -174,16 +212,8 @@ export default function Index({
                 )}
 
                 <div>
-                    <p>{t("Showing")}{shopItems.length}{t("of")}{pagination?.total ?? 0}{t("shops")}</p>
-
                     <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fit, 300px)",
-                            justifyContent: "start",
-                            alignItems: "start",
-                            gridGap: "10px",
-                        }}
+                        className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                     >
                         {shopItems.length > 0 ? (
                             shopItems.map((shop) => (
@@ -194,53 +224,20 @@ export default function Index({
                         )}
                     </div>
 
-                    {pagination?.next_page_url && (
-                        <div className="py-6 text-center">
+                    {hasMoreShops && shopItems.length >= 20 && (
+                        <div className="flex justify-center py-6">
                             <PrimaryButton
                                 type="button"
                                 onClick={loadMore}
                                 disabled={loadingMore}
+                                className="px-8 py-3"
                             >
-                                {loadingMore ? "Loading..." : "Load More"}
+                                {loadingMore ? t("Loading...") : t("Load More")}
                             </PrimaryButton>
                         </div>
                     )}
                 </div>
 
-                <Modal show={showModal} onClose={() => setShowModal(false)}>
-                    <div className="p-3">
-                        <p className="text-xs">{t("Shop will be displayed based on you expectation. From where you want to get the shop.")}</p>
-
-                        <br />
-
-                        <div className="space-y-3 text-center">
-                            {auth?.user && (
-                                <PrimaryButton
-                                    onClick={getShopByMyLocation}
-                                    className="flex items-center justify-center w-full p-3 text-white bg-indigo-300 rounded"
-                                >{t("My Location (")}{auth.user.city})
-                                    <i className="px-2 fas fa-location"></i>
-                                </PrimaryButton>
-                            )}
-
-                            <SecondaryButton
-                                onClick={getAllShops}
-                                className="flex justify-center w-full p-3 items-centere"
-                            >{t("All Shops")}</SecondaryButton>
-
-                            <div className="p-2 bg-gray-200 rounded">
-                                <input
-                                    type="search"
-                                    id="find_shop"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    className="w-full py-1 mb-1 rounded"
-                                    placeholder={t("search shop by state, city or town")}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </Modal>
             </Container>
         </UserLayout>
     );

@@ -4,6 +4,7 @@ import PrintLayout from "../../../../Layouts/Print";
 import ApplicationName from "../../../../components/ApplicationName";
 import Container from "../../../../components/dashboard/Container";
 import Table from "../../../../components/dashboard/table/Table";
+import { formatAmount } from "../../../../utils/formatAmount";
 
 export default function PrintSummery() {
     const { cod = [], filters = {}, summary = {} } = usePage().props;
@@ -73,11 +74,11 @@ export default function PrintSummery() {
                                     <td>{item.id}</td>
                                     <td>{item.order_id}</td>
                                     <td>{item.rider_name}</td>
-                                    <td>{item.amount}</td>
-                                    <td>{item.rider_amount}</td>
-                                    <td>{item.total_amount}</td>
-                                    <td>{item.system_comission}</td>
-                                    <td>{item.comission}</td>
+                                    <td>{formatAmount(item.amount)}</td>
+                                    <td>{formatAmount(item.rider_amount)}</td>
+                                    <td>{formatAmount(item.total_amount)}</td>
+                                    <td>{formatAmount(item.system_comission)}</td>
+                                    <td>{formatAmount(item.comission)}</td>
                                     <td>{item.status}</td>
                                     <td>{item.created_at_formatted}</td>
                                 </tr>

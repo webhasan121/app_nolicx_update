@@ -2,10 +2,12 @@ import { usePage } from "@inertiajs/react";
 import { useState } from "react";
 import NavLink from "../NavLink";
 import UserDropdown from "./UserDropdown";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function DesktopNav() {
     const { auth } = usePage().props;
     const [open, setOpen] = useState(false);
+    const { t } = useTranslation();
 
     return (
         <div className="text-center bg-white">
@@ -32,7 +34,7 @@ export default function DesktopNav() {
                         <input
                             type="search"
                             name="q"
-                            placeholder="Search Product..."
+                            placeholder={t("Search Product By Title or Tags")}
                             className="w-full border rounded-md"
                         />
                     </form>
@@ -57,7 +59,7 @@ export default function DesktopNav() {
                             href={route("login")}
                             className="border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
                         >
-                            Login
+                            {t("Login")}
                         </NavLink>
                     )}
                 </div>

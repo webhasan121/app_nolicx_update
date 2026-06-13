@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../Layouts/App";
 import Container from "../../../components/dashboard/Container";
 import PageHeader from "../../../components/dashboard/PageHeader";
-import Foreach from "../../../components/dashboard/Foreach";
 import Div from "../../../components/dashboard/overview/Div";
 import OverviewSection from "../../../components/dashboard/overview/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
@@ -11,13 +10,14 @@ import SectionInner from "../../../components/dashboard/section/Inner";
 import SectionSection from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
 import Dropdown from "../../../components/Dropdown";
-import Hr from "../../../components/Hr";
-import Modal from "../../../components/Modal";
-import NavLink from "../../../components/NavLink";
 import PrimaryButton from "../../../components/PrimaryButton";
 import SecondaryButton from "../../../components/SecondaryButton";
 import TextInput from "../../../components/TextInput";
+import NavLink from "../../../components/NavLink";
 import useTranslation from "../../../hooks/useTranslation";
+import { todayInputDate } from "../../../utils/dateInput";
+import { ActionIconLink } from "../../../components/ActionIcon";
+import { formatAmount } from "../../../utils/formatAmount";
 
 const navs = [
     "All",
@@ -58,33 +58,35 @@ function statusClass(status) {
 
 export default function Index({ filters = {}, summary = {}, list = {}, activeNav, printUrl }) {
     const { t } = useTranslation();
-    const [filterOpen, setFilterOpen] = useState(false);
     const rows = list?.data ?? [];
     const isReseller = activeNav === "reseller";
     const [search, setSearch] = useState(filters.find ?? "");
-    const [modalDelivery, setModalDelivery] = useState(filters.delivery ?? "all");
-    const [modalCreate, setModalCreate] = useState(filters.create ?? "all");
-    const [modalStartDate, setModalStartDate] = useState(filters.start_date ?? "");
-    const [modalEndDate, setModalEndDate] = useState(filters.end_date ?? "");
+    const today = todayInputDate();
 
     const updateFilters = (updates, resetPage = true) => {
         router.get(route("vendor.orders.index"), buildQuery(filters, { ...updates, ...(resetPage ? { page: 1 } : {}) }), {
             preserveState: true,
             preserveScroll: true,
             replace: true,
+            only: ["filters", "summary", "list", "printUrl"],
+        });
+    };
+
+    const updateDateFilters = (updates) => {
+        const nextStartDate = updates.start_date ?? filters.start_date ?? "";
+        const nextEndDate = updates.end_date ?? filters.end_date ?? "";
+        const create = nextStartDate && nextEndDate ? "between" : nextStartDate ? "day" : "all";
+
+        updateFilters({
+            ...updates,
+            create,
+            end_date: nextStartDate ? nextEndDate : "",
         });
     };
 
     useEffect(() => {
         setSearch(filters.find ?? "");
     }, [filters.find]);
-
-    useEffect(() => {
-        setModalDelivery(filters.delivery ?? "all");
-        setModalCreate(filters.create ?? "all");
-        setModalStartDate(filters.start_date ?? "");
-        setModalEndDate(filters.end_date ?? "");
-    }, [filters.delivery, filters.create, filters.start_date, filters.end_date]);
 
     useEffect(() => {
         const trimmedSearch = search.trim();
@@ -121,6 +123,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
             preserveState: true,
             preserveScroll: true,
             replace: true,
+            only: ["filters", "summary", "list", "printUrl"],
         });
     };
 
@@ -138,30 +141,14 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
         list?.total > 0
             ? `Showing ${list?.from ?? 0}-${list?.to ?? 0} of ${list?.total ?? 0} orders`
             : "No orders found";
-
-    const applyModalFilters = () => {
-        updateFilters({
-            delivery: modalDelivery,
-            create: modalCreate,
-            start_date: modalStartDate,
-            end_date: modalEndDate,
-        });
-        setFilterOpen(false);
-    };
-
-    const resetModalFilters = () => {
-        setModalDelivery("all");
-        setModalCreate("all");
-        setModalStartDate("");
-        setModalEndDate("");
-        updateFilters({
-            delivery: "all",
-            create: "all",
-            start_date: "",
-            end_date: "",
-        });
-        setFilterOpen(false);
-    };
+    const selectedNav = filters.nav ?? "Pending";
+    const hasActiveFilters = Boolean(
+        search.trim() ||
+            selectedNav !== "Pending" ||
+            (filters.delivery ?? "all") !== "all" ||
+            (filters.create ?? "all") !== "all" ||
+            (filters.area ?? "all") !== "all"
+    );
 
     return (
         <AppLayout
@@ -191,10 +178,9 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                         <SectionHeader
                             title={
                                 <div className="flex items-center justify-between gap-3">
-                                    <div className="flex justify-start items-center space-x-2">
-                                        <SecondaryButton type="button" onClick={() => setFilterOpen(true)}>
-                                            <i className="fas fa-filter pr-2"></i>{t("Filter")}</SecondaryButton>
+                                    <div className="flex flex-wrap items-center justify-start gap-2">
                                         <Dropdown
+                                            align="left"
                                             trigger={
                                                 <SecondaryButton className="inline-flex items-center ">{t("Delivery")}<i className="fas fa-angle-down ps-2"></i>
                                                 </SecondaryButton>
@@ -219,19 +205,38 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                 </SecondaryButton>
                                             }
                                         >
-                                            <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                            <div className="flex items-center p-2 mb-2 text-sm border rounded-md">
                                                 <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "all"} onChange={() => updateFilters({ area: "all" })} />
                                                 <label className="p-0 m-0">{t("Both")}</label>
                                             </div>
-                                            <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                            <div className="flex items-center p-2 mb-2 text-sm border rounded-md">
                                                 <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Dhaka"} onChange={() => updateFilters({ area: "Dhaka" })} />
                                                 <label className="p-0 m-0">{t("Inside Dhaka")}</label>
                                             </div>
-                                            <div className="flex items-center mb-2 rounded-md border p-2 text-sm">
+                                            <div className="flex items-center p-2 mb-2 text-sm border rounded-md">
                                                 <input className="w-5 h-5 p-0 m-0 mr-3" type="radio" checked={filters.area === "Other"} onChange={() => updateFilters({ area: "Other" })} />
                                                 <label className="p-0 m-0">{t("Outside of Dhaka")}</label>
                                             </div>
                                         </Dropdown>
+
+                                        <label className="sr-only" htmlFor="order_start_date">First Date</label>
+                                        <TextInput
+                                            id="order_start_date"
+                                            type="date"
+                                            value={filters.start_date || today}
+                                            onChange={(e) => updateDateFilters({ start_date: e.target.value })}
+                                            className="min-w-[168px] py-1"
+                                            title="First Date"
+                                        />
+                                        <label className="sr-only" htmlFor="order_end_date">Last Date</label>
+                                        <TextInput
+                                            id="order_end_date"
+                                            type="date"
+                                            value={filters.end_date ?? ""}
+                                            onChange={(e) => updateDateFilters({ end_date: e.target.value })}
+                                            className="min-w-[168px] py-1"
+                                            title="Last Date"
+                                        />
                                     </div>
 
                                     <div className="flex flex-wrap items-center justify-end gap-2">
@@ -253,6 +258,27 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                         <PrimaryButton type="button" onClick={() => window.open(printUrl, "_blank")}>
                                             <i className="fas fa-print"></i>
                                         </PrimaryButton>
+                                        {hasActiveFilters ? (
+                                            <button
+                                                type="button"
+                                                className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                                onClick={() => {
+                                                    setSearch("");
+                                                    updateFilters({
+                                                        nav: "All",
+                                                        delivery: "all",
+                                                        create: "all",
+                                                        start_date: "",
+                                                        end_date: "",
+                                                        area: "all",
+                                                        find: "",
+                                                        page: 1,
+                                                    });
+                                                }}
+                                            >
+                                                {t("Reset")}
+                                            </button>
+                                        ) : null}
                                     </div>
                                 </div>
                             }
@@ -279,17 +305,18 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                         />
 
                         <SectionInner>
-                            <Foreach data={rows}>
-                                <Table data={rows}>
-                                    <thead>
-                                        <tr>
-                                            <th colSpan="3"> {rows.length}{t("Products")}</th>
-                                            <th>{list.sum_total ?? 0}{t("TK")}</th>
-                                        </tr>
-                                    </thead>
-                                </Table>
+                            {hasActiveFilters ? (
+                            <Table data={rows}>
+                                <thead>
+                                    <tr>
+                                        <th colSpan="3"> {rows.length}{t("Products")}</th>
+                                        <th>{list.sum_total ?? 0}{t("TK")}</th>
+                                    </tr>
+                                </thead>
+                            </Table>
+                            ) : null}
 
-                                <Table data={rows}>
+                            <Table data={rows}>
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -309,15 +336,17 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                             <tr key={item.id}>
                                                 <td>{(list?.from ?? 1) + index}</td>
                                                 <td>
-                                                    <NavLink href={route("vendor.orders.view", { order: item.id })}>{t("view")}</NavLink>
-                                                    <NavLink href={route("vendor.orders.cprint", { order: item.id })}>{t("Print")}</NavLink>
+                                                    <div className="flex items-center gap-1">
+                                                        <ActionIconLink href={route("vendor.orders.view", { order: item.id })} action="view" title={t("view")} />
+                                                        <ActionIconLink href={route("vendor.orders.cprint", { order: item.id })} action="print" title={t("Print")} />
+                                                    </div>
                                                 </td>
                                                 <td>{item.id ?? "N/A"}</td>
                                                 <td>{item.cart_orders_count ?? "N/A"} / {item.quantity ?? "N/A"}</td>
                                                 <td>{item.total ?? "N/A"} <br /> <span className="text-xs">+ {item.shipping}</span></td>
                                                 <td><span className={statusClass(item.status)}>{item.status ?? "Unknown"}</span></td>
                                                 <td>
-                                                    <div className="text-nowarp text-xs">
+                                                    <div className="text-xs text-nowarp">
                                                         <div>{item.created_at_human}</div>
                                                         <div className="text-xs">{item.created_at_formatted}</div>
                                                     </div>
@@ -336,24 +365,24 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                         {item.number ?? "N/A"}
                                                     </span>
                                                 </td>
-                                                <th>{item.comission}</th>
+                                                <th>{formatAmount(item.comission)}</th>
                                             </tr>
                                         ))}
                                     </tbody>
-                                </Table>
+                            </Table>
 
-                                {pagination.pages.length ? (
+                            {pagination.pages.length ? (
                                     <div className="w-full pt-4">
-                                        <div className="flex w-full items-center justify-between gap-3">
+                                        <div className="flex items-center justify-between w-full gap-3">
                                             <div className="text-sm text-slate-700">
                                                 {resultSummary}
                                             </div>
                                             <div className="flex items-center md:justify-end">
-                                                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                                <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                                     <button
                                                         type="button"
                                                         disabled={!pagination.prev?.url}
-                                                        className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                        className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.prev?.url)}
                                                     >{t("Previous")}</button>
                                                     {pagination.pages.map((link, idx) => (
@@ -374,69 +403,18 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                     <button
                                                         type="button"
                                                         disabled={!pagination.next?.url}
-                                                        className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                        className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                         onClick={() => goToPage(pagination.next?.url)}
                                                     >{t("Next")}</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                ) : null}
-                            </Foreach>
+                            ) : null}
                         </SectionInner>
                     </SectionSection>
                 </Container>
 
-            <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
-                <div className="p-2">
-                    <div>{t("Filter")}</div>
-                    <Hr />
-                    <div className="md:flex justify-between">
-                        <div>
-                            <div>
-                                <div>{t("Delevery Type")}</div>
-                                <div className="px-2">
-                                    {[['all', 'Not Defined'], ['cash', 'Home Delivery'], ['courier', 'Courier Delivery'], ['hand', 'Hand-to-Hand']].map(([value, label]) => (
-                                        <div key={value}>
-                                            <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={modalDelivery === value} onChange={() => setModalDelivery(value)} /> {label}
-                                            </div>
-                                            <hr />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-2 w-1/2">
-                            <div className=" border rounded-md">
-                                <div className=" p-2 ">
-                                    {[['all', 'All Time'], ['day', 'From First Date'], ['between', 'Between in Range']].map(([value, label]) => (
-                                        <div key={value}>
-                                            <div className="flex items-center w-full p-2 text-sm">
-                                                <input type="radio" style={{ width: 20, height: 20 }} className="mr-2" checked={modalCreate === value} onChange={() => setModalCreate(value)} />{label}
-                                            </div>
-                                            <hr />
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="space-y-2 p-2 ">
-                                    <div>{t("First Date")}<input className="rounded-md" type="date" value={modalStartDate} onChange={(e) => setModalStartDate(e.target.value)} />
-                                    </div>
-                                    <div>{t("Last Date")}<input className="rounded-md" type="date" value={modalEndDate} onChange={(e) => setModalEndDate(e.target.value)} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-end gap-2 mt-4 md:mt-0">
-                            <PrimaryButton type="button" onClick={resetModalFilters}>{t("Reset")}</PrimaryButton>
-                            <PrimaryButton type="button" onClick={applyModalFilters}>{t("Apply")}</PrimaryButton>
-                        </div>
-                    </div>
-                </div>
-            </Modal>
         </AppLayout>
     );
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Branch;
+use App\Models\country;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Illuminate\Support\Str;
@@ -77,7 +78,7 @@ class HandleInertiaRequests extends Middleware
 
                 return [
                     'user' =>  $user
-                        ? $user->loadCount('myCarts')->load('roles')
+                        ? $user->loadCount(['myCarts', 'myOrderAsUser'])->load('roles')
                         : null,
                     'roles' => $user
                         ? $user->getRoleNames()->values()->all()
@@ -123,6 +124,11 @@ class HandleInertiaRequests extends Middleware
                 return [
                     'categories' => \App\Models\Category::getAll(),
                     'navigations' => \App\Models\Navigations::with('links')->get(),
+                    'countries' => cache()->remember(
+                        'frontend_countries',
+                        3600,
+                        fn() => country::select('id', 'name')->orderBy('name')->get()
+                    ),
                     'branches' => fn() => cache()->remember(
                         'branches',
                         3600,

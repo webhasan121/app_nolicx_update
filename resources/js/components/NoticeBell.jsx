@@ -1,17 +1,31 @@
-import { Link, router } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useTranslation from "../hooks/useTranslation";
+import { subscribeToNoticeChannel } from "../realtime/notices";
 
-export default function NoticeBell({ className = "" }) {
+export default function NoticeBell({ className = "", role = null }) {
     const { t } = useTranslation();
+    const { auth } = usePage().props;
     const [open, setOpen] = useState(false);
     const [notices, setNotices] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [todayCount, setTodayCount] = useState(0);
+    const wrapperRef = useRef(null);
+    const user = auth?.user;
+    const roleNames = user?.roles?.map((item) => item.name) ?? [];
+    const noticeRole = role
+        || (["system", "vendor", "reseller", "rider"].includes(user?.active_nav) ? user.active_nav : null)
+        || (roleNames.includes("system") || roleNames.includes("admin") ? "system" : null)
+        || (roleNames.find((item) => ["vendor", "reseller", "rider", "user"].includes(item)) ?? "user");
+    const noticeParams = noticeRole
+        ? { role: noticeRole, ...(noticeRole === "user" ? { personal: 1 } : {}) }
+        : {};
 
     const loadFeed = async () => {
-        const response = await axios.get(route("dashboard.notices.feed"));
+        const response = await axios.get(route("dashboard.notices.feed"), {
+            params: noticeParams,
+        });
 
         const data = response.data ?? {};
 
@@ -25,10 +39,99 @@ export default function NoticeBell({ className = "" }) {
 
         const interval = window.setInterval(() => {
             loadFeed().catch(() => {});
-        }, 5000);
+        }, 3000);
 
-        return () => window.clearInterval(interval);
-    }, []);
+        const handleFocus = () => {
+            loadFeed().catch(() => {});
+        };
+
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                loadFeed().catch(() => {});
+            }
+        };
+
+        window.addEventListener("focus", handleFocus);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            window.clearInterval(interval);
+            window.removeEventListener("focus", handleFocus);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
+    }, [noticeRole, user?.id]);
+
+    useEffect(() => {
+        return subscribeToNoticeChannel(noticeRole, user?.id, (payload) => {
+            const notice = payload?.notice;
+
+            if (!notice?.id) {
+                return;
+            }
+
+            if (noticeRole === "user" && Number(notice.target_user_id) !== Number(user?.id)) {
+                return;
+            }
+
+            if (
+                noticeRole === "rider" &&
+                Array.isArray(notice.rider_ids) &&
+                !notice.rider_ids.map(Number).includes(Number(user?.id))
+            ) {
+                return;
+            }
+
+            if (payload.action === "deleted") {
+                setNotices((items) => items.filter((item) => item.id !== notice.id));
+                return;
+            }
+
+            const linkUrl = notice.link_urls?.[noticeRole] ?? null;
+            const nextNotice = {
+                ...notice,
+                link_url: linkUrl,
+                is_read: false,
+            };
+
+            setNotices((items) => {
+                const remaining = items.filter((item) => item.id !== nextNotice.id);
+                return [nextNotice, ...remaining].slice(0, 5);
+            });
+
+            if (payload.action === "created") {
+                setUnreadCount((count) => count + 1);
+                setTodayCount((count) => count + 1);
+            }
+        });
+    }, [noticeRole, user?.id]);
+
+    useEffect(() => {
+        if (!open) {
+            return undefined;
+        }
+
+        const handlePointerDown = (event) => {
+            if (!wrapperRef.current?.contains(event.target)) {
+                setOpen(false);
+            }
+        };
+
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") {
+                setOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handlePointerDown);
+        document.addEventListener("touchstart", handlePointerDown);
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("mousedown", handlePointerDown);
+            document.removeEventListener("touchstart", handlePointerDown);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [open]);
 
     const markRead = async (notice) => {
         if (!notice.is_read) {
@@ -41,18 +144,20 @@ export default function NoticeBell({ className = "" }) {
             await axios.post(route("dashboard.notices.read", { notice: notice.id }));
         }
 
-        router.visit(notice.link_url || route("dashboard.notices.index"));
+        router.visit(notice.link_url || route("dashboard.notices.index", noticeParams));
     };
 
     const markAllRead = async () => {
         setUnreadCount(0);
         setNotices((items) => items.map((item) => ({ ...item, is_read: true })));
-        await axios.post(route("dashboard.notices.read-all"));
+        await axios.post(route("dashboard.notices.read-all"), null, {
+            params: noticeParams,
+        });
     };
 
 
     return (
-        <div className={`relative ${className}`}>
+        <div ref={wrapperRef} className={`relative ${className}`}>
             <button
                 type="button"
                 onClick={() => setOpen((value) => !value)}
@@ -88,7 +193,7 @@ export default function NoticeBell({ className = "" }) {
                                 </button>
                             ) : null}
                             <Link
-                                href={route("dashboard.notices.index")}
+                                href={route("dashboard.notices.index", noticeParams)}
                                 className="text-xs font-semibold text-orange-600"
                             >
                                 {t("View All")}

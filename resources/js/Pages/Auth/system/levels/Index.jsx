@@ -12,6 +12,7 @@ import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import useTranslation from "../../../../hooks/useTranslation";
+import { ActionIconButton } from "../../../../components/ActionIcon";
 
 const emptyForm = {
     name: "",
@@ -229,21 +230,17 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                                                     {level.rewards || "Not Available"}
                                                 </td>
                                                 <td className="px-4 py-3 space-x-2 text-center">
-                                                    <button
-                                                        type="button"
+                                                    <ActionIconButton
+                                                        action="edit"
+                                                        title={t("Edit")}
                                                         onClick={() => openEditModal(level)}
-                                                        className="inline-flex items-center justify-center p-2 text-xs font-medium text-white transition bg-indigo-600 rounded-lg hover:bg-indigo-700 w-7 h-7"
-                                                    >
-                                                        <i className="fas fa-edit"></i>
-                                                    </button>
+                                                    />
 
-                                                    <button
-                                                        type="button"
+                                                    <ActionIconButton
+                                                        action="delete"
+                                                        title={t("Delete")}
                                                         onClick={() => destroy(level.id)}
-                                                        className="inline-flex items-center justify-center p-2 text-xs font-medium text-white transition bg-red-600 rounded-lg hover:bg-red-700 w-7 h-7"
-                                                    >
-                                                        <i className="fas fa-trash-alt"></i>
-                                                    </button>
+                                                    />
                                                 </td>
                                             </tr>
                                         ))

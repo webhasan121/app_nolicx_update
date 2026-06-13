@@ -1,3 +1,4 @@
+import { useState } from "react";
 import NavLink from "../../components/NavLink";
 import Hr from "../../components/Hr";
 import Container from "../../components/dashboard/Container";
@@ -5,6 +6,11 @@ import ProductCard from "../../components/home/ProductCard";
 import UserLayout from "../../Layouts/User/App";
 
 export default function Show({ shop = {}, products = [] }) {
+    const pageSize = 21;
+    const [visibleCount, setVisibleCount] = useState(pageSize);
+    const visibleProducts = products.slice(0, visibleCount);
+    const hasMoreProducts = visibleCount < products.length;
+
     return (
         <UserLayout title={shop?.shop_name_en ?? "Shop"}>
             <div>
@@ -105,21 +111,38 @@ export default function Show({ shop = {}, products = [] }) {
 
             <Container className="my-[100]">
                 <div>
-                    <div className="w-full product_section md:w-3/4">
+                    <div className="w-full product_section">
                         <div className="py-2 text-sm">Products</div>
                         {products?.length ? (
-                            <div
-                                style={{
-                                    display: "grid",
-                                    justifyContent: "start",
-                                    gridTemplateColumns: "repeat(auto-fill, 160px)",
-                                    gridGap: "10px",
-                                }}
-                            >
-                                {products.map((product) => (
-                                    <ProductCard key={product.id} product={product} />
-                                ))}
-                            </div>
+                            <>
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                                        gridGap: "10px",
+                                    }}
+                                >
+                                    {visibleProducts.map((product) => (
+                                        <ProductCard key={product.id} product={product} />
+                                    ))}
+                                </div>
+
+                                {hasMoreProducts ? (
+                                    <div className="flex justify-center py-6">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setVisibleCount((count) =>
+                                                    Math.min(count + pageSize, products.length)
+                                                )
+                                            }
+                                            className="rounded-md bg-orange-500 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                        >
+                                            Load More
+                                        </button>
+                                    </div>
+                                ) : null}
+                            </>
                         ) : null}
                     </div>
                 </div>

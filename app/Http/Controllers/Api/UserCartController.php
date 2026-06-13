@@ -12,6 +12,7 @@ use App\Models\country;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\state;
+use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -216,6 +217,7 @@ class UserCartController extends Controller
                 ]);
 
                 ProductComissionController::dispatchProductComissionsListeners($order->id);
+                OrderNotice::orderPlaced($order, $user->id);
                 $createdOrders->push($order->fresh('cartOrders.product'));
             }
 

@@ -1,9 +1,11 @@
 import { Link, Head } from "@inertiajs/react";
 import ApplicationLogo from "../components/ApplicationLogo";
+import AutoTranslate from "../components/AutoTranslate";
 
 export default function GuestLayout({ children }) {
   return (
     <>
+      <AutoTranslate />
       <Head title={import.meta.env.VITE_APP_NAME || "nolicx"} />
 
       <div className="font-sans antialiased text-gray-900">

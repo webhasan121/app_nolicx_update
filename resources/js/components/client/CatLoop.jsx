@@ -45,11 +45,11 @@ export default function CatLoop({
 
     const itemPadding = isSidebar
         ? depth === 0
-            ? "px-4 py-1"
+            ? "px-3.5 py-1"
             : "px-0 py-0"
         : depth === 0
-            ? "px-4 py-1"
-            : "px-3 py-1";
+            ? "px-3.5 py-1"
+            : "px-2.5 py-1";
     const textClass = isSidebar
         ? depth === 0
             ? "text-[14px] font-semibold"
@@ -59,14 +59,14 @@ export default function CatLoop({
             : "text-sm font-medium";
     const wrapperClass = isSidebar
         ? depth === 0
-            ? "mb-1.5"
+            ? "mb-1"
             : "mt-1"
         : depth === 0
-            ? "mb-2"
-            : "mt-1.5";
+            ? "mb-1"
+            : "mt-1";
     const childTreeClass = isSidebar
-        ? "pt-1 pl-3 ml-4 border-l border-slate-200"
-        : "pt-0 pl-3 ml-4 border-l border-slate-200";
+        ? "pt-0.5 pl-2 ml-3 border-l border-slate-200"
+        : "pt-0 pl-2 ml-3 border-l border-slate-200";
     const linkClass = isSidebar
         ? `flex-1 no-underline hover:no-underline ${textClass} ${style}`
         : `flex-1 no-underline hover:no-underline ${textClass} ${style}`;
@@ -74,13 +74,13 @@ export default function CatLoop({
         ? `flex items-center gap-2 rounded-2xl transition ${rowClass} ${itemPadding}`
         : `flex items-center gap-2 rounded-xl border transition ${rowClass} ${itemPadding}`;
     const buttonClass = isSidebar
-        ? `${hasChildren ? "inline-flex" : "hidden"} items-center justify-center w-8 h-8 ${
+        ? `${hasChildren ? "inline-flex" : "hidden"} items-center justify-center w-6 h-6 ${
               open ? "text-slate-500" : "text-slate-500"
           } rounded-full hover:bg-slate-100`
-        : `${hasChildren ? "inline-flex" : "hidden"} items-center justify-center w-8 h-8 text-slate-500 rounded-full hover:bg-white/70`;
+        : `${hasChildren ? "inline-flex" : "hidden"} items-center justify-center w-6 h-6 text-slate-500 rounded-full hover:bg-white/70`;
     const sidebarChildLinkClass = isActive
-        ? `flex-1 rounded-2xl border border-orange-300 bg-orange-50 px-4 py-2 text-[13px] font-medium text-orange-600 no-underline hover:no-underline ${style}`
-        : `flex-1 px-4 py-2 text-[13px] font-medium text-slate-900 no-underline hover:no-underline ${style}`;
+        ? `flex-1 rounded-2xl border border-orange-300 bg-orange-50 px-3.5 py-1.5 text-[13px] font-medium text-orange-600 no-underline hover:no-underline ${style}`
+        : `flex-1 px-3.5 py-1.5 text-[13px] font-medium text-slate-900 no-underline hover:no-underline ${style}`;
     const sidebarChildRowClass =
         depth > 0
             ? "flex items-center gap-2 rounded-none border-0 bg-transparent py-0"

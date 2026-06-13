@@ -1,5 +1,6 @@
 import { useForm, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import Container from "../../../../components/dashboard/Container";
 import SectionSection from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
@@ -14,6 +15,108 @@ import TextInput from "../../../../components/TextInput";
 import UserDash from "../../../../components/user/dash/UserDash";
 import useTranslation from "../../../../hooks/useTranslation";
 
+function SearchableSelect({
+    id,
+    value,
+    options = [],
+    onChange,
+    placeholder,
+    disabled = false,
+}) {
+    const selected = options.find(
+        (item) =>
+            String(item.name ?? "").trim().toLowerCase() ===
+            String(value ?? "").trim().toLowerCase(),
+    );
+    const [query, setQuery] = useState(selected?.name ?? "");
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        setQuery(selected?.name ?? "");
+    }, [selected?.name]);
+
+    const filteredOptions = query.trim()
+        ? options.filter((item) =>
+              String(item.name ?? "")
+                  .toLowerCase()
+                  .includes(query.trim().toLowerCase()),
+          )
+        : options;
+
+    const updateQuery = (nextQuery) => {
+        setQuery(nextQuery);
+        setOpen(true);
+
+        const exactMatch = options.find(
+            (item) =>
+                String(item.name ?? "").trim().toLowerCase() ===
+                nextQuery.trim().toLowerCase(),
+        );
+
+        onChange(exactMatch?.name ?? "");
+    };
+
+    const selectOption = (item) => {
+        setQuery(item.name ?? "");
+        onChange(item.name ?? "");
+        setOpen(false);
+    };
+
+    return (
+        <div className="relative">
+            <input
+                id={id}
+                type="text"
+                value={query}
+                onChange={(e) => updateQuery(e.target.value)}
+                onFocus={() => !disabled && setOpen(true)}
+                onBlur={() => window.setTimeout(() => setOpen(false), 150)}
+                placeholder={placeholder}
+                disabled={disabled}
+                autoComplete="off"
+                className="block w-full rounded-md border-gray-300 pr-10 disabled:bg-gray-100 disabled:text-gray-500"
+            />
+            <button
+                type="button"
+                disabled={disabled}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    setOpen((current) => !current);
+                }}
+                className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-gray-500 disabled:text-gray-300"
+            >
+                <i className="fas fa-chevron-down text-xs"></i>
+            </button>
+
+            {open && !disabled ? (
+                <div className="absolute left-0 top-full z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                    {filteredOptions.length ? (
+                        filteredOptions.map((item) => (
+                            <button
+                                key={item.id ?? item.name}
+                                type="button"
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    selectOption(item);
+                                }}
+                                className={`block w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
+                                    selected?.name === item.name ? "bg-gray-100" : ""
+                                }`}
+                            >
+                                {item.name}
+                            </button>
+                        ))
+                    ) : (
+                        <div className="px-3 py-2 text-sm text-gray-500">
+                            No results found
+                        </div>
+                    )}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
 export default function UpgradeVendorCreate() {
     const { t } = useTranslation();
     const { upgrade = "vendor", defaults = {}, states = [] } = usePage().props;
@@ -26,8 +129,8 @@ export default function UpgradeVendorCreate() {
         phone: defaults.phone || "",
         email: defaults.email || "",
         country: defaults.country || "Bangladesh",
-        district: "",
-        upozila: "",
+        district: defaults.district || "",
+        upozila: defaults.upozila || "",
         village: "",
         zip: "",
         road_no: "",
@@ -39,7 +142,11 @@ export default function UpgradeVendorCreate() {
     });
 
     useEffect(() => {
-        const selectedState = states.find((item) => item.name === data.district);
+        const selectedState = states.find(
+            (item) =>
+                String(item.name ?? "").trim().toLowerCase() ===
+                String(data.district ?? "").trim().toLowerCase(),
+        );
 
         if (!selectedState) {
             setCities([]);
@@ -50,7 +157,8 @@ export default function UpgradeVendorCreate() {
             .get(route("upgrade.vendor.cities", { state: selectedState.id }))
             .then((res) => {
                 setCities(res.data || []);
-            });
+            })
+            .catch(() => setCities([]));
     }, [data.district, states]);
 
     const submit = (e) => {
@@ -239,7 +347,7 @@ export default function UpgradeVendorCreate() {
                                 <p className="my-1">{t("Shop Location")}</p>
 
                                 <div className="mt-4">
-                                    <div style={{ width: "350px" }}>
+                                    <div style={{ width: "350px" }} className="shrink-0">
                                         <InputLabel htmlFor="address">
                                             Give Full Address Of Your Shops
                                         </InputLabel>
@@ -311,8 +419,8 @@ export default function UpgradeVendorCreate() {
                                     }
                                 />
 
-                                <div className="items-center mt-4 md:flex">
-                                    <div style={{ width: "350px" }}>
+                                <div className="items-center gap-4 mt-4 md:flex">
+                                    <div style={{ width: "350px" }} className="shrink-0">
                                         <InputLabel htmlFor="country">
                                             Your Country
                                         </InputLabel>
@@ -323,22 +431,19 @@ export default function UpgradeVendorCreate() {
                                         )}
                                     </div>
 
-                                    <div className="w-full">
-                                        <select
-                                            value={data.country}
-                                            onChange={(e) =>
-                                                setData("country", e.target.value)
-                                            }
+                                    <div className="flex-1 min-w-0">
+                                        <SearchableSelect
                                             id="country"
-                                            className="block w-full mt-1 border-0 rounded ring-1"
-                                        >
-                                            <option value="Bangladesh">{t("Bangladesh")}</option>
-                                        </select>
+                                            value={data.country}
+                                            options={[{ id: "Bangladesh", name: t("Bangladesh") }]}
+                                            onChange={(value) => setData("country", value)}
+                                            placeholder={t("Your Country")}
+                                        />
                                     </div>
                                 </div>
 
-                                <div className="items-center mt-4 md:flex">
-                                    <div style={{ width: "350px" }}>
+                                <div className="items-center gap-4 mt-4 md:flex">
+                                    <div style={{ width: "350px" }} className="shrink-0">
                                         <InputLabel htmlFor="district">
                                             District
                                         </InputLabel>
@@ -349,30 +454,22 @@ export default function UpgradeVendorCreate() {
                                         )}
                                     </div>
 
-                                    <select
-                                        value={data.district}
-                                        onChange={(e) => {
-                                            setData("district", e.target.value);
-                                            setData("upozila", "");
-                                        }}
-                                        id="district"
-                                        className="w-full rounded-md"
-                                    >
-                                        <option value="">
-                                            {" "}{t("-- Select Upozila --")}</option>
-                                        {states.map((state) => (
-                                            <option
-                                                key={state.id}
-                                                value={state.name}
-                                            >
-                                                {state.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="flex-1 min-w-0">
+                                        <SearchableSelect
+                                            id="district"
+                                            value={data.district}
+                                            options={states}
+                                            onChange={(value) => {
+                                                setData("district", value);
+                                                setData("upozila", "");
+                                            }}
+                                            placeholder={t("-- Select District --")}
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="mt-4 md:flex">
-                                    <div style={{ width: "350px" }}>
+                                <div className="gap-4 mt-4 md:flex">
+                                    <div style={{ width: "350px" }} className="shrink-0">
                                         <InputLabel htmlFor="upozila">
                                             Upozila
                                         </InputLabel>
@@ -383,26 +480,15 @@ export default function UpgradeVendorCreate() {
                                         )}
                                     </div>
 
-                                    <div className="w-full">
-                                        <select
-                                            value={data.upozila}
-                                            onChange={(e) =>
-                                                setData("upozila", e.target.value)
-                                            }
+                                    <div className="flex-1 min-w-0">
+                                        <SearchableSelect
                                             id="upozila"
-                                            className="w-full rounded-md"
-                                        >
-                                            <option value="">
-                                                {" "}{t("-- Select Upozila --")}</option>
-                                            {cities.map((item) => (
-                                                <option
-                                                    key={item.id}
-                                                    value={item.name}
-                                                >
-                                                    {item.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            value={data.upozila}
+                                            options={cities}
+                                            onChange={(value) => setData("upozila", value)}
+                                            placeholder={t("-- Select Upozila --")}
+                                            disabled={!cities.length}
+                                        />
                                     </div>
                                 </div>
 

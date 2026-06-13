@@ -66,7 +66,7 @@ export default function PrintSummery({ sdate = "", edate = "", history }) {
                                             <div className="flex">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-4 py-2 mr-1 text-xs font-semibold tracking-widest text-white uppercase transition ease-in-out duration-150 bg-orange-600 border border-transparent rounded-md hover:bg-orange-500 active:bg-orange-700 focus:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                                                    className="inline-flex items-center px-4 py-2 mr-1 text-xs font-semibold tracking-widest text-white uppercase transition ease-in-out duration-150 bg-orange-500 border border-transparent rounded-md hover:bg-orange-500 active:bg-orange-700 focus:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                                                 >
                                                     <i className="fas fa-check"></i>
                                                 </button>

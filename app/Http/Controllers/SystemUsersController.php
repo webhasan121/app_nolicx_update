@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\UserHasRefs;
 use App\Models\Vip;
+use App\Models\Order;
+use App\Support\TableDateFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\View;
@@ -56,11 +58,130 @@ class SystemUsersController extends Controller
         ]);
     }
 
+    public function detailsReact($id)
+    {
+        $user = User::query()
+            ->withoutAdmin()
+            ->with([
+                'myRef',
+                'getReffOwner.owner',
+                'subscription.package',
+                'roles',
+                'permissions',
+                'currentLevel',
+                'requestsToBeVendor',
+                'requestsToBeReseller',
+                'requestsToBeRider',
+            ])
+            ->withCount(['myOrderAsUser', 'myOrdersAsReseller', 'myDeposit', 'myWithdraw'])
+            ->findOrFail($id);
+
+        $subscription = $user->subscription;
+
+        return Inertia::render('Auth/system/users/Details', [
+            'userDetails' => [
+                'id' => $user->id,
+                'name' => $user->name ?? 'N/A',
+                'email' => $user->email ?? 'N/A',
+                'phone' => $user->phone ?? 'N/A',
+                'gender' => $user->gender ?? 'N/A',
+                'dob' => $user->dob ?? 'N/A',
+                'bio' => $user->bio ?? '',
+                'coin' => $user->coin ?? 0,
+                'available_coin' => method_exists($user, 'abailCoin') ? $user->abailCoin() : ($user->coin ?? 0),
+                'currency' => $user->currency ?? 'N/A',
+                'currency_sing' => $user->currency_sing ?? 'TK',
+                'language' => $user->language ?? $user->site_language ?? 'N/A',
+                'active_nav' => $user->active_nav ?? 'N/A',
+                'is_active' => (bool) ($user->is_active ?? true),
+                'kyc_status' => $user->kyc_status ?? 'N/A',
+                'created_at_formatted' => $user->created_at?->toDayDateTimeString() ?? 'N/A',
+                'updated_at_formatted' => $user->updated_at?->diffForHumans() ?? 'N/A',
+                'email_verified_at' => $user->email_verified_at?->toDayDateTimeString() ?? 'Not verified',
+                'location' => collect([$user->line1, $user->line2, $user->city, $user->state, $user->country, $user->zip])
+                    ->filter(fn ($item) => filled($item))
+                    ->join(', ') ?: 'N/A',
+                'ref' => $user->myRef?->ref ?? 'N/A',
+                'reference' => $user->reference ?? 'N/A',
+                'reference_owner_name' => $user->getReffOwner?->owner?->name ?? 'N/A',
+                'roles' => $user->getRoleNames()->values()->all(),
+                'permissions' => $user->getPermissionNames()->values()->all(),
+                'permissions_via_role' => $user->getPermissionsViaRoles()->pluck('name')->values()->all(),
+                'level' => $user->currentLevel?->name ?? 'N/A',
+                'vip' => [
+                    'package' => $subscription?->package?->name ?? 'No active package',
+                    'status' => $subscription ? ($subscription->status ? 'Active' : 'Pending') : 'No',
+                    'task_type' => $subscription?->task_type ?? 'N/A',
+                    'valid_till' => $subscription?->valid_till ? Carbon::parse($subscription->valid_till)->toFormattedDateString() : 'N/A',
+                ],
+                'counts' => [
+                    'orders' => $user->my_order_as_user_count ?? 0,
+                    'reseller_orders' => $user->my_orders_as_reseller_count ?? 0,
+                    'deposits' => $user->my_deposit_count ?? 0,
+                    'withdraws' => $user->my_withdraw_count ?? 0,
+                    'roles' => $user->roles->count(),
+                    'permissions' => $user->permissions->count(),
+                ],
+                'shops' => [
+                    'vendor' => $user->requestsToBeVendor->map(fn ($shop) => [
+                        'id' => $shop->id,
+                        'name' => $shop->shop_name_en ?? $shop->shop_name_bn ?? 'N/A',
+                        'status' => $shop->status ?? 'N/A',
+                    ])->values()->all(),
+                    'reseller' => $user->requestsToBeReseller->map(fn ($shop) => [
+                        'id' => $shop->id,
+                        'name' => $shop->shop_name_en ?? $shop->shop_name_bn ?? 'N/A',
+                        'status' => $shop->status ?? 'N/A',
+                    ])->values()->all(),
+                    'rider' => $user->requestsToBeRider->map(fn ($item) => [
+                        'id' => $item->id,
+                        'status' => $item->status ?? 'N/A',
+                        'area_condition' => $item->area_condition ?? 'N/A',
+                    ])->values()->all(),
+                ],
+                'recent_orders' => Order::query()
+                    ->where('user_id', $user->id)
+                    ->latest('id')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn ($order) => [
+                        'id' => $order->id,
+                        'status' => $order->status ?? 'N/A',
+                        'total' => $order->total ?? 0,
+                        'created_at' => $order->created_at?->toFormattedDateString() ?? 'N/A',
+                    ])->values()->all(),
+                'recent_deposits' => $user->myDeposit()
+                    ->latest('id')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn ($deposit) => [
+                        'id' => $deposit->id,
+                        'amount' => $deposit->amount ?? 0,
+                        'method' => $deposit->paymentMethod ?? 'N/A',
+                        'confirmed' => (bool) $deposit->confirmed,
+                        'created_at' => $deposit->created_at?->toFormattedDateString() ?? 'N/A',
+                    ])->values()->all(),
+                'recent_withdraws' => $user->myWithdraw()
+                    ->latest('id')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn ($withdraw) => [
+                        'id' => $withdraw->id,
+                        'amount' => $withdraw->amount ?? 0,
+                        'status' => $withdraw->is_rejected ? 'Rejected' : ($withdraw->status ? 'Paid' : 'Pending'),
+                        'created_at' => $withdraw->created_at?->toFormattedDateString() ?? 'N/A',
+                    ])->values()->all(),
+            ],
+        ]);
+    }
+
     public function indexReact(Request $request)
     {
         $search = (string) $request->string('search');
         $sd = $request->input('sd');
         $ed = $request->input('ed');
+        $status = $request->input('status', 'All');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['status' => 'All']);
 
         $query = User::query()
             ->withoutAdmin()
@@ -84,7 +205,8 @@ class SystemUsersController extends Controller
             });
         }
 
-        $this->applyDateFilter($query, $sd, $ed);
+        $this->applyStatusFilter($query, $status);
+        $this->applyDateFilter($query, $sd, $ed, $defaultToday);
 
         $users = $query->paginate(config('app.paginate'))->withQueryString();
         $totalUsers = User::query()->withoutAdmin()->count();
@@ -95,6 +217,7 @@ class SystemUsersController extends Controller
         return Inertia::render('Auth/system/users/index', [
             'filters' => [
                 'search' => $search,
+                'status' => $status,
                 'sd' => $sd,
                 'ed' => $ed,
             ],
@@ -159,6 +282,7 @@ class SystemUsersController extends Controller
             ],
             'printUrl' => route('system.users.print-summery', [
                 'search' => $search,
+                'status' => $status,
                 'sd' => $sd,
                 'ed' => $ed,
             ]),
@@ -170,6 +294,8 @@ class SystemUsersController extends Controller
         $search = (string) $request->string('search');
         $sd = $request->input('sd');
         $ed = $request->input('ed');
+        $status = $request->input('status', 'All');
+        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['status' => 'All']);
 
         $query = User::query()
             ->withoutAdmin()
@@ -193,7 +319,8 @@ class SystemUsersController extends Controller
             });
         }
 
-        $this->applyDateFilter($query, $sd, $ed);
+        $this->applyStatusFilter($query, $status);
+        $this->applyDateFilter($query, $sd, $ed, $defaultToday);
 
         $users = $query->get()->values()->map(function ($user) {
             $subscription = $user->subscription;
@@ -240,6 +367,7 @@ class SystemUsersController extends Controller
         return Inertia::render('Auth/system/users/PrintSummery', [
             'sd' => $sd,
             'ed' => $ed,
+            'status' => $status,
             'users' => $users,
         ]);
     }
@@ -303,35 +431,20 @@ class SystemUsersController extends Controller
         return redirect()->back()->with('success', 'Permission Synced !');
     }
 
-    private function applyDateFilter($query, ?string $sd, ?string $ed): void
+    private function applyDateFilter($query, ?string $sd, ?string $ed, bool $defaultToday = false): void
     {
-        if (!empty($sd) && !empty($ed)) {
-            $start = Carbon::parse($sd)->startOfDay();
-            $end = Carbon::parse($ed)->endOfDay();
+        TableDateFilter::apply($query, $sd, $ed, $defaultToday);
+    }
 
-            if ($start->gt($end)) {
-                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
-            }
-
-            $query->whereBetween('created_at', [$start, $end]);
-
+    private function applyStatusFilter($query, string $status): void
+    {
+        if ($status === 'Active') {
+            $query->where('is_active', true);
             return;
         }
 
-        if (!empty($sd)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($sd)->startOfDay(),
-                Carbon::parse($sd)->endOfDay(),
-            ]);
-
-            return;
-        }
-
-        if (!empty($ed)) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($ed)->startOfDay(),
-                Carbon::parse($ed)->endOfDay(),
-            ]);
+        if ($status === 'Disabled') {
+            $query->where('is_active', false);
         }
     }
 }

@@ -10,6 +10,8 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
+import { todayInputDate } from "../../../../utils/dateInput";
+import { ActionIconLink } from "../../../../components/ActionIcon";
 
 export default function Index() {
     const { t } = useTranslation();
@@ -30,6 +32,7 @@ export default function Index() {
     const [find, setFind] = useState(filters.find ?? "");
     const [sd, setSd] = useState(filters.sd ?? "");
     const [ed, setEd] = useState(filters.ed ?? "");
+    const today = todayInputDate();
     const rows = products.data ?? [];
 
     const requestProducts = ({
@@ -56,6 +59,7 @@ export default function Index() {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                only: ["filters", "products", "printUrl"],
             }
         );
     };
@@ -121,6 +125,14 @@ export default function Index() {
         products?.total > 0
             ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} products`
             : "No products found";
+    const hasActiveFilters = Boolean(
+        find.trim() ||
+            sd ||
+            ed ||
+            (filters.filter ?? "Active") !== "Active" ||
+            from !== "all" ||
+            (from === "reseller" && !(filters.isIncludeResel ?? true))
+    );
 
     return (
         <AppLayout
@@ -135,7 +147,7 @@ export default function Index() {
                 </PageHeader>
             }
         >
-            <div>
+            <div className="px-4 pb-4 lg:px-6">
                 <SectionSection>
                     <SectionHeader
                         title={
@@ -202,7 +214,7 @@ export default function Index() {
                                     <TextInput
                                         type="date"
                                         className="py-1"
-                                        value={sd}
+                                        value={sd || today}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             setSd(value);
@@ -248,6 +260,29 @@ export default function Index() {
                                             requestProducts();
                                         }}
                                     />
+                                    {hasActiveFilters ? (
+                                        <button
+                                            type="button"
+                                            className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            onClick={() => {
+                                                setFrom("all");
+                                                setFind("");
+                                                setSd("");
+                                                setEd("");
+                                                requestProducts({
+                                                    nextFilter: "Active",
+                                                    nextFrom: "all",
+                                                    nextFind: "",
+                                                    nextSd: "",
+                                                    nextEd: "",
+                                                    nextIsIncludeResel: true,
+                                                    page: undefined,
+                                                });
+                                            }}
+                                        >
+                                            {t("Reset")}
+                                        </button>
+                                    ) : null}
                                     <PrimaryButton
                                         type="button"
                                         onClick={() => window.open(printUrl, "_blank")}
@@ -364,7 +399,7 @@ export default function Index() {
                                                 </td>
                                                 <td>
                                                     <div className="flex">
-                                                        <NavLink
+                                                        <ActionIconLink
                                                             href={route(
                                                                 "system.products.edit",
                                                                 {
@@ -372,7 +407,9 @@ export default function Index() {
                                                                         item.id,
                                                                 }
                                                             )}
-                                                        >{t("View")}</NavLink>
+                                                            action="view"
+                                                            title={t("View")}
+                                                        />
                                                     </div>
                                                 </td>
                                             </tr>

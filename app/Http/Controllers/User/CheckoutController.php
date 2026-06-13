@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Packages;
 use App\Models\Vip;
+use App\Support\VipReferralCommission;
 use Inertia\Inertia;
 
 class CheckoutController extends Controller
@@ -14,7 +15,7 @@ class CheckoutController extends Controller
 
     public function index($id)
     {
-        $package = Packages::with('payOption')->findOrFail($id);
+        $package = Packages::active()->with('payOption')->findOrFail($id);
         $ownerPackage = 1;
 
         return Inertia::render('User/Vip/Package/Checkout', [
@@ -51,11 +52,15 @@ class CheckoutController extends Controller
             'nid_back' => 'required|image',
         ]);
 
+        $package = Packages::active()->findOrFail($validated['package_id']);
+
         $validated['user_id'] = auth()->id();
         $validated['status'] = 0;
 
         $validated['nid_front'] = $request->file('nid_front')->store('vips', 'public');
         $validated['nid_back'] = $request->file('nid_back')->store('vips', 'public');
+
+        $validated = VipReferralCommission::purchaseData($validated, $request->user(), $package);
 
         Vip::create($validated);
 

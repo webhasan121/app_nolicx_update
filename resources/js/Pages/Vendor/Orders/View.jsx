@@ -1,7 +1,6 @@
 import { Head, router, useForm } from "@inertiajs/react";
 import { useState } from "react";
 import AppLayout from "../../../Layouts/App";
-import NavLinkBtn from "../../../components/NavLinkBtn";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Container from "../../../components/dashboard/Container";
 import Section from "../../../components/dashboard/section/Section";
@@ -15,6 +14,7 @@ import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
 import InputLabel from "../../../components/InputLabel";
 import NavLink from "../../../components/NavLink";
+import { ActionIconLink } from "../../../components/ActionIcon";
 
 const progressFlow = [
     "Pending",
@@ -340,7 +340,7 @@ export default function View({ order }) {
                                 <div className="order-info">
                                     <div>Order ID: {order?.id}</div>
                                     <div>Date: <span className="text-xs">{order?.created_at_daytime}</span></div>
-                                    <NavLinkBtn href={route("vendor.orders.cprint", { order: order?.id })}>Print</NavLinkBtn>
+                                    <ActionIconLink href={route("vendor.orders.cprint", { order: order?.id })} action="print" title="Print" />
                                 </div>
                                 <div className="order-total text-end">
                                     <table className="table">
@@ -455,51 +455,55 @@ export default function View({ order }) {
                     </Table>
                 </Section>
 
-                {Number(order?.has_rider_count ?? 0) > 0 ? (
-                    <Section>
-                        <SectionHeader
-                            title={
-                                <div className="flex items-center justify-between">
-                                    RIDER
-                                    <PrimaryButton type="button" onClick={() => setRiderOpen(true)}>
-                                        <i className="pr-2 fas fa-plus"></i> Rider
-                                    </PrimaryButton>
-                                </div>
-                            }
-                            content="view the rider belongs to this order."
-                        />
+                <Section>
+                    <SectionHeader
+                        title={
+                            <div className="flex items-center justify-between">
+                                RIDER
+                                <PrimaryButton type="button" onClick={() => setRiderOpen(true)}>
+                                    <i className="pr-2 fas fa-plus"></i> Rider
+                                </PrimaryButton>
+                            </div>
+                        }
+                        content="view the rider belongs to this order."
+                    />
+                    {Number(order?.has_rider_count ?? 0) > 0 ? (
                         <Table data={order?.riders ?? []}>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Shipping</th>
-                                    <th>Area</th>
-                                    <th>Status</th>
-                                    <th>A/C</th>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Shipping</th>
+                                <th>Area</th>
+                                <th>Status</th>
+                                <th>A/C</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {(order?.riders ?? []).map((item, index) => (
+                                <tr key={item.id}>
+                                    <td>{index + 1}</td>
+                                    <td>{item.name}</td>
+                                    <td>{item.phone}</td>
+                                    <td>{item.current_address}</td>
+                                    <td>{item.targeted_area}</td>
+                                    <td>{item.status}</td>
+                                    <td>
+                                        <button type="button" onClick={() => removeRider(item.id)}>
+                                            <i className="fas fa-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {(order?.riders ?? []).map((item, index) => (
-                                    <tr key={item.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{item.name}</td>
-                                        <td>{item.phone}</td>
-                                        <td>{item.current_address}</td>
-                                        <td>{item.targeted_area}</td>
-                                        <td>{item.status}</td>
-                                        <td>
-                                            <button type="button" onClick={() => removeRider(item.id)}>
-                                                <i className="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
+                            ))}
+                        </tbody>
                         </Table>
-                    </Section>
-                ) : null}
+                    ) : (
+                        <div className="px-5 py-4 text-sm text-gray-500">
+                            No rider assigned.
+                        </div>
+                    )}
+                </Section>
             </Container>
 
             <Modal show={comissionOpen} onClose={() => setComissionOpen(false)}>
@@ -623,9 +627,13 @@ export default function View({ order }) {
                                 </option>
                             ))}
                         </select>
+                        {form.errors.rider_id ? (
+                            <p className="mt-1 text-sm text-red-500">{form.errors.rider_id}</p>
+                        ) : null}
                     </div>
                     <PrimaryButton
                         type="button"
+                        disabled={(order?.rider_candidates ?? []).length < 1}
                         onClick={() => {
                             form.post(route("vendor.orders.rider.assign", { order: order.id }), {
                                 preserveScroll: true,

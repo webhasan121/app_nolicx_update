@@ -3,13 +3,13 @@ import Container from "../../components/dashboard/Container";
 import NavLink from "../../components/NavLink";
 import UserDash from "../../components/user/dash/UserDash";
 import { useEffect, useState } from "react";
-import DashboardForeach from "../../components/DashboardForeach";
-import Table from "../../components/dashboard/table/Table";
 import InputLabel from "../../components/InputLabel";
 import InputField from "../../components/InputField";
 import Hr from "../../components/Hr";
 import PrimaryButton from "../../components/PrimaryButton";
 import InputFile from "../../components/InputFile";
+import SearchableSelect from "../../components/SearchableSelect";
+import CartSummaryPanel from "../../components/user/CartSummaryPanel";
 export default function CartCheckout({ carts = [], states = [] }) {
     const { data, setData, post, errors, processing } = useForm({
         phone: "",
@@ -28,11 +28,14 @@ export default function CartCheckout({ carts = [], states = [] }) {
 
 
     useEffect(() => {
-        if (data.district) {
-            axios.get(`/user/cities/${data.district}`).then((res) => {
-                setCities(res.data);
-            });
+        if (!data.district) {
+            setCities([]);
+            return;
         }
+
+        axios.get(`/user/cities/${data.district}`).then((res) => {
+            setCities(res.data || []);
+        });
     }, [data.district]);
 
 
@@ -53,234 +56,115 @@ export default function CartCheckout({ carts = [], states = [] }) {
 
      const shipping =
         data.delevery === "hand" ? 0 : data.area_condition === "Dhaka" ? 80 : 120;
+    const summaryItems = carts.map((cart) => ({
+        ...cart,
+        href: route("products.details", {
+            id: cart.product_id,
+            slug: cart.slug ?? "product",
+        }),
+        image: cart.image ? `/storage/${cart.image}` : "",
+        name: cart.name,
+        shop: cart.shop_name,
+        quantity: cart.qty,
+        total: cart.price * cart.qty,
+        priceText: `${cart.price} x ${cart.qty} = ${cart.price * cart.qty} TK`,
+    }));
+    const summaryNotice = (
+        <>
+            <strong>Notice:</strong> You're order from Multiple Shops. You have
+            added product from more than one shop. Items from different shops are
+            shipped separately, which may result in{" "}
+            <strong>Multiple Shipping Charges.</strong> For lower delivery cost,
+            place orders from <strong>a single shop at a time.</strong>
+        </>
+    );
 
 
     return (
         <UserDash>
             <Container>
-                <div>
-                    <div className="text-3xl">Checkout</div>
-
-                    <div>
-                        view and order your cart produtct.{" "}
-                        <NavLink href={route("carts.view")}>
-                            <i className="fa-solid fa-up-right-from-square me-2"></i>{" "}
-                            carts
-                        </NavLink>
-                    </div>
-
-                    <div>
-                        <div>
-                            <b>Notice:</b> You're order from Multiple Shops
-                        </div>
-
-                        <div className="text-xs">
-                            You have added product from more than one shop.
-                            Please note that, items from different shops are
-                            shipped seperately, which will result in{" "}
-                            <strong>Multiple Shipping Charges.</strong>
-                            <br />
-                            To reduce delivery cost and ensure a smoother
-                            experience, we recommend placing orders from{" "}
-                            <strong>a single shop at a time.</strong> Review the
-                            shop name to your cart before placing orders.
-                        </div>
-                    </div>
-                </div>
-
                 <>
-                    <DashboardForeach data={carts}>
-                        <div className="overflow-hidden overflow-x-scroll">
-                            <table className="w-full mb-2 border border-collapse">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th></th>
-                                        <th>Shop</th>
-                                        <th>Quantity</th>
-                                        <th>Attr</th>
-                                        <th>Price</th>
-                                    </tr>
-                                </thead>
+                    <CartSummaryPanel
+                        title="Checkout"
+                        subtitle={
+                            <>
+                                View and order your cart product.{" "}
+                                <NavLink href={route("carts.view")}>
+                                    <i className="fa-solid fa-up-right-from-square me-1"></i>
+                                    carts
+                                </NavLink>
+                            </>
+                        }
+                        notice={summaryNotice}
+                        items={summaryItems}
+                        totals={[
+                            { label: "Price", value: `${tp} TK` },
+                            {
+                                label: "Shipping",
+                                value:
+                                    data.delevery === "hand"
+                                        ? "0 TK"
+                                        : `${shipping ?? "Depend On"} TK`,
+                            },
+                            {
+                                label: "Total Payable",
+                                value: `${tp + (shipping ?? 0)} TK`,
+                                emphasis: true,
+                            },
+                        ]}
+                        renderQuantity={(cart) => (
+                            <div className="inline-flex items-center overflow-hidden border border-gray-200 rounded-md bg-white shadow-sm">
+                                <button
+                                    type="button"
+                                    className="flex items-center justify-center w-9 h-9 text-gray-600 hover:bg-gray-100"
+                                    onClick={() => decreaseQuantity(cart.id)}
+                                >
+                                    -
+                                </button>
+                                <input
+                                    className="w-12 h-9 p-0 text-sm text-center border-0 border-x border-gray-200"
+                                    value={cart.qty}
+                                    disabled
+                                />
+                                <button
+                                    type="button"
+                                    className="flex items-center justify-center w-9 h-9 text-gray-600 hover:bg-gray-100"
+                                    onClick={() => increaseQuantity(cart.id)}
+                                >
+                                    +
+                                </button>
+                            </div>
+                        )}
+                        renderAttributes={(cart, index) =>
+                            cart.attr_name ? (
+                                <div className="min-w-[120px]">
+                                    <InputLabel className="text-xs">
+                                        {cart.attr_name}
+                                    </InputLabel>
+                                    <select
+                                        className="w-full text-sm border-gray-300 rounded-md"
+                                        value={cart.size || ""}
+                                        onChange={(e) =>
+                                            setData(
+                                                `carts.${index}.size`,
+                                                e.target.value,
+                                            )
+                                        }
+                                    >
+                                        {cart.attr_values?.map((attr, i) => (
+                                            <option key={i} value={attr}>
+                                                {attr}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                "-"
+                            )
+                        }
+                    />
 
-                                <tbody>
-                                    {carts.map((cart, index) => {
-                                        const sprice = cart.price * cart.qty;
-
-                                        return (
-                                            <tr key={cart.id}>
-                                                <td>{index + 1}</td>
-
-                                                <td className="text-sm">
-                                                    <NavLink
-                                                        href={route(
-                                                            "products.details",
-                                                            {
-                                                                id: cart.product_id,
-                                                                slug:
-                                                                    cart.slug ??
-                                                                    "product",
-                                                            },
-                                                        )}
-                                                    >
-                                                        <div className="items-center block lg:flex">
-                                                            <img
-                                                                width="30"
-                                                                height="30"
-                                                                src={`/storage/${cart.image}`}
-                                                                alt=""
-                                                            />
-
-                                                            <span className="ml-1 text-xs text-wrap">
-                                                                {cart.name ||
-                                                                    "N/A"}
-                                                            </span>
-                                                        </div>
-                                                    </NavLink>
-                                                </td>
-
-                                                <td>
-                                                    <NavLink>
-                                                        <div className="px-1 text-xs">
-                                                            {cart.shop_name ??
-                                                                "N/A"}
-                                                        </div>
-                                                    </NavLink>
-                                                </td>
-
-                                                <td>
-                                                    <div
-                                                        className="flex justify-between px-1 py-0 text-center border rounded"
-                                                        style={{
-                                                            width: "120px",
-                                                        }}
-                                                    >
-                                                        <button
-                                                            className="p-1 text-md"
-                                                            onClick={() =>
-                                                                decreaseQuantity(
-                                                                    cart.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            -
-                                                        </button>
-
-                                                        <input
-                                                            style={{
-                                                                width: "50px",
-                                                            }}
-                                                            className="py-0 text-sm text-center border-0 rounded w-sm"
-                                                            value={cart.qty}
-                                                            disabled
-                                                        />
-
-                                                        <button
-                                                            className="p-1 text-md"
-                                                            onClick={() =>
-                                                                increaseQuantity(
-                                                                    cart.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
-                                                </td>
-
-                                                <td>
-                                                    {cart.attr_name && (
-                                                        <div>
-                                                            <InputLabel className="text-xs">
-                                                                {cart.attr_name}
-                                                            </InputLabel>
-
-                                                            <select
-                                                                className="text-sm border-gray-300 rounded"
-                                                                value={
-                                                                    cart.size ||
-                                                                    ""
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setData(
-                                                                        `carts.${index}.size`,
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                            >
-                                                                {cart.attr_values?.map(
-                                                                    (
-                                                                        attr,
-                                                                        i,
-                                                                    ) => (
-                                                                        <option
-                                                                            key={
-                                                                                i
-                                                                            }
-                                                                            value={
-                                                                                attr
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                attr
-                                                                            }
-                                                                        </option>
-                                                                    ),
-                                                                )}
-                                                            </select>
-                                                        </div>
-                                                    )}
-                                                </td>
-
-                                                <td className="text-nowrap">
-                                                    {cart.price} x {cart.qty} ={" "}
-                                                    {sprice}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-
-                                <tfoot className="bg-gray-200">
-                                    <tr>
-                                        <td colSpan="2">Price</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td className="bold">
-                                            <strong>{tp} TK</strong>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td colSpan="2">Shipping</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-
-                                        <td>
-                                            {data.delevery === "hand"
-                                                ? "0 TK"
-                                                : (shipping ?? "Depend On")}
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td colSpan="2">Total Payable</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-
-                                        <td>{tp + (shipping ?? 0)} TK</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </DashboardForeach>
-
-                    <br />
-                    <br />
+                    <div className="h-4" />
 
                     <div className="p-3 m-2 bg-white rounded-md lg:w-1/2">
                         <form onSubmit={confirm} className="w-full">
@@ -479,28 +363,20 @@ export default function CartCheckout({ carts = [], states = [] }) {
                                     error="district"
                                     errors={errors}
                                 >
-                                    <select
+                                    <SearchableSelect
                                         value={data.district || ""}
-                                        onChange={(e) =>
-                                            setData("district", e.target.value)
-                                        }
-                                        id="states"
-                                        className="w-full rounded-md "
-                                    >
-                                        <option value="">
-                                            {" "}
-                                            -- Select State --
-                                        </option>
-
-                                        {states.map((state) => (
-                                            <option
-                                                key={state.id}
-                                                value={state.id}
-                                            >
-                                                {state.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        options={states}
+                                        onChange={(selectedDistrict) => {
+                                            setData((currentData) => ({
+                                                ...currentData,
+                                                district: selectedDistrict,
+                                                upozila: "",
+                                            }));
+                                        }}
+                                        placeholder="-- Select State --"
+                                        noneLabel="-- Select State --"
+                                        noResultsLabel="No district found."
+                                    />
                                 </InputFile>
 
                                 <Hr />
@@ -511,28 +387,17 @@ export default function CartCheckout({ carts = [], states = [] }) {
                                     error="upozila"
                                     errors={errors}
                                 >
-                                    <select
+                                    <SearchableSelect
                                         value={data.upozila || ""}
-                                        onChange={(e) =>
-                                            setData("upozila", e.target.value)
+                                        options={cities}
+                                        onChange={(selectedCity) =>
+                                            setData("upozila", selectedCity)
                                         }
-                                        id="states"
-                                        className="w-full rounded-md "
-                                    >
-                                        <option value="">
-                                            {" "}
-                                            -- Select City --
-                                        </option>
-
-                                        {cities?.map((item) => (
-                                            <option
-                                                key={item.id}
-                                                value={item.id}
-                                            >
-                                                {item.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        placeholder="-- Select City --"
+                                        noneLabel="-- Select City --"
+                                        noResultsLabel="No city found."
+                                        disabled={!data.district}
+                                    />
                                 </InputFile>
 
                                 <Hr />
