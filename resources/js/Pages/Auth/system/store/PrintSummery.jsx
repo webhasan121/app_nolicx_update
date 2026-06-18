@@ -4,7 +4,7 @@ import PrintLayout from "../../../../Layouts/Print";
 import ApplicationName from "../../../../components/ApplicationName";
 import Container from "../../../../components/dashboard/Container";
 import Table from "../../../../components/dashboard/table/Table";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function PrintSummery() {
     const {
@@ -96,7 +96,7 @@ export default function PrintSummery() {
                                         <td>{item.sl}</td>
                                         <td>{item.user_name}</td>
                                         <td>{item.store}</td>
-                                        <td>{formatAmount(item.amount)}</td>
+                                        <td>{formatCurrency(item.amount)}</td>
                                         <td>{item.range}</td>
                                         <td>{item.info}</td>
                                     </tr>

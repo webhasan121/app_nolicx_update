@@ -30,12 +30,19 @@ class ProductsController extends Controller
         $pd = $request->query('pd', 'Active');
         $search = trim((string) $request->query('search', ''));
         $data = $this->buildIndexQuery($nav, $pd, $search)
+            ->withCount([
+                'orders as orders_count' => fn($orderQuery) => $orderQuery->whereHas('order'),
+            ])
+            ->with([
+                'orders' => fn($orderQuery) => $orderQuery
+                    ->select('id', 'product_id', 'status', 'order_id')
+                    ->whereHas('order')
+                    ->orderBy('id'),
+            ])
             ->paginate(config('app.paginate'))
             ->withQueryString();
 
-        $products = $data->getCollection()->load(['orders' => function ($query) {
-            $query->select('id', 'product_id', 'status')->orderBy('id');
-        }]);
+        $products = $data->getCollection();
 
         return Inertia::render('Reseller/Products/Index', [
             'filters' => [
@@ -56,9 +63,9 @@ class ProductsController extends Controller
                         'thumbnail' => $product->thumbnail,
                         'unit' => $product->unit,
                         'name' => $product->name ?? 'N/A',
-                        'status_label' => $product->status ? 'Active' : 'In Active',
-                        'orders_count' => $orders->count(),
-                        'first_order_id' => $firstOrder?->id,
+                        'status_label' => $this->productStatusLabel($product),
+                        'orders_count' => (int) ($product->orders_count ?? 0),
+                        'first_order_id' => $firstOrder?->order_id,
                         'has_pending' => $hasPending,
                         'has_accept' => $hasAccept,
                         'buying_price' => $product->buying_price,
@@ -94,10 +101,10 @@ class ProductsController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         $products = $this->buildIndexQuery($nav, $pd, $search)
-            ->get()
-            ->load(['orders' => function ($query) {
-                $query->select('id', 'product_id', 'status')->orderBy('id');
-            }]);
+            ->withCount([
+                'orders as orders_count' => fn($orderQuery) => $orderQuery->whereHas('order'),
+            ])
+            ->get();
 
         return Inertia::render('Reseller/Products/Print', [
             'filters' => [
@@ -106,14 +113,12 @@ class ProductsController extends Controller
                 'search' => $search,
             ],
             'products' => $products->values()->map(function (Product $product, int $index) {
-                $orders = $product->orders ?? collect();
-
                 return [
                     'sl' => $index + 1,
                     'id' => $product->id,
                     'name' => $product->name ?? 'N/A',
-                    'status_label' => $product->status ? 'Active' : 'In Active',
-                    'orders_count' => $orders->count(),
+                    'status_label' => $this->productStatusLabel($product),
+                    'orders_count' => (int) ($product->orders_count ?? 0),
                     'buying_price' => $product->buying_price,
                     'price' => $product->price,
                     'sell_price' => $product->offer_type ? $product->discount : $product->price,
@@ -377,5 +382,10 @@ class ProductsController extends Controller
         return Product::query()
             ->where('user_id', Auth::id())
             ->where('belongs_to_type', 'reseller');
+    }
+
+    private function productStatusLabel(Product $product): string
+    {
+        return in_array($product->status, ['Active', '1', 1, true], true) ? 'Active' : 'In Active';
     }
 }

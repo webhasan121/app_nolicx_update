@@ -5,6 +5,7 @@ import ApplicationName from "../../../../components/ApplicationName";
 import Container from "../../../../components/dashboard/Container";
 import Section from "../../../../components/dashboard/section/Section";
 import Table from "../../../../components/dashboard/table/Table";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function Print({ orders = [], filters = {} }) {
     useEffect(() => {
@@ -66,9 +67,9 @@ export default function Print({ orders = [], filters = {} }) {
                                                 : "Purchase"}
                                         </td>
                                         <td>
-                                            {item.total} + {item.shipping}
+                                            {formatCurrency(item.total)} + {formatCurrency(item.shipping)}
                                         </td>
-                                        <td>{item.profit}</td>
+                                        <td>{formatCurrency(item.profit)}</td>
                                         <td>
                                             <div>{item.delevery || "N/A"}</div>
                                             <div>{item.location || "N/A"}</div>

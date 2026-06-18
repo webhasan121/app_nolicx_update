@@ -9,9 +9,11 @@ import SectionSection from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
+import ProductName from "../../../../components/ProductName";
 import useTranslation from "../../../../hooks/useTranslation";
 import { todayInputDate } from "../../../../utils/dateInput";
 import { ActionIconLink } from "../../../../components/ActionIcon";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function Index() {
     const { t } = useTranslation();
@@ -341,7 +343,7 @@ export default function Index() {
                                                                 className="mr-2 rounded-full"
                                                             />
                                                         ) : null}
-                                                        {item.name ?? "N/A"}
+                                                        <ProductName value={item.name} />
                                                     </NavLink>
                                                     <br />
                                                     <div className="text-xs border rounded inline-block">
@@ -377,7 +379,7 @@ export default function Index() {
                                                 </td>
 
                                                 <td>
-                                                    {item.price ?? 0}{t("TK")}{item.discount_meta ? (
+                                                    {formatCurrency(item.price)}{item.discount_meta ? (
                                                         <div className="flex items-center text-center p-1 rounded bg-gray-100 text-xs">{t("D:")}{" "}
                                                             {
                                                                 item

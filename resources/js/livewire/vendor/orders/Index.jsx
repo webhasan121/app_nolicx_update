@@ -16,7 +16,7 @@ import NavLink from "../../../components/NavLink";
 import { todayInputDate } from "../../../utils/dateInput";
 import { ActionIconLink } from "../../../components/ActionIcon";
 import useTranslation from "../../../hooks/useTranslation";
-import { formatAmount } from "../../../utils/formatAmount";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 const navs = [
     "All",
@@ -349,7 +349,7 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                             </td>
                                             <td>{item.id ?? "N/A"}</td>
                                             <td>{item.cart_orders_count ?? "N/A"} / {item.quantity ?? "N/A"}</td>
-                                            <td>{item.total ?? "N/A"} <br /> <span className="text-xs">+ {item.shipping}</span></td>
+                                            <td>{item.total !== null && item.total !== undefined ? formatCurrency(item.total) : "N/A"} <br /> <span className="text-xs">+ {formatCurrency(item.shipping)}</span></td>
                                             <td><StatusBadge status={item.status} /></td>
                                             <td>
                                                 <div className="text-xs text-nowarp">
@@ -371,7 +371,7 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                                     {item.number ?? "N/A"}
                                                 </span>
                                             </td>
-                                            <th>{formatAmount(item.comission)}</th>
+                                            <th>{formatCurrency(item.comission)}</th>
                                         </tr>
                                     ))}
                                 </tbody>

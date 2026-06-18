@@ -12,7 +12,7 @@ import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
 import { todayInputDate } from "../../../../utils/dateInput";
 import OverviewDiv from "../../../../components/dashboard/overview/Div";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 import OverviewSection from "../../../../components/dashboard/overview/Section";
 
 function SummaryBadge({ value, className = "" }) {
@@ -20,7 +20,7 @@ function SummaryBadge({ value, className = "" }) {
         <span
             className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${className}`}
         >
-            {value ?? 0}
+            {formatCurrency(value)}
         </span>
     );
 }
@@ -145,23 +145,23 @@ export default function Index({ filters, comissions }) {
                     <OverviewSection>
                     <OverviewDiv
                         title={t("Seller Total Profit")}
-                        content={formatAmount(comissions?.summary?.profit)}
+                        content={formatCurrency(comissions?.summary?.profit)}
                     />
                     <OverviewDiv
                         title={t("Cut comission")}
-                        content={formatAmount(comissions?.summary?.take_comission)}
+                        content={formatCurrency(comissions?.summary?.take_comission)}
                     />
                     <OverviewDiv
                         title={t("Distribute")}
-                        content={formatAmount(comissions?.summary?.distribute_comission)}
+                        content={formatCurrency(comissions?.summary?.distribute_comission)}
                     />
                     <OverviewDiv
                         title={t("Store")}
-                        content={formatAmount(comissions?.summary?.store)}
+                        content={formatCurrency(comissions?.summary?.store)}
                     />
                     <OverviewDiv
                         title={t("Return")}
-                        content={formatAmount(comissions?.summary?.return)}
+                        content={formatCurrency(comissions?.summary?.return)}
                     />
                     </OverviewSection>
                 </div>
@@ -255,14 +255,14 @@ export default function Index({ filters, comissions }) {
                                     <td>{item.id ?? "N/A"}</td>
                                     <td>{item.order_id ?? 0}</td>
                                     <td>{item.product_id ?? 0}</td>
-                                    <td>{item.buying_price ?? 0}</td>
-                                    <td>{item.selling_price ?? 0}</td>
-                                    <td>{item.profit ?? 0}</td>
+                                    <td>{formatCurrency(item.buying_price)}</td>
+                                    <td>{formatCurrency(item.selling_price)}</td>
+                                    <td>{formatCurrency(item.profit)}</td>
                                     <td>{item.comission_range ?? 0} %</td>
-                                    <td>{item.take_comission ?? 0}</td>
-                                    <td>{item.distribute_comission ?? 0}</td>
-                                    <td>{item.store ?? 0}</td>
-                                    <td>{item.return ?? 0}</td>
+                                    <td>{formatCurrency(item.take_comission)}</td>
+                                    <td>{formatCurrency(item.distribute_comission)}</td>
+                                    <td>{formatCurrency(item.store)}</td>
+                                    <td>{formatCurrency(item.return)}</td>
                                     <td>
                                         {item.confirmed ? (
                                             <>

@@ -4,7 +4,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import NavLink from "../NavLink";
 import useTranslation from "../../hooks/useTranslation";
-import { formatAmount } from "../../utils/formatAmount";
+import { formatCurrency } from "../../utils/formatAmount";
 
 export default function ProductCard({
     product,
@@ -16,13 +16,17 @@ export default function ProductCard({
     const { auth } = usePage().props;
     const [isSaved, setIsSaved] = useState(Boolean(savedForLater));
     const [saving, setSaving] = useState(false);
-    const hasOffer = product.offer_type && product.discount;
+    const price = Number(product.price ?? 0);
+    const discount = Number(product.discount ?? 0);
+    const hasOfferType = [true, 1, "1", "yes", "Yes", "YES"].includes(product.offer_type);
+    const hasOffer = hasOfferType && discount > 0 && price > discount;
 
     const discountPercentage = hasOffer
-        ? Math.round(((product.price - product.discount) / product.price) * 100)
+        ? Math.round(((price - discount) / price) * 100)
         : null;
 
-    const isSoldOut = product.unit < 2;
+    const stock = Number.parseFloat(product.unit);
+    const isSoldOut = Number.isFinite(stock) && stock < 1;
 
 
     const addToCart = async () => {
@@ -114,7 +118,7 @@ export default function ProductCard({
     };
 
     return (
-        <div className="relative overflow-hidden bg-white border box group">
+        <div className="relative flex h-[296px] flex-col overflow-hidden rounded-md border bg-white p-0 shadow-sm group">
             {/* Discount Badge */}
             {hasOffer && (
                 <div className="absolute top-0 left-0 z-10 px-2 py-1 text-xs text-white discount-badge bg_primary">
@@ -138,84 +142,77 @@ export default function ProductCard({
             ) : null}
 
             {/* Hover Option Container */}
-            <div className="absolute inset-0 hidden transition-opacity opacity-0 option_container lg:block bg-orange-100/40 group-hover:opacity-100">
-                <div className="flex flex-col items-center justify-between w-full h-full">
-                    <div className="flex flex-col justify-center flex-1 w-full text-center">
-                        <button
-                            onClick={addToCart}
-                            className="w-full p-2 mb-4 text-sm bg-white"
-                        >
-                            <i className="mx-2 fas fa-cart-plus"></i>
-                            {t("To Cart")}
-                        </button>
-
-                       <Link
-                            href={`/product/${product.id}/${product.slug}`}
-                            className="text-xs"
-                        >
-                            {t("View Details")}
-                            <i className="mx-2 fas fa-arrow-right"></i>
-                        </Link>
-                    </div>
-
-                    <NavLink
-                        href={route("product.makeOrder", { id: product.id, slug: product.slug })}
-                        className="flex items-center justify-center w-full py-2 font-bold text-center bg-white border-b-0 text_primary hover:bg-white hover:border-transparent"
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-30 hidden h-[190px] bg-white/80 opacity-0 transition-opacity duration-200 lg:flex lg:items-center lg:justify-center group-hover:opacity-100">
+                <div className="pointer-events-auto flex w-full flex-col items-center justify-center text-center">
+                    <button
+                        type="button"
+                        onClick={addToCart}
+                        className="w-full bg-white p-2 text-sm text-black transition hover:bg-white hover:text-black"
                     >
-                        {t("Order Now")}
+                        <i className="mx-2 fas fa-cart-plus"></i>
+                        {t("To Cart")}
+                    </button>
+
+                    <Link
+                        href={route("products.details", { id: product.id, slug: product.slug })}
+                        className="w-full bg-gray-100 p-2 text-xs text-black transition hover:bg-gray-100 hover:text-black"
+                    >
+                        {t("View Details")}
                         <i className="mx-2 fas fa-arrow-right"></i>
-                    </NavLink>
+                    </Link>
                 </div>
             </div>
 
             {/* Image */}
-            <div className="overflow-hidden img-box">
+            <div className="h-40 shrink-0 overflow-hidden bg-gray-50">
                 <img
                     src={`/storage/${product.thumbnail}`}
-                    className="object-cover w-full h-40 transition-transform duration-300 group-hover:scale-125"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-125"
                     alt={product.title}
                 />
             </div>
 
             {/* Card Body */}
-            <div className="flex flex-col justify-between p-2 h-28">
+            <div className="flex min-h-0 flex-1 flex-col justify-between p-2">
                 {/* Title + Unit */}
-                <div className="flex items-start justify-between space-x-1 text-white">
+                <div className="flex h-8 items-stretch gap-1 text-white">
                     <NavLink
                         href={route("products.details", { id: product.id, slug: product.slug })}
-                        className="block w-full p-1 text-xs text-white truncate border-b-0 bg_primary hover:text-white hover:border-transparent"
+                        className="flex min-w-0 flex-1 items-center border-b-0 bg_primary px-1 text-xs text-white hover:border-transparent hover:text-white"
                     >
-                        {product.title.length > 15
-                            ? product.title.substring(0, 15) + "..."
-                            : product.title}
+                        <span className="block truncate">
+                            {product.title}
+                        </span>
                     </NavLink>
 
-                    <div className="h-full p-1 text-xs bg_primary">
-                        {product.unit ?? 0}
+                    <div className="flex w-9 shrink-0 items-center justify-center bg_primary px-1 text-xs">
+                        <span className="block max-w-full truncate">
+                            {product.unit ?? 0}
+                        </span>
                     </div>
                 </div>
 
                 {/* Price Section */}
-                <div className="flex items-center justify-between py-1 text-sm font-bold">
+                <div className="flex h-10 items-center justify-between gap-2 overflow-hidden py-1 text-sm font-bold">
                     {hasOffer ? (
                         <>
-                            <span className="text-md">
-                                {formatAmount(product.discount)} {t("TK")}
+                            <span className="min-w-0 truncate text-sm">
+                                {formatCurrency(product.discount)}
                             </span>
 
-                            <span className="text-xs">
-                                <del>{t("MRP")} {formatAmount(product.price)} {t("TK")}</del>
+                            <span className="min-w-0 shrink-0 truncate text-xs">
+                                <del>{t("MRP")} {formatCurrency(product.price)}</del>
                             </span>
                         </>
                     ) : (
-                        <span>{formatAmount(product.price)} {t("TK")}</span>
+                        <span className="truncate">{formatCurrency(product.price)}</span>
                     )}
                 </div>
 
                 {/* Order Button */}
                 <NavLink
                     href={route("product.makeOrder", { id: product.id, slug: product.slug })}
-                    className="flex items-center justify-center block text-sm font-bold text-center transition bg-white border-b-0 text_primary hover:bg_primary hover:text-white hover:border-transparent"
+                    className="flex h-9 items-center justify-center border-b-0 bg-white text-center text-sm font-bold text_primary transition hover:border-transparent hover:bg_primary hover:text-white"
                 >
                     <i className="mr-2 fas fa-cart-plus"></i>
                     {t("Order Now")}

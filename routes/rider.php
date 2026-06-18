@@ -4,6 +4,7 @@ use App\Http\Controllers\Rider\ConsignmentController;
 use App\Http\Controllers\Rider\RiderInfoController;
 use App\Http\Middleware\AbleTo;
 use App\Models\cod;
+use App\Models\syncOrder;
 use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -15,13 +16,36 @@ Route::get('/consignments/{id}', [ConsignmentController::class, 'show'])->name('
 Route::post('/consignments/{consignment}/status', function (Request $request, cod $consignment) {
     abort_unless($consignment->rider_id === auth()->id(), 403);
 
+    $payload = $request->validate([
+        'status' => ['required', 'string', 'in:Received,Completed'],
+    ]);
+
     if (auth()->user()->abailCoin() >= $consignment->total_amount) {
-        $consignment->status = $request->string('status')->toString();
+        $consignment->status = $payload['status'];
         $consignment->save();
         $order = $consignment->order;
         OrderNotice::riderStatusChanged($order, $consignment->status, auth()->id());
-        if ($consignment->status === 'Completed' && $order->exists) {
-            OrderNotice::statusChanged($order, 'Delivered', auth()->id());
+
+        if ($order->exists) {
+            if ($consignment->status === 'Received') {
+                $order->update(['status' => 'Delivery']);
+                OrderNotice::statusChanged($order, 'Delivery', auth()->id());
+                $synced = syncOrder::query()->where('reseller_order_id', $order->id)->first();
+                if ($synced && $synced->status !== 'Delivery') {
+                    $synced->status = 'Delivery';
+                    $synced->save();
+                }
+            }
+
+            if ($consignment->status === 'Completed') {
+                $order->update(['status' => 'Delivered']);
+                OrderNotice::statusChanged($order, 'Delivered', auth()->id());
+                $synced = syncOrder::query()->where('reseller_order_id', $order->id)->first();
+                if ($synced && $synced->status !== 'Delivered') {
+                    $synced->status = 'Delivered';
+                    $synced->save();
+                }
+            }
         }
 
         return back()->with('success', 'Shipment Updated');

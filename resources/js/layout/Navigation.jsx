@@ -63,19 +63,21 @@ export default function Navigation() {
                         </div>
                     </div>
 
-                    <div className="hidden md:flex md:items-center md:ms-6">
-                        <NoticeBell className="mr-3" />
-                        <LanguageSwitcher compact className="mr-3" />
+                    <div className="hidden min-w-0 gap-3 md:ms-6 md:flex md:items-center">
+                        <NoticeBell className="shrink-0" />
+                        <LanguageSwitcher compact className="shrink min-w-0" />
                         <Dropdown
                             align="right"
                             width="48"
                             trigger={
-                                <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                                    <div className="px-2 py-1 border bg-orange-500 border-transparent text-white rounded-md mx-1">
+                                <button className="inline-flex min-w-0 items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                                    <div className="mx-1 shrink-0 rounded-md border border-transparent bg-orange-500 px-2 py-1 text-white">
                                         {currentNav}
                                     </div>
-                                    <div>{(user?.name ?? "").slice(0, 8)}</div>
-                                    <div className="ms-1">
+                                    <div className="max-w-20 truncate">
+                                        {(user?.name ?? "").slice(0, 8)}
+                                    </div>
+                                    <div className="ms-1 shrink-0">
                                         <svg
                                             className="w-4 h-4 fill-current"
                                             xmlns="http://www.w3.org/2000/svg"

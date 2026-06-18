@@ -75,6 +75,7 @@ export default function CategoryIndex({
                 search: nextSearch || undefined,
                 sort: nextSort || "desc",
                 limit: nextLimit,
+                country: filters.country || undefined,
             },
             {
                 preserveScroll: true,
@@ -128,7 +129,7 @@ export default function CategoryIndex({
                                 <div className="px-2">
                                     <div>
                                         <Link
-                                            href={route("products.index")}
+                                            href={route("products.index", { country: filters.country || undefined })}
                                             className="inline-flex items-center px-4 py-2 mb-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                                         >
                                             {t("All Product")}
@@ -163,12 +164,12 @@ export default function CategoryIndex({
                                 </div>
                             </div>
                             {open ? (
-                                <div className="mt-2 overflow-x-scroll border-t">
+                                <div className="mt-2 overflow-x-auto border-t">
                                     <div className="my-3">
                                         <div className="w-full px-2 mx-auto space-y-3 max-w-8xl sm:px-4 lg:px-6">
                                             <div>
                                                 <Link
-                                                    href={route("products.index")}
+                                                    href={route("products.index", { country: filters.country || undefined })}
                                                     className="inline-flex items-center px-4 py-2 mb-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                                                 >
                                                     {t("All Product")}

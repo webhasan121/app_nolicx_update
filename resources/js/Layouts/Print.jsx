@@ -1,6 +1,7 @@
 import { Head } from "@inertiajs/react";
 import { useEffect } from "react";
 import AutoTranslate from "../components/AutoTranslate";
+import CurrencyTextSync from "../components/CurrencyTextSync";
 
 const STYLE_TEXT = `
     @page {
@@ -13,6 +14,7 @@ const STYLE_TEXT = `
     }
 
     #pdf-content .overflow-x-scroll,
+    #pdf-content .overflow-x-auto,
     #pdf-content .overflow-hidden {
         overflow: visible !important;
     }
@@ -179,6 +181,7 @@ export default function Print({ title = "nolicx", children }) {
     return (
         <>
             <AutoTranslate />
+            <CurrencyTextSync />
             <Head title={title}>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />

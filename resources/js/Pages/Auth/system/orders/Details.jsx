@@ -10,7 +10,9 @@ import Container from "../../../../components/dashboard/Container";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import Table from "../../../../components/dashboard/table/Table";
+import ProductName from "../../../../components/ProductName";
 import { ActionIconLink } from "../../../../components/ActionIcon";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function Details({ nav = "tab", order, earnFilters, earnComissions = [], resellerProfit, reseller_profit_sum }) {
     const shippingTotal = Number(order?.shipping ?? 0);
@@ -111,7 +113,7 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
                                             <td>
                                                 <div className=" ">
                                                     {item.product_thumbnail ? <img width="30px" height="30px" src={`/storage/${item.product_thumbnail}`} alt="" /> : null}
-                                                    <div>{item.product_title}</div>
+                                                    <div><ProductName value={item.product_title} /></div>
                                                 </div>
                                             </td>
                                             <td>
@@ -121,12 +123,12 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
                                                     <span className="bg-indigo-900 text-md text-white rounded-lg px-2"> Reseller </span>
                                                 )}
                                             </td>
-                                            <td>{item.price} TK</td>
+                                            <td>{formatCurrency(item.price)}</td>
                                             <td>{item.quantity}</td>
-                                            <td>{item.total} TK</td>
+                                            <td>{formatCurrency(item.total)}</td>
                                             <td>{item.size ?? "N/A"}</td>
-                                            <td>{item.buying_price} TK</td>
-                                            <td>{item.profit}</td>
+                                            <td>{formatCurrency(item.buying_price)}</td>
+                                            <td>{formatCurrency(item.profit)}</td>
                                             <th>
                                                 <div className="flex rounded border justify-between bg-gray-200">
                                                     <div className="flex space-x-1 px-1">
@@ -150,15 +152,15 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
                                 <tfoot>
                                     <tr className="border-t">
                                         <td colSpan="6" className="text-right">Sub Total</td>
-                                        <td>{subtotal} Tk</td>
+                                        <td>{formatCurrency(subtotal)}</td>
                                     </tr>
                                     <tr>
                                         <td colSpan="6" className="text-right">Shipping</td>
-                                        <td>{shippingTotal} Tk</td>
+                                        <td>{formatCurrency(shippingTotal)}</td>
                                     </tr>
                                     <tr className="border-t font-bold text-lg bg-gray-100">
                                         <td colSpan="6" className="text-right">Total</td>
-                                        <td>{orderTotal} Tk</td>
+                                        <td>{formatCurrency(orderTotal)}</td>
                                         <td colSpan="5"></td>
                                     </tr>
                                 </tfoot>
@@ -201,13 +203,13 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
                                         <tr key={item.id}>
                                             <td>{item.id ?? "N/A"}</td>
                                             <td>{item.order_id ?? 0}</td>
-                                            <td>{item.buying_price ?? 0}</td>
-                                            <td>{item.selling_price ?? 0}</td>
-                                            <td>{item.profit ?? "0"}</td>
+                                            <td>{formatCurrency(item.buying_price)}</td>
+                                            <td>{formatCurrency(item.selling_price)}</td>
+                                            <td>{formatCurrency(item.profit)}</td>
                                             <td>{item.comission_range ?? "0"} %</td>
-                                            <td>{item.take_comission ?? "0"}</td>
-                                            <td>{item.distribute_comission ?? "0"}</td>
-                                            <td>{item.store ?? "0"}</td>
+                                            <td>{formatCurrency(item.take_comission)}</td>
+                                            <td>{formatCurrency(item.distribute_comission)}</td>
+                                            <td>{formatCurrency(item.store)}</td>
                                             <td>{item.created_at_formatted}</td>
                                             <td>
                                                 {item.confirmed ? (
@@ -227,13 +229,13 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
                                     <tr className="py-2 bg-gray-200">
                                         <td>{earnComissions.length}</td>
                                         <td></td>
-                                        <td className="font-bold">{earnComissions.reduce((sum, item) => sum + Number(item.buying_price || 0), 0)}</td>
-                                        <td className="font-bold">{earnComissions.reduce((sum, item) => sum + Number(item.selling_price || 0), 0)}</td>
-                                        <td className="font-bold">{earnComissions.reduce((sum, item) => sum + Number(item.profit || 0), 0)}</td>
+                                        <td className="font-bold">{formatCurrency(earnComissions.reduce((sum, item) => sum + Number(item.buying_price || 0), 0))}</td>
+                                        <td className="font-bold">{formatCurrency(earnComissions.reduce((sum, item) => sum + Number(item.selling_price || 0), 0))}</td>
+                                        <td className="font-bold">{formatCurrency(earnComissions.reduce((sum, item) => sum + Number(item.profit || 0), 0))}</td>
                                         <td></td>
-                                        <td className="font-bold">{earnComissions.reduce((sum, item) => sum + Number(item.take_comission || 0), 0)}</td>
-                                        <td className="font-bold">{earnComissions.reduce((sum, item) => sum + Number(item.distribute_comission || 0), 0)}</td>
-                                        <td className="font-bold">{earnComissions.reduce((sum, item) => sum + Number(item.store || 0), 0)}</td>
+                                        <td className="font-bold">{formatCurrency(earnComissions.reduce((sum, item) => sum + Number(item.take_comission || 0), 0))}</td>
+                                        <td className="font-bold">{formatCurrency(earnComissions.reduce((sum, item) => sum + Number(item.distribute_comission || 0), 0))}</td>
+                                        <td className="font-bold">{formatCurrency(earnComissions.reduce((sum, item) => sum + Number(item.store || 0), 0))}</td>
                                         <td className="font-bold"></td>
                                         <td className="font-bold"></td>
                                     </tr>
@@ -245,7 +247,7 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
 
                 {nav === "profit" ? (
                     <>
-                        <div>Total Reseller Profit : {reseller_profit_sum}</div>
+                        <div>Total Reseller Profit : {formatCurrency(reseller_profit_sum)}</div>
                         <Hr />
                         <Section>
                             <SectionHeader
@@ -274,9 +276,9 @@ export default function Details({ nav = "tab", order, earnFilters, earnComission
                                         <tr key={item.id}>
                                             <td>{index + 1}</td>
                                             <td>{item.id}</td>
-                                            <td>{item.buy}</td>
-                                            <td>{item.sel}</td>
-                                            <td>{item.profit}</td>
+                                            <td>{formatCurrency(item.buy)}</td>
+                                            <td>{formatCurrency(item.sel)}</td>
+                                            <td>{formatCurrency(item.profit)}</td>
                                             <td>
                                                 {item.confirmed ? (
                                                     <span className="p-1 px-2 rounded-xl bg-green-900 text-white">Confirmed</span>

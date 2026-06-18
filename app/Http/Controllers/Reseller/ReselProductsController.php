@@ -147,7 +147,10 @@ class ReselProductsController extends Controller
 
 
 
-        $shipping = strtolower((string) $data['delevery']) === 'hand'
+        $isHandDelivery = strtolower((string) $data['delevery']) === 'hand';
+        $orderStatus = $isHandDelivery ? 'Delivered' : 'Pending';
+        $receivedAt = $isHandDelivery ? now() : null;
+        $shipping = $isHandDelivery
             ? 0
             : ($data['area_condition'] === 'Dhaka'
                 ? ($product->shipping_in_dhaka ?? 0)
@@ -160,7 +163,8 @@ class ReselProductsController extends Controller
             'belongs_to_type' => 'vendor',
             'quantity' => $data['quantity'],
             'total' => $data['quantity'] * $product->totalPrice(),
-            'status' => 'Pending',
+            'status' => $orderStatus,
+            'received_at' => $receivedAt,
             'name' => 'Purchase',
             'district' => $data['district'],
             'upozila' => $data['upozila'],
@@ -185,7 +189,7 @@ class ReselProductsController extends Controller
             'size' => $data['attr'],
             'total' => $data['quantity'] * $product->totalPrice(),
             'buying_price' => $product->buying_price ?? 0,
-            'status' => 'Pending',
+            'status' => $orderStatus,
         ]);
 
         ProductComissionController::dispatchProductComissionsListeners($order->id);

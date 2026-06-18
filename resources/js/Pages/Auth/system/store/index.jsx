@@ -14,9 +14,9 @@ import CoastStore from "../../../../livewire/system/store/CoastStore";
 import DonationStore from "../../../../livewire/system/store/DonationStore";
 import useTranslation from "../../../../hooks/useTranslation";
 import { todayInputDate } from "../../../../utils/dateInput";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
-const formatCoin = (value) => formatAmount(value);
+const formatCoin = (value) => formatCurrency(value);
 
 export default function Index() {
     const { t } = useTranslation();
@@ -422,7 +422,7 @@ export default function Index() {
                                                         <strong>{item.user_name}</strong>
                                                     </td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{t(item.store)}</td>
-                                                    <td className="px-4 py-3 font-medium text-gray-700">{formatAmount(item.amount)}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-700">{formatCoin(item.amount)}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{item.range}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{t(item.info)}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-700">{item.created_at}</td>

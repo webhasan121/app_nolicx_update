@@ -11,7 +11,7 @@ import SectionSection from "../../components/dashboard/section/Section";
 import VendorOrdersIndex from "../vendor/orders/Index";
 import Container from "../../components/dashboard/Container";
 import useTranslation from "../../hooks/useTranslation";
-import { formatAmount } from "../../utils/formatAmount";
+import { formatCurrency } from "../../utils/formatAmount";
 
 function CategoryItem({ item, depth = 0 }) {
     if (!item || item.slug === "default-category") {
@@ -120,7 +120,7 @@ function OverviewDiv({ title, children }) {
     );
 }
 
-const money = (value) => `Tk ${formatAmount(value)}`;
+const money = (value) => formatCurrency(value);
 
 function ProductCard({ product }) {
     const { t } = useTranslation();

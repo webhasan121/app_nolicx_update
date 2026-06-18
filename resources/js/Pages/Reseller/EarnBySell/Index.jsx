@@ -9,9 +9,10 @@ import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import OverviewSection from "../../../components/dashboard/overview/Section";
 import OverviewDiv from "../../../components/dashboard/overview/Div";
-import { formatTk } from "../../../utils/formatAmount";
+import { formatCurrency, formatTk } from "../../../utils/formatAmount";
 import Table from "../../../components/dashboard/table/Table";
 import NavLink from "../../../components/NavLink";
+import ProductName from "../../../components/ProductName";
 import useTranslation from "../../../hooks/useTranslation";
 import { todayInputDate } from "../../../utils/dateInput";
 
@@ -338,7 +339,7 @@ export default function Index({
                                                         className="mr-2 rounded-full"
                                                     />
                                                 ) : null}
-                                                {item.product_name ?? "N/A"}
+                                                <ProductName value={item.product_name} />
                                             </NavLink>
                                             <br />
                                             <div className="text-xs border rounded inline-block">
@@ -372,7 +373,7 @@ export default function Index({
                                             </div>
                                         </td>
                                         <td>
-                                            {item.product_price ?? 0}{t("TK")}{item.offer_type ? (
+                                            {formatCurrency(item.product_price)}{item.offer_type ? (
                                                 <div className="flex items-center text-center p-1 rounded bg-gray-100 text-xs">{t("D:")}{item.discount} |{" "}
                                                     {item.discount_percent}{t("% off")}</div>
                                             ) : null}

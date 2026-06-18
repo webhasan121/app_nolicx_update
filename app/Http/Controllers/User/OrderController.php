@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use App\Models\Order;
 use App\Models\Products_has_comments;
+use App\Models\syncOrder;
 use App\Support\OrderNotice;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -279,9 +280,19 @@ class OrderController extends Controller
         }
 
         if (!$order->received_at) {
+            $receivedAt = Carbon::now();
             $order->update([
-                'received_at' => Carbon::now(),
+                'received_at' => $receivedAt,
             ]);
+
+            $synced = syncOrder::query()->where('user_order_id', $order->id)->first();
+            if ($synced?->reseller_order_id) {
+                Order::query()
+                    ->where('id', $synced->reseller_order_id)
+                    ->whereNull('received_at')
+                    ->update(['received_at' => $receivedAt]);
+            }
+
             OrderNotice::customerReceived($order, $request->user()->id);
         }
 

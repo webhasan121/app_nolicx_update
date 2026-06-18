@@ -12,6 +12,7 @@ import Modal from "../../../components/Modal";
 import InputError from "../../../components/InputError";
 import Hr from "../../../components/Hr";
 import CartSummaryPanel from "../../../components/user/CartSummaryPanel";
+import ProductName from "../../../components/ProductName";
 import useTranslation from "../../../hooks/useTranslation";
 
 const activeStatuses = {
@@ -237,7 +238,7 @@ export default function OrderDetails() {
                         content={
                             <div>
                                 <div>{t("Order Id")} : {order.id}</div>
-                                <div className="items-center justify-between w-full space-y-2 overflow-hidden overflow-x-scroll md:flex">
+                                <div className="items-center justify-between w-full space-y-2 overflow-hidden overflow-x-auto md:flex">
                                     <div>
                                         <div className="flex gap-2 mb-2">
                                             <StatusBox
@@ -426,7 +427,7 @@ export default function OrderDetails() {
                                         </div>
                                     )}
                                     <div className="font-semibold leading-6">
-                                        {item.product?.name ?? "N/A"}
+                                        <ProductName value={item.product?.name} />
                                     </div>
                                 </div>
 

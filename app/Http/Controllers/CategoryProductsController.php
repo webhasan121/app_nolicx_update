@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Slider as sliderModel;
 use App\Models\Slider_has_slide;
+use App\Support\CountrySelection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -16,6 +17,7 @@ class CategoryProductsController extends Controller
         $sort = $request->string('sort')->toString() ?: 'desc';
         $limit = max(20, (int) $request->input('limit', 20));
         $search = trim((string) $request->input('search', ''));
+        $country = CountrySelection::fromRequest($request);
 
         $category = Category::query()
             ->with('children.children.children')
@@ -30,7 +32,8 @@ class CategoryProductsController extends Controller
             ->where([
                 'belongs_to_type' => 'reseller',
                 'status' => 'Active',
-            ]);
+            ])
+            ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country));
 
         if ($search !== '') {
             $productsQuery->where(function ($query) use ($search) {
@@ -85,6 +88,7 @@ class CategoryProductsController extends Controller
                 'search' => $search,
                 'sort' => $sort,
                 'limit' => $limit,
+                'country' => $country,
             ],
             'loadMore' => (clone $productsQuery)->count() > $limit,
         ]);

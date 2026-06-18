@@ -4,6 +4,8 @@ namespace App\Support;
 
 use App\Models\cod;
 use App\Models\Notice;
+use App\Models\Order;
+use App\Models\syncOrder;
 
 class NoticeRealtimePayload
 {
@@ -28,6 +30,9 @@ class NoticeRealtimePayload
             'body' => $notice->body,
             'target_user_id' => $notice->target_user_id,
             'order_id' => $orderId,
+            'seller_id' => self::sellerId($notice, $orderId),
+            'seller_type' => self::sellerType($notice, $orderId),
+            'vendor_ids' => self::vendorIds($orderId),
             'rider_ids' => self::riderIds($orderId),
             'link_urls' => self::linkUrls($orderId),
             'is_read' => false,
@@ -54,16 +59,74 @@ class NoticeRealtimePayload
         return $orderId ?: null;
     }
 
+    private static function sellerId(Notice $notice, ?int $orderId): ?int
+    {
+        $sellerId = $notice->order?->belongs_to;
+
+        if (! $sellerId && $orderId) {
+            $sellerId = Order::query()->whereKey($orderId)->value('belongs_to');
+        }
+
+        return $sellerId ? (int) $sellerId : null;
+    }
+
+    private static function sellerType(Notice $notice, ?int $orderId): ?string
+    {
+        $sellerType = $notice->order?->belongs_to_type;
+
+        if (! $sellerType && $orderId) {
+            $sellerType = Order::query()->whereKey($orderId)->value('belongs_to_type');
+        }
+
+        return $sellerType ?: null;
+    }
+
+    private static function vendorIds(?int $orderId): array
+    {
+        if (! $orderId) {
+            return [];
+        }
+
+        $order = Order::query()
+            ->with('cartOrders.product.isResel')
+            ->find($orderId);
+
+        if (! $order) {
+            return [];
+        }
+
+        $vendorIds = collect();
+
+        if ($order->belongs_to_type === 'vendor' && $order->belongs_to) {
+            $vendorIds->push((int) $order->belongs_to);
+        }
+
+        foreach ($order->cartOrders as $cartOrder) {
+            $vendorId = $cartOrder->product?->isResel?->belongs_to;
+
+            if ($vendorId) {
+                $vendorIds->push((int) $vendorId);
+            }
+        }
+
+        return $vendorIds->filter()->unique()->values()->all();
+    }
+
     private static function linkUrls(?int $orderId): array
     {
         if (! $orderId) {
             return [];
         }
 
+        $order = Order::query()->find($orderId);
+        $vendorUrl = $order?->belongs_to_type === 'vendor'
+            ? route('vendor.orders.view', ['order' => $orderId])
+            : route('vendor.products.view');
+
         return [
             'system' => route('system.orders.details', ['id' => $orderId]),
             'user' => route('user.orders.details', ['id' => $orderId]),
-            'vendor' => route('vendor.orders.view', ['order' => $orderId]),
+            'vendor' => $vendorUrl,
             'reseller' => route('reseller.order.view', ['order' => $orderId]),
             'rider' => self::riderConsignmentUrl($orderId),
         ];
@@ -72,8 +135,9 @@ class NoticeRealtimePayload
     private static function riderConsignmentUrl(int $orderId): string
     {
         $riderId = auth()->id();
+        $orderIds = self::riderOrderIds($orderId);
         $query = cod::query()
-            ->where('order_id', $orderId);
+            ->whereIn('order_id', $orderIds);
 
         if ($riderId) {
             $query->where('rider_id', $riderId);
@@ -95,8 +159,21 @@ class NoticeRealtimePayload
         }
 
         return cod::query()
-            ->where('order_id', $orderId)
+            ->whereIn('order_id', self::riderOrderIds($orderId))
             ->pluck('rider_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private static function riderOrderIds(int $orderId): array
+    {
+        $syncedOrderId = syncOrder::query()
+            ->where('user_order_id', $orderId)
+            ->value('reseller_order_id');
+
+        return collect([$orderId, $syncedOrderId])
             ->filter()
             ->unique()
             ->values()

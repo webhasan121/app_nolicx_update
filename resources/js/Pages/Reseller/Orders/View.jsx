@@ -11,6 +11,8 @@ import PageHeader from "../../../components/dashboard/PageHeader";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
 import { ActionIconLink } from "../../../components/ActionIcon";
+import ProductName from "../../../components/ProductName";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 const progressFlow = ["Pending", "Accept", "Picked", "Delivery", "Delivered", "Confirm"];
 const progressLabels = ["Placed", "Accept", "Collecting", "Delivery", "Delivered", "Confirm"];
@@ -73,7 +75,7 @@ export default function View({ order }) {
             <Container>
                 <Section>
                     <div className="flex justify-between items-center space-y-2">
-                        <div className="md:flex justify-between items-center space-y-2 w-full overflow-hidden overflow-x-scroll">
+                        <div className="md:flex justify-between items-center space-y-2 w-full overflow-hidden overflow-x-auto">
                             <div>
                                 <div className="mb-2 flex gap-2">
                                     {progressFlow.map((step, index) => (
@@ -131,7 +133,7 @@ export default function View({ order }) {
                     <Div title="Order ID" content={order?.id ?? 0} />
                     <Div title="Products" content={order?.cart_count ?? 0} />
                     <Div title="Sub Product" content={order?.cart_quantity_sum ?? 0} />
-                    <Div title="Your Profit" content={order?.name === "Resel" ? order?.reseller_profit_sum ?? 0 : ""} />
+                    <Div title="Your Profit" content={order?.name === "Resel" ? formatCurrency(order?.reseller_profit_sum) : ""} />
                 </OverviewSection>
 
                 <Section>
@@ -191,19 +193,19 @@ export default function View({ order }) {
                                             {item.product_thumbnail ? (
                                                 <img width="30px" height="30px" src={item.product_thumbnail} alt="" />
                                             ) : null}
-                                            <div>{item.product_title ?? "N/A"}</div>
+                                            <div><ProductName value={item.product_title} /></div>
                                         </div>
                                     </td>
                                     <td>
                                         <NavLink href={item.owner_shop_url}>{item.owner_shop_name}</NavLink>
                                         {item.owner_phone}
                                     </td>
-                                    <td>{item.price} TK</td>
+                                    <td>{formatCurrency(item.price)}</td>
                                     <td>{item.quantity}</td>
-                                    <td>{item.total} TK</td>
+                                    <td>{formatCurrency(item.total)}</td>
                                     <td>{item.size ?? "N/A"}</td>
-                                    <td>{order?.name === "Resel" ? `${item.buying_price ?? "N/A"} TK` : ""}</td>
-                                    <td>{order?.name === "Resel" ? item.profit : ""}</td>
+                                    <td>{order?.name === "Resel" ? formatCurrency(item.buying_price) : ""}</td>
+                                    <td>{order?.name === "Resel" ? formatCurrency(item.profit) : ""}</td>
                                     <th></th>
                                 </tr>
                             ))}
@@ -213,19 +215,19 @@ export default function View({ order }) {
                                 <td colSpan="6" className="text-right">
                                     Sub Total
                                 </td>
-                                <td>{order?.cart_sum_total} Tk</td>
+                                <td>{formatCurrency(order?.cart_sum_total)}</td>
                             </tr>
                             <tr>
                                 <td colSpan="6" className="text-right">
                                     Shipping
                                 </td>
-                                <td>{order?.shipping ?? 0} Tk</td>
+                                <td>{formatCurrency(order?.shipping)}</td>
                             </tr>
                             <tr className="border-t font-bold text-lg bg-gray-100">
                                 <td colSpan="6" className="text-right">
                                     Total
                                 </td>
-                                <td>{shippingTotal} Tk</td>
+                                <td>{formatCurrency(shippingTotal)}</td>
                                 <td colSpan="6"></td>
                             </tr>
                         </tfoot>
@@ -237,7 +239,7 @@ export default function View({ order }) {
                         <div className="flex justify-between items-center">
                             <div>Shipping</div>
                             <div>
-                                <div className="px-2 py-1 bg-indigo-900 text-white rounded-lg">{order?.shipping ?? "0"} TK</div>
+                                <div className="px-2 py-1 bg-indigo-900 text-white rounded-lg">{formatCurrency(order?.shipping)}</div>
                             </div>
                         </div>
 
@@ -293,8 +295,8 @@ export default function View({ order }) {
                             {(order?.comissions ?? []).map((item, index) => (
                                 <tr key={item.id}>
                                     <td>{index + 1}</td>
-                                    <td>{item.take_comission ?? 0}</td>
-                                    <td>{item.product_name ?? "N/A"}</td>
+                                    <td>{formatCurrency(item.take_comission)}</td>
+                                    <td><ProductName value={item.product_name} /></td>
                                 </tr>
                             ))}
                         </tbody>

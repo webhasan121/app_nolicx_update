@@ -11,8 +11,10 @@ import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
+import ProductName from "../../../components/ProductName";
 import useTranslation from "../../../hooks/useTranslation";
 import { ActionIconLink } from "../../../components/ActionIcon";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 export default function Index({ products, filters, printUrl }) {
     const { t } = useTranslation();
@@ -241,7 +243,7 @@ export default function Index({ products, filters, printUrl }) {
                                         </td>
                                         <td>{product.unit}</td>
                                         <td>
-                                            <p>{product.name ?? "N/A"}</p>
+                                            <p><ProductName value={product.name} /></p>
                                             {product.has_pending && (
                                                 <a
                                                     title={`Pending Order #${product.first_order_id ?? ""}`}
@@ -261,9 +263,9 @@ export default function Index({ products, filters, printUrl }) {
                                         </td>
                                         <td>{product.status_label}</td>
                                         <td>{product.orders_count}</td>
-                                        <td>{product.buying_price}</td>
-                                        <td>{product.price}</td>
-                                        <td>{product.offer_type ? product.discount : product.price}</td>
+                                        <td>{formatCurrency(product.buying_price)}</td>
+                                        <td>{formatCurrency(product.price)}</td>
+                                        <td>{formatCurrency(product.offer_type ? product.discount : product.price)}</td>
                                         <td>{product.created_at_human}</td>
                                         <td>
                                             <ActionIconLink

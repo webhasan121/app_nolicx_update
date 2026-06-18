@@ -8,7 +8,7 @@ import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import Hr from "../../../../components/Hr";
 import useTranslation from "../../../../hooks/useTranslation";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function WithdrawCreate() {
     const { t } = useTranslation();
@@ -46,7 +46,7 @@ export default function WithdrawCreate() {
         minimum_remaining_balance_applies &&
         (availableBalanceValue <= minimum_remaining_balance ||
             (amountValue > 0 && remainingBalance <= minimum_remaining_balance));
-    const minimumBalanceMessage = `You cannot withdraw when the remaining withdrawable balance is ${formatAmount(minimum_remaining_balance)} TK or less.`;
+    const minimumBalanceMessage = `You cannot withdraw when the remaining withdrawable balance is ${formatCurrency(minimum_remaining_balance)} or less.`;
 
     return (
         <UserDash>
@@ -61,10 +61,10 @@ export default function WithdrawCreate() {
                                 available_balance > 1 ? (
                                     <div>
                                         <div>
-                                            Wallet Balance : {formatAmount(wallet_balance)} TK
+                                            Wallet Balance : {formatCurrency(wallet_balance)}
                                         </div>
                                         <div>
-                                            Able to Withdraw : {formatAmount(available_balance)} TK
+                                            Able to Withdraw : {formatCurrency(available_balance)}
                                         </div>
                                         {showMinimumBalanceWarning && (
                                             <div className="mt-2 text-sm font-semibold text-red-700">
@@ -75,8 +75,8 @@ export default function WithdrawCreate() {
                                 ) : (
                                     <span>{t("You need to meet minimum balance to make a successful withdraw. Wallet balance :")}{" "}
                                         <strong className="text-red-900">
-                                            {formatAmount(wallet_balance)}
-                                        </strong>{" "}{t("TK")}</span>
+                                            {formatCurrency(wallet_balance)}
+                                        </strong></span>
                                 )
                             }
                         />

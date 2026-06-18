@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\reseller;
+use App\Support\CountrySelection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,7 +14,7 @@ class SearchController extends Controller
     public function index(Request $request)
     {
         $q = $request->string('q')->toString();
-        $country = trim($request->string('country')->toString());
+        $country = CountrySelection::fromRequest($request);
 
         $category = Category::query()
             ->where('name', 'like', '%' . $q . '%')
@@ -28,9 +29,7 @@ class SearchController extends Controller
                 $query->where('shop_name_en', 'like', '%' . $q . '%')
                     ->where(['status' => 'Active']);
             })
-            ->when($country !== '', function ($query) use ($country) {
-                $query->whereRaw('LOWER(country) = ?', [mb_strtolower($country)]);
-            })
+            ->when($country, fn($query) => CountrySelection::applyToShops($query, $country))
             ->get();
 
         $product = Product::query()
@@ -41,9 +40,7 @@ class SearchController extends Controller
             ->where(function ($query) use ($q) {
                 $query->whereAny(['name', 'title'], 'like', '%' . $q . '%');
             })
-            ->when($country !== '', function ($query) use ($country) {
-                $query->whereRaw('LOWER(country) = ?', [mb_strtolower($country)]);
-            })
+            ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
             ->paginate(30)
             ->withQueryString();
 

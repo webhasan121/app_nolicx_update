@@ -1,6 +1,5 @@
 import { useForm, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Container from "../../../../components/dashboard/Container";
 import SectionSection from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
@@ -14,6 +13,7 @@ import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import UserDash from "../../../../components/user/dash/UserDash";
 import useTranslation from "../../../../hooks/useTranslation";
+import DistrictUpozilaSelect from "../../../../components/DistrictUpozilaSelect";
 
 function SearchableSelect({
     id,
@@ -120,7 +120,6 @@ function SearchableSelect({
 export default function UpgradeVendorCreate() {
     const { t } = useTranslation();
     const { upgrade = "vendor", defaults = {}, states = [] } = usePage().props;
-    const [cities, setCities] = useState([]);
 
     const { data, setData, post, processing, errors } = useForm({
         upgrade,
@@ -140,26 +139,6 @@ export default function UpgradeVendorCreate() {
         banner: null,
         description: "",
     });
-
-    useEffect(() => {
-        const selectedState = states.find(
-            (item) =>
-                String(item.name ?? "").trim().toLowerCase() ===
-                String(data.district ?? "").trim().toLowerCase(),
-        );
-
-        if (!selectedState) {
-            setCities([]);
-            return;
-        }
-
-        axios
-            .get(route("upgrade.vendor.cities", { state: selectedState.id }))
-            .then((res) => {
-                setCities(res.data || []);
-            })
-            .catch(() => setCities([]));
-    }, [data.district, states]);
 
     const submit = (e) => {
         e.preventDefault();
@@ -442,55 +421,17 @@ export default function UpgradeVendorCreate() {
                                     </div>
                                 </div>
 
-                                <div className="items-center gap-4 mt-4 md:flex">
-                                    <div style={{ width: "350px" }} className="shrink-0">
-                                        <InputLabel htmlFor="district">
-                                            District
-                                        </InputLabel>
-                                        {errors.district && (
-                                            <div className="mt-2 text-sm text-red-600">
-                                                {errors.district}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <SearchableSelect
-                                            id="district"
-                                            value={data.district}
-                                            options={states}
-                                            onChange={(value) => {
-                                                setData("district", value);
-                                                setData("upozila", "");
-                                            }}
-                                            placeholder={t("-- Select District --")}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="gap-4 mt-4 md:flex">
-                                    <div style={{ width: "350px" }} className="shrink-0">
-                                        <InputLabel htmlFor="upozila">
-                                            Upozila
-                                        </InputLabel>
-                                        {errors.upozila && (
-                                            <div className="mt-2 text-sm text-red-600">
-                                                {errors.upozila}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <SearchableSelect
-                                            id="upozila"
-                                            value={data.upozila}
-                                            options={cities}
-                                            onChange={(value) => setData("upozila", value)}
-                                            placeholder={t("-- Select Upozila --")}
-                                            disabled={!cities.length}
-                                        />
-                                    </div>
-                                </div>
+                                <DistrictUpozilaSelect
+                                    district={data.district}
+                                    upozila={data.upozila}
+                                    states={states}
+                                    errors={errors}
+                                    labelWidth="350px"
+                                    districtLabel={t("District")}
+                                    upozilaLabel={t("Upozila")}
+                                    onDistrictChange={(value) => setData("district", value)}
+                                    onUpozilaChange={(value) => setData("upozila", value)}
+                                />
 
                                 <br />
                                 <PrimaryButton disabled={processing}>{t("Submit")}</PrimaryButton>

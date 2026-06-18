@@ -46,19 +46,23 @@ use Inertia\Inertia;
 Route::middleware('guest')->group(function () {
     Route::get('/register', function () {
         return Inertia::render('Auth/Register', [
-            'countries' => country::orderBy('name')->get()
+            'countries' => country::select('id', 'name')->orderBy('name')->get()->values()
         ]);
     })->name('register');
 
     Route::get('/states/{country}', function ($country) {
         return state::where('country_id', $country)
+            ->select('id', 'name')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->values();
     });
     Route::get('/cities/{state}', function ($state) {
         return city::where('state_id', $state)
+            ->select('id', 'name')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->values();
     });
     Route::post('/register', [RegisteredUserController::class, 'store_user'])->name('register.store');
 
@@ -210,7 +214,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/wallet/print', [WalletController::class, 'print'])->name('user.wallet.print');
 
         Route::get('/wallet/comissions/earn', [WalletComissionController::class, 'index'])->name('user.wallet.earn-comissions');
+        Route::get('/wallet/comissions/earn/print', [WalletComissionController::class, 'print'])->name('user.wallet.earn-comissions.print');
         Route::get('/wallet/tasks', [WalletTaskController::class, 'index'])->name('user.wallet.tasks');
+        Route::get('/wallet/tasks/print', [WalletTaskController::class, 'print'])->name('user.wallet.tasks.print');
         // Route::get('/wallet/comissions/cut', SystemTakeComission::class)->name('user.wallet.system-comissions');
         Route::get('/wallet/reffer/vip', [WalletRefferController::class, 'index'])->name('user.wallet.reffer');
 

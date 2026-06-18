@@ -12,6 +12,7 @@ import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import PageHeader from "../../../../components/dashboard/PageHeader";
 import useTranslation from "../../../../hooks/useTranslation";
+import DistrictUpozilaSelect from "../../../../components/DistrictUpozilaSelect";
 
 function CategoryTree({ categories = [], activeCat, search = "", t }) {
     const normalizedSearch = search.trim().toLowerCase();
@@ -578,34 +579,18 @@ export default function Index({
                                     orderForm.setData("phone", e.target.value)
                                 }
                             />
-                            <InputField
-                                className="md:flex"
+                            <DistrictUpozilaSelect
+                                district={orderForm.data.district}
+                                upozila={orderForm.data.upozila}
+                                errors={orderForm.errors}
                                 labelWidth="140px"
-                                label={t("District")}
-                                name="district"
-                                inputClass="w-full"
-                                error={orderForm.errors.district}
-                                value={orderForm.data.district}
-                                onChange={(e) =>
-                                    orderForm.setData(
-                                        "district",
-                                        e.target.value
-                                    )
+                                districtLabel={t("District")}
+                                upozilaLabel={t("Upozila")}
+                                onDistrictChange={(value) =>
+                                    orderForm.setData("district", value)
                                 }
-                            />
-                            <InputField
-                                className="md:flex"
-                                labelWidth="140px"
-                                label={t("Upozila")}
-                                name="upozila"
-                                inputClass="w-full"
-                                error={orderForm.errors.upozila}
-                                value={orderForm.data.upozila}
-                                onChange={(e) =>
-                                    orderForm.setData(
-                                        "upozila",
-                                        e.target.value
-                                    )
+                                onUpozilaChange={(value) =>
+                                    orderForm.setData("upozila", value)
                                 }
                             />
                             <InputFile

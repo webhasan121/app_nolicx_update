@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "@inertiajs/react";
 import Container from "../../components/dashboard/Container";
 import SectionSection from "../../components/dashboard/section/Section";
@@ -10,7 +10,7 @@ import InputLabel from "../../components/InputLabel";
 import PrimaryButton from "../../components/PrimaryButton";
 import ProductSingle from "../../components/client/ProductSingle";
 import { normalizeProductAttributeGroups } from "../../components/client/ProductAttributesSelector";
-import SearchableSelect from "../../components/SearchableSelect";
+import DistrictUpozilaSelect from "../../components/DistrictUpozilaSelect";
 import TextInput from "../../components/TextInput";
 import UserLayout from "../../Layouts/User/App";
 import NavLink from "../../components/NavLink";
@@ -54,7 +54,6 @@ export default function Order({ product, states = [], initialPrice = 0, selected
         delevery: deliveryDefault,
     });
 
-    const [cities, setCities] = useState([]);
     const quantity = Number(data.quantity) > 0 ? Number(data.quantity) : 1;
     const price = Number(initialPrice || 0);
     const total = price * quantity;
@@ -64,20 +63,6 @@ export default function Order({ product, states = [], initialPrice = 0, selected
             : data.area_condition === "Dhaka"
               ? Number(product.shipping_in_dhaka || 0)
               : Number(product.shipping_out_dhaka || 0);
-
-    useEffect(() => {
-        if (!data.district) {
-            setCities([]);
-            setData("upozila", "");
-            return;
-        }
-
-        axios
-            .get(`/product/order/location/cities/${data.district}`)
-            .then((response) => {
-                setCities(response.data || []);
-            });
-    }, [data.district]);
 
     useEffect(() => {
         if (data.delevery === "hand") {
@@ -218,36 +203,14 @@ export default function Order({ product, states = [], initialPrice = 0, selected
                                         />
                                     </InputFile>
 
-                                    <InputFile label="State" name="state" error="district" errors={errors}>
-                                        <SearchableSelect
-                                            value={data.district}
-                                            options={states}
-                                            onChange={(selectedDistrict) => {
-                                                setData((currentData) => ({
-                                                    ...currentData,
-                                                    district: selectedDistrict,
-                                                    upozila: "",
-                                                }));
-                                            }}
-                                            placeholder="-- Select State --"
-                                            noneLabel="-- Select State --"
-                                            noResultsLabel="No district found."
-                                        />
-                                    </InputFile>
-
-                                    <Hr />
-
-                                    <InputFile label="City" name="city" error="upozila" errors={errors}>
-                                        <SearchableSelect
-                                            value={data.upozila}
-                                            options={cities}
-                                            onChange={(selectedCity) => setData("upozila", selectedCity)}
-                                            placeholder="-- Select City --"
-                                            noneLabel="-- Select City --"
-                                            noResultsLabel="No city found."
-                                            disabled={!data.district}
-                                        />
-                                    </InputFile>
+                                    <DistrictUpozilaSelect
+                                        district={data.district}
+                                        upozila={data.upozila}
+                                        states={states}
+                                        errors={errors}
+                                        onDistrictChange={(value) => setData("district", value)}
+                                        onUpozilaChange={(value) => setData("upozila", value)}
+                                    />
 
                                     <InputFile label="Targeted Area" name="targeted_area" error="targeted_area" errors={errors}>
                                         <TextInput

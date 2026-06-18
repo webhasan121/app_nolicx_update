@@ -1,5 +1,5 @@
 import { Head, router, useForm } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AppLayout from "../../../Layouts/App";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import Container from "../../../components/dashboard/Container";
@@ -14,7 +14,10 @@ import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
 import InputLabel from "../../../components/InputLabel";
 import NavLink from "../../../components/NavLink";
+import ProductName from "../../../components/ProductName";
 import { ActionIconLink } from "../../../components/ActionIcon";
+import { formatCurrency } from "../../../utils/formatAmount";
+import useTranslation from "../../../hooks/useTranslation";
 
 const progressFlow = [
     "Pending",
@@ -26,8 +29,10 @@ const progressFlow = [
 ];
 
 const quickStatus = ["Hold", "Cancelled", "Reject"];
+const riderOnlyStatuses = ["Picked", "Delivery", "Delivered"];
 
 export default function View({ order }) {
+    const { t } = useTranslation();
     const [comissionOpen, setComissionOpen] = useState(false);
     const [acceptOpen, setAcceptOpen] = useState(false);
     const [riderOpen, setRiderOpen] = useState(false);
@@ -43,6 +48,34 @@ export default function View({ order }) {
         delevery: order?.delevery ?? "",
         area_condition: order?.area_condition ?? "",
     });
+
+    useEffect(() => {
+        if (!order?.id) {
+            return undefined;
+        }
+
+        const reloadOrder = () => {
+            if (document.hidden) {
+                return;
+            }
+
+            router.reload({
+                only: ["order"],
+                preserveScroll: true,
+                preserveState: true,
+            });
+        };
+
+        const interval = window.setInterval(reloadOrder, 3000);
+        window.addEventListener("focus", reloadOrder);
+        document.addEventListener("visibilitychange", reloadOrder);
+
+        return () => {
+            window.clearInterval(interval);
+            window.removeEventListener("focus", reloadOrder);
+            document.removeEventListener("visibilitychange", reloadOrder);
+        };
+    }, [order?.id]);
 
 
 
@@ -62,6 +95,7 @@ export default function View({ order }) {
     const currentFlowIndex = progressFlow.indexOf(order?.status);
     const flowLabel = ["Placed", "Accept", "Picked", "Delivery", "Delivered", "Confirm"];
     const canFinish = Boolean(order?.received_at);
+    const resellerVendorOrder = order?.account_type === "reseller" && Boolean(order?.has_vendor_resel_product);
     const nextStatus = {
         Pending: "Accept",
         Hold: "Accept",
@@ -72,6 +106,14 @@ export default function View({ order }) {
     }[order?.status] ?? "";
 
     const handleStepClick = (step) => {
+        if (resellerVendorOrder) {
+            return;
+        }
+
+        if (riderOnlyStatuses.includes(step)) {
+            return;
+        }
+
         if (step !== nextStatus) {
             return;
         }
@@ -120,7 +162,7 @@ export default function View({ order }) {
     };
 
     const openSyncModal = (item) => {
-        if (["Pending", "Hold", "Cancelled", "Cancel", "Reject"].includes(order?.status)) {
+        if (!resellerVendorOrder && ["Pending", "Hold", "Cancelled", "Cancel", "Reject"].includes(order?.status)) {
             window.alert("You can sync only accepted orders");
             return;
         }
@@ -163,27 +205,29 @@ export default function View({ order }) {
                             <div className="flex flex-wrap gap-2 mb-2">
                                 {progressFlow.map((step, idx) => {
                                     const done = currentFlowIndex >= idx;
+                                    const riderOnly = riderOnlyStatuses.includes(step);
+                                    const canClickStep = step === nextStatus && !riderOnly && !resellerVendorOrder;
                                     return (
                                         <button
                                             type="button"
                                             key={step}
                                             onClick={() => handleStepClick(step)}
-                                            disabled={step !== nextStatus}
-                                            title={step === nextStatus ? `Move order to ${step}` : ""}
+                                            disabled={!canClickStep}
+                                            title={riderOnly ? "Only rider can update this status" : canClickStep ? `Move order to ${step}` : ""}
                                             className={`p-2 px-3 rounded-md text-center transition ${
                                                 done
                                                     ? "bg-indigo-900 text-white"
-                                                    : step === nextStatus
+                                                    : canClickStep
                                                         ? "bg-orange-500 text-white hover:bg-orange-600"
                                                         : "bg-gray-100 text-gray-600"
                                             } ${
-                                                step === nextStatus ? "cursor-pointer" : "cursor-not-allowed opacity-80"
+                                                canClickStep ? "cursor-pointer" : "cursor-not-allowed opacity-80"
                                             }`}
                                         >
                                             {flowLabel[idx]}
                                             <br />
                                             {done ? <i className="fas fa-check-circle"></i> : null}
-                                            {!done && step === nextStatus ? <i className="fas fa-arrow-right"></i> : null}
+                                            {!done && canClickStep ? <i className="fas fa-arrow-right"></i> : null}
                                         </button>
                                     );
                                 })}
@@ -192,10 +236,10 @@ export default function View({ order }) {
                                         type="button"
                                         key={step}
                                         onClick={() => submitStatus(step)}
-                                        disabled={order?.status === "Confirm" || order?.status === step}
+                                        disabled={resellerVendorOrder || order?.status === "Confirm" || order?.status === step}
                                         className={`p-2 px-3 rounded-md text-center transition ${
                                             order?.status === step ? "bg-indigo-900 text-white" : "bg-gray-100 text-gray-600"
-                                        } ${order?.status !== "Confirm" && order?.status !== step ? "cursor-pointer hover:bg-gray-200" : "cursor-not-allowed opacity-80"}`}
+                                        } ${!resellerVendorOrder && order?.status !== "Confirm" && order?.status !== step ? "cursor-pointer hover:bg-gray-200" : "cursor-not-allowed opacity-80"}`}
                                     >
                                         {step}
                                         <br />
@@ -249,7 +293,7 @@ export default function View({ order }) {
                                 </ul>
                             ) : null}
                             <div className="flex flex-wrap items-center gap-2 pb-2">
-                                {order?.status === "Pending" ? (
+                                {order?.status === "Pending" && !resellerVendorOrder ? (
                                     <>
                                         <PrimaryButton type="button" onClick={() => setAcceptOpen(true)}>
                                             Accept order
@@ -264,28 +308,15 @@ export default function View({ order }) {
                                                 <i className="pr-2 fas fa-plus"></i> Rider
                                             </PrimaryButton>
                                         ) : null}
-                                        <PrimaryButton type="button" onClick={() => submitStatus("Picked")}>
-                                            Next
-                                        </PrimaryButton>
                                     </>
                                 ) : null}
-                                {order?.status === "Picked" ? (
-                                    <PrimaryButton type="button" onClick={() => submitStatus("Delivery")}>
-                                        Next
-                                    </PrimaryButton>
-                                ) : null}
-                                {order?.status === "Delivery" ? (
-                                    <PrimaryButton type="button" onClick={() => submitStatus("Delivered")}>
-                                        Next
-                                    </PrimaryButton>
-                                ) : null}
-                                {order?.status === "Delivered" && canFinish ? (
+                                {order?.status === "Delivered" && canFinish && !resellerVendorOrder ? (
                                     <PrimaryButton type="button" onClick={() => submitStatus("Confirm")}>
                                         Finished
                                     </PrimaryButton>
                                 ) : null}
 
-                                {order?.status !== "Confirm" ? (
+                                {order?.status !== "Confirm" && !resellerVendorOrder ? (
                                     <>
                                         <SecondaryButton type="button" onClick={() => submitStatus("Hold")}>
                                             Hold
@@ -311,7 +342,7 @@ export default function View({ order }) {
 
                         {order?.account_type === "vendor" && order?.name === "Resel" ? (
                             <SecondaryButton type="button">
-                                Resel Profit {order?.reseller_profit_sum ?? 0} TK
+                                Resel Profit {formatCurrency(order?.reseller_profit_sum)}
                             </SecondaryButton>
                         ) : null}
 
@@ -321,14 +352,14 @@ export default function View({ order }) {
 
                         {(order?.account_type ?? "").toLowerCase() === "reseller" ? (
                             <SecondaryButton type="button" onClick={() => setComissionOpen(true)}>
-                                {(order?.system_comission_rate ?? 0)} % comission {(order?.comission_sum ?? 0)} TK
+                                {(order?.system_comission_rate ?? 0)} % comission {formatCurrency(order?.comission_sum)}
                             </SecondaryButton>
                         ) : null}
                     </div>
                 </Section>
 
                 <OverviewSection>
-                    <Div title="Order ID" content={order?.id ?? 0} />
+                    <Div title="Order ID" content={order?.display_id ?? order?.id ?? 0} />
                     <Div title="Products" content={order?.cart_count ?? 0} />
                     <Div title="Sub Product" content={order?.cart_quantity_sum ?? 0} />
                 </OverviewSection>
@@ -338,9 +369,9 @@ export default function View({ order }) {
                         title={
                             <div className="flex items-start justify-between px-5">
                                 <div className="order-info">
-                                    <div>Order ID: {order?.id}</div>
+                                    <div>Order ID: {order?.display_id ?? order?.id}</div>
                                     <div>Date: <span className="text-xs">{order?.created_at_daytime}</span></div>
-                                    <ActionIconLink href={route("vendor.orders.cprint", { order: order?.id })} action="print" title="Print" />
+                                    <ActionIconLink href={route("vendor.orders.cprint", { order: order?.route_id ?? order?.id })} action="print" title="Print" />
                                 </div>
                                 <div className="order-total text-end">
                                     <table className="table">
@@ -393,7 +424,7 @@ export default function View({ order }) {
                                             {item.product_thumbnail ? (
                                                 <img width="30" height="30" src={item.product_thumbnail} alt="" />
                                             ) : null}
-                                            <div>{item.product_title}</div>
+                                            <div><ProductName value={item.product_title} /></div>
                                         </div>
                                     </td>
                                     <td>
@@ -428,28 +459,28 @@ export default function View({ order }) {
                                             ) : null}
                                         </div>
                                     </td>
-                                    <td>{item.price} TK</td>
+                                    <td>{formatCurrency(item.price)}</td>
                                     <td>{item.quantity}</td>
-                                    <td>{item.total} TK</td>
+                                    <td>{formatCurrency(item.total)}</td>
                                     <td>{item.size}</td>
-                                    {order?.account_type === "vendor" ? <td>{item.buying_price} TK</td> : null}
-                                    <td>{item.main_buying_price} TK</td>
-                                    <td>{item.profit_unit} * {item.quantity} = {item.profit_total} TK</td>
+                                    {order?.account_type === "vendor" ? <td>{formatCurrency(item.buying_price)}</td> : null}
+                                    <td>{formatCurrency(item.main_buying_price)}</td>
+                                    <td>{formatCurrency(item.profit_unit)} * {item.quantity} = {formatCurrency(item.profit_total)}</td>
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr className="border-t">
-                                <td colSpan="6" className="text-right">Sub Total</td>
-                                <td>{order?.cart_sum_total} Tk</td>
+                                <td colSpan="6" className="text-right">{t("Sub Total")}</td>
+                                <td>{formatCurrency(order?.cart_sum_total)}</td>
                             </tr>
                             <tr>
-                                <td colSpan="6" className="text-right">Delivery</td>
-                                <td>{order?.shipping ?? 0} Tk</td>
+                                <td colSpan="6" className="text-right">{t("Delivery")}</td>
+                                <td>{formatCurrency(order?.shipping)}</td>
                             </tr>
                             <tr className="text-lg font-bold bg-gray-100 border-t">
-                                <td colSpan="6" className="text-right">Total</td>
-                                <td>{(Number(order?.shipping ?? 0) + Number(order?.cart_sum_total ?? 0))} Tk</td>
+                                <td colSpan="6" className="text-right">{t("Total")}</td>
+                                <td>{formatCurrency(Number(order?.shipping ?? 0) + Number(order?.cart_sum_total ?? 0))}</td>
                             </tr>
                         </tfoot>
                     </Table>
@@ -521,8 +552,8 @@ export default function View({ order }) {
                             {(order?.comissions ?? []).map((item, index) => (
                                 <tr key={item.id}>
                                     <td>{index + 1}</td>
-                                    <td>{item.take_comission}</td>
-                                    <td>{item.product_name}</td>
+                                    <td>{formatCurrency(item.take_comission)}</td>
+                                    <td><ProductName value={item.product_name} /></td>
                                 </tr>
                             ))}
                         </tbody>
@@ -590,8 +621,15 @@ export default function View({ order }) {
                             <option value="">Select Shipping Type</option>
                             <option value="cash">Cash on Delivery</option>
                             <option value="courier">Courier</option>
+                            <option value="hand">Hand-to-Hand</option>
                             <option value="home">Home Delivery</option>
                         </select>
+                        {syncForm.errors.delevery ? (
+                            <p className="mt-1 text-sm text-red-500">{syncForm.errors.delevery}</p>
+                        ) : null}
+                        {syncForm.errors.cart_order_id ? (
+                            <p className="mt-1 text-sm text-red-500">{syncForm.errors.cart_order_id}</p>
+                        ) : null}
                     </div>
                     <hr className="my-4" />
                     <PrimaryButton

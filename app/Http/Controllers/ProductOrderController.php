@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\state;
 use App\Support\OrderNotice;
+use App\Support\VendorResellOrderSync;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -142,7 +143,10 @@ class ProductOrderController extends Controller
         }
 
         $price = $product->offer_type ? $product->discount : $product->price;
-        $shipping = strtolower((string) $data['delevery']) === 'hand'
+        $isHandDelivery = strtolower((string) $data['delevery']) === 'hand';
+        $orderStatus = $isHandDelivery ? 'Delivered' : 'Pending';
+        $receivedAt = $isHandDelivery ? now() : null;
+        $shipping = $isHandDelivery
             ? 0
             : (($data['area_condition'] ?? 'Dhaka') === 'Dhaka'
                 ? $product->shipping_in_dhaka
@@ -157,7 +161,8 @@ class ProductOrderController extends Controller
             'user_type' => 'user',
             'belongs_to' => $product->user_id,
             'belongs_to_type' => 'reseller',
-            'status' => 'Pending',
+            'status' => $orderStatus,
+            'received_at' => $receivedAt,
             'quantity' => $data['quantity'],
             'total' => $total,
             'delevery' => $data['delevery'],
@@ -173,7 +178,7 @@ class ProductOrderController extends Controller
             'target_area' => $data['targeted_area'] ?: $data['upozila'],
         ]);
 
-        CartOrder::create([
+        $cartOrder = CartOrder::create([
             'user_id' => auth()->id(),
             'user_type' => 'user',
             'belongs_to' => $product->user_id,
@@ -185,9 +190,11 @@ class ProductOrderController extends Controller
             'total' => $total,
             'quantity' => $data['quantity'],
             'buying_price' => $product->buying_price ?? '0',
+            'status' => $orderStatus,
         ]);
 
         ProductComissionController::dispatchProductComissionsListeners($order->id);
+        VendorResellOrderSync::syncCartOrder($order, $cartOrder);
         OrderNotice::orderPlaced($order, auth()->id());
 
         return redirect()->route('user.orders.view');

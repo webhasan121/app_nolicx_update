@@ -2,13 +2,12 @@ import { useForm } from "@inertiajs/react";
 import Container from "../../components/dashboard/Container";
 import NavLink from "../../components/NavLink";
 import UserDash from "../../components/user/dash/UserDash";
-import { useEffect, useState } from "react";
 import InputLabel from "../../components/InputLabel";
 import InputField from "../../components/InputField";
 import Hr from "../../components/Hr";
 import PrimaryButton from "../../components/PrimaryButton";
 import InputFile from "../../components/InputFile";
-import SearchableSelect from "../../components/SearchableSelect";
+import DistrictUpozilaSelect from "../../components/DistrictUpozilaSelect";
 import CartSummaryPanel from "../../components/user/CartSummaryPanel";
 export default function CartCheckout({ carts = [], states = [] }) {
     const { data, setData, post, errors, processing } = useForm({
@@ -22,22 +21,6 @@ export default function CartCheckout({ carts = [], states = [] }) {
         targeted_area: "",
         delevery: "cash",
     });
-
-    const [cities, setCities] = useState([]);
-
-
-
-    useEffect(() => {
-        if (!data.district) {
-            setCities([]);
-            return;
-        }
-
-        axios.get(`/user/cities/${data.district}`).then((res) => {
-            setCities(res.data || []);
-        });
-    }, [data.district]);
-
 
     const increaseQuantity = (id) => {
         post(route("cart.qty.increase", id));
@@ -357,48 +340,14 @@ export default function CartCheckout({ carts = [], states = [] }) {
                                 </div>
                             </div>
                             <div className="w-full">
-                                <InputFile
-                                    label="District"
-                                    name="state"
-                                    error="district"
+                                <DistrictUpozilaSelect
+                                    district={data.district}
+                                    upozila={data.upozila}
+                                    states={states}
                                     errors={errors}
-                                >
-                                    <SearchableSelect
-                                        value={data.district || ""}
-                                        options={states}
-                                        onChange={(selectedDistrict) => {
-                                            setData((currentData) => ({
-                                                ...currentData,
-                                                district: selectedDistrict,
-                                                upozila: "",
-                                            }));
-                                        }}
-                                        placeholder="-- Select State --"
-                                        noneLabel="-- Select State --"
-                                        noResultsLabel="No district found."
-                                    />
-                                </InputFile>
-
-                                <Hr />
-
-                                <InputFile
-                                    label="Upozila"
-                                    name="city"
-                                    error="upozila"
-                                    errors={errors}
-                                >
-                                    <SearchableSelect
-                                        value={data.upozila || ""}
-                                        options={cities}
-                                        onChange={(selectedCity) =>
-                                            setData("upozila", selectedCity)
-                                        }
-                                        placeholder="-- Select City --"
-                                        noneLabel="-- Select City --"
-                                        noResultsLabel="No city found."
-                                        disabled={!data.district}
-                                    />
-                                </InputFile>
+                                    onDistrictChange={(value) => setData("district", value)}
+                                    onUpozilaChange={(value) => setData("upozila", value)}
+                                />
 
                                 <Hr />
 

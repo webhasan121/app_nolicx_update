@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CartOrder;
 use App\Models\cod;
 use App\Models\Order;
+use App\Models\syncOrder;
 use App\Models\User;
 use App\Support\RiderAreaMatcher;
 use App\Support\RiderConsignmentIndexData;
@@ -22,7 +23,7 @@ class ConsignmentController extends Controller
         $orders = [];
 
         if ($user?->requestsToBeRider() && $user?->isRider()) {
-            $rider = $user->isRider()->load('targetedArea');
+            $rider = $user->isRider()->load('targetedArea.city');
             $riderInfo = [
                 'id' => $rider?->id,
                 'targeted_area' => $rider?->targeted_area,
@@ -31,25 +32,24 @@ class ConsignmentController extends Controller
             ];
         }
 
-        $areaTerms = RiderAreaMatcher::termsForRider($user?->isRider()?->load('targetedArea'));
+        $areaTerms = RiderAreaMatcher::termsForRider($user?->isRider()?->load('targetedArea.city'));
 
         if (!empty($areaTerms)) {
             $orders = Order::query()
-                ->with(['cartOrders.product'])
+                ->with(['cartOrders.product', 'syncDetails:id,reseller_order_id,user_order_id'])
                 ->where('status', 'Accept')
                 ->tap(fn ($query) => RiderAreaMatcher::applyOrderAreaScope($query, $areaTerms))
                 ->whereDoesntHave('hasRider')
+                ->whereDoesntHave('syncedVendorOrder')
                 ->get()
                 ->map(function ($order) use ($riderInfo) {
-                    $totalForNotResel = 0;
+                    $cartTotal = 0;
                     $thumbnails = [];
 
                     foreach ($order->cartOrders as $item) {
-                        if (!$item->product?->isResel) {
-                            $totalForNotResel += $item->total;
-                            if (!empty($item->product?->thumbnail)) {
-                                $thumbnails[] = $item->product->thumbnail;
-                            }
+                        $cartTotal += $item->total;
+                        if (!empty($item->product?->thumbnail)) {
+                            $thumbnails[] = $item->product->thumbnail;
                         }
                     }
 
@@ -58,13 +58,16 @@ class ConsignmentController extends Controller
 
                     return [
                         'id' => $order->id,
+                        'display_id' => $order->syncDetails?->user_order_id ?? $order->id,
+                        'route_id' => $order->syncDetails?->user_order_id ?? $order->id,
                         'location' => $order->location,
                         'shipping' => $order->shipping,
+                        'created_at_formatted' => $order->created_at?->toFormattedDateString(),
                         'displayable' => $order->cartOrders->count() === 1 && !$firstCartOrder?->product?->isResel,
                         'thumbnails' => $thumbnails,
-                        'total_for_not_resel' => $totalForNotResel,
+                        'total_for_not_resel' => $cartTotal,
                         'system_comission' => $systemComission,
-                        'display_total' => $totalForNotResel + $systemComission,
+                        'display_total' => $cartTotal + $systemComission,
                     ];
                 })
                 ->values()
@@ -80,13 +83,15 @@ class ConsignmentController extends Controller
         ]);
     }
 
-    public function confirmOrder(Request $request, Order $order)
+    public function confirmOrder(Request $request, int $order)
     {
+        $order = $this->resolveRiderOrder($order);
+
         if (!auth()?->user()?->isRider()) {
             return back()->with('error', 'Your are not a Rider !');
         }
 
-        if (!RiderAreaMatcher::riderMatchesOrder(auth()->user()?->isRider()?->load('targetedArea'), $order)) {
+        if (!RiderAreaMatcher::riderMatchesOrder(auth()->user()?->isRider()?->load('targetedArea.city'), $order)) {
             return back()->with('error', 'This order is outside your targeted area.');
         }
 
@@ -101,9 +106,7 @@ class ConsignmentController extends Controller
         if ($order->delevery == 'cash' && $order->status == 'Accept') {
             $riderCmRange = auth()->user()?->isRider()?->comission;
             $systemCm = ($order->shipping * $riderCmRange) / 100;
-            $totalNotResel = $order->cartOrders->each(function ($item) {
-                return !$item->product?->isResel;
-            })->sum('total');
+            $cartTotal = $order->cartOrders->sum('total');
 
             cod::create([
                 'order_id' => $order->id,
@@ -111,9 +114,9 @@ class ConsignmentController extends Controller
                 'seller_type' => $order->belongs_to_type,
                 'user_id' => $order->user_id,
                 'rider_id' => Auth::id(),
-                'amount' => $totalNotResel,
-                'due_amount' => $totalNotResel,
-                'total_amount' => $totalNotResel + $systemCm,
+                'amount' => $cartTotal,
+                'due_amount' => $cartTotal,
+                'total_amount' => $cartTotal + $systemCm,
                 'rider_amount' => $order->shipping,
                 'comission' => $riderCmRange,
                 'system_comission' => $systemCm,
@@ -132,7 +135,7 @@ class ConsignmentController extends Controller
     public function show($id)
     {
         $cod = cod::query()
-            ->with(['order', 'seller', 'user'])
+            ->with(['order.syncDetails:id,reseller_order_id,user_order_id', 'seller', 'user'])
             ->findOrFail($id);
 
         $seller = User::findOrFail($cod->seller_id);
@@ -169,7 +172,7 @@ class ConsignmentController extends Controller
                 'status' => $cod->status,
             ],
             'order' => [
-                'id' => $cod->order?->id,
+                'id' => $cod->order?->syncDetails?->user_order_id ?? $cod->order?->id,
                 'location' => $cod->order?->location,
                 'number' => $cod->order?->number,
             ],
@@ -191,5 +194,18 @@ class ConsignmentController extends Controller
                 'phone' => $shop?->phone,
             ],
         ]);
+    }
+
+    private function resolveRiderOrder(int $orderId): Order
+    {
+        $syncedOrderId = syncOrder::query()
+            ->where('user_order_id', $orderId)
+            ->value('reseller_order_id');
+
+        if ($syncedOrderId) {
+            return Order::query()->with(['cartOrders.product', 'syncDetails:id,reseller_order_id,user_order_id'])->findOrFail($syncedOrderId);
+        }
+
+        return Order::query()->with(['cartOrders.product', 'syncDetails:id,reseller_order_id,user_order_id'])->findOrFail($orderId);
     }
 }

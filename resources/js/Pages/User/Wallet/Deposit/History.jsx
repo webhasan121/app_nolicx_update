@@ -13,7 +13,7 @@ import Table from "../../../../components/dashboard/table/Table";
 import Modal from "../../../../components/Modal";
 import Hr from "../../../../components/Hr";
 import useTranslation from "../../../../hooks/useTranslation";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function DepositHistory() {
     const { t } = useTranslation();
@@ -70,7 +70,7 @@ export default function DepositHistory() {
                         content={
                             <div className="items-center justify-between md:flex">
                                 <div className="text-2xl font-bold text-indigo-900">
-                                    {formatAmount(coin)} TK
+                                    {formatCurrency(coin)}
                                 </div>
                                 <div className="flex">
                                     <NavLinkBtn
@@ -144,7 +144,7 @@ export default function DepositHistory() {
                                 {history.map((item, index) => (
                                     <tr key={item.id}>
                                         <td>{index + 1}</td>
-                                        <td>{formatAmount(item.amount)}</td>
+                                        <td>{formatCurrency(item.amount)}</td>
                                         <td>
                                             <div className="flex items-center">
                                                 {item.senderAccountNumber}{" "}

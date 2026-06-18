@@ -8,8 +8,11 @@ import Table from "../../components/dashboard/table/Table";
 import UserDash from "../../components/user/dash/UserDash";
 import PrimaryButton from "../../components/PrimaryButton";
 import TextInput from "../../components/TextInput";
+import { formatCurrency } from "../../utils/formatAmount";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Refs() {
+    const { t } = useTranslation();
     const {
         refUsers = {},
         refOwnerName = "User Not Found",
@@ -82,20 +85,24 @@ export default function Refs() {
 
     const resultSummary =
         refUsers?.total > 0
-            ? `Showing ${refUsers?.from ?? 0}-${refUsers?.to ?? 0} of ${refUsers?.total ?? 0} referred users`
-            : "No referred users found";
+            ? t("Showing :from-:to of :total referred users", {
+                  from: refUsers?.from ?? 0,
+                  to: refUsers?.to ?? 0,
+                  total: refUsers?.total ?? 0,
+              })
+            : t("No referred users found");
 
     return (
         <UserDash>
             <Container>
                 <SectionSection>
                     <SectionHeader
-                        title="Referred User"
+                        title={t("Referred User")}
                         content={
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <p>
-                                    You accept referrer by <strong>{refOwnerName}</strong>. And You have total{" "}
-                                    {totalRefUsers} referrer user.
+                                    {t("You accept referrer by")} <strong>{t(refOwnerName)}</strong>.{" "}
+                                    {t("And You have total")} {totalRefUsers} {t("referrer user")}.
                                 </p>
                                 <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
                                     <TextInput
@@ -119,7 +126,7 @@ export default function Refs() {
                                             );
                                         }}
                                         className="py-1"
-                                        placeholder="Search ref users..."
+                                        placeholder={t("Search ref users...")}
                                     />
                                     <PrimaryButton
                                         type="button"
@@ -136,12 +143,12 @@ export default function Refs() {
                         <Table data={rows}>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Comission</th>
-                                    <th>Join</th>
+                                    <th>{t("ID")}</th>
+                                    <th>{t("Name")}</th>
+                                    <th>{t("Email")}</th>
+                                    <th>{t("Phone")}</th>
+                                    <th>{t("Comission")}</th>
+                                    <th>{t("Join")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -149,9 +156,9 @@ export default function Refs() {
                                     <tr key={user.id}>
                                         <td>{user.id}</td>
                                         <td>{user.name}</td>
-                                        <td>{user.email ?? "N/A"}</td>
-                                        <td>{user.phone ?? "N/A"}</td>
-                                        <td>{user.comission}</td>
+                                        <td>{user.email ?? t("N/A")}</td>
+                                        <td>{user.phone ?? t("N/A")}</td>
+                                        <td>{formatCurrency(user.comission)}</td>
                                         <td>{user.join}</td>
                                     </tr>
                                 ))}
@@ -172,7 +179,7 @@ export default function Refs() {
                                                 className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
                                             >
-                                                Previous
+                                                {t("Previous")}
                                             </button>
                                             {pagination.pages.map((link, index) => (
                                                 <button
@@ -195,7 +202,7 @@ export default function Refs() {
                                                 className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
                                             >
-                                                Next
+                                                {t("Next")}
                                             </button>
                                         </div>
                                     </div>

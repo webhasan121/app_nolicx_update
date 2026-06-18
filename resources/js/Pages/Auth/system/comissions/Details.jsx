@@ -5,6 +5,7 @@ import PageHeader from "../../../../components/dashboard/PageHeader";
 import Container from "../../../../components/dashboard/Container";
 import Section from "../../../../components/dashboard/section/Section";
 import Table from "../../../../components/dashboard/table/Table";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function Details({ data = [] }) {
     return (
@@ -38,14 +39,14 @@ export default function Details({ data = [] }) {
                                     <td>{item.id ?? "N/A"}</td>
                                     <td>{item.order_id ?? 0}</td>
                                     <td>{item.product_id ?? 0}</td>
-                                    <td>{item.buying_price ?? 0}</td>
-                                    <td>{item.selling_price ?? 0}</td>
-                                    <td>{item.profit ?? "0"}</td>
+                                    <td>{formatCurrency(item.buying_price)}</td>
+                                    <td>{formatCurrency(item.selling_price)}</td>
+                                    <td>{formatCurrency(item.profit)}</td>
                                     <td>{item.comission_range ?? "0"} %</td>
-                                    <td>{item.take_comission ?? "0"}</td>
-                                    <td>{item.distribute_comission ?? "0"}</td>
-                                    <td>{item.store ?? "0"}</td>
-                                    <td>{item.return ?? "0"}</td>
+                                    <td>{formatCurrency(item.take_comission)}</td>
+                                    <td>{formatCurrency(item.distribute_comission)}</td>
+                                    <td>{formatCurrency(item.store)}</td>
+                                    <td>{formatCurrency(item.return)}</td>
                                     <td>
                                         {item.confirmed ? (
                                             <>

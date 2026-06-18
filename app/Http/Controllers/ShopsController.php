@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Slider as SliderModel;
 use App\Models\Slider_has_slide;
 use App\Models\state as StateModel;
+use App\Support\CountrySelection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -24,12 +25,14 @@ class ShopsController extends Controller
         $location = $request->string('location')->toString();
         $state = $request->string('state')->toString();
         $userLocation = $this->currentUserLocation();
+        $country = CountrySelection::fromRequest($request);
 
         if ($state === 'me') {
             $location = $userLocation;
         }
 
-        $query = reseller::where('status', 'Active');
+        $query = reseller::where('status', 'Active')
+            ->when($country, fn($builder) => CountrySelection::applyToShops($builder, $country));
 
         if ($q !== '') {
             $keyword = mb_strtolower($q);
@@ -55,9 +58,9 @@ class ShopsController extends Controller
             });
         }
 
-        $shops = ($q !== '' || $location !== '')
+        $shops = ($q !== '' || $location !== '' || $country !== '')
             ? $query->latest('id')->paginate(20)->withQueryString()
-            : $this->defaultShops();
+            : $this->defaultShops($country);
 
         $sliderIds = SliderModel::query()
             ->where('status', true)
@@ -77,9 +80,10 @@ class ShopsController extends Controller
                 'q' => $q,
                 'location' => $location,
                 'state' => $state,
+                'country' => $country,
             ],
             'userLocation' => $userLocation,
-            'showFiltered' => $q !== '' || $location !== '',
+            'showFiltered' => $q !== '' || $location !== '' || $country !== '',
         ]);
     }
 
@@ -121,8 +125,9 @@ class ShopsController extends Controller
         return $value;
     }
 
-    public function show($id, $name): Response
+    public function show(Request $request, $id, $name): Response
     {
+        $country = CountrySelection::fromRequest($request);
         $shop = reseller::query()
             ->with('user')
             ->findOrFail($id);
@@ -131,6 +136,7 @@ class ShopsController extends Controller
             ->active()
             ->reseller()
             ->where('user_id', $shop?->user?->id)
+            ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
             ->get([
                 'id',
                 'name',
@@ -147,13 +153,15 @@ class ShopsController extends Controller
         return Inertia::render('Shops/Show', [
             'shop' => $shop,
             'products' => $products,
+            'country' => $country,
         ]);
     }
 
-    private function defaultShops()
+    private function defaultShops(?string $country = null)
     {
         return reseller::query()
             ->where('status', 'Active')
+            ->when($country, fn($query) => CountrySelection::applyToShops($query, $country))
             ->latest('id')
             ->paginate(20)
             ->withQueryString();

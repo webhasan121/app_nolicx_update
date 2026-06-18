@@ -2,10 +2,8 @@ import { Head, router } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import Hr from "../../../../components/Hr";
-import Modal from "../../../../components/Modal";
 import NavLink from "../../../../components/NavLink";
 import PrimaryButton from "../../../../components/PrimaryButton";
-import SecondaryButton from "../../../../components/SecondaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import Div from "../../../../components/dashboard/overview/Div";
@@ -18,6 +16,7 @@ import PageHeader from "../../../../components/dashboard/PageHeader";
 import useTranslation from "../../../../hooks/useTranslation";
 import { ActionIconLink } from "../../../../components/ActionIcon";
 import { todayInputDate } from "../../../../utils/dateInput";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 function statusClass(status) {
     const classes = {
@@ -45,10 +44,13 @@ function buildQuery(filters, updates = {}) {
 
 export default function Index({ activeNav, filters = {}, summary = {}, list = {}, printUrl }) {
     const { t } = useTranslation();
-    const [filterOpen, setFilterOpen] = useState(false);
     const [find, setFind] = useState(filters.find ?? "");
     const rows = list?.data ?? [];
     const today = todayInputDate();
+    const primaryFilterValue =
+        (filters.type ?? "All") !== "All"
+            ? `type:${filters.type}`
+            : `nav:${filters.nav ?? "Pending"}`;
 
     const updateFilters = (updates = {}) => {
         router.get(route("reseller.resel-order.index"), buildQuery(filters, updates), {
@@ -109,8 +111,8 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
 
     const resultSummary =
         list?.total > 0
-            ? `Showing ${list?.from ?? 0}-${list?.to ?? 0} of ${list?.total ?? 0} resel orders`
-            : "No resel orders found";
+            ? `${t("Showing")} ${list?.from ?? 0}-${list?.to ?? 0} ${t("of")} ${list?.total ?? 0} ${t("resel orders")}`
+            : t("No resel orders found");
     const hasActiveFilters = Boolean(
         find.trim() ||
             (filters.nav ?? "Pending") !== "Pending" ||
@@ -149,49 +151,95 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <SecondaryButton
-                                        type="button"
-                                        onClick={() => setFilterOpen(true)}
-                                        className="inline-flex items-center gap-2 px-4 text-xs h-9"
-                                    >
-                                        <i className="text-sm fas fa-filter"></i>
-                                        <span>Filter</span>
-                                    </SecondaryButton>
-
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex flex-wrap items-center gap-2">
                                     <div className="relative">
                                         <select
                                             id="status"
-                                            value={filters.nav ?? "Pending"}
-                                            onChange={(e) => updateFilters({ nav: e.target.value, page: undefined })}
+                                            value={primaryFilterValue}
+                                            onChange={(e) => {
+                                                const [filterKey, filterValue] = e.target.value.split(":");
+
+                                                if (filterKey === "type") {
+                                                    updateFilters({
+                                                        nav: "All",
+                                                        type: filterValue,
+                                                        page: undefined,
+                                                    });
+                                                    return;
+                                                }
+
+                                                updateFilters({
+                                                    nav: filterValue,
+                                                    type: "All",
+                                                    page: undefined,
+                                                });
+                                            }}
                                             className="py-1 pl-3 text-sm bg-white border rounded-md shadow-sm appearance-none h-9 min-w-28 border-slate-300 pr-9 text-slate-900 focus:border-orange-500 focus:ring-orange-500"
                                         >
-                                            <option value="All">Any</option>
-                                            <option value="Pending">Pending</option>
-                                            <option value="Accept">Accept</option>
-                                            <option value="Picked">Picked</option>
-                                            <option value="Delivery">Delivery</option>
-                                            <option value="Delivered">Delivered</option>
-                                            <option value="Confirm">Confirm</option>
-                                            <option value="Reject">Reject</option>
-                                            <option value="Hold">Hold</option>
+                                            <option value="nav:All">{t("Any")}</option>
+                                            <option value="nav:Pending">{t("Pending")}</option>
+                                            <option value="nav:Accept">{t("Accept")}</option>
+                                            <option value="nav:Picked">{t("Picked")}</option>
+                                            <option value="nav:Delivery">{t("Delivery")}</option>
+                                            <option value="nav:Delivered">{t("Delivered")}</option>
+                                            <option value="nav:Confirm">{t("Confirm")}</option>
+                                            <option value="nav:Reject">{t("Reject")}</option>
+                                            <option value="nav:Hold">{t("Hold")}</option>
+                                            <option value="type:Resel">{t("Resel")}</option>
+                                            <option value="type:Purchase">{t("Purchase")}</option>
+                                            </select>
+                                        <i className="absolute text-xs -translate-y-1/2 pointer-events-none fas fa-chevron-down right-3 top-1/2 text-slate-500"></i>
+                                    </div>
+                                </div>
+
+                                <div className="flex min-w-[320px] flex-1 flex-wrap items-center gap-2">
+                                    <div className="relative">
+                                        <select
+                                            value={filters.delivery ?? "all"}
+                                            onChange={(e) =>
+                                                updateFilters({
+                                                    delivery: e.target.value,
+                                                    page: undefined,
+                                                })
+                                            }
+                                            className="py-1 pl-3 text-sm bg-white border rounded-md shadow-sm appearance-none h-9 min-w-40 border-slate-300 pr-9 text-slate-900 focus:border-orange-500 focus:ring-orange-500"
+                                        >
+                                            <option value="all">{t("Not Defined")}</option>
+                                            <option value="cash">{t("Home Delivery")}</option>
+                                            <option value="courier">{t("Courier Delivery")}</option>
+                                            <option value="hand">{t("Hand-to-Hand")}</option>
                                         </select>
                                         <i className="absolute text-xs -translate-y-1/2 pointer-events-none fas fa-chevron-down right-3 top-1/2 text-slate-500"></i>
                                     </div>
 
-                                    <div className="relative">
-                                        <select
-                                            id="type"
-                                            value={filters.type ?? "All"}
-                                            onChange={(e) => updateFilters({ type: e.target.value, page: undefined })}
-                                            className="py-1 pl-3 text-sm bg-white border rounded-md shadow-sm appearance-none h-9 min-w-24 border-slate-300 pr-9 text-slate-900 focus:border-orange-500 focus:ring-orange-500"
-                                        >
-                                            <option value="All">All</option>
-                                            <option value="Resel">Resel</option>
-                                            <option value="Purchase">Purchase</option>
-                                        </select>
-                                        <i className="absolute text-xs -translate-y-1/2 pointer-events-none fas fa-chevron-down right-3 top-1/2 text-slate-500"></i>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <div className="relative">
+                                            <input
+                                                type="date"
+                                                value={filters.start_date || today}
+                                                onChange={(e) =>
+                                                    updateFilters({
+                                                        start_date: e.target.value,
+                                                        page: undefined,
+                                                    })
+                                                }
+                                                className="py-1 pl-3 text-sm bg-white border rounded-md shadow-sm h-9 min-w-36 border-slate-300 text-slate-900 focus:border-orange-500 focus:ring-orange-500"
+                                            />
+                                        </div>
+                                        <div className="relative">
+                                            <input
+                                                type="date"
+                                                value={filters.end_date ?? ""}
+                                                onChange={(e) =>
+                                                    updateFilters({
+                                                        end_date: e.target.value,
+                                                        page: undefined,
+                                                    })
+                                                }
+                                                className="py-1 pl-3 text-sm bg-white border rounded-md shadow-sm h-9 min-w-36 border-slate-300 text-slate-900 focus:border-orange-500 focus:ring-orange-500"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -208,7 +256,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                             e.preventDefault();
                                             updateFilters({ find: find.trim(), page: undefined });
                                         }}
-                                        placeholder="Search orders..."
+                                        placeholder={t("Search orders...")}
                                         className="w-64 py-1 text-sm h-9"
                                     />
                                     <PrimaryButton
@@ -296,9 +344,9 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                                 )}
                                             </td>
                                             <td>
-                                                {item.total} + {item.shipping}
+                                                {formatCurrency(item.total)} + {formatCurrency(item.shipping)}
                                             </td>
-                                            <td className="font-bold">{item.profit}</td>
+                                            <td className="font-bold">{formatCurrency(item.profit)}</td>
                                             <td>
                                                 <p className={`inline-flex text-xs px-1 rounded ${item.delevery === "cash" ? "bg-green-200" : "bg-blue-200"}`}>
                                                     {item.delevery}
@@ -336,7 +384,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                                     className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.prev?.url)}
                                                 >
-                                                    Previous
+                                                    {t("Previous")}
                                                 </button>
                                                 {pagination.pages.map((link, index) => (
                                                     <button
@@ -359,7 +407,7 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                                                     className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                     onClick={() => goToPage(pagination.next?.url)}
                                                 >
-                                                    Next
+                                                    {t("Next")}
                                                 </button>
                                             </div>
                                         </div>
@@ -369,107 +417,6 @@ export default function Index({ activeNav, filters = {}, summary = {}, list = {}
                     </SectionInner>
                 </SectionSection>
             </Container>
-
-            <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
-                <div className="p-2">
-                    <div>{t("Filter")}</div>
-                    <Hr />
-                    <div className="justify-between md:flex">
-                        <div>
-                            <div>
-                                <div>{t("Delevery Type")}</div>
-                                <div className="px-2">
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input
-                                            type="radio"
-                                            style={{ width: 20, height: 20 }}
-                                            className="mr-2"
-                                            checked={(filters.delivery ?? "all") === "all"}
-                                            onChange={() => updateFilters({ delivery: "all" })}
-                                        />{" "}{t("Not Defined")}</div>
-                                    <hr />
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input
-                                            type="radio"
-                                            style={{ width: 20, height: 20 }}
-                                            className="mr-2"
-                                            checked={filters.delivery === "cash"}
-                                            onChange={() => updateFilters({ delivery: "cash" })}
-                                        />{" "}{t("Home Delivery")}</div>
-                                    <hr />
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input
-                                            type="radio"
-                                            style={{ width: 20, height: 20 }}
-                                            className="mr-2"
-                                            checked={filters.delivery === "courier"}
-                                            onChange={() => updateFilters({ delivery: "courier" })}
-                                        />{" "}{t("Courier Delivery")}</div>
-                                    <hr />
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input
-                                            type="radio"
-                                            style={{ width: 20, height: 20 }}
-                                            className="mr-2"
-                                            checked={filters.delivery === "hand"}
-                                            onChange={() => updateFilters({ delivery: "hand" })}
-                                        />{t("Hand-to-Hand")}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="w-1/2 mt-2">
-                            <div className="border rounded-md ">
-                                <div className="p-2 ">
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input
-                                            type="radio"
-                                            style={{ width: 20, height: 20 }}
-                                            className="mr-2"
-                                            checked={(filters.create ?? "all") === "all"}
-                                            onChange={() => updateFilters({ create: "all" })}
-                                        />{t("All Time")}</div>
-                                    <hr />
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input
-                                            type="radio"
-                                            style={{ width: 20, height: 20 }}
-                                            className="mr-2"
-                                            checked={filters.create === "day"}
-                                            onChange={() => updateFilters({ create: "day" })}
-                                        />{t("From First Date")}</div>
-                                    <hr />
-                                    <div className="flex items-center w-full p-2 text-sm">
-                                        <input
-                                            type="radio"
-                                            style={{ width: 20, height: 20 }}
-                                            className="mr-2"
-                                            checked={filters.create === "between"}
-                                            onChange={() => updateFilters({ create: "between" })}
-                                        />{t("Between in Range")}</div>
-                                </div>
-
-                                <div className="p-2 space-y-2 ">
-                                    <div>{t("First Date")}<input
-                                            className="rounded-md"
-                                            type="date"
-                                            value={filters.start_date || today}
-                                            onChange={(e) => updateFilters({ start_date: e.target.value })}
-                                        />
-                                    </div>
-                                    <div>{t("Last Date")}<input
-                                            className="rounded-md"
-                                            type="date"
-                                            value={filters.end_date ?? ""}
-                                            onChange={(e) => updateFilters({ end_date: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Modal>
         </AppLayout>
     );
 }

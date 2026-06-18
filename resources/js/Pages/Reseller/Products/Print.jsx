@@ -5,6 +5,8 @@ import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
+import ProductName from "../../../components/ProductName";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 export default function Print({ products = [], filters = {} }) {
     const toNumber = (value) => Number(value || 0) || 0;
@@ -68,22 +70,22 @@ export default function Print({ products = [], filters = {} }) {
                                     <tr key={product.id}>
                                         <td>{product.sl}</td>
                                         <td>{product.id}</td>
-                                        <td>{product.name}</td>
+                                        <td><ProductName value={product.name} /></td>
                                         <td>{product.unit}</td>
                                         <td>{product.status_label}</td>
                                         <td>{product.orders_count}</td>
-                                        <td>{product.buying_price}</td>
-                                        <td>{product.price}</td>
-                                        <td>{product.sell_price}</td>
+                                        <td>{formatCurrency(product.buying_price)}</td>
+                                        <td>{formatCurrency(product.price)}</td>
+                                        <td>{formatCurrency(product.sell_price)}</td>
                                         <td>{product.created_at_human}</td>
                                     </tr>
                                 ))}
                                 <tr className="font-bold">
                                     <td colSpan="5">Total {products.length} Items</td>
                                     <td>{totals.orders}</td>
-                                    <td>{totals.cost}</td>
-                                    <td>{totals.price}</td>
-                                    <td>{totals.sellPrice}</td>
+                                    <td>{formatCurrency(totals.cost)}</td>
+                                    <td>{formatCurrency(totals.price)}</td>
+                                    <td>{formatCurrency(totals.sellPrice)}</td>
                                     <td></td>
                                 </tr>
                             </tbody>

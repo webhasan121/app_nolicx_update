@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Notice;
 use App\Models\NoticeRead;
 use App\Models\cod;
+use App\Models\syncOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -338,7 +339,17 @@ class NoticeController extends Controller
         }
 
         if ($linkRole === 'vendor') {
-            return route('vendor.orders.view', ['order' => $orderId]);
+            $order = \App\Models\Order::query()->find($orderId);
+
+            if ($order && (int) $order->belongs_to === (int) $user?->id && $order->belongs_to_type === 'vendor') {
+                return route('vendor.orders.view', ['order' => $orderId]);
+            }
+
+            if ($order && $this->orderHasVendorReselProduct($order, (int) $user?->id)) {
+                return route('vendor.products.view');
+            }
+
+            return null;
         }
 
         if ($linkRole === 'reseller') {
@@ -375,8 +386,9 @@ class NoticeController extends Controller
     private function riderConsignmentUrl(int $orderId): string
     {
         $riderId = auth()->id();
+        $orderIds = $this->riderOrderIds($orderId);
         $query = cod::query()
-            ->where('order_id', $orderId);
+            ->whereIn('order_id', $orderIds);
 
         if ($riderId) {
             $query->where('rider_id', $riderId);
@@ -389,6 +401,19 @@ class NoticeController extends Controller
         return $consignmentId
             ? route('rider.consignment.view', ['id' => $consignmentId])
             : route('rider.consignment');
+    }
+
+    private function riderOrderIds(int $orderId): array
+    {
+        $syncedOrderId = syncOrder::query()
+            ->where('user_order_id', $orderId)
+            ->value('reseller_order_id');
+
+        return collect([$orderId, $syncedOrderId])
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function canManage($user): bool
@@ -417,9 +442,15 @@ class NoticeController extends Controller
         }
 
         if (! $canManage && $effectiveRoles === ['rider']) {
-            $query
-                ->whereNotNull('order_id')
-                ->whereHas('order.hasRider', fn ($consignmentQuery) => $consignmentQuery->where('rider_id', $user->id));
+            $query->where(function ($noticeQuery) use ($user) {
+                $noticeQuery
+                    ->whereNull('order_id')
+                    ->orWhereHas('order.hasRider', fn ($consignmentQuery) => $consignmentQuery->where('rider_id', $user->id));
+            });
+        }
+
+        if (! $canManage && in_array($effectiveRoles, [['vendor'], ['reseller']], true)) {
+            $this->applySellerNoticeScope($query, $user, $effectiveRoles[0]);
         }
 
         return $query;
@@ -464,6 +495,53 @@ class NoticeController extends Controller
         });
     }
 
+    private function applySellerNoticeScope($query, $user, string $role): void
+    {
+        if ($role === 'vendor') {
+            $query->where(function ($noticeQuery) use ($user) {
+                $noticeQuery
+                    ->whereNull('order_id')
+                    ->orWhereHas('order', function ($orderQuery) use ($user) {
+                        $orderQuery->where(function ($sellerQuery) use ($user) {
+                            $sellerQuery
+                                ->where(function ($directQuery) use ($user) {
+                                    $directQuery
+                                        ->where('belongs_to', $user->id)
+                                        ->where('belongs_to_type', 'vendor');
+                                })
+                                ->orWhereHas('cartOrders.product.isResel', function ($reselQuery) use ($user) {
+                                    $reselQuery->where('belongs_to', $user->id);
+                                });
+                        });
+                    });
+            });
+
+            return;
+        }
+
+        $query->where(function ($noticeQuery) use ($user, $role) {
+            $noticeQuery
+                ->whereNull('order_id')
+                ->orWhereHas('order', function ($orderQuery) use ($user, $role) {
+                    $orderQuery
+                        ->where('belongs_to', $user->id)
+                        ->where('belongs_to_type', $role);
+                });
+        });
+    }
+
+    private function orderHasVendorReselProduct($order, int $vendorId): bool
+    {
+        if (! $vendorId) {
+            return false;
+        }
+
+        return $order
+            ->cartOrders()
+            ->whereHas('product.isResel', fn ($reselQuery) => $reselQuery->where('belongs_to', $vendorId))
+            ->exists();
+    }
+
     private function noticeRolesFor($user): array
     {
         $roles = $user->getRoleNames()->values()->all();
@@ -501,20 +579,11 @@ class NoticeController extends Controller
     private function canViewNotice(Notice $notice, $user): bool
     {
         $canManage = $this->canManage($user);
-        $roles = $canManage ? null : $this->allNoticeRolesFor($user);
+        $roles = $canManage ? null : $this->noticeRolesFor($user);
 
         return $this->visibleNoticeQuery($user, $canManage, $roles)
             ->whereKey($notice->id)
             ->exists();
     }
 
-    private function allNoticeRolesFor($user): array
-    {
-        $roles = collect($user->getRoleNames()->values()->all())
-            ->intersect(self::TARGET_ROLES)
-            ->values()
-            ->all();
-
-        return count($roles) ? $roles : ['user'];
-    }
 }

@@ -294,7 +294,7 @@ export default function NoticeIndex({
                 {canManage && (
                     <Section>
                         <SectionHeader
-                            title={editingId ? "Edit Notice" : "Create Notice"}
+                            title={editingId ? t("Edit Notice") : t("Create Notice")}
                             content={t("Publish notices for users, vendors, resellers, riders, and the system panel.")}
                         />
 
@@ -379,7 +379,7 @@ export default function NoticeIndex({
                             <div className="flex gap-2">
                                 <PrimaryButton disabled={form.processing}>
                                     <i className={`fas ${editingId ? "fa-save" : "fa-plus"} pr-2`}></i>
-                                    {editingId ? "Update Notice" : "Create Notice"}
+                                    {editingId ? t("Update Notice") : t("Create Notice")}
                                 </PrimaryButton>
                                 {editingId && (
                                     <button
@@ -395,8 +395,8 @@ export default function NoticeIndex({
 
                 <Section>
                     <SectionHeader
-                        title={`Notice (${noticeMeta.total ?? noticeItems.length})`}
-                        content={canManage ? "All notices are listed below." : "Notices for your account are listed below."}
+                        title={t("Notice (:count)", { count: noticeMeta.total ?? noticeItems.length })}
+                        content={canManage ? t("All notices are listed below.") : t("Notices for your account are listed below.")}
                     />
 
                     <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
@@ -468,7 +468,7 @@ export default function NoticeIndex({
                                 onClick={selectLoadedNotices}
                                 className="rounded border border-gray-300 bg-white px-3 py-2 text-xs font-semibold uppercase text-gray-700"
                             >
-                                Select 50
+                                {t("Select 50")}
                             </button>
                             <button
                                 type="button"
@@ -488,10 +488,10 @@ export default function NoticeIndex({
                                 }`}
                             >
                                 <i className="fas fa-trash pr-1"></i>
-                                {bulkDeleting ? "Deleting..." : `Delete Selected (${selectedNoticeIds.length})`}
+                                {bulkDeleting ? t("Deleting...") : t("Delete Selected (:count)", { count: selectedNoticeIds.length })}
                             </button>
                             <span className="text-xs text-gray-500">
-                                Maximum 50 notices at once.
+                                {t("Maximum 50 notices at once.")}
                             </span>
                         </div>
                     )}
@@ -523,7 +523,7 @@ export default function NoticeIndex({
                                             <h2 className="text-lg font-semibold text-gray-900">
                                                 {notice.title}
                                             </h2>
-                                            <div className="mt-1 text-xs text-gray-500">{t("Published:")}{notice.published_at_formatted}{t("| Expires:")}{notice.expires_at_formatted}
+                                            <div className="mt-1 text-xs text-gray-500">{t("Published:")} {notice.published_at_formatted} {t("| Expires:")} {notice.expires_at_formatted}
                                             </div>
                                         </div>
 
@@ -591,7 +591,7 @@ export default function NoticeIndex({
                                 onClick={loadMoreNotices}
                                 disabled={loadingMore}
                             >
-                                {loadingMore ? "Loading..." : "Load More"}
+                                {loadingMore ? t("Loading...") : t("Load More")}
                             </PrimaryButton>
                         </div>
                     )}

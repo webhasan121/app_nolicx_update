@@ -13,7 +13,7 @@ import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
 import { todayInputDate } from "../../../../utils/dateInput";
 import { ActionIconButton } from "../../../../components/ActionIcon";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
     const { t } = useTranslation();
@@ -252,11 +252,11 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                         <td>{item.id}</td>
                                         <td>{item.order_id}</td>
                                         <td>{item.rider_name}</td>
-                                        <td>{formatAmount(item.amount)}</td>
-                                        <td>{formatAmount(item.rider_amount)}</td>
-                                        <td>{formatAmount(item.total_amount)}</td>
-                                        <td>{formatAmount(item.system_comission)}</td>
-                                        <td>{formatAmount(item.comission)}</td>
+                                        <td>{formatCurrency(item.amount)}</td>
+                                        <td>{formatCurrency(item.rider_amount)}</td>
+                                        <td>{formatCurrency(item.total_amount)}</td>
+                                        <td>{formatCurrency(item.system_comission)}</td>
+                                        <td>{formatCurrency(item.comission)}</td>
                                         <td>{item.status}</td>
                                         <td>{item.created_at_formatted}</td>
                                         <td>
@@ -273,11 +273,11 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                     <td></td>
                                     <td></td>
                                     <td></td>
-                                    <td>{cod?.summary?.amount ?? 0}</td>
-                                    <td>{cod?.summary?.rider_amount ?? 0}</td>
-                                    <td>{cod?.summary?.total_amount ?? 0}</td>
-                                    <td>{cod?.summary?.system_comission ?? 0}</td>
-                                    <td>{cod?.summary?.comission ?? 0}</td>
+                                    <td>{formatCurrency(cod?.summary?.amount)}</td>
+                                    <td>{formatCurrency(cod?.summary?.rider_amount)}</td>
+                                    <td>{formatCurrency(cod?.summary?.total_amount)}</td>
+                                    <td>{formatCurrency(cod?.summary?.system_comission)}</td>
+                                    <td>{formatCurrency(cod?.summary?.comission)}</td>
                                     <td></td>
                                     <td></td>
                                 </tr>

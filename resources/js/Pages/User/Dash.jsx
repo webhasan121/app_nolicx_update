@@ -9,6 +9,7 @@ import UserDash from "../../components/user/dash/UserDash";
 import MembershipActivateBox from "../../components/client/MembershipActivateBox";
 import NavLink from "../../components/NavLink";
 import useTranslation from "../../hooks/useTranslation";
+import { formatCurrency } from "../../utils/formatAmount";
 
 export default function Dash() {
     const { props } = usePage();
@@ -81,7 +82,7 @@ export default function Dash() {
                                     href={route("user.wallet.index")}
                                     className="px-3 py-1 text-indigo-900 border rounded-lg shadow ring-1"
                                 >
-                                    <span className="text-sm text-center">{(user.coin ?? 0) + " TK"}</span>
+                                    <span className="text-sm text-center">{formatCurrency(user.coin ?? 0)}</span>
                                 </NavLink>
                             </div>
                         </div>

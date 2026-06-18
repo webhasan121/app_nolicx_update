@@ -1,5 +1,5 @@
 import { usePage, Link, router } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ApplicationName from "../ApplicationName";
 import CatLoop from "../client/CatLoop";
 import StickyNav from "../StickyNav";
@@ -11,12 +11,11 @@ import CountrySearchSelect from "../CountrySearchSelect";
 import LanguageSwitcher from "../LanguageSwitcher";
 
 export default function Header() {
-    const { auth, global, roles, activeNav } = usePage().props; // this global() load in AppServiceProvider
+    const { auth, global, activeNav, selectedCountry: pageCountry } = usePage().props; // this global() load in AppServiceProvider
     const categories = global?.categories || [];
     const countries = global?.countries || [];
     const user = auth?.user;
     const { t } = useTranslation();
-    console.log("roles", roles);
     const resolveCountry = (value) => {
         const normalized = String(value ?? "").trim().toLowerCase();
 
@@ -41,9 +40,10 @@ export default function Header() {
             if (country) {
                 return resolveCountry(country);
             }
+
         }
 
-        return resolveCountry(user?.country);
+        return resolveCountry(pageCountry || user?.country || "Bangladesh");
     });
     const currentCategorySlug = (() => {
         if (typeof window === "undefined") {
@@ -53,6 +53,10 @@ export default function Header() {
         const match = window.location.pathname.match(/^\/category\/([^/]+)\/products\/?$/);
         return match ? decodeURIComponent(match[1]) : "";
     })();
+
+    useEffect(() => {
+        setSelectedCountry(resolveCountry(pageCountry || user?.country || "Bangladesh"));
+    }, [pageCountry, user?.country, countries.length]);
 
     // Logout
     const logout = () => {
@@ -72,6 +76,32 @@ export default function Header() {
             q,
             country: selectedCountry || undefined,
         });
+    };
+
+    const handleCountryChange = (country) => {
+        setSelectedCountry(country);
+
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const nextUrl = new URL(window.location.href);
+        const params = Object.fromEntries(nextUrl.searchParams.entries());
+
+        delete params.page;
+
+        router.get(
+            nextUrl.pathname,
+            {
+                ...params,
+                country: country || undefined,
+            },
+            {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
+            }
+        );
     };
 
     const matchesCategory = (item, keyword) => {
@@ -158,7 +188,7 @@ export default function Header() {
                                     <CountrySearchSelect
                                         value={selectedCountry}
                                         options={countries}
-                                        onChange={setSelectedCountry}
+                                        onChange={handleCountryChange}
                                         placeholder={t("Country")}
                                     />
                                 ) : null}
@@ -167,10 +197,10 @@ export default function Header() {
 
                         {/* RIGHT */}
                         <div>
+                            <div className="flex items-center">
+                                <LanguageSwitcher compact className="mx-1" />
                             {auth?.user ? (
-                                <div className="flex items-center">
-                                    <LanguageSwitcher compact className="mx-1" />
-
+                                <>
                                     {/* CART */}
                                     <NavLink
                                         href={route("carts.view")}
@@ -346,7 +376,7 @@ export default function Header() {
                                             </Dropdown>
                                         </div>
                                     </div>
-                                </div>
+                                </>
                             ) : (
                                 <NavLink
                                     href={route("login")}
@@ -356,6 +386,7 @@ export default function Header() {
                                     {t("Login")}
                                 </NavLink>
                             )}
+                            </div>
                         </div>
                     </div>
                 </div>

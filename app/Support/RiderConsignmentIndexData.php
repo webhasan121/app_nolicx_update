@@ -17,11 +17,11 @@ class RiderConsignmentIndexData
         $find = trim((string) ($filters['find'] ?? ''));
         $page = max((int) ($filters['page'] ?? 1), 1);
 
-        $rider = $user->isRider()?->load('targetedArea');
+        $rider = $user->isRider()?->load('targetedArea.city');
         $areaTerms = RiderAreaMatcher::termsForRider($rider);
 
         $query = cod::query()
-            ->with(['order.cartOrders.product'])
+            ->with(['order.cartOrders.product', 'order.syncDetails:id,reseller_order_id,user_order_id'])
             ->where('rider_id', $user->id)
             ->whereHas('order', fn ($orderQuery) => RiderAreaMatcher::applyOrderAreaScope($orderQuery, $areaTerms));
 
@@ -59,7 +59,10 @@ class RiderConsignmentIndexData
                             ->orWhere('location', 'like', '%' . $find . '%')
                             ->orWhere('district', 'like', '%' . $find . '%')
                             ->orWhere('upozila', 'like', '%' . $find . '%')
-                            ->orWhere('target_area', 'like', '%' . $find . '%');
+                            ->orWhere('target_area', 'like', '%' . $find . '%')
+                            ->orWhereHas('syncDetails', function ($syncQuery) use ($find) {
+                                $syncQuery->where('user_order_id', 'like', '%' . $find . '%');
+                            });
                     });
             });
         }
@@ -68,15 +71,13 @@ class RiderConsignmentIndexData
         $earnTotal = 0;
 
         (clone $query)->get()->each(function ($cod) use (&$deliveryTotal, &$earnTotal) {
-            $totalForNotResel = 0;
+            $cartTotal = 0;
 
             foreach ($cod->order?->cartOrders ?? [] as $item) {
-                if (!$item->product?->isResel) {
-                    $totalForNotResel += $item->total;
-                }
+                $cartTotal += $item->total;
             }
 
-            $deliveryTotal += $totalForNotResel;
+            $deliveryTotal += $cartTotal;
             $earnTotal += $cod->order->shipping ?? 0;
         });
 
@@ -86,26 +87,26 @@ class RiderConsignmentIndexData
             ->withQueryString();
 
         $items = $paginator->getCollection()->map(function ($cod) {
-            $totalForNotResel = 0;
+            $cartTotal = 0;
             $images = [];
 
             foreach ($cod->order?->cartOrders ?? [] as $item) {
-                if (!$item->product?->isResel) {
-                    $totalForNotResel += $item->total;
+                $cartTotal += $item->total;
+                if (!empty($item->product?->thumbnail)) {
                     $images[] = $item->product?->thumbnail;
                 }
             }
 
             return [
                 'id' => $cod->id,
-                'order_id' => $cod->order?->id,
+                'order_id' => $cod->order?->syncDetails?->user_order_id ?? $cod->order?->id,
                 'status' => $cod->status,
                 'system_comission' => $cod->system_comission,
                 'shipping' => $cod->order->shipping ?? 0,
                 'location' => $cod->order?->location ?? 'N/A',
                 'created_at_formatted' => $cod->created_at?->toFormattedDateString(),
-                'total_for_not_resel' => $totalForNotResel,
-                'display_total' => $totalForNotResel + ($cod->system_comission ?? 0),
+                'total_for_not_resel' => $cartTotal,
+                'display_total' => $cartTotal + ($cod->system_comission ?? 0),
                 'images' => $images,
             ];
         })->values()->all();

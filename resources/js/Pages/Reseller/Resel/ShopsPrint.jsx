@@ -5,6 +5,8 @@ import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
+import ProductName from "../../../components/ProductName";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 export default function ShopsPrint({
     filters = {},
@@ -57,11 +59,11 @@ export default function ShopsPrint({
                                         <tr key={product.id}>
                                             <td>{product.sl}</td>
                                             <td>{product.id}</td>
-                                            <td>{product.name}</td>
+                                            <td><ProductName value={product.name} /></td>
                                             <td>{product.unit}</td>
-                                            <td>{product.price}</td>
-                                            <td>{product.offer_type ? product.discount : "N/A"}</td>
-                                            <td>{product.total_price}</td>
+                                            <td>{formatCurrency(product.price)}</td>
+                                            <td>{product.offer_type ? formatCurrency(product.discount) : "N/A"}</td>
+                                            <td>{formatCurrency(product.total_price)}</td>
                                         </tr>
                                     ))}
                                 </tbody>

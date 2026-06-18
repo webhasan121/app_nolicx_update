@@ -5,6 +5,8 @@ import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
+import ProductName from "../../../components/ProductName";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 export default function Print({ products = [], filters = {} }) {
     useEffect(() => {
@@ -60,10 +62,10 @@ export default function Print({ products = [], filters = {} }) {
                                     <tr key={item.id}>
                                         <td>{item.sl}</td>
                                         <td>{item.id}</td>
-                                        <td>{item.product_name}</td>
+                                        <td><ProductName value={item.product_name} /></td>
                                         <td>{item.user_type} to {item.belongs_to_type}</td>
                                         <td>{item.owner_name}</td>
-                                        <td>{item.product_price} TK</td>
+                                        <td>{formatCurrency(item.product_price)}</td>
                                         <td>{item.product_created_at}</td>
                                         <td>{item.status}</td>
                                     </tr>

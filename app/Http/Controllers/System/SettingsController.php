@@ -29,6 +29,8 @@ class SettingsController extends Controller
                 'developer_percentage' => SystemSettings::get('DEVELOPER_PERCENTAGE'),
                 'management_percentage' => SystemSettings::get('MANAGEMENT_PERCENTAGE'),
                 'management_team_percentage' => SystemSettings::get('MANAGEMENT_TEAM_PERCENTAGE'),
+                'currencies' => SystemSettings::currencies(),
+                'default_currency' => SystemSettings::defaultCurrency(),
             ],
         ]);
     }
@@ -153,6 +155,117 @@ class SettingsController extends Controller
         SystemSettings::set('MANAGEMENT_TEAM_PERCENTAGE', (string) $validated['management_team_percentage']);
 
         return redirect()->back()->with('success', 'Management TM percentage updated successfully!');
+    }
+
+    public function storeCurrency(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'code' => ['required', 'string', 'max:10'],
+            'name' => ['required', 'string', 'max:100'],
+            'symbol' => ['required', 'string', 'max:20'],
+        ]);
+
+        $currency = [
+            'code' => strtoupper(trim($validated['code'])),
+            'name' => trim($validated['name']),
+            'symbol' => trim($validated['symbol']),
+        ];
+
+        $currencies = collect(SystemSettings::currencies())
+            ->reject(fn ($item) => $item['code'] === $currency['code'])
+            ->push($currency)
+            ->sortBy('code')
+            ->values()
+            ->all();
+
+        SystemSettings::saveCurrencies($currencies);
+
+        return redirect()->back()->with('success', 'Currency saved successfully!');
+    }
+
+    public function updateCurrency(Request $request, string $code): RedirectResponse
+    {
+        $validated = $request->validate([
+            'code' => ['required', 'string', 'max:10'],
+            'name' => ['required', 'string', 'max:100'],
+            'symbol' => ['required', 'string', 'max:20'],
+        ]);
+
+        $originalCode = strtoupper(trim($code));
+        $currency = [
+            'code' => strtoupper(trim($validated['code'])),
+            'name' => trim($validated['name']),
+            'symbol' => trim($validated['symbol']),
+        ];
+        $currencies = collect(SystemSettings::currencies());
+
+        if (!$currencies->contains('code', $originalCode)) {
+            return redirect()->back()->with('error', 'Currency not found.');
+        }
+
+        if ($originalCode !== $currency['code'] && $currencies->contains('code', $currency['code'])) {
+            return redirect()->back()->withErrors(['code' => 'Currency code already exists.']);
+        }
+
+        $wasDefault = SystemSettings::defaultCurrency()['code'] === $originalCode;
+        $updatedCurrencies = $currencies
+            ->reject(fn ($item) => $item['code'] === $originalCode)
+            ->push($currency)
+            ->sortBy('code')
+            ->values()
+            ->all();
+
+        SystemSettings::saveCurrencies($updatedCurrencies);
+
+        if ($wasDefault) {
+            SystemSettings::set('DEFAULT_CURRENCY', $currency['code']);
+        }
+
+        return redirect()->back()->with('success', 'Currency updated successfully!');
+    }
+
+    public function destroyCurrency(string $code): RedirectResponse
+    {
+        $code = strtoupper(trim($code));
+        $currencies = collect(SystemSettings::currencies());
+
+        if (!$currencies->contains('code', $code)) {
+            return redirect()->back()->with('error', 'Currency not found.');
+        }
+
+        if (SystemSettings::defaultCurrency()['code'] === $code) {
+            return redirect()->back()->with('error', 'Default currency cannot be deleted.');
+        }
+
+        if ($currencies->count() <= 1) {
+            return redirect()->back()->with('error', 'At least one currency is required.');
+        }
+
+        SystemSettings::saveCurrencies(
+            $currencies
+                ->reject(fn ($item) => $item['code'] === $code)
+                ->values()
+                ->all()
+        );
+
+        return redirect()->back()->with('success', 'Currency deleted successfully!');
+    }
+
+    public function setDefaultCurrency(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'code' => ['required', 'string', 'max:10'],
+        ]);
+
+        $code = strtoupper(trim($validated['code']));
+
+        if (!collect(SystemSettings::currencies())->contains('code', $code)) {
+            return redirect()->back()->with('error', 'Currency not found.');
+        }
+
+        SystemSettings::set('DEFAULT_CURRENCY', $code);
+
+        return redirect()->back()->with('success', 'Default currency updated successfully!');
     }
 
     private function depositPayNumbers(): array

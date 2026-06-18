@@ -16,6 +16,7 @@ import Table from "../../../components/dashboard/table/Table";
 import useTranslation from "../../../hooks/useTranslation";
 import { todayInputDate } from "../../../utils/dateInput";
 import { ActionIconLink } from "../../../components/ActionIcon";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 const statusItems = [
     ["Pending", "Pending"],
@@ -24,9 +25,9 @@ const statusItems = [
     ["Delivery", "Delivery"],
     ["Delivered", "Delivered"],
     ["Confirm", "Confirm"],
-    ["Hold", "Confirm"],
+    ["Hold", "Hold"],
     ["Cancel", "Cancel"],
-    ["Cancelled", "Cancel by Buyer"],
+    ["Cancelled", "Cancel by User"],
 ];
 
 export default function Index({
@@ -113,7 +114,7 @@ export default function Index({
                                             href={route("reseller.order.index", { nav: value })}
                                             active={nav === value}
                                         >
-                                            {label}
+                                            {t(label)}
                                         </NavLink>
                                     ))}
                                 </div>
@@ -192,7 +193,7 @@ export default function Index({
                                                     + {item.shipping}
                                                 </span>
                                             </td>
-                                            <td>{item.status ?? "Pending"}</td>
+                                            <td>{t(item.status ?? "Pending")}</td>
                                             <td>
                                                 <div className="text-nowarp">
                                                     <div>{item.created_at_human}</div>
@@ -212,7 +213,7 @@ export default function Index({
                                                     {item.number ?? "N/A"}
                                                 </span>
                                             </td>
-                                            <th>{item.take_comission_sum}</th>
+                                            <th>{formatCurrency(item.take_comission_sum)}</th>
                                         </tr>
                                     ))}
                                 </tbody>

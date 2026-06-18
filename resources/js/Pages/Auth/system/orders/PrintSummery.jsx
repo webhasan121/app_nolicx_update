@@ -2,6 +2,7 @@ import { Head } from "@inertiajs/react";
 import { useEffect } from "react";
 import ApplicationName from "../../../../components/ApplicationName";
 import OrderStatus from "../../../../components/dashboard/OrderStatus";
+import { formatCurrency } from "../../../../utils/formatAmount";
 import Container from "../../../../components/dashboard/Container";
 import PrintLayout from "../../../../Layouts/Print";
 
@@ -142,8 +143,8 @@ export default function PrintSummery({ filters, orders = [], summary }) {
                                     <td className="status-cell text-center">
                                         <OrderStatus status={item.status} />
                                     </td>
-                                    <td className="text-right">{item.total ?? 0} TK</td>
-                                    <td className="text-right">{item.comission ?? 0} TK</td>
+                                    <td className="text-right">{formatCurrency(item.total)}</td>
+                                    <td className="text-right">{formatCurrency(item.comission)}</td>
                                     <td className="text-center">{item.created_at_formatted}</td>
                                 </tr>
                             ))}
@@ -161,8 +162,8 @@ export default function PrintSummery({ filters, orders = [], summary }) {
                             <tbody>
                                 <tr>
                                     <td>{summary?.count ?? 0} Item</td>
-                                    <td className="text-right">{summary?.sum_total ?? 0} TK</td>
-                                    <td className="text-right">{summary?.sum_comission ?? 0} TK</td>
+                                    <td className="text-right">{formatCurrency(summary?.sum_total)}</td>
+                                    <td className="text-right">{formatCurrency(summary?.sum_comission)}</td>
                                 </tr>
                             </tbody>
                         </table>

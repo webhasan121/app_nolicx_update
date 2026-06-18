@@ -17,7 +17,7 @@ import NavLink from "../../../components/NavLink";
 import useTranslation from "../../../hooks/useTranslation";
 import { todayInputDate } from "../../../utils/dateInput";
 import { ActionIconLink } from "../../../components/ActionIcon";
-import { formatAmount } from "../../../utils/formatAmount";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 const navs = [
     "All",
@@ -139,8 +139,8 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
 
     const resultSummary =
         list?.total > 0
-            ? `Showing ${list?.from ?? 0}-${list?.to ?? 0} of ${list?.total ?? 0} orders`
-            : "No orders found";
+            ? `${t("Showing")} ${list?.from ?? 0}-${list?.to ?? 0} ${t("of")} ${list?.total ?? 0} ${t("orders")}`
+            : t("No orders found");
     const selectedNav = filters.nav ?? "Pending";
     const hasActiveFilters = Boolean(
         search.trim() ||
@@ -291,7 +291,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                 href={route("vendor.orders.index", buildQuery(filters, { nav, page: 1 }))}
                                                 active={filters.nav === nav}
                                             >
-                                                {nav === "Cancelled" ? "Cancel by User" : nav}
+                                                {nav === "Cancelled" ? t("Cancel by User") : t(nav)}
                                             </NavLink>
                                         ))}
                                     </div>
@@ -337,13 +337,13 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                 <td>{(list?.from ?? 1) + index}</td>
                                                 <td>
                                                     <div className="flex items-center gap-1">
-                                                        <ActionIconLink href={route("vendor.orders.view", { order: item.id })} action="view" title={t("view")} />
-                                                        <ActionIconLink href={route("vendor.orders.cprint", { order: item.id })} action="print" title={t("Print")} />
+                                                        <ActionIconLink href={route("vendor.orders.view", { order: item.route_id ?? item.id })} action="view" title={t("view")} />
+                                                        <ActionIconLink href={route("vendor.orders.cprint", { order: item.route_id ?? item.id })} action="print" title={t("Print")} />
                                                     </div>
                                                 </td>
-                                                <td>{item.id ?? "N/A"}</td>
+                                                <td>{item.display_id ?? item.id ?? "N/A"}</td>
                                                 <td>{item.cart_orders_count ?? "N/A"} / {item.quantity ?? "N/A"}</td>
-                                                <td>{item.total ?? "N/A"} <br /> <span className="text-xs">+ {item.shipping}</span></td>
+                                                <td>{item.total !== null && item.total !== undefined ? formatCurrency(item.total) : "N/A"} <br /> <span className="text-xs">+ {formatCurrency(item.shipping)}</span></td>
                                                 <td><span className={statusClass(item.status)}>{item.status ?? "Unknown"}</span></td>
                                                 <td>
                                                     <div className="text-xs text-nowarp">
@@ -365,7 +365,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                         {item.number ?? "N/A"}
                                                     </span>
                                                 </td>
-                                                <th>{formatAmount(item.comission)}</th>
+                                                <th>{formatCurrency(item.comission)}</th>
                                             </tr>
                                         ))}
                                     </tbody>

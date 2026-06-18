@@ -2,11 +2,15 @@ import { router } from "@inertiajs/react";
 import AppLayout from "../../../Layouts/App";
 import Container from "../../../components/dashboard/Container";
 import Hr from "../../../components/Hr";
-import PrimaryButton from "../../../components/PrimaryButton";
 import useTranslation from "../../../hooks/useTranslation";
 
 export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [], assignedConsignments = [] }) {
     const { t } = useTranslation();
+    const formatCommission = (value) => {
+        const amount = Number(value);
+
+        return Number.isFinite(amount) ? amount.toFixed(2) : (value ?? "N/A");
+    };
 
     const confirmOrder = (orderId) => {
         router.post(
@@ -55,7 +59,7 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [],
                     <div className="mb-3 font-semibold">Available consignments</div>
                 ) : null}
 
-                <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, 160px)" }}>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                     {orders.map((order) => (
                             <div
                                 key={order.id}
@@ -63,7 +67,7 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [],
                             >
                                 <div className="py-2 bg-gray-200">
                                     <h3 className="text-xs text-gray-500">{t("Order ID")}</h3>
-                                    <div className="font-bold">{order.id}</div>
+                                    <div className="font-bold">{order.display_id ?? order.id}</div>
                                 </div>
 
                                 <div className="p-2">
@@ -80,42 +84,40 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [],
                                 </div>
 
                                 <div className="px-3 py-2">
-                                    <div className="text-4xl font-bold">
-                                        <sup>Tk</sup>
-                                        {order.display_total}
+                                    <div className="flex justify-center text-2xl font-bold">
+                                        {order.display_total} Tk
                                     </div>
-                                    <div className="flex items-center justify-center text-sm text-center text-gray-500">
-                                        <div className="pl-1 font-bold">
-                                            {order.total_for_not_resel ?? "N/A"}
+                                    <div className="text-sm text-center text-gray-500">
+                                        <div>
+                                            <span className="pl-1 font-bold">{order.total_for_not_resel ?? "N/A"}</span>
+                                            <span className="px-1" style={{ lineHeight: "8px" }}>+</span>
+                                            <span>{formatCommission(order.system_comission)}</span>
                                         </div>
-                                        <div
-                                            className="px-1"
-                                            style={{ lineHeight: "8px" }}
-                                        >
-                                            +
-                                        </div>
-                                        <div className="flex justify-center items-cenrer">
-                                            <div>
-                                                {order.system_comission ?? "N/A"}
-                                            </div>
+                                        <div className="text-xs text-red-500">
+                                            {t("Commission")} {formatCommission(order.system_comission)}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="px-3 py-2">
+                                    {order.created_at_formatted ? (
+                                        <p className="text-xs">{order.created_at_formatted}</p>
+                                    ) : null}
                                     <div className="text-xs text-gray-500">
                                         <i className="pr-1 fas fa-map-marker-alt"></i>
-                                        {order.location}
+                                        {order.location ?? "N/A"}
                                     </div>
                                 </div>
 
-                                <div className="p-1">
-                                    <PrimaryButton
-                                        onClick={() => confirmOrder(order.id)}
-                                    >{t("pick")}{" "}
-                                        <div className="px-2 text-xs">
-                                            ({order.shipping}{t("TK)")}</div>
-                                    </PrimaryButton>
+                                <div>
+                                    <button
+                                        type="button"
+                                        className="w-full p-2 font-bold text-green-900 bg-green-200"
+                                        onClick={() => confirmOrder(order.route_id ?? order.id)}
+                                    >
+                                        <i className="fas fa-check-circle ps-2"></i>{" "}
+                                        {t("Picked")} ({order.shipping}TK)
+                                    </button>
                                 </div>
                             </div>
                     ))}
@@ -158,12 +160,15 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [],
                             </div>
 
                             <div className="px-3 py-2">
-                                <div className="text-2xl font-bold">{cod.display_total} Tk</div>
+                                <div className="flex items-baseline justify-center gap-1 font-bold leading-none">
+                                    <span className="text-2xl tabular-nums">{cod.display_total}</span>
+                                    <span className="text-sm">Tk</span>
+                                </div>
                                 <div className="text-sm text-gray-500">
                                     {cod.total_for_not_resel ?? "N/A"} + {cod.system_comission ?? "N/A"}
                                 </div>
                                 <div className="text-xs text-red-500">
-                                    Commission {cod.system_comission ?? "N/A"}
+                                    {t("Commission")} {formatCommission(cod.system_comission)}
                                 </div>
                             </div>
 

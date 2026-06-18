@@ -13,15 +13,17 @@ use App\Models\syncOrder;
 use App\Support\OrderNotice;
 use App\Support\RiderAreaMatcher;
 use App\Support\TableDateFilter;
+use App\Support\VendorResellOrderSync;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class OrdersController extends Controller
 {
+    private const RIDER_ONLY_STATUSES = ['Picked', 'Delivery', 'Delivered'];
+
     public function index(Request $request): Response
     {
         $filters = [
@@ -34,8 +36,7 @@ class OrdersController extends Controller
             'find' => trim((string) $request->query('find', '')),
         ];
 
-        $account = auth()->user()->account_type();
-        $query = auth()->user()->orderToMe()->where(['belongs_to_type' => $account]);
+        $query = $this->sellerOrderQuery();
         $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, [
             'nav' => 'Pending',
             'delivery' => 'all',
@@ -89,13 +90,13 @@ class OrdersController extends Controller
         }
 
         $data = $query
-            ->with(['user:id,name', 'comissionsInfo'])
+            ->with(['user:id,name', 'comissionsInfo', 'syncDetails:id,reseller_order_id,user_order_id'])
             ->withCount('cartOrders')
             ->latest('id')
             ->paginate(config('app.paginate'))
             ->withQueryString();
 
-        $summaryQuery = auth()->user()->orderToMe()->where(['belongs_to_type' => $account]);
+        $summaryQuery = $this->sellerOrderQuery();
 
         return Inertia::render('Vendor/Orders/Index', [
             'activeNav' => auth()->user()->active_nav,
@@ -109,8 +110,12 @@ class OrdersController extends Controller
             ],
             'list' => [
                 'data' => $data->getCollection()->map(function ($item) {
+                    $displayId = $item->syncDetails?->user_order_id ?? $item->id;
+
                     return [
                         'id' => $item->id,
+                        'display_id' => $displayId,
+                        'route_id' => $displayId,
                         'cart_orders_count' => $item->cart_orders_count ?? 0,
                         'quantity' => $item->quantity,
                         'total' => $item->total,
@@ -155,13 +160,22 @@ class OrdersController extends Controller
 
     public function view(Request $request, int $order): Response
     {
-        $data = auth()->user()
-            ->orderToMe()
-            ->where(['belongs_to_type' => auth()->user()->account_type()])
-            ->with(['user', 'cartOrders.product.isResel', 'comissionsInfo.product', 'hasRider.rider', 'resellerProfit'])
-            ->findOrFail($order);
+        $data = $this->resolveSellerOrder($order, [
+            'user',
+            'cartOrders.product.isResel',
+            'comissionsInfo.product',
+            'hasRider.rider',
+            'resellerProfit',
+            'syncDetails:id,reseller_order_id,user_order_id',
+        ]);
 
         $actor = auth()->user();
+        $hasVendorReselProduct = $data->cartOrders->contains(fn ($item) => (bool) $item->product?->isResel);
+
+        if ($actor->account_type() === 'reseller' && $hasVendorReselProduct) {
+            VendorResellOrderSync::sync($data);
+            $data->load(['user', 'cartOrders.product.isResel', 'comissionsInfo.product', 'hasRider.rider', 'resellerProfit', 'syncDetails:id,reseller_order_id,user_order_id']);
+        }
 
         $systemComissionRate = $actor->account_type() === 'reseller'
             ? ($actor->resellerShop()?->system_get_comission ?? 0)
@@ -170,6 +184,8 @@ class OrdersController extends Controller
         return Inertia::render('Vendor/Orders/View', [
             'order' => [
                 'id' => $data->id,
+                'display_id' => $data->syncDetails?->user_order_id ?? $data->id,
+                'route_id' => $data->syncDetails?->user_order_id ?? $data->id,
                 'account_type' => $actor->account_type(),
                 'status' => $data->status,
                 'name' => $data->name,
@@ -230,6 +246,7 @@ class OrdersController extends Controller
                 'comission_sum' => $data->comissionsInfo?->sum('take_comission') ?? 0,
                 'reseller_profit_sum' => $data->resellerProfit?->sum('profit') ?? 0,
                 'has_rider_count' => $data->hasRider?->count() ?? 0,
+                'has_vendor_resel_product' => $hasVendorReselProduct,
                 'system_comission_rate' => $systemComissionRate,
                 'riders' => ($data->hasRider ?? collect())->map(function ($item) {
                     $rider = $item->rider;
@@ -278,20 +295,31 @@ class OrdersController extends Controller
         ]);
 
 
-        $data = auth()->user()
-            ->orderToMe()
-            ->where(['belongs_to_type' => auth()->user()->account_type()])
+        $data = $this->sellerOrderQuery()
             ->with(['comissionsInfo', 'resellerProfit'])
             ->findOrFail($order);
+
+        if (
+            auth()->user()->account_type() === 'reseller' &&
+            $data->cartOrders()->whereHas('product.isResel')->exists()
+        ) {
+            return redirect()->back()->with('error', 'Vendor product order can only be linked to vendor.');
+        }
 
         if ($data->status === 'Confirm') {
             return redirect()->back()->with('error', 'Order Confirmed !');
         }
 
         $status = $payload['status'];
+        $isHandDelivery = strtolower((string) $data->delevery) === 'hand';
+        $autoDelivered = $status === 'Accept' && $isHandDelivery;
         $allow = ['Pending', 'Accept', 'Picked', 'Delivery', 'Delivered', 'Confirm', 'Hold', 'Cancel', 'Cancelled', 'Reject'];
         if (!in_array($status, $allow, true)) {
             return redirect()->back()->with('error', 'Invalid status');
+        }
+
+        if (in_array($status, self::RIDER_ONLY_STATUSES, true)) {
+            return redirect()->back()->with('error', 'Only rider can update this status.');
         }
 
         if (! $this->canMoveToStatus($data, $status)) {
@@ -317,9 +345,20 @@ class OrdersController extends Controller
             }
         }
 
+        if ($autoDelivered) {
+            $status = 'Delivered';
+            $data->received_at ??= now();
+        }
+
         $data->status = $status;
         $data->save();
         OrderNotice::statusChanged($data, $status, auth()->id());
+
+        $synced = syncOrder::query()->where('reseller_order_id', $data->id)->first();
+        if ($synced && $synced->status !== $status) {
+            $synced->status = $status;
+            $synced->save();
+        }
 
         if ($status === 'Confirm') {
             $ct = new ProductComissionController();
@@ -340,12 +379,10 @@ class OrdersController extends Controller
             return redirect()->back()->with('error', 'Only reseller can sync this order');
         }
 
-        $data = auth()->user()
-            ->orderToMe()
-            ->where(['belongs_to_type' => auth()->user()->account_type()])
+        $data = $this->sellerOrderQuery()
             ->findOrFail($order);
 
-        if (in_array($data->status, ['Pending', 'Hold', 'Cancelled', 'Cancel', 'Reject'], true)) {
+        if (in_array($data->status, ['Cancelled', 'Cancel', 'Reject'], true)) {
             return redirect()->back()->with('error', 'You can sync only accepted orders');
         }
 
@@ -368,66 +405,13 @@ class OrdersController extends Controller
             return redirect()->back()->with('error', 'This order is already synced');
         }
 
-        $mainProduct = Product::find($reselProduct->product_id);
+        $mainProduct = Product::find($reselProduct->parent_id);
         if (!$mainProduct) {
             return redirect()->back()->with('error', 'Main product not found');
         }
 
-        DB::transaction(function () use ($data, $payload, $cartOrder, $reselProduct, $mainProduct) {
-            $shipping = strtolower((string) $payload['delevery']) === 'hand'
-                ? 0
-                : ($data->area_condition === 'Dhaka' ? 80 : 120);
-
-            $newOrder = Order::create([
-                'user_id' => auth()->id(),
-                'user_type' => 'reseller',
-                'belongs_to' => $reselProduct->belongs_to,
-                'belongs_to_type' => 'vendor',
-                'quantity' => $cartOrder->quantity,
-                'total' => $cartOrder->quantity * $cartOrder->price,
-                'status' => 'Pending',
-                'name' => 'Resel',
-                'district' => $data->district,
-                'upozila' => $data->upozila,
-                'target_area' => $data->target_area,
-                'location' => $data->location,
-                'house_no' => $data->house_no,
-                'road_no' => $data->road_no,
-                'area_condition' => $data->area_condition,
-                'delevery' => $payload['delevery'],
-                'number' => $data->number,
-                'shipping' => $shipping,
-            ]);
-
-            CartOrder::create([
-                'user_id' => auth()->id(),
-                'user_type' => 'reseller',
-                'belongs_to' => intval($reselProduct->belongs_to),
-                'belongs_to_type' => 'vendor',
-                'order_id' => $newOrder->id,
-                'product_id' => $reselProduct->parent_id,
-                'quantity' => $cartOrder->quantity,
-                'price' => $cartOrder->price,
-                'size' => $cartOrder->size,
-                'total' => $cartOrder->quantity * $cartOrder->price,
-                'buying_price' => $mainProduct->buying_price,
-                'status' => 'Pending',
-            ]);
-
-            ProductComissionController::dispatchProductComissionsListeners($newOrder->id);
-
-            syncOrder::create([
-                'user_id' => $data->user_id,
-                'user_order_id' => $data->id,
-                'user_cart_order_id' => $cartOrder->id,
-                'reseller_product_id' => $cartOrder->product_id,
-                'reseller_order_id' => $newOrder->id,
-                'vendor_product_id' => $reselProduct->id,
-                'reseller_id' => auth()->id(),
-                'vendor_id' => $reselProduct->belongs_to,
-                'status' => 'Pending',
-            ]);
-        });
+        $data->delevery = $payload['delevery'];
+        VendorResellOrderSync::syncCartOrder($data, $cartOrder);
 
         return redirect()->back()->with('success', 'Order synced successfully');
     }
@@ -438,9 +422,7 @@ class OrdersController extends Controller
             'rider_id' => ['required', 'integer', 'exists:riders,id'],
         ]);
 
-        $data = auth()->user()
-            ->orderToMe()
-            ->where(['belongs_to_type' => auth()->user()->account_type()])
+        $data = $this->sellerOrderQuery()
             ->findOrFail($order);
 
         $rdr = rider::find($payload['rider_id']);
@@ -460,7 +442,7 @@ class OrdersController extends Controller
             ]);
         }
 
-        if (!RiderAreaMatcher::riderMatchesOrder($rdr->load('targetedArea'), $data)) {
+        if (!RiderAreaMatcher::riderMatchesOrder($rdr->load('targetedArea.city'), $data)) {
             return redirect()->back()->withErrors([
                 'rider_id' => 'This rider is outside this order city or targeted area.',
             ]);
@@ -480,19 +462,14 @@ class OrdersController extends Controller
             'status' => 'Pending',
         ]);
 
-        $data->status = 'Picked';
-        $data->save();
         OrderNotice::riderAssigned($data, $rdr->user?->name ?? 'Selected rider', auth()->id());
-        OrderNotice::statusChanged($data, 'Picked', auth()->id());
 
         return redirect()->back()->with('success', 'Rider assigned successfully');
     }
 
     public function removeRider(int $order, int $cod): RedirectResponse
     {
-        $data = auth()->user()
-            ->orderToMe()
-            ->where(['belongs_to_type' => auth()->user()->account_type()])
+        $data = $this->sellerOrderQuery()
             ->findOrFail($order);
 
         $codRow = $data->hasRider()->findOrFail($cod);
@@ -576,8 +553,7 @@ class OrdersController extends Controller
             'find' => trim((string) $request->query('find', '')),
         ];
 
-        $account = auth()->user()->account_type();
-        $query = auth()->user()->orderToMe()->where(['belongs_to_type' => $account]);
+        $query = $this->sellerOrderQuery();
         $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, [
             'nav' => 'Pending',
             'delivery' => 'all',
@@ -631,7 +607,7 @@ class OrdersController extends Controller
         }
 
         $orders = $query
-            ->with(['user:id,name', 'comissionsInfo'])
+            ->with(['user:id,name', 'comissionsInfo', 'syncDetails:id,reseller_order_id,user_order_id'])
             ->withCount('cartOrders')
             ->latest('id')
             ->get();
@@ -642,6 +618,8 @@ class OrdersController extends Controller
                 return [
                     'sl' => $index + 1,
                     'id' => $item->id,
+                    'display_id' => $item->syncDetails?->user_order_id ?? $item->id,
+                    'route_id' => $item->syncDetails?->user_order_id ?? $item->id,
                     'cart_orders_count' => $item->cart_orders_count ?? 0,
                     'quantity' => $item->quantity,
                     'total' => $item->total,
@@ -661,15 +639,46 @@ class OrdersController extends Controller
 
     private function resolvePrintableOrder(int $orderId): Order
     {
-        $query = Order::query()->with(['user', 'cartOrders.product']);
         $user = auth()->user();
+        $relations = ['user', 'cartOrders.product', 'syncDetails:id,reseller_order_id,user_order_id'];
 
-        if (!$user->hasAnyRole(['system', 'admin'])) {
-            $query->where('belongs_to', $user->id)
-                ->where('belongs_to_type', $user->account_type());
+        if ($user->hasAnyRole(['system', 'admin'])) {
+            return Order::query()->with($relations)->findOrFail($orderId);
         }
 
-        return $query->findOrFail($orderId);
+        return $this->resolveSellerOrder($orderId, $relations, $user);
+    }
+
+    private function resolveSellerOrder(int $orderId, array $relations = [], $user = null): Order
+    {
+        $user ??= auth()->user();
+        $query = $this->sellerOrderQuery($user)->with($relations);
+        $order = (clone $query)->find($orderId);
+
+        if ($order) {
+            return $order;
+        }
+
+        $syncedOrderId = syncOrder::query()
+            ->where('user_order_id', $orderId)
+            ->where('vendor_id', $user->id)
+            ->value('reseller_order_id');
+
+        if ($syncedOrderId) {
+            return $query->findOrFail($syncedOrderId);
+        }
+
+        abort(404);
+    }
+
+    private function sellerOrderQuery($user = null)
+    {
+        $user ??= auth()->user();
+        $account = $user->account_type();
+
+        return Order::query()
+            ->where('belongs_to', $user->id)
+            ->where('belongs_to_type', $account);
     }
 
     private function canMoveToStatus(Order $order, string $nextStatus): bool

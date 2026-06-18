@@ -17,6 +17,11 @@ createInertiaApp({
         return page.default;
     },
     setup({ el, App, props }) {
+        window.__NOLIX_CURRENCY__ = props?.initialPage?.props?.appConfig?.currency ?? {
+            code: "BDT",
+            name: "Bangladeshi Taka",
+            symbol: "TK",
+        };
         createRoot(el).render(<App {...props} />);
     },
 });

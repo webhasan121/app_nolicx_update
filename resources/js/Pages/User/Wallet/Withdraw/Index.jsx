@@ -8,7 +8,7 @@ import Hr from "../../../../components/Hr";
 import NavLink from "../../../../components/NavLink";
 import NavLinkBtn from "../../../../components/NavLinkBtn";
 import useTranslation from "../../../../hooks/useTranslation";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function WithdrawIndex() {
     const { t } = useTranslation();
@@ -31,10 +31,10 @@ export default function WithdrawIndex() {
                             content={
                                 <div>
                                     <div className="text-2xl font-bold text-indigo-900">
-                                        {" "}{t("Wallet Balance")}-{formatAmount(wallet_balance)}{t("TK")}
+                                        {" "}{t("Wallet Balance")}-{formatCurrency(wallet_balance)}
                                     </div>
                                     <div className="text-sm text-gray-600">
-                                        {t("Withdrawable Balance")}: {formatAmount(available_balance)}{t("TK")}
+                                        {t("Withdrawable Balance")}: {formatCurrency(available_balance)}
                                     </div>
                                 </div>
                             }
@@ -78,7 +78,7 @@ export default function WithdrawIndex() {
                                                 <div className="px-3 py-2 border-b">
                                                     <h6>{t("Amount")}</h6>
                                                     <p className="font-bold">
-                                                        {formatAmount(wtd.amount)}{t("TK")}</p>
+                                                        {formatCurrency(wtd.amount)}</p>
                                                 </div>
                                                 <div className="px-3 py-2 border-b">
                                                     <p>{wtd.pay_by}</p>

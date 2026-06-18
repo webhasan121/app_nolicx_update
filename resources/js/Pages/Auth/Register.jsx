@@ -17,7 +17,10 @@ function SearchableSelect({
     placeholder,
     disabled = false,
 }) {
-    const selected = options.find((option) => String(option.id) === String(value));
+    const normalizedOptions = Array.isArray(options)
+        ? options
+        : Object.values(options ?? {});
+    const selected = normalizedOptions.find((option) => String(option.id) === String(value));
     const [query, setQuery] = useState(selected?.name ?? "");
     const [open, setOpen] = useState(false);
 
@@ -26,18 +29,18 @@ function SearchableSelect({
     }, [selected?.id, selected?.name]);
 
     const filteredOptions = query.trim()
-        ? options.filter((option) =>
+        ? normalizedOptions.filter((option) =>
               String(option.name ?? "")
                   .toLowerCase()
                   .includes(query.trim().toLowerCase()),
           )
-        : options;
+        : normalizedOptions;
 
     const updateQuery = (nextQuery) => {
         setQuery(nextQuery);
         setOpen(true);
 
-        const exactMatch = options.find(
+        const exactMatch = normalizedOptions.find(
             (option) =>
                 String(option.name ?? "").toLowerCase() ===
                 nextQuery.trim().toLowerCase(),

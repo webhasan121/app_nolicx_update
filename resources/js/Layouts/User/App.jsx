@@ -2,6 +2,7 @@ import { Head, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2"; // npm install sweetalert2 kore niben
 import AutoTranslate from "../../components/AutoTranslate";
+import CurrencyTextSync from "../../components/CurrencyTextSync";
 import SupportButton from "../../components/SupportButton";
 import Header from "../../components/user/Header";
 import Footer from "../../components/user/Footer";
@@ -12,6 +13,9 @@ export default function UserLayout({ children, title }) {
     const { flash, appConfig } = usePage().props;
     const [showScrollTop, setShowScrollTop] = useState(false);
 
+    useEffect(() => {
+        window.__NOLIX_CURRENCY__ = appConfig?.currency ?? window.__NOLIX_CURRENCY__;
+    }, [appConfig?.currency]);
 
     // Handle SweetAlert Notifications (Livewire er bodole)
     useEffect(() => {
@@ -87,6 +91,7 @@ export default function UserLayout({ children, title }) {
     return (
         <div className="relative">
             <AutoTranslate />
+            <CurrencyTextSync />
             <Head>
                 <title>{title ? `${title} - Nolicx` : "Nolicx"}</title>
 
