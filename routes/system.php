@@ -385,6 +385,10 @@ Route::middleware(Authenticate::class)->name('system.')->prefix('system')->group
     Route::post('/settings/developer-percentage', [SettingsController::class, 'updateDeveloperPercentage'])->name('settings.developer-percentage.update');
     Route::post('/settings/management-percentage', [SettingsController::class, 'updateManagementPercentage'])->name('settings.management-percentage.update');
     Route::post('/settings/management-team-percentage', [SettingsController::class, 'updateManagementTeamPercentage'])->name('settings.management-team-percentage.update');
+    Route::post('/settings/currency', [SettingsController::class, 'storeCurrency'])->name('settings.currency.store');
+    Route::post('/settings/currency/{code}', [SettingsController::class, 'updateCurrency'])->name('settings.currency.update');
+    Route::delete('/settings/currency/{code}', [SettingsController::class, 'destroyCurrency'])->name('settings.currency.destroy');
+    Route::post('/settings/default-currency', [SettingsController::class, 'setDefaultCurrency'])->name('settings.currency.default');
 
     Route::prefix('languages')->name('languages.')->group(function () {
         Route::get('/', [LanguageController::class, 'index'])->name('index');

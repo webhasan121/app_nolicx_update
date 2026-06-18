@@ -6,6 +6,7 @@ import Container from "../../../components/dashboard/Container";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
 import useTranslation from "../../../hooks/useTranslation";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 export default function Index({ filters = {}, comissions = [] }) {
     const { t } = useTranslation();
@@ -59,13 +60,13 @@ export default function Index({ filters = {}, comissions = [] }) {
                                     {where === "user_id" ? <th>{item.user_id}</th> : null}
                                     {where === "order_id" ? <td>{item.order_id ?? 0}</td> : null}
                                     {where === "product_id" ? <td>{item.product_id ?? 0}</td> : null}
-                                    <td>{item.buying_price ?? 0}</td>
-                                    <td>{item.selling_price ?? 0}</td>
-                                    <td>{item.profit ?? "0"}</td>
+                                    <td>{formatCurrency(item.buying_price)}</td>
+                                    <td>{formatCurrency(item.selling_price)}</td>
+                                    <td>{formatCurrency(item.profit)}</td>
                                     <td>{item.comission_range ?? "0"} %</td>
-                                    <td>{item.take_comission ?? "0"}</td>
-                                    <td>{item.distribute_comission ?? "0"}</td>
-                                    <td>{item.store ?? "0"}</td>
+                                    <td>{formatCurrency(item.take_comission)}</td>
+                                    <td>{formatCurrency(item.distribute_comission)}</td>
+                                    <td>{formatCurrency(item.store)}</td>
                                     <td>{item.created_at_formatted}</td>
                                     <td>
                                         {item.confirmed ? (
@@ -80,13 +81,13 @@ export default function Index({ filters = {}, comissions = [] }) {
                         <tfoot>
                             <tr className="py-2 bg-gray-200">
                                 <td>{comissions.length}</td>
-                                <td className="font-bold">{comissions.reduce((sum, item) => sum + Number(item.buying_price || 0), 0)}</td>
-                                <td className="font-bold">{comissions.reduce((sum, item) => sum + Number(item.selling_price || 0), 0)}</td>
-                                <td className="font-bold">{comissions.reduce((sum, item) => sum + Number(item.profit || 0), 0)}</td>
+                                <td className="font-bold">{formatCurrency(comissions.reduce((sum, item) => sum + Number(item.buying_price || 0), 0))}</td>
+                                <td className="font-bold">{formatCurrency(comissions.reduce((sum, item) => sum + Number(item.selling_price || 0), 0))}</td>
+                                <td className="font-bold">{formatCurrency(comissions.reduce((sum, item) => sum + Number(item.profit || 0), 0))}</td>
                                 <td></td>
-                                <td className="font-bold">{comissions.reduce((sum, item) => sum + Number(item.take_comission || 0), 0)}</td>
-                                <td className="font-bold">{comissions.reduce((sum, item) => sum + Number(item.distribute_comission || 0), 0)}</td>
-                                <td className="font-bold">{comissions.reduce((sum, item) => sum + Number(item.store || 0), 0)}</td>
+                                <td className="font-bold">{formatCurrency(comissions.reduce((sum, item) => sum + Number(item.take_comission || 0), 0))}</td>
+                                <td className="font-bold">{formatCurrency(comissions.reduce((sum, item) => sum + Number(item.distribute_comission || 0), 0))}</td>
+                                <td className="font-bold">{formatCurrency(comissions.reduce((sum, item) => sum + Number(item.store || 0), 0))}</td>
                                 <td className="font-bold"></td>
                                 <td className="font-bold"></td>
                             </tr>

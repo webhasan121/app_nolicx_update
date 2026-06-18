@@ -14,10 +14,15 @@ class RiderAreaMatcher
             return [];
         }
 
+        $area = $rider->targetedArea;
+        $city = $area?->city;
+
         $terms = [
             $rider->targeted_area,
-            $rider->targetedArea?->name,
-            $rider->upozila,
+            $area?->name,
+            $city?->name,
+            $rider->district,
+            $rider->city,
         ];
 
         return self::normalizeTerms($terms);
@@ -27,7 +32,9 @@ class RiderAreaMatcher
     {
         return self::normalizeTerms([
             $order->target_area,
+            $order->district,
             $order->upozila,
+            $order->location,
         ]);
     }
 
@@ -45,9 +52,13 @@ class RiderAreaMatcher
 
                 $builder
                     ->orWhereRaw('LOWER(TRIM(target_area)) = ?', [$term])
+                    ->orWhereRaw('LOWER(TRIM(district)) = ?', [$term])
                     ->orWhereRaw('LOWER(TRIM(upozila)) = ?', [$term])
+                    ->orWhereRaw('LOWER(TRIM(location)) = ?', [$term])
                     ->orWhereRaw('LOWER(TRIM(target_area)) LIKE ?', [$like])
-                    ->orWhereRaw('LOWER(TRIM(upozila)) LIKE ?', [$like]);
+                    ->orWhereRaw('LOWER(TRIM(district)) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(TRIM(upozila)) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(TRIM(location)) LIKE ?', [$like]);
             }
         });
     }
@@ -66,7 +77,22 @@ class RiderAreaMatcher
 
                 $builder
                     ->orWhereRaw('LOWER(TRIM(targeted_area)) = ?', [$term])
-                    ->orWhereRaw('LOWER(TRIM(targeted_area)) LIKE ?', [$like]);
+                    ->orWhereRaw('LOWER(TRIM(district)) = ?', [$term])
+                    ->orWhereRaw('LOWER(TRIM(city)) = ?', [$term])
+                    ->orWhereRaw('LOWER(TRIM(current_address)) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(TRIM(targeted_area)) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(TRIM(district)) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(TRIM(city)) LIKE ?', [$like])
+                    ->orWhereHas('targetedArea', function (Builder $areaQuery) use ($term, $like) {
+                        $areaQuery
+                            ->whereRaw('LOWER(TRIM(name)) = ?', [$term])
+                            ->orWhereRaw('LOWER(TRIM(name)) LIKE ?', [$like])
+                            ->orWhereHas('city', function (Builder $cityQuery) use ($term, $like) {
+                                $cityQuery
+                                    ->whereRaw('LOWER(TRIM(name)) = ?', [$term])
+                                    ->orWhereRaw('LOWER(TRIM(name)) LIKE ?', [$like]);
+                            });
+                    });
             }
         });
     }

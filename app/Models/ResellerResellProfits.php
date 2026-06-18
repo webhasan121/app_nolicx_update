@@ -36,4 +36,24 @@ class ResellerResellProfits extends Model
     {
         return $query->where(['confirmed' => true]);
     }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function fromUser()
+    {
+        return $this->belongsTo(User::class, 'from');
+    }
+
+    public function toUser()
+    {
+        return $this->belongsTo(User::class, 'to');
+    }
 }

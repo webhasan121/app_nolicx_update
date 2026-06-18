@@ -5,7 +5,7 @@ import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import OverviewDiv from "../../../../components/dashboard/overview/Div";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 import OverviewSection from "../../../../components/dashboard/overview/Section";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
@@ -122,10 +122,10 @@ export default function Index({ filters, stats, withdraw }) {
 
             <Container>
                 <OverviewSection>
-                    <OverviewDiv title={t("Amount")} content={formatAmount(stats?.amount)} />
-                    <OverviewDiv title={t("Payable")} content={formatAmount(stats?.payable)} />
-                    <OverviewDiv title={t("Comission")} content={`${formatAmount(stats?.server_fee)} | ${formatAmount(stats?.maintenance_fee)}`} />
-                    <OverviewDiv title={t("Paid")} content={formatAmount(stats?.paid)} />
+                    <OverviewDiv title={t("Amount")} content={formatCurrency(stats?.amount)} />
+                    <OverviewDiv title={t("Payable")} content={formatCurrency(stats?.payable)} />
+                    <OverviewDiv title={t("Comission")} content={`${formatCurrency(stats?.server_fee)} | ${formatCurrency(stats?.maintenance_fee)}`} />
+                    <OverviewDiv title={t("Paid")} content={formatCurrency(stats?.paid)} />
                 </OverviewSection>
 
                 <Section>
@@ -241,7 +241,7 @@ export default function Index({ filters, stats, withdraw }) {
                                             {item.user?.email}
                                         </div>
                                     </td>
-                                    <td>{item.amount ?? "0"}{t("TK")}</td>
+                                    <td>{formatCurrency(item.amount)}</td>
                                     <td>
                                         {!item.is_rejected ? (
                                             item.status ? "Accept" : "Pending"
@@ -261,7 +261,7 @@ export default function Index({ filters, stats, withdraw }) {
                         <tfoot>
                             <tr className="font-bold">
                                 <td colSpan="3" className="font-bold text-right">{t("Total")}</td>
-                                <td className="font-bold">{withdraw?.sum_amount ?? 0}</td>
+                                <td className="font-bold">{formatCurrency(withdraw?.sum_amount)}</td>
                                 <td colSpan="3"></td>
                             </tr>
                         </tfoot>

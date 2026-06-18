@@ -4,6 +4,7 @@ import ApplicationName from "../../../../components/ApplicationName";
 import NavLinkBtn from "../../../../components/NavLinkBtn";
 import Table from "../../../../components/dashboard/table/Table";
 import PrintLayout from "../../../../Layouts/Print";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function PrintSummery({ sdate = "", edate = "", history }) {
     useEffect(() => {
@@ -51,7 +52,7 @@ export default function PrintSummery({ sdate = "", edate = "", history }) {
                                                 {item.user.name}
                                             </NavLinkBtn>
                                         </td>
-                                        <td>{item.amount ?? 0}</td>
+                                        <td>{formatCurrency(item.amount)}</td>
                                         <td>
                                             <div className="flex items-center">
                                                 {item.senderAccountNumber} <i className="px-2 fas fa-caret-right"></i>
@@ -86,7 +87,7 @@ export default function PrintSummery({ sdate = "", edate = "", history }) {
                                     <td colSpan="2" className="font-bold text-right">
                                         Total
                                     </td>
-                                    <td className="font-bold">{history?.sum}</td>
+                                    <td className="font-bold">{formatCurrency(history?.sum)}</td>
                                     <td colSpan="5"></td>
                                 </tr>
                             </tfoot>

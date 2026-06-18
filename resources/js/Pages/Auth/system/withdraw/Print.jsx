@@ -4,6 +4,7 @@ import ApplicationName from "../../../../components/ApplicationName";
 import Container from "../../../../components/dashboard/Container";
 import Table from "../../../../components/dashboard/table/Table";
 import PrintLayout from "../../../../Layouts/Print";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function Print({ filters, withdraws = [], summary }) {
     useEffect(() => {
@@ -65,9 +66,9 @@ export default function Print({ filters, withdraws = [], summary }) {
                                         {item.user?.email}
                                     </div>
                                 </td>
-                                <td>{item.amount ?? "0"} TK</td>
-                                <td>{item.total_fee ?? "0"} TK</td>
-                                <td>{item.payable_amount ?? "0"} TK</td>
+                                <td>{formatCurrency(item.amount)}</td>
+                                <td>{formatCurrency(item.total_fee)}</td>
+                                <td>{formatCurrency(item.payable_amount)}</td>
                                 <td>
                                     {!item.is_rejected ? (
                                         item.status ? "Accept" : "Pending"
@@ -81,9 +82,9 @@ export default function Print({ filters, withdraws = [], summary }) {
                     <tfoot>
                         <tr className="font-bold">
                             <td colSpan="3" className="text-right font-bold">Total</td>
-                            <td className="font-bold">{summary?.sum_amount ?? 0}</td>
-                            <td className="font-bold">{summary?.sum_total_fee ?? 0}</td>
-                            <td className="font-bold">{summary?.sum_payable_amount ?? 0}</td>
+                            <td className="font-bold">{formatCurrency(summary?.sum_amount)}</td>
+                            <td className="font-bold">{formatCurrency(summary?.sum_total_fee)}</td>
+                            <td className="font-bold">{formatCurrency(summary?.sum_payable_amount)}</td>
                             <td></td>
                         </tr>
                     </tfoot>

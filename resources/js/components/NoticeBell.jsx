@@ -69,14 +69,35 @@ export default function NoticeBell({ className = "", role = null }) {
                 return;
             }
 
-            if (noticeRole === "user" && Number(notice.target_user_id) !== Number(user?.id)) {
+            const noticeRoles = Array.isArray(notice.target_roles) ? notice.target_roles : [];
+            const isRoleWideNotice = !notice.order_id && (!noticeRoles.length || noticeRoles.includes(noticeRole));
+
+            if (noticeRole === "user" && notice.target_user_id && Number(notice.target_user_id) !== Number(user?.id)) {
                 return;
             }
 
             if (
                 noticeRole === "rider" &&
                 Array.isArray(notice.rider_ids) &&
+                notice.rider_ids.length > 0 &&
                 !notice.rider_ids.map(Number).includes(Number(user?.id))
+            ) {
+                return;
+            }
+
+            if (noticeRole === "vendor") {
+                const isDirectVendorOrder = Number(notice.seller_id) === Number(user?.id) && notice.seller_type === "vendor";
+                const isResoldVendorProduct = Array.isArray(notice.vendor_ids) && notice.vendor_ids.map(Number).includes(Number(user?.id));
+
+                if (!isRoleWideNotice && !isDirectVendorOrder && !isResoldVendorProduct) {
+                    return;
+                }
+            }
+
+            if (
+                noticeRole === "reseller" &&
+                !isRoleWideNotice &&
+                (Number(notice.seller_id) !== Number(user?.id) || notice.seller_type !== "reseller")
             ) {
                 return;
             }

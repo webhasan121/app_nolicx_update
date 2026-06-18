@@ -9,7 +9,7 @@ import TextInput from "../../../components/TextInput";
 import Table from "../../../components/dashboard/table/Table";
 import UserDash from "../../../components/user/dash/UserDash";
 import useTranslation from "../../../hooks/useTranslation";
-import { formatAmount } from "../../../utils/formatAmount";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 
 
@@ -21,7 +21,7 @@ function EarningCard({ title, amount, href, t }) {
                     <div className="">{title}</div>
                 </div>
                 <div className="pt-2 text-lg font-bold text-indigo-900">
-                    {formatAmount(amount)}{t("TK")}</div>
+                    {formatCurrency(amount)}</div>
                 <div className="text-xs">
                     <Link href={href} className="text-gray-600">
                         View All
@@ -123,10 +123,10 @@ export default function WalletIndex() {
                             content={
                                 <div>
                                     <div className="text-2xl font-bold text-indigo-900">
-                                        {" "}{t("Wallet Balance")}-{formatAmount(wallet_balance)}{t("TK")}{" "}
+                                        {" "}{t("Wallet Balance")}-{formatCurrency(wallet_balance)}{" "}
                                     </div>
                                     <div className="text-sm text-gray-600">
-                                        {t("Withdrawable Balance")}: {formatAmount(available_balance)}{t("TK")}
+                                        {t("Withdrawable Balance")}: {formatCurrency(available_balance)}
                                     </div>
                                 </div>
                             }
@@ -227,7 +227,7 @@ export default function WalletIndex() {
                                         {rows.map((item, index) => (
                                             <tr key={item.id}>
                                                 <td>#{(withdraw?.from ?? 1) + index}</td>
-                                                <td>{formatAmount(item.amount)}{t("TK")}</td>
+                                                <td>{formatCurrency(item.amount)}</td>
                                                 <td>{item.status}</td>
                                                 <td className="text-xs text-gray-500">
                                                     {item.created_at} - {item.created_at_human}

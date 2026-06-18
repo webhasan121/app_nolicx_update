@@ -1,7 +1,6 @@
 import { Head, router } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../Layouts/App";
-import Modal from "../../../components/Modal";
 import NavLink from "../../../components/NavLink";
 import NavLinkBtn from "../../../components/NavLinkBtn";
 import PrimaryButton from "../../../components/PrimaryButton";
@@ -12,8 +11,10 @@ import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
+import ProductName from "../../../components/ProductName";
 import useTranslation from "../../../hooks/useTranslation";
 import { ActionIconLink } from "../../../components/ActionIcon";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 function buildQuery(filters, updates = {}) {
     return Object.fromEntries(
@@ -25,13 +26,8 @@ function buildQuery(filters, updates = {}) {
 
 export default function Index({ filters = {}, products = { data: [], links: [] }, isReseller = false, printUrl }) {
     const { t } = useTranslation();
-    const [filterOpen, setFilterOpen] = useState(false);
     const [selectedModel, setSelectedModel] = useState([]);
     const [searchTerm, setSearchTerm] = useState(filters.search ?? "");
-    const [modalCreated, setModalCreated] = useState(filters.created ?? "");
-    const [modalStatus, setModalStatus] = useState(
-        filters.take === "trash" ? "trash" : (filters.nav ?? "Active")
-    );
 
     const rows = products?.data ?? [];
     const isTrash = filters.take === "trash";
@@ -72,11 +68,6 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
     }, [filters.search]);
 
     useEffect(() => {
-        setModalCreated(filters.created ?? "");
-        setModalStatus(filters.take === "trash" ? "trash" : (filters.nav ?? "Active"));
-    }, [filters.created, filters.nav, filters.take]);
-
-    useEffect(() => {
         const timeoutId = window.setTimeout(() => {
             if ((searchTerm ?? "") === (filters.search ?? "")) {
                 return;
@@ -109,6 +100,8 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
             take: nextUrl.searchParams.get("take") ?? filters.take ?? "",
             search: nextUrl.searchParams.get("search") ?? filters.search ?? "",
             created: nextUrl.searchParams.get("created") ?? filters.created ?? "",
+            start_date: nextUrl.searchParams.get("start_date") ?? filters.start_date ?? "",
+            end_date: nextUrl.searchParams.get("end_date") ?? filters.end_date ?? "",
             page: nextUrl.searchParams.get("page") ?? undefined,
         }, false);
     };
@@ -118,21 +111,38 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
             ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} products`
             : "No products found";
 
-    const applyModalFilters = () => {
-        if (modalStatus === "trash") {
-            updateFilters({ take: "trash", nav: "", created: modalCreated });
-        } else {
-            updateFilters({ take: "", nav: modalStatus, created: modalCreated });
-        }
-
-        setFilterOpen(false);
+    const updateDateFilter = (key, value) => {
+        updateFilters({ [key]: value, created: "" });
     };
 
-    const resetModalFilters = () => {
-        setModalCreated("");
-        setModalStatus("Active");
-        updateFilters({ take: "", nav: "Active", created: "" });
-        setFilterOpen(false);
+    const statusFilterValue = isTrash ? "trash" : (filters.nav ?? "Active");
+    const updateStatusFilter = (value) => {
+        if (value === "trash") {
+            updateFilters({ take: "trash", nav: "" });
+            return;
+        }
+
+        updateFilters({ take: "", nav: value });
+    };
+
+    const hasActiveToolbarFilter =
+        isTrash ||
+        (filters.nav ?? "Active") !== "Active" ||
+        (filters.search ?? "") !== "" ||
+        (filters.created ?? "") !== "" ||
+        (filters.start_date ?? "") !== "" ||
+        (filters.end_date ?? "") !== "";
+
+    const resetToolbarFilters = () => {
+        setSearchTerm("");
+        updateFilters({
+            take: "",
+            nav: "Active",
+            search: "",
+            created: "",
+            start_date: "",
+            end_date: "",
+        });
     };
 
     return (
@@ -183,18 +193,46 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                     )}
                                 </div>
 
-                                <div className="flex items-center">
+                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                    <select
+                                        value={statusFilterValue}
+                                        onChange={(e) => updateStatusFilter(e.target.value)}
+                                        className="w-36 rounded-md border-gray-300 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        aria-label="Status"
+                                    >
+                                        <option value="Active">{t("Active")}</option>
+                                        <option value="In Active">{t("Disable")}</option>
+                                        <option value="trash">{t("Trash")}</option>
+                                    </select>
+                                    <input
+                                        type="date"
+                                        value={filters.start_date ?? ""}
+                                        onChange={(e) => updateDateFilter("start_date", e.target.value)}
+                                        className="w-36 rounded-md border-gray-300 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        aria-label="Start date"
+                                    />
+                                    <input
+                                        type="date"
+                                        value={filters.end_date ?? ""}
+                                        onChange={(e) => updateDateFilter("end_date", e.target.value)}
+                                        className="w-36 rounded-md border-gray-300 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        aria-label="End date"
+                                    />
                                     <TextInput
                                         type="search"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         placeholder={t("Search by name")}
-                                        className="mx-2 hidden lg:block py-1"
+                                        className="hidden lg:block py-1"
                                     />
+                                    {hasActiveToolbarFilter ? (
+                                        <PrimaryButton type="button" onClick={resetToolbarFilters}>
+                                            {t("Reset")}
+                                        </PrimaryButton>
+                                    ) : null}
                                     <PrimaryButton type="button" className="mr-2" onClick={() => window.open(printUrl, "_blank")}>
                                         <i className="fas fa-print"></i>
                                     </PrimaryButton>
-                                    <PrimaryButton type="button" onClick={() => setFilterOpen(true)}>{t("Filter")}</PrimaryButton>
                                 </div>
                             </div>
                         }
@@ -211,6 +249,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                         <th>{t("Build Cost")}</th>
                                         <th>{t("Price")}</th>
                                         <th>{t("Discount")}</th>
+                                        <th>{t("Order")}</th>
                                         <th>{t("Status")}</th>
                                         <th>{t("Insert At")}</th>
                                         <th>{t("A/C")}</th>
@@ -233,13 +272,32 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                                     {product.thumbnail_url ? (
                                                         <img className="w-8 h-8 mr-2 rounded-md" src={product.thumbnail_url} alt="" />
                                                     ) : null}
-                                                    {product.name ?? "N/A"}
+                                                    <div>
+                                                        <div><ProductName value={product.name} /></div>
+                                                        {product.has_pending ? (
+                                                            <span
+                                                                title={`Pending Order #${product.first_order_id ?? ""}`}
+                                                                className="inline-flex rounded bg-red-900 px-1 text-xs text-white"
+                                                            >
+                                                                {product.first_order_id ?? "N/A"}
+                                                            </span>
+                                                        ) : null}
+                                                        {product.has_accept ? (
+                                                            <span
+                                                                title={`Accept Order #${product.first_order_id ?? ""}`}
+                                                                className="ml-1 inline-flex rounded bg-green-900 px-1 text-xs text-white"
+                                                            >
+                                                                {product.first_order_id ?? "N/A"}
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td>{product.unit}</td>
-                                            <td>{product.buying_price}</td>
-                                            <td>{product.price}</td>
-                                            <td>{product.discount ?? 0}</td>
+                                            <td>{formatCurrency(product.buying_price)}</td>
+                                            <td>{formatCurrency(product.price)}</td>
+                                            <td>{formatCurrency(product.discount)}</td>
+                                            <td>{product.orders_count ?? 0}</td>
                                             <td>{product.status}</td>
                                             <td>{product.created_at_human}</td>
                                             <td>
@@ -294,69 +352,6 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                 </Section>
             </Container>
 
-            <Modal show={filterOpen} onClose={() => setFilterOpen(false)} maxWidth="xl">
-                <div className="p-3">
-                    <SectionHeader title={t("Filter Your Own")} content="" />
-                    <SectionInner>
-                        <div className="flex justify-between items-start gap-6">
-                            <div>
-                                <h3>{t("Filter by Create date")}</h3>
-                                <ul className="ms-4 mt-2">
-                                    <li>
-                                        <div className="flex items-center mb-2">
-                                            <input
-                                                className="p-0 m-0 mr-3"
-                                                type="radio"
-                                                checked={modalCreated === "today"}
-                                                onChange={() => setModalCreated("today")}
-                                            />
-                                            <label className="p-0 m-0">{t("Today")}</label>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3>{t("Filter by Status")}</h3>
-                                <ul className="ms-4 mt-2">
-                                    <li>
-                                        <div className="flex items-center mb-2">
-                                            <input
-                                                className="p-0 m-0 mr-3"
-                                                type="radio"
-                                                checked={modalStatus === "Active"}
-                                                onChange={() => setModalStatus("Active")}
-                                            />
-                                            <label className="p-0 m-0">{t("Active")}</label>
-                                        </div>
-                                        <div className="flex items-center mb-2">
-                                            <input
-                                                className="p-0 m-0 mr-3"
-                                                type="radio"
-                                                checked={modalStatus === "In Active"}
-                                                onChange={() => setModalStatus("In Active")}
-                                            />
-                                            <label className="p-0 m-0">{t("Disable")}</label>
-                                        </div>
-                                        <div className="flex items-center mb-2">
-                                            <input
-                                                className="p-0 m-0 mr-3"
-                                                type="radio"
-                                                checked={modalStatus === "trash"}
-                                                onChange={() => setModalStatus("trash")}
-                                            />
-                                            <label className="p-0 m-0">{t("Trash")}</label>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div className="flex items-end gap-2 pt-7">
-                                <PrimaryButton type="button" onClick={resetModalFilters}>{t("Reset")}</PrimaryButton>
-                                <PrimaryButton type="button" onClick={applyModalFilters}>{t("Apply")}</PrimaryButton>
-                            </div>
-                        </div>
-                    </SectionInner>
-                </div>
-            </Modal>
         </AppLayout>
     );
 }

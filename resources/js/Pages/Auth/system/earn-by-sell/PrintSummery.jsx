@@ -4,6 +4,8 @@ import PrintLayout from "../../../../Layouts/Print";
 import ApplicationName from "../../../../components/ApplicationName";
 import Container from "../../../../components/dashboard/Container";
 import Table from "../../../../components/dashboard/table/Table";
+import ProductName from "../../../../components/ProductName";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function PrintSummery() {
     const { filters = {}, products = [] } = usePage().props;
@@ -58,7 +60,7 @@ export default function PrintSummery() {
                                     <td>{index + 1}</td>
                                     <td>{item.id}</td>
                                     <td>
-                                        {item.product_name}
+                                        <ProductName value={item.product_name} />
                                         <br />
                                         <span className="text-xs">{item.product_status}</span>
                                     </td>
@@ -66,7 +68,7 @@ export default function PrintSummery() {
                                         {item.user_type} to {item.belongs_to_type}
                                     </td>
                                     <td>{item.owner_name}</td>
-                                    <td>{item.product_price ?? 0} TK</td>
+                                    <td>{formatCurrency(item.product_price)}</td>
                                     <td>{item.product_created_at}</td>
                                     <td>{item.status}</td>
                                 </tr>

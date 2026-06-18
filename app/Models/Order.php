@@ -226,4 +226,9 @@ class Order extends Model
     {
         return $this->hasOne(syncOrder::class, 'reseller_order_id', 'id');
     }
+
+    public function syncedVendorOrder()
+    {
+        return $this->hasOne(syncOrder::class, 'user_order_id', 'id');
+    }
 }

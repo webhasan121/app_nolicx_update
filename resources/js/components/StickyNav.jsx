@@ -7,7 +7,7 @@ import CountrySearchSelect from "./CountrySearchSelect";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function StickyNav({ open, setOpen }) {
-    const { auth, global } = usePage().props;
+    const { auth, global, selectedCountry: pageCountry } = usePage().props;
     const countries = global?.countries || [];
     const { t } = useTranslation();
 
@@ -51,8 +51,38 @@ export default function StickyNav({ open, setOpen }) {
             }
         }
 
-        return resolveCountry(user?.country);
+        return resolveCountry(pageCountry || user?.country || "Bangladesh");
     });
+
+    useEffect(() => {
+        setSelectedCountry(resolveCountry(pageCountry || user?.country || "Bangladesh"));
+    }, [pageCountry, user?.country, countries.length]);
+
+    const handleCountryChange = (country) => {
+        setSelectedCountry(country);
+
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const nextUrl = new URL(window.location.href);
+        const params = Object.fromEntries(nextUrl.searchParams.entries());
+
+        delete params.page;
+
+        router.get(
+            nextUrl.pathname,
+            {
+                ...params,
+                country: country || undefined,
+            },
+            {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
+            }
+        );
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -131,7 +161,7 @@ export default function StickyNav({ open, setOpen }) {
                                 <CountrySearchSelect
                                     value={selectedCountry}
                                     options={countries}
-                                    onChange={setSelectedCountry}
+                                    onChange={handleCountryChange}
                                     placeholder={t("Country")}
                                 />
                             ) : null}

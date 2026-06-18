@@ -39,6 +39,7 @@ class StoreController extends Controller
         $store = $metrics['current'];
         $targetStore = $metrics['previous'];
         $targetStore['can_distribute'] = $this->canDistributeStore($targetStore);
+        DistributeComissions::creditPendingWalletsForConfirmed();
 
         $widgets = [
             ['label' => 'Total Earnings', 'value' => $metrics['totals']['earnings']],
@@ -132,7 +133,7 @@ class StoreController extends Controller
                         'sl' => $index + 1,
                         'user_name' => $item->user?->name ?? 'N/A',
                         'store' => $store,
-                        'amount' => number_format((float) $item->amount, 2) . '/-',
+                        'amount' => round((float) $item->amount, 8),
                         'range' => number_format((float) $item->range, 2) . '%',
                         'info' => $item->info ?? '',
                         'created_at' => $item->created_at?->format('M d, Y'),
@@ -243,7 +244,7 @@ class StoreController extends Controller
                     'sl' => $index + 1,
                     'user_name' => $item->user?->name ?? 'N/A',
                     'store' => $store,
-                    'amount' => number_format((float) $item->amount, 2) . '/-',
+                    'amount' => round((float) $item->amount, 8),
                     'range' => number_format((float) $item->range, 2) . '%',
                     'info' => $item->info ?? '',
                     'created_at' => $item->created_at?->format('M d, Y'),

@@ -23,13 +23,13 @@ function Heading() {
     );
 }
 
-function CategoriesPanel({ categories = [] }) {
+function CategoriesPanel({ categories = [], country = "" }) {
     const { t } = useTranslation();
 
     return (
         <div className="px-3 py-4">
             <div>
-                <Link href={route("products.index")} className="inline-flex items-center px-4 py-2 mb-4 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
+                <Link href={route("products.index", { country: country || undefined })} className="inline-flex items-center px-4 py-2 mb-4 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
                     {t("All Product")}
                 </Link>
                 <br />
@@ -59,6 +59,7 @@ export default function Index({
                 search: nextSearch || undefined,
                 sort: nextSort || "desc",
                 limit: nextLimit,
+                country: filters.country || undefined,
             },
             {
                 preserveScroll: true,
@@ -106,7 +107,7 @@ export default function Index({
                             style={{ width: "300px" }}
                             className="hidden bg-white rounded-lg md:block max-h-[calc(100vh-110px)] overflow-y-auto"
                         >
-                            <CategoriesPanel categories={categories} />
+                            <CategoriesPanel categories={categories} country={filters.country} />
                         </div>
 
                         <div className="block p-2 mb-2 bg-white border rounded-md md:hidden">
@@ -125,7 +126,7 @@ export default function Index({
                             </div>
                             {open ? (
                                 <div className="mt-2 overflow-y-auto border-t max-h-[calc(100vh-180px)]">
-                                    <CategoriesPanel categories={categories} />
+                                    <CategoriesPanel categories={categories} country={filters.country} />
                                 </div>
                             ) : null}
                         </div>

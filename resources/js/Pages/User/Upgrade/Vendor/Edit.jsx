@@ -11,6 +11,7 @@ import UserDash from "../../../../components/user/dash/UserDash";
 import UpgradeStatus from "../../../../components/client/UpgradeStatus";
 import Hr from "../../../../components/Hr";
 import useTranslation from "../../../../hooks/useTranslation";
+import DistrictUpozilaSelect from "../../../../components/DistrictUpozilaSelect";
 
 export default function UpgradeVendorEdit() {
     const { t } = useTranslation();
@@ -297,32 +298,17 @@ export default function UpgradeVendorEdit() {
                                         )
                                     }
                                 />
-                                <InputField
-                                    className="md:flex"
-                                    inputClass="w-full"
-                                    label={t("District/State")}
-                                    name="district"
-                                    error={basicForm.errors.district}
-                                    value={basicForm.data.district}
-                                    onChange={(e) =>
-                                        basicForm.setData(
-                                            "district",
-                                            e.target.value,
-                                        )
+                                <DistrictUpozilaSelect
+                                    district={basicForm.data.district}
+                                    upozila={basicForm.data.upozila}
+                                    errors={basicForm.errors}
+                                    districtLabel={t("District/State")}
+                                    upozilaLabel={t("Upozila/ City")}
+                                    onDistrictChange={(value) =>
+                                        basicForm.setData("district", value)
                                     }
-                                />
-                                <InputField
-                                    className="md:flex"
-                                    inputClass="w-full"
-                                    label={t("Upozila/ City")}
-                                    name="upozila"
-                                    error={basicForm.errors.upozila}
-                                    value={basicForm.data.upozila}
-                                    onChange={(e) =>
-                                        basicForm.setData(
-                                            "upozila",
-                                            e.target.value,
-                                        )
+                                    onUpozilaChange={(value) =>
+                                        basicForm.setData("upozila", value)
                                     }
                                 />
                                 <InputField
@@ -580,4 +566,3 @@ export default function UpgradeVendorEdit() {
         </UserDash>
     );
 }
-

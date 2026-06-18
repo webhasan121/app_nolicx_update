@@ -9,8 +9,10 @@ import Table from "../../components/dashboard/table/Table";
 import PrimaryButton from "../../components/PrimaryButton";
 import TextInput from "../../components/TextInput";
 import { ActionIconButton, ActionIconLink } from "../../components/ActionIcon";
+import useTranslation from "../../hooks/useTranslation";
 
 export default function Orders() {
+    const { t } = useTranslation();
     const { orders = {}, nav, filters = {}, printUrl } = usePage().props;
     const rows = orders.data ?? [];
     const [search, setSearch] = useState(filters.find ?? "");
@@ -88,13 +90,13 @@ export default function Orders() {
     const resultSummary =
         orders?.total > 0
             ? `Showing ${orders?.from ?? 0}-${orders?.to ?? 0} of ${orders?.total ?? 0} orders`
-            : "No orders found";
+            : t("No orders found");
 
     return (
         <UserDash>
             <Container>
                 <SectionSection>
-                    <SectionHeader title="Your Orders" />
+                    <SectionHeader title={t("Your Orders")} />
                 </SectionSection>
                 <SectionSection>
                     <div>
@@ -123,7 +125,7 @@ export default function Orders() {
                                             );
                                         }}
                                         className="py-1"
-                                        placeholder="Search orders..."
+                                        placeholder={t("Search orders...")}
                                     />
                                     <PrimaryButton
                                         type="button"
@@ -134,15 +136,15 @@ export default function Orders() {
                                 </div>
                             }
                         />
-                        <Table data={rows}>
+                        <Table data={rows} emptyMessage={t("Data Not Found")}>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Status</th>
-                                    <th>Product</th>
-                                    <th>Total</th>
-                                    <th>Shop</th>
-                                    <th>A/C</th>
+                                    <th>{t("ID")}</th>
+                                    <th>{t("Status")}</th>
+                                    <th>{t("Product")}</th>
+                                    <th>{t("Total")}</th>
+                                    <th>{t("Shop")}</th>
+                                    <th>{t("A/C")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -210,7 +212,7 @@ export default function Orders() {
                                                 className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
                                             >
-                                                Previous
+                                                {t("Previous")}
                                             </button>
                                             {pagination.pages.map((link, index) => (
                                                 <button
@@ -233,7 +235,7 @@ export default function Orders() {
                                                 className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
                                             >
-                                                Next
+                                                {t("Next")}
                                             </button>
                                         </div>
                                     </div>

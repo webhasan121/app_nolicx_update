@@ -1,4 +1,5 @@
 import { Children, isValidElement } from "react";
+import useTranslation from "../../../hooks/useTranslation";
 
 const countColumns = (children) => {
   let count = 0;
@@ -25,11 +26,14 @@ export default function Table({
   emptyMessage = "Data Not Found",
   ...props
 }) {
+  const { t } = useTranslation();
   const hasData = Array.isArray(data) ? data.length > 0 : Boolean(data?.length);
   const columnCount = Math.max(countColumns(children), 1);
+  const translatedEmptyMessage =
+    typeof emptyMessage === "string" ? t(emptyMessage) : emptyMessage;
 
   return (
-    <div {...props} className={`overflow-hidden overflow-x-scroll ${props.className ?? ""}`}>
+    <div {...props} className={`overflow-hidden overflow-x-auto ${props.className ?? ""}`}>
 
       <style>
         {`
@@ -56,7 +60,7 @@ export default function Table({
                 colSpan={columnCount}
                 className="py-8 font-medium text-center text-slate-500"
               >
-                {emptyMessage}
+                {translatedEmptyMessage}
               </td>
             </tr>
           </tbody>

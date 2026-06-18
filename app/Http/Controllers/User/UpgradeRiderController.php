@@ -131,6 +131,7 @@ class UpgradeRiderController extends Controller
             'vehicle_color' => $validData['vehicle_color'],
             'country' => $validData['country'] ?? 'Bangladesh',
             'district' => $validData['state_name'],
+            'city' => $validData['city_name'],
         ]);
 
         return redirect()

@@ -1,4 +1,5 @@
 import { Head, router, useForm } from "@inertiajs/react";
+import { useState } from "react";
 import AppLayout from "../../../../Layouts/App";
 import InputError from "../../../../components/InputError";
 import NavLinkBtn from "../../../../components/NavLinkBtn";
@@ -209,6 +210,190 @@ function DepositPayNumbersCard({ form }) {
     );
 }
 
+function CurrencyCard({ form, currencies = [], defaultCurrency = {} }) {
+    const { t } = useTranslation();
+    const [editingCode, setEditingCode] = useState(null);
+
+    const clearForm = () => {
+        setEditingCode(null);
+        form.reset("code", "name", "symbol");
+        form.clearErrors();
+    };
+
+    const save = (e) => {
+        e.preventDefault();
+        const url = editingCode
+            ? `/dashboard/system/settings/currency/${encodeURIComponent(editingCode)}`
+            : "/dashboard/system/settings/currency";
+
+        form.post(url, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: clearForm,
+        });
+    };
+
+    const editCurrency = (currency) => {
+        setEditingCode(currency.code);
+        form.clearErrors();
+        form.setData({
+            code: currency.code,
+            name: currency.name,
+            symbol: currency.symbol,
+        });
+    };
+
+    const deleteCurrency = (currency) => {
+        if (currency.code === defaultCurrency?.code) {
+            return;
+        }
+
+        if (!window.confirm(t("Delete this currency?"))) {
+            return;
+        }
+
+        router.delete(`/dashboard/system/settings/currency/${encodeURIComponent(currency.code)}`, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                if (editingCode === currency.code) {
+                    clearForm();
+                }
+            },
+        });
+    };
+
+    const setDefault = (code) => {
+        router.post(
+            "/dashboard/system/settings/default-currency",
+            { code },
+            {
+                preserveScroll: true,
+                preserveState: true,
+            }
+        );
+    };
+
+    return (
+        <Section>
+            <SectionHeader
+                title={t("Currency")}
+                content={t("Add currencies and select the default currency shown across the system.")}
+            />
+
+            <SectionInner>
+                <div data-no-currency-sync>
+                <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
+                    <form onSubmit={save} className="space-y-3 rounded-md border border-dashed p-4">
+                        <div className="text-sm font-semibold">
+                            {editingCode ? t("Edit Currency") : t("Add Currency")}
+                        </div>
+                        <div>
+                            <label>{t("Code")} *</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 uppercase border rounded-md"
+                                placeholder="BDT"
+                                value={form.data.code}
+                                onChange={(e) => form.setData("code", e.target.value.toUpperCase())}
+                            />
+                            <InputError messages={form.errors.code} className="mt-1" />
+                        </div>
+                        <div>
+                            <label>{t("Code Name")} *</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-md"
+                                placeholder="Bangladeshi Taka"
+                                value={form.data.name}
+                                onChange={(e) => form.setData("name", e.target.value)}
+                            />
+                            <InputError messages={form.errors.name} className="mt-1" />
+                        </div>
+                        <div>
+                            <label>{t("Symbol")} *</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-md"
+                                placeholder="TK"
+                                value={form.data.symbol}
+                                onChange={(e) => form.setData("symbol", e.target.value)}
+                            />
+                            <InputError messages={form.errors.symbol} className="mt-1" />
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <PrimaryButton type="submit" disabled={form.processing}>
+                                <i className="mr-2 fas fa-check"></i>
+                                {form.processing ? t("Saving...") : editingCode ? t("Update") : t("Add")}
+                            </PrimaryButton>
+                            {editingCode ? (
+                                <button
+                                    type="button"
+                                    onClick={clearForm}
+                                    className="px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                                >
+                                    {t("Cancel")}
+                                </button>
+                            ) : null}
+                        </div>
+                    </form>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                        {currencies.map((currency) => {
+                            const isDefault = currency.code === defaultCurrency?.code;
+
+                            return (
+                                <div
+                                    key={currency.code}
+                                    className={`rounded-md border p-4 ${isDefault ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"}`}
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <div className="font-bold">{currency.code}</div>
+                                            <div className="text-sm text-gray-600">{currency.name}</div>
+                                            <div className="text-sm">{currency.symbol}</div>
+                                        </div>
+                                        <div className="flex flex-wrap justify-end gap-2">
+                                            <button
+                                                type="button"
+                                                className={`rounded px-3 py-2 text-sm ${isDefault ? "bg-green-600 text-white" : "bg-indigo-600 text-white"}`}
+                                                onClick={() => setDefault(currency.code)}
+                                                disabled={isDefault}
+                                            >
+                                                {isDefault ? t("Default") : t("Set Default")}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="inline-flex items-center justify-center w-9 h-9 text-xs text-white transition bg-blue-600 rounded hover:bg-blue-700"
+                                                title={t("Edit")}
+                                                onClick={() => editCurrency(currency)}
+                                            >
+                                                <i className="fas fa-edit"></i>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={`inline-flex items-center justify-center w-9 h-9 text-xs text-white transition rounded ${
+                                                    isDefault ? "bg-gray-300 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
+                                                }`}
+                                                title={isDefault ? t("Default currency cannot be deleted.") : t("Delete")}
+                                                onClick={() => deleteCurrency(currency)}
+                                                disabled={isDefault}
+                                            >
+                                                <i className="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+                </div>
+            </SectionInner>
+        </Section>
+    );
+}
+
 export default function Index({ settings }) {
     const { t } = useTranslation();
     const supportMailForm = useForm({
@@ -244,6 +429,11 @@ export default function Index({ settings }) {
     });
     const managementTeamPercentageForm = useForm({
         management_team_percentage: settings?.management_team_percentage ?? "",
+    });
+    const currencyForm = useForm({
+        code: "",
+        name: "",
+        symbol: "",
     });
 
     const startQueue = () => {
@@ -288,6 +478,11 @@ export default function Index({ settings }) {
                 </section>
 
                 <DepositPayNumbersCard form={depositPayNumbersForm} />
+                <CurrencyCard
+                    form={currencyForm}
+                    currencies={settings?.currencies ?? []}
+                    defaultCurrency={settings?.default_currency ?? {}}
+                />
 
                 <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     <EnvCard

@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Events\ProductComissions;
 use App\Models\DistributeComissions;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ResellerResellProfits;
+use App\Models\syncOrder;
 use App\Models\TakeComissions;
 use App\Models\UserHasRefs;
 use Illuminate\Http\Request;
@@ -172,18 +174,54 @@ class ProductComissionController extends Controller
         }
     }
 
-    private static function buildProductCommissionDistributions(User $seller, User $buyer, float $comission): array
+    private static function buildProductCommissionDistributions(Order $order, Product $product, float $comission): array
     {
-        $items = [
-            self::distributionItem($buyer, 'Buyer Product Purchase', 10, $comission),
-            self::distributionItem($seller, 'Seller Product Sale', 10, $comission),
-        ];
+        $actors = self::resolveProductCommissionActors($order, $product);
+        $items = [];
 
-        return array_values(array_filter(array_merge(
-            $items,
-            self::referralDistributionItems($seller, 'Seller', $comission),
-            self::referralDistributionItems($buyer, 'Buyer', $comission),
-        )));
+        if ($actors['customer']) {
+            $items[] = self::distributionItem($actors['customer'], 'Buyer Cashback', 10, $comission);
+            $items = array_merge($items, self::referralDistributionItems($actors['customer'], 'Buyer', $comission));
+        }
+
+        if ($actors['reseller']) {
+            $items[] = self::distributionItem($actors['reseller'], 'Reseller Commission', 10, $comission);
+            $items = array_merge($items, self::referralDistributionItems($actors['reseller'], 'Reseller', $comission));
+        }
+
+        if ($actors['vendor']) {
+            $items[] = self::distributionItem($actors['vendor'], 'Vendor Commission', 10, $comission);
+            $items = array_merge($items, self::referralDistributionItems($actors['vendor'], 'Vendor', $comission));
+        }
+
+        return array_values(array_filter($items));
+    }
+
+    private static function resolveProductCommissionActors(Order $order, Product $product): array
+    {
+        $sync = syncOrder::query()
+            ->with('userOrder')
+            ->where('reseller_order_id', $order->id)
+            ->first();
+
+        $resel = $product->isResel;
+        $mainProduct = $resel ? Product::find($resel->parent_id) : null;
+
+        $customerId = $sync?->userOrder?->user_id ?? $order->user_id;
+        $resellerId = $sync?->reseller_id
+            ?? ($resel?->user_id)
+            ?? ($order->belongs_to_type === 'reseller' ? $order->belongs_to : null)
+            ?? ($order->user_type === 'reseller' ? $order->user_id : null);
+        $vendorId = $sync?->vendor_id
+            ?? ($mainProduct?->user_id)
+            ?? ($product->belongs_to_type === 'vendor' ? $product->user_id : null)
+            ?? ($order->belongs_to_type === 'vendor' ? $order->belongs_to : null);
+
+        return [
+            'customer' => $customerId ? User::find($customerId) : null,
+            'reseller' => $resellerId ? User::find($resellerId) : null,
+            'vendor' => $vendorId ? User::find($vendorId) : null,
+        ];
     }
 
     private static function referralDistributionItems(User $user, string $side, float $comission): array
@@ -250,6 +288,46 @@ class ProductComissionController extends Controller
         ];
     }
 
+    private static function ensureResellerProfitForOrder(Order $order): void
+    {
+        if ($order->user_type !== 'reseller' || $order->belongs_to_type !== 'vendor' || $order->name !== 'Resel') {
+            return;
+        }
+
+        $order->loadMissing('cartOrders');
+
+        foreach ($order->cartOrders as $ord) {
+            if (
+                ResellerResellProfits::query()
+                    ->where('order_id', $ord->order_id)
+                    ->where('product_id', $ord->product_id)
+                    ->exists()
+            ) {
+                continue;
+            }
+
+            $quantity = max(1, (int) ($ord->quantity ?? 1));
+            $profit = round(((float) ($ord->price ?? 0) - (float) ($ord->buying_price ?? 0)) * $quantity, 8);
+
+            if ($profit <= 0) {
+                continue;
+            }
+
+            $rrp = new ResellerResellProfits();
+            $rrp->forceFill([
+                'product_id' => $ord->product_id,
+                'order_id' => $ord->order_id,
+                'from' => $ord->belongs_to,
+                'buy' => $ord->buying_price,
+                'sel' => $ord->price,
+                'to' => $ord->user_id,
+                'profit' => $profit,
+                'confirmed' => false,
+            ]);
+            $rrp->save();
+        }
+    }
+
     private static function lineBuyingTotal($cartOrder, $product, int $quantity): float
     {
         if (is_numeric($cartOrder->buying_price)) {
@@ -280,6 +358,7 @@ class ProductComissionController extends Controller
         $order = Order::findOrFail($id);
         if ($order) {
             $this->refreshPendingOrderComissions($order);
+            self::ensureResellerProfitForOrder($order);
 
             $tc = TakeComissions::query()->where(['order_id' => $id])->pending()->get(); // pending
 
@@ -302,6 +381,8 @@ class ProductComissionController extends Controller
                     $rcpi->save();
                 }
             }
+
+            $this->confirmDeliveryChargeCommissions($order);
         }
     }
 
@@ -316,6 +397,7 @@ class ProductComissionController extends Controller
 
             $order = $take->order;
             $this->refreshPendingOrderComissions($order);
+            self::ensureResellerProfitForOrder($order);
 
             $tc = TakeComissions::query()->where(['order_id' => $order->id])->pending()->get();
 
@@ -338,6 +420,8 @@ class ProductComissionController extends Controller
                     $rcpi->save();
                 }
             }
+
+            $this->confirmDeliveryChargeCommissions($order);
         } catch (\Throwable $th) {
             //throw $th;
         }
@@ -359,23 +443,31 @@ class ProductComissionController extends Controller
 
     private function createDistributionsForTake(TakeComissions $take): float
     {
-        if (DistributeComissions::query()->where('parent_id', $take->id)->exists()) {
-            return (float) DistributeComissions::query()
-                ->where('parent_id', $take->id)
-                ->sum('amount');
-        }
-
         $order = $take->order;
-        $seller = $order ? User::find($order->belongs_to) : null;
-        $buyer = $order ? User::find($order->user_id) : null;
 
-        if (!$order || !$seller || !$buyer || (float) $take->take_comission <= 0) {
+        if (!$order || (float) $take->take_comission <= 0) {
             return 0;
         }
 
-        $distributions = self::buildProductCommissionDistributions($seller, $buyer, (float) $take->take_comission);
+        $product = Product::find($take->product_id);
+        if (!$product) {
+            return 0;
+        }
+
+        $distributions = self::buildProductCommissionDistributions($order, $product, (float) $take->take_comission);
+        $existing = DistributeComissions::query()
+            ->where('parent_id', $take->id)
+            ->get()
+            ->mapWithKeys(function (DistributeComissions $item) {
+                return [$item->user_id . '|' . $item->info => true];
+            });
 
         foreach ($distributions as $distribution) {
+            $key = $distribution['user_id'] . '|' . $distribution['info'];
+            if ($existing->has($key)) {
+                continue;
+            }
+
             $dcm = new DistributeComissions();
             $dcm->forceFill([
                 'product_id' => $take->product_id,
@@ -385,12 +477,120 @@ class ProductComissionController extends Controller
                 'info' => $distribution['info'],
                 'range' => $distribution['range'],
                 'amount' => $distribution['amount'],
-                'confirmed' => false,
+                'confirmed' => (bool) $take->confirmed,
             ]);
             $dcm->save();
         }
 
-        return round(array_sum(array_column($distributions, 'amount')), 8);
+        return round((float) DistributeComissions::query()
+            ->where('parent_id', $take->id)
+            ->sum('amount'), 8);
+    }
+
+    private function confirmDeliveryChargeCommissions(Order $order): void
+    {
+        if ((float) ($order->shipping ?? 0) <= 0) {
+            return;
+        }
+
+        $this->removeInvalidRiderDeliveryCommissions($order);
+
+        if ($this->hasRiderDeliveryCommissions($order)) {
+            return;
+        }
+
+        $cod = $order->hasRider()->latest('id')->first();
+        $rider = $cod?->rider;
+
+        if (!$rider || !$rider->id) {
+            return;
+        }
+
+        $deliveryCommissionRate = is_numeric($cod->comission ?? null)
+            ? (float) $cod->comission
+            : (float) ($rider->isRider()?->comission ?? 0);
+
+        if ($deliveryCommissionRate <= 0) {
+            return;
+        }
+
+        $companyDeliveryIncome = round(((float) $order->shipping * $deliveryCommissionRate) / 100, 8);
+        if ($companyDeliveryIncome <= 0) {
+            return;
+        }
+
+        $current = $rider;
+        $visited = [$rider->id => true];
+        $rules = [
+            ['range' => 5, 'info' => 'Rider Direct Referrer Delivery Commission'],
+            ['range' => 1, 'info' => 'Rider Referral Level 1 Delivery Commission'],
+            ['range' => 1, 'info' => 'Rider Referral Level 2 Delivery Commission'],
+            ['range' => 1, 'info' => 'Rider Referral Level 3 Delivery Commission'],
+        ];
+
+        foreach ($rules as $rule) {
+            $referrer = self::referrerOf($current);
+
+            if (!$referrer || isset($visited[$referrer->id])) {
+                break;
+            }
+
+            $visited[$referrer->id] = true;
+            $amount = round(($companyDeliveryIncome * $rule['range']) / 100, 8);
+
+            if ($amount > 0 && self::canReceiveRiderDeliveryCommission($referrer)) {
+                $dcm = new DistributeComissions();
+                $dcm->forceFill([
+                    'product_id' => null,
+                    'order_id' => $order->id,
+                    'parent_id' => null,
+                    'user_id' => $referrer->id,
+                    'info' => $rule['info'],
+                    'range' => $rule['range'],
+                    'amount' => $amount,
+                    'confirmed' => true,
+                ]);
+                $dcm->save();
+            }
+
+            $current = $referrer;
+        }
+    }
+
+    private function hasRiderDeliveryCommissions(Order $order): bool
+    {
+        return DistributeComissions::query()
+            ->where('order_id', $order->id)
+            ->whereNull('parent_id')
+            ->where('info', 'like', 'Rider%Delivery%')
+            ->exists();
+    }
+
+    private function removeInvalidRiderDeliveryCommissions(Order $order): void
+    {
+        DistributeComissions::query()
+            ->with('user')
+            ->where('order_id', $order->id)
+            ->whereNull('parent_id')
+            ->where('info', 'like', 'Rider%Delivery%')
+            ->get()
+            ->each(function (DistributeComissions $commission) {
+                if (self::canReceiveRiderDeliveryCommission($commission->user)) {
+                    return;
+                }
+
+                if ($commission->confirmed) {
+                    $commission->confirmed = false;
+                    $commission->save();
+                }
+
+                $commission->delete();
+            });
+    }
+
+    private static function canReceiveRiderDeliveryCommission(?User $user): bool
+    {
+        return (bool) $user?->hasRole('rider');
     }
 
 
@@ -500,6 +700,18 @@ class ProductComissionController extends Controller
                     $rcpi->save();
                 }
             }
+
+            DistributeComissions::query()
+                ->where('order_id', $order->id)
+                ->whereNull('parent_id')
+                ->where('info', 'like', 'Rider%Delivery%')
+                ->confirmed()
+                ->get()
+                ->each(function (DistributeComissions $commission) {
+                    $commission->confirmed = false;
+                    $commission->save();
+                });
+
             return redirect()->back()->with('success', 'Roleback comission');
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', 'error to roleback comissions');

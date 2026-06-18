@@ -1,4 +1,4 @@
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 import useTranslation from "../../hooks/useTranslation";
 
@@ -28,6 +28,11 @@ export default function CatLoop({
     const shouldHighlight = isActive || hasActiveChild;
 
     const isSidebar = variant === "sidebar";
+    const selectedCountry = usePage().props?.selectedCountry;
+    const categoryHref = route("category.products", {
+        cat: item.slug,
+        country: selectedCountry || undefined,
+    });
 
     const rowClass = isSidebar
         ? depth === 0
@@ -97,7 +102,7 @@ export default function CatLoop({
             <div className={isSidebar ? sidebarChildRowClass : rowBaseClass}>
                 <Link
                     className={isSidebar && depth > 0 ? sidebarChildLinkClass : linkClass}
-                    href={route("category.products", { cat: item.slug })}
+                    href={categoryHref}
                 >
                     {label}
                 </Link>

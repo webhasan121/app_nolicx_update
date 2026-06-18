@@ -43,9 +43,9 @@ export function subscribeToNoticeChannel(role, userId, onNotice) {
     let socket = null;
     let reconnectTimer = null;
     let closedByClient = false;
-    const channelName = role === "user" && userId
-        ? `private-notices.user.${userId}`
-        : `private-notices.${role}`;
+    const channelNames = role === "user" && userId
+        ? [`private-notices.user`, `private-notices.user.${userId}`]
+        : [`private-notices.${role}`];
 
     const connect = () => {
         socket = new WebSocket(url);
@@ -61,14 +61,16 @@ export function subscribeToNoticeChannel(role, userId, onNotice) {
 
             if (message.event === "pusher:connection_established") {
                 const payload = JSON.parse(message.data || "{}");
-                const auth = await authorizeChannel(payload.socket_id, channelName);
+                await Promise.all(channelNames.map(async (channelName) => {
+                    const auth = await authorizeChannel(payload.socket_id, channelName);
 
-                socket?.send(JSON.stringify({
-                    event: "pusher:subscribe",
-                    data: {
-                        channel: channelName,
-                        auth: auth.auth,
-                    },
+                    socket?.send(JSON.stringify({
+                        event: "pusher:subscribe",
+                        data: {
+                            channel: channelName,
+                            auth: auth.auth,
+                        },
+                    }));
                 }));
 
                 return;

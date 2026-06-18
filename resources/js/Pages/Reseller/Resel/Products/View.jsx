@@ -12,6 +12,7 @@ import Container from "../../../../components/dashboard/Container";
 import Section from "../../../../components/dashboard/section/Section";
 import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
+import DistrictUpozilaSelect from "../../../../components/DistrictUpozilaSelect";
 
 function youtubeEmbedUrl(url) {
     if (!url) return null;
@@ -1040,28 +1041,16 @@ export default function View({
                                 orderForm.setData("phone", e.target.value)
                             }
                         />
-                        <InputField
-                            className="md:flex"
+                        <DistrictUpozilaSelect
+                            district={orderForm.data.district}
+                            upozila={orderForm.data.upozila}
+                            errors={orderForm.errors}
                             labelWidth="140px"
-                            label="District"
-                            name="district"
-                            inputClass="w-full"
-                            error={orderForm.errors.district}
-                            value={orderForm.data.district}
-                            onChange={(e) =>
-                                orderForm.setData("district", e.target.value)
+                            onDistrictChange={(value) =>
+                                orderForm.setData("district", value)
                             }
-                        />
-                        <InputField
-                            className="md:flex"
-                            labelWidth="140px"
-                            label="Upozila"
-                            name="upozila"
-                            inputClass="w-full"
-                            error={orderForm.errors.upozila}
-                            value={orderForm.data.upozila}
-                            onChange={(e) =>
-                                orderForm.setData("upozila", e.target.value)
+                            onUpozilaChange={(value) =>
+                                orderForm.setData("upozila", value)
                             }
                         />
                         <InputFile

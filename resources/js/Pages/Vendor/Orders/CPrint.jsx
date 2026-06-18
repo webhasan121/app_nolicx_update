@@ -4,6 +4,8 @@ import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
 import Section from "../../../components/dashboard/section/Section";
 import Table from "../../../components/dashboard/table/Table";
+import ProductName from "../../../components/ProductName";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 export default function CPrint({ order }) {
     useEffect(() => {
@@ -77,31 +79,31 @@ export default function CPrint({ order }) {
                                             {item.product_thumbnail ? (
                                                 <img width="30" height="30" src={item.product_thumbnail} alt="" />
                                             ) : null}
-                                            <div>{item.product_title}</div>
+                                            <div><ProductName value={item.product_title} /></div>
                                         </div>
                                     </td>
                                     <td>{item.quantity}</td>
-                                    <td>{item.price}</td>
-                                    <td>{item.line_total}</td>
+                                    <td>{formatCurrency(item.price)}</td>
+                                    <td>{formatCurrency(item.line_total)}</td>
                                     <td>{item.size}</td>
                                 </tr>
                             ))}
                             <tr className="text-md bg-gray-200">
                                 <td className="text-end" colSpan="4">Sub Total</td>
                                 <td></td>
-                                <td>{order?.total ?? 0}</td>
+                                <td>{formatCurrency(order?.total)}</td>
                                 <td></td>
                             </tr>
                             <tr className="text-md">
                                 <td className="text-end" colSpan="4">Shipping</td>
                                 <td></td>
-                                <td>{order?.shipping ?? 0}</td>
+                                <td>{formatCurrency(order?.shipping)}</td>
                                 <td></td>
                             </tr>
                             <tr className="text-md">
                                 <td className="text-end" colSpan="4">Total Payable</td>
                                 <td></td>
-                                <td>{Number(order?.shipping ?? 0) + Number(order?.total ?? 0)}</td>
+                                <td>{formatCurrency(Number(order?.shipping ?? 0) + Number(order?.total ?? 0))}</td>
                                 <td></td>
                             </tr>
                         </tbody>

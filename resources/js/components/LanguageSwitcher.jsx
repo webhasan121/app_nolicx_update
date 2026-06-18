@@ -20,9 +20,9 @@ export default function LanguageSwitcher({ compact = false, className = "" }) {
     };
 
     return (
-        <label className={`inline-flex items-center gap-2 ${className}`}>
+        <label className={`inline-flex min-w-0 items-center gap-2 ${className}`}>
             {!compact ? (
-                <span className="text-sm text-slate-600">
+                <span className="shrink-0 text-sm text-slate-600">
                     <i className="fas fa-language"></i>
                 </span>
             ) : null}
@@ -30,7 +30,11 @@ export default function LanguageSwitcher({ compact = false, className = "" }) {
                 value={current}
                 onChange={switchLanguage}
                 disabled={fixed}
-                className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 shadow-sm focus:border-indigo-400 focus:ring-indigo-200"
+                className={`h-9 min-w-0 rounded-md border border-slate-200 bg-white text-sm text-slate-700 shadow-sm focus:border-indigo-400 focus:ring-indigo-200 ${
+                    compact
+                        ? "w-28 max-w-[32vw] truncate pl-2 pr-1 sm:w-36 lg:w-40"
+                        : "w-full px-2"
+                }`}
                 title="Language"
             >
                 {available.map((language) => (

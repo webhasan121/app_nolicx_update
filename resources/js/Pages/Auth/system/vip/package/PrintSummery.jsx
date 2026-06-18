@@ -4,6 +4,7 @@ import PrintLayout from "../../../../../Layouts/Print";
 import ApplicationName from "../../../../../components/ApplicationName";
 import Container from "../../../../../components/dashboard/Container";
 import Table from "../../../../../components/dashboard/table/Table";
+import { formatCurrency } from "../../../../../utils/formatAmount";
 
 export default function PrintSummery() {
     const { packages = [], filters = {} } = usePage().props;
@@ -48,7 +49,7 @@ export default function PrintSummery() {
                                 <tr key={item.id}>
                                     <td>{index + 1}</td>
                                     <td>{item.name}</td>
-                                    <td>{item.price} TK</td>
+                                    <td>{formatCurrency(item.price)}</td>
                                     <td>{item.countdown} Minute</td>
                                     <td>
                                         D - {item.coin}

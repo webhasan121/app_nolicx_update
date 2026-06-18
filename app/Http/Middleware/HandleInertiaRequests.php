@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Illuminate\Support\Str;
 use App\Support\TranslationManager;
+use App\Support\SystemSettings;
+use App\Support\CountrySelection;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -116,6 +118,7 @@ class HandleInertiaRequests extends Middleware
                         ->all(),
                 ];
             },
+            'selectedCountry' => fn() => CountrySelection::fromRequest($request),
 
             // Only for frontend routes
             'global' => function () {
@@ -142,6 +145,7 @@ class HandleInertiaRequests extends Middleware
                 'trade_license' => config('app.trade_license'),
                 'whatsapp_no' => config('app.whatsapp_no'),
                 'support_mail' => config('app.support_mail'),
+                'currency' => SystemSettings::defaultCurrency(),
             ],
             'flash' => function () use ($request) {
                 return [

@@ -8,6 +8,7 @@ use App\Jobs\UpdateProductSalesIndex;
 use App\Models\Order;
 use App\Models\syncOrder;
 use App\Support\TableDateFilter;
+use App\Support\VendorResellOrderSync;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -103,6 +104,20 @@ class OrdersController extends Controller
             ])
             ->findOrFail($order);
 
+        if ($data->cartOrders->contains(fn ($item) => (bool) $item->product?->isResel)) {
+            VendorResellOrderSync::sync($data);
+            $data->load([
+                'user',
+                'seller',
+                'cartOrders.product',
+                'cartOrders.order.seller',
+                'comissionsInfo.product',
+                'hasRider.rider',
+                'syncDetails',
+                'resellerProfit',
+            ]);
+        }
+
         $rider = $data->hasRider?->sortByDesc('id')->first();
         $synced = $data->name === 'Resel'
             ? syncOrder::query()->where(['reseller_order_id' => $data->id])->first()
@@ -187,6 +202,14 @@ class OrdersController extends Controller
         $data = Order::query()
             ->with('comissionsInfo')
             ->findOrFail($order);
+
+        if ($data->cartOrders()->whereHas('product.isResel')->exists()) {
+            return redirect()->back()->with('error', 'Vendor product order can only be linked to vendor.');
+        }
+
+        if ($payload['status'] !== 'Accept') {
+            return redirect()->back()->with('error', 'Only rider can update shipment status.');
+        }
 
         if ($data->status === 'Pending') {
             $ct = new ProductComissionController();

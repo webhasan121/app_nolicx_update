@@ -8,6 +8,8 @@ import SectionHeader from "../../../../components/dashboard/section/Header";
 import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import AppLayout from "../../../../Layouts/App";
+import ProductName from "../../../../components/ProductName";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function Distributes({ takes, distributes = [] }) {
     return (
@@ -51,16 +53,16 @@ export default function Distributes({ takes, distributes = [] }) {
                                         {takes?.product_thumbnail ? (
                                             <img src={`/storage/${takes.product_thumbnail}`} alt="" />
                                         ) : null}
-                                        {takes?.product_name ?? 0}
+                                        <ProductName value={takes?.product_name} />
                                     </td>
-                                    <td>{takes?.buying_price ?? 0}</td>
-                                    <td>{takes?.selling_price ?? 0}</td>
-                                    <td>{takes?.profit ?? "0"}</td>
+                                    <td>{formatCurrency(takes?.buying_price)}</td>
+                                    <td>{formatCurrency(takes?.selling_price)}</td>
+                                    <td>{formatCurrency(takes?.profit)}</td>
                                     <td>{takes?.comission_range ?? "0"} %</td>
-                                    <td>{takes?.take_comission ?? "0"}</td>
-                                    <td>{takes?.distribute_comission ?? "0"}</td>
-                                    <td>{takes?.store ?? "0"}</td>
-                                    <td>{takes?.return ?? "0"}</td>
+                                    <td>{formatCurrency(takes?.take_comission)}</td>
+                                    <td>{formatCurrency(takes?.distribute_comission)}</td>
+                                    <td>{formatCurrency(takes?.store)}</td>
+                                    <td>{formatCurrency(takes?.return)}</td>
                                     <td></td>
                                 </tr>
                             </tbody>
@@ -91,8 +93,8 @@ export default function Distributes({ takes, distributes = [] }) {
                                                 <i className="px-1 fas fa-check-circle"></i>
                                             ) : null}
                                         </td>
-                                        <td>{item.product_name ?? 0}</td>
-                                        <td>{item.amount ?? 0}</td>
+                                        <td><ProductName value={item.product_name} /></td>
+                                        <td>{formatCurrency(item.amount)}</td>
                                         <td>{item.range ?? 0} %</td>
                                         <td>
                                             {item.confirmed ? (

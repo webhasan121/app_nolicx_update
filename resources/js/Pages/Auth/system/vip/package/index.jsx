@@ -13,6 +13,7 @@ import SectionSection from "../../../../../components/dashboard/section/Section"
 import Table from "../../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../../hooks/useTranslation";
 import { ActionIconButton, ActionIconLink } from "../../../../../components/ActionIcon";
+import { formatCurrency } from "../../../../../utils/formatAmount";
 
 export default function Index() {
     const { t } = useTranslation();
@@ -223,7 +224,7 @@ export default function Index() {
                                                         {item.name}
                                                     </div>
                                                 </td>
-                                                <td>{item.price}{t("TK")}</td>
+                                                <td>{formatCurrency(item.price)}</td>
                                                 <td>{item.countdown}{t("Minute")}</td>
                                                 <td>
                                                     <div>{t("D -")}{item.coin}</div>

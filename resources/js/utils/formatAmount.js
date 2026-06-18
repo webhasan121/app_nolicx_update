@@ -8,6 +8,18 @@ export function formatAmount(value, decimals = 2) {
     return number.toFixed(decimals);
 }
 
+export function currencySymbol(fallback = "TK") {
+    return window.__NOLIX_CURRENCY__?.symbol || fallback;
+}
+
+export function currencyCode(fallback = "BDT") {
+    return window.__NOLIX_CURRENCY__?.code || fallback;
+}
+
+export function formatCurrency(value, decimals = 2) {
+    return `${formatAmount(value, decimals)} ${currencySymbol()}`;
+}
+
 export function formatTk(value) {
-    return `${formatAmount(value)} TK`;
+    return formatCurrency(value);
 }

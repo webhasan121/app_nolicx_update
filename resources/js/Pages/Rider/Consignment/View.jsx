@@ -5,6 +5,7 @@ import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
+import ProductName from "../../../components/ProductName";
 import Hr from "../../../components/Hr";
 import NavLinkBtn from "../../../components/NavLinkBtn";
 
@@ -98,7 +99,7 @@ export default function RiderConsignmentViewPage({
                                                         alt=""
                                                     />
                                                 ) : null}
-                                                {item.product?.title ?? "N/A"}
+                                                <ProductName value={item.product?.title} />
                                             </div>
                                         </td>
                                     </tr>

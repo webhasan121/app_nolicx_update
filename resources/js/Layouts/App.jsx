@@ -2,6 +2,7 @@ import { Head, usePage } from "@inertiajs/react";
 import { useEffect } from "react";
 import Swal from "sweetalert2";
 import AutoTranslate from "../components/AutoTranslate";
+import CurrencyTextSync from "../components/CurrencyTextSync";
 import SupportButton from "../components/SupportButton";
 import Navigation from "../layout/Navigation";
 import ResponsiveNavigation from "./ResponsiveNavigation";
@@ -16,6 +17,10 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
         ? roles
         : user?.roles?.map((role) => role.name) ?? [];
     const currentNav = user?.active_nav ?? "";
+
+    useEffect(() => {
+        window.__NOLIX_CURRENCY__ = appConfig?.currency ?? window.__NOLIX_CURRENCY__;
+    }, [appConfig?.currency]);
 
     useEffect(() => {
         if (flash?.info) {
@@ -58,6 +63,7 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
     return (
         <div className="h-screen overflow-hidden font-sans antialiased bg-gray-100">
             <AutoTranslate />
+            <CurrencyTextSync />
             <Head title={title} />
 
             <style

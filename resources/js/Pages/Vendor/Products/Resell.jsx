@@ -7,6 +7,7 @@ import Section from "../../../components/dashboard/section/Section";
 import SectionHeader from "../../../components/dashboard/section/Header";
 import SectionInner from "../../../components/dashboard/section/Inner";
 import Table from "../../../components/dashboard/table/Table";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 function ProductNavigations({ productId, nav = "Resell" }) {
     return (
@@ -84,8 +85,8 @@ export default function Resell({ act, productData = {}, rows = [] }) {
                                             <td>{item.id}</td>
                                             <td>{item.created_at_formatted}</td>
                                             <td>{item.user_id}</td>
-                                            <td>{item.main_price}</td>
-                                            <td>{item.reseller_price}</td>
+                                            <td>{formatCurrency(item.main_price)}</td>
+                                            <td>{formatCurrency(item.reseller_price)}</td>
                                         </tr>
                                     ))}
                                 </tbody>

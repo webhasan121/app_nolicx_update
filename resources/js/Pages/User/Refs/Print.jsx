@@ -4,6 +4,7 @@ import PrintLayout from "../../../Layouts/Print";
 import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
 import Table from "../../../components/dashboard/table/Table";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 export default function Print() {
     const { refUsers = [], filters = {} } = usePage().props;
@@ -47,7 +48,7 @@ export default function Print() {
                                     <td>{user.name}</td>
                                     <td>{user.email ?? "N/A"}</td>
                                     <td>{user.phone ?? "N/A"}</td>
-                                    <td>{user.comission}</td>
+                                    <td>{formatCurrency(user.comission)}</td>
                                     <td>{user.join}</td>
                                 </tr>
                             ))}

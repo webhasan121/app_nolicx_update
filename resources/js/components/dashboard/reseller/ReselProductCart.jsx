@@ -6,6 +6,7 @@ import InputField from "../../InputField";
 import InputLabel from "../../InputLabel";
 import NavLink from "../../NavLink";
 import PrimaryButton from "../../PrimaryButton";
+import DistrictUpozilaSelect from "../../DistrictUpozilaSelect";
 
 function SelectField({ label, name, error, children }) {
     return (
@@ -144,23 +145,20 @@ export default function ReselProductCart({ product }) {
                         onChange={(e) => form.setData("phone", e.target.value)}
                         onClearError={() => form.clearErrors("phone")}
                     />
-                    <InputField
-                        label="District"
-                        name="district"
-                        value={form.data.district}
-                        error={form.errors.district}
-                        onChange={(e) =>
-                            form.setData("district", e.target.value)
-                        }
-                        onClearError={() => form.clearErrors("district")}
-                    />
-                    <InputField
-                        label="Upozila"
-                        name="upozila"
-                        value={form.data.upozila}
-                        error={form.errors.upozila}
-                        onChange={(e) => form.setData("upozila", e.target.value)}
-                        onClearError={() => form.clearErrors("upozila")}
+                    <DistrictUpozilaSelect
+                        district={form.data.district}
+                        upozila={form.data.upozila}
+                        errors={form.errors}
+                        className=""
+                        labelWidth="100%"
+                        onDistrictChange={(value) => {
+                            form.setData("district", value);
+                            form.clearErrors("district");
+                        }}
+                        onUpozilaChange={(value) => {
+                            form.setData("upozila", value);
+                            form.clearErrors("upozila");
+                        }}
                     />
                     <div className="my-3">
                         <InputLabel
@@ -300,9 +298,9 @@ export default function ReselProductCart({ product }) {
                             }
                         >
                             <option value="">Shipping Type</option>
-                            <option value="Courier">Courier</option>
-                            <option value="Home">Home Delivery</option>
-                            <option value="Hand">Hand-To-Hand</option>
+                            <option value="courier">Courier</option>
+                            <option value="home">Home Delivery</option>
+                            <option value="hand">Hand-To-Hand</option>
                         </select>
                     </SelectField>
                     <PrimaryButton>Order</PrimaryButton>

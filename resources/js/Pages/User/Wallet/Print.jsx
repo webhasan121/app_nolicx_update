@@ -4,7 +4,7 @@ import PrintLayout from "../../../Layouts/Print";
 import ApplicationName from "../../../components/ApplicationName";
 import Container from "../../../components/dashboard/Container";
 import Table from "../../../components/dashboard/table/Table";
-import { formatAmount } from "../../../utils/formatAmount";
+import { formatCurrency } from "../../../utils/formatAmount";
 
 export default function Print() {
     const { withdraw = [], filters = {}, wallet_balance, available_balance } = usePage().props;
@@ -26,8 +26,8 @@ export default function Print() {
                             <ApplicationName />
                         </h1>
                         <p>Wallet Withdraw Requests</p>
-                        <p>Wallet Balance: {formatAmount(wallet_balance)} TK</p>
-                        <p>Withdrawable Balance: {formatAmount(available_balance)} TK</p>
+                        <p>Wallet Balance: {formatCurrency(wallet_balance)}</p>
+                        <p>Withdrawable Balance: {formatCurrency(available_balance)}</p>
                         {filters?.find ? <p>Search: {filters.find}</p> : null}
                     </div>
                     <hr className="my-2" />
@@ -45,7 +45,7 @@ export default function Print() {
                             {withdraw.map((item, index) => (
                                 <tr key={item.id}>
                                     <td>#{index + 1}</td>
-                                    <td>{formatAmount(item.amount)} TK</td>
+                                    <td>{formatCurrency(item.amount)}</td>
                                     <td>{item.status}</td>
                                     <td>
                                         {item.created_at} - {item.created_at_human}

@@ -33,9 +33,22 @@ class ProductsController extends Controller
             'take' => $request->query('take', ''),
             'search' => $request->query('search', ''),
             'created' => $request->query('created', ''),
+            'start_date' => $request->query('start_date', ''),
+            'end_date' => $request->query('end_date', ''),
         ];
 
-        $query = auth()->user()->myProducts()->latest('id');
+        $query = auth()->user()
+            ->myProducts()
+            ->withCount([
+                'orders as orders_count' => fn($orderQuery) => $orderQuery->whereHas('order'),
+            ])
+            ->with([
+                'orders' => fn($orderQuery) => $orderQuery
+                    ->select('id', 'product_id', 'status', 'order_id')
+                    ->whereHas('order')
+                    ->orderBy('id'),
+            ])
+            ->latest('id');
         $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, [
             'nav' => 'Active',
         ]);
@@ -43,22 +56,7 @@ class ProductsController extends Controller
         if ($filters['take'] === 'trash') {
             $query->onlyTrashed();
         } else {
-            if (($filters['nav'] ?? 'Active') === 'Active') {
-                $query->where(function ($q) {
-                    $q->where('status', 'Active')
-                        ->orWhere('status', 1)
-                        ->orWhere('status', true);
-                });
-            } elseif (($filters['nav'] ?? '') === 'In Active') {
-                $query->where(function ($q) {
-                    $q->where('status', 'In Active')
-                        ->orWhere('status', 'Disable')
-                        ->orWhere('status', 'Disabled')
-                        ->orWhere('status', 'Drafted')
-                        ->orWhere('status', 0)
-                        ->orWhere('status', false);
-                });
-            }
+            $this->applyStatusFilter($query, $filters['nav'] ?? 'Active');
         }
 
         if (!empty($filters['search'])) {
@@ -70,8 +68,8 @@ class ProductsController extends Controller
 
         if ($filters['created'] === 'today') {
             $query->whereDate('created_at', Carbon::today());
-        } elseif ($defaultToday) {
-            $query->whereDate('created_at', Carbon::today());
+        } else {
+            TableDateFilter::apply($query, $filters['start_date'], $filters['end_date'], $defaultToday);
         }
 
         $products = $query->paginate(config('app.paginate'))->withQueryString();
@@ -80,6 +78,9 @@ class ProductsController extends Controller
             'filters' => $filters,
             'products' => [
                 'data' => $products->getCollection()->map(function (Product $product) {
+                    $orders = $product->orders ?? collect();
+                    $firstOrder = $orders->first();
+
                     return [
                         'id' => $product->id,
                         'name' => $product->name ?? 'N/A',
@@ -89,7 +90,11 @@ class ProductsController extends Controller
                         'buying_price' => $product->buying_price,
                         'price' => $product->price,
                         'discount' => $product->discount ?? 0,
-                        'status' => $product->status ? 'Active' : 'In Active',
+                        'status' => $this->productStatusLabel($product),
+                        'orders_count' => (int) ($product->orders_count ?? 0),
+                        'first_order_id' => $firstOrder?->order_id,
+                        'has_pending' => $orders->where('status', 'Pending')->isNotEmpty(),
+                        'has_accept' => $orders->where('status', 'Accept')->isNotEmpty(),
                         'created_at_human' => $product->created_at?->diffForHumans() ?? 'N/A',
                         'encrypted_id' => encrypt($product->id),
                     ];
@@ -110,6 +115,8 @@ class ProductsController extends Controller
                 'take' => $filters['take'],
                 'search' => $filters['search'],
                 'created' => $filters['created'],
+                'start_date' => $filters['start_date'],
+                'end_date' => $filters['end_date'],
             ]),
             'selectedCount' => 0,
             'isReseller' => auth()->user()->hasRole('reseller'),
@@ -123,9 +130,16 @@ class ProductsController extends Controller
             'take' => $request->query('take', ''),
             'search' => $request->query('search', ''),
             'created' => $request->query('created', ''),
+            'start_date' => $request->query('start_date', ''),
+            'end_date' => $request->query('end_date', ''),
         ];
 
-        $query = auth()->user()->myProducts()->latest('id');
+        $query = auth()->user()
+            ->myProducts()
+            ->withCount([
+                'orders as orders_count' => fn($orderQuery) => $orderQuery->whereHas('order'),
+            ])
+            ->latest('id');
         $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, [
             'nav' => 'Active',
         ]);
@@ -133,22 +147,7 @@ class ProductsController extends Controller
         if ($filters['take'] === 'trash') {
             $query->onlyTrashed();
         } else {
-            if (($filters['nav'] ?? 'Active') === 'Active') {
-                $query->where(function ($q) {
-                    $q->where('status', 'Active')
-                        ->orWhere('status', 1)
-                        ->orWhere('status', true);
-                });
-            } elseif (($filters['nav'] ?? '') === 'In Active') {
-                $query->where(function ($q) {
-                    $q->where('status', 'In Active')
-                        ->orWhere('status', 'Disable')
-                        ->orWhere('status', 'Disabled')
-                        ->orWhere('status', 'Drafted')
-                        ->orWhere('status', 0)
-                        ->orWhere('status', false);
-                });
-            }
+            $this->applyStatusFilter($query, $filters['nav'] ?? 'Active');
         }
 
         if (!empty($filters['search'])) {
@@ -160,8 +159,8 @@ class ProductsController extends Controller
 
         if ($filters['created'] === 'today') {
             $query->whereDate('created_at', Carbon::today());
-        } elseif ($defaultToday) {
-            $query->whereDate('created_at', Carbon::today());
+        } else {
+            TableDateFilter::apply($query, $filters['start_date'], $filters['end_date'], $defaultToday);
         }
 
         $products = $query->get();
@@ -177,11 +176,46 @@ class ProductsController extends Controller
                     'buying_price' => $product->buying_price,
                     'price' => $product->price,
                     'discount' => $product->discount ?? 0,
-                    'status' => $product->status ? 'Active' : 'In Active',
+                    'orders_count' => (int) ($product->orders_count ?? 0),
+                    'status' => $this->productStatusLabel($product),
                     'created_at_human' => $product->created_at?->diffForHumans() ?? 'N/A',
                 ];
             })->all(),
         ]);
+    }
+
+    private function applyStatusFilter($query, string $status): void
+    {
+        if ($status === 'Active') {
+            $query->where(function ($q) {
+                $q->where('status', 'Active')
+                    ->orWhere('status', '1')
+                    ->orWhere('status', 1)
+                    ->orWhere('status', true);
+            });
+
+            return;
+        }
+
+        if (in_array($status, ['In Active', 'Disable', 'Disabled'], true)) {
+            $query->where(function ($q) {
+                $q->whereNull('status')
+                    ->orWhere('status', 'In Active')
+                    ->orWhere('status', 'Inactive')
+                    ->orWhere('status', 'Disable')
+                    ->orWhere('status', 'Disabled')
+                    ->orWhere('status', 'Draft')
+                    ->orWhere('status', 'Drafted')
+                    ->orWhere('status', '0')
+                    ->orWhere('status', 0)
+                    ->orWhere('status', false);
+            });
+        }
+    }
+
+    private function productStatusLabel(Product $product): string
+    {
+        return in_array($product->status, ['Active', '1', 1, true], true) ? 'Active' : 'In Active';
     }
 
     public function bulkTrash(Request $request): RedirectResponse

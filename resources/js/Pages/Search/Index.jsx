@@ -8,7 +8,7 @@ import Container from "../../components/dashboard/Container";
 import UserLayout from "../../Layouts/User/App";
 import useTranslation from "../../hooks/useTranslation";
 
-export default function Index({ q = "", product = {}, shop = [], category = [] }) {
+export default function Index({ q = "", country = "", product = {}, shop = [], category = [] }) {
     const { t } = useTranslation();
     const rows = product?.data ?? [];
 
@@ -33,6 +33,7 @@ export default function Index({ q = "", product = {}, shop = [], category = [] }
             route("search"),
             {
                 q,
+                country: country || undefined,
                 page: nextUrl.searchParams.get("page") ?? undefined,
             },
             {

@@ -11,7 +11,7 @@ import SectionSection from "../../../../components/dashboard/section/Section";
 import Table from "../../../../components/dashboard/table/Table";
 import { ActionIconLink } from "../../../../components/ActionIcon";
 import useTranslation from "../../../../hooks/useTranslation";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function Users() {
     const { t } = useTranslation();
@@ -275,7 +275,7 @@ export default function Users() {
                                                         {item.task_type ? t(item.task_type) : t("N/A")}{" "}
                                                     </div>
                                                 </td>
-                                                <td>{formatAmount(item.user_coin)}</td>
+                                                <td>{formatCurrency(item.user_coin)}</td>
                                                 <td>
                                                     {t(item.status)}
                                                     <br />

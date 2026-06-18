@@ -66,7 +66,7 @@ export default function SearchableSelect({
                 }}
                 onBlur={closeDropdown}
                 placeholder={placeholder}
-                className={`w-full border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 ${inputClassName}`}
+                className={`w-full truncate border-gray-300 pr-10 rounded-md focus:border-blue-500 focus:ring-blue-500 ${inputClassName}`}
                 autoComplete="off"
                 disabled={disabled}
             />

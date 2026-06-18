@@ -8,7 +8,9 @@ use App\Http\Controllers\ProductComissionController;
 use App\Models\CartOrder;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\syncOrder;
 use App\Support\OrderNotice;
+use App\Support\VendorResellOrderSync;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -84,7 +86,10 @@ class UserOrderController extends Controller
 
         $order = DB::transaction(function () use ($validated, $user, $product) {
             $price = $product->offer_type ? $product->discount : $product->price;
-            $shipping = $validated['delevery'] === 'hand'
+            $isHandDelivery = strtolower((string) $validated['delevery']) === 'hand';
+            $orderStatus = $isHandDelivery ? 'Delivered' : 'Pending';
+            $receivedAt = $isHandDelivery ? now() : null;
+            $shipping = $isHandDelivery
                 ? 0
                 : (($validated['area_condition'] ?? 'Dhaka') === 'Dhaka'
                     ? $product->shipping_in_dhaka
@@ -96,7 +101,8 @@ class UserOrderController extends Controller
                 'user_type' => 'user',
                 'belongs_to' => $product->user_id,
                 'belongs_to_type' => 'reseller',
-                'status' => 'Pending',
+                'status' => $orderStatus,
+                'received_at' => $receivedAt,
                 'quantity' => $validated['quantity'],
                 'total' => $total,
                 'delevery' => $validated['delevery'],
@@ -111,7 +117,7 @@ class UserOrderController extends Controller
                 'target_area' => $validated['upozila'],
             ]);
 
-            CartOrder::create([
+            $cartOrder = CartOrder::create([
                 'user_id' => $user->id,
                 'user_type' => 'user',
                 'belongs_to' => $product->user_id,
@@ -123,9 +129,11 @@ class UserOrderController extends Controller
                 'total' => $total,
                 'quantity' => $validated['quantity'],
                 'buying_price' => $product->buying_price ?? 0,
+                'status' => $orderStatus,
             ]);
 
             ProductComissionController::dispatchProductComissionsListeners($order->id);
+            VendorResellOrderSync::syncCartOrder($order, $cartOrder);
             OrderNotice::orderPlaced($order, $user->id);
 
             return $order->fresh(['cartOrders.product', 'hasRider.rider']);
@@ -176,7 +184,16 @@ class UserOrderController extends Controller
         ])->findOrFail($id);
 
         if (!$order->received_at) {
-            $order->update(['received_at' => Carbon::now()]);
+            $receivedAt = Carbon::now();
+            $order->update(['received_at' => $receivedAt]);
+
+            $synced = syncOrder::query()->where('user_order_id', $order->id)->first();
+            if ($synced?->reseller_order_id) {
+                Order::query()
+                    ->where('id', $synced->reseller_order_id)
+                    ->whereNull('received_at')
+                    ->update(['received_at' => $receivedAt]);
+            }
         }
 
         return ApiResponse::success($this->detailsPayload($order->fresh(['cartOrders.product', 'hasRider.rider'])), 'Order marked as received');

@@ -12,6 +12,7 @@ import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
 import { todayInputDate } from "../../../../utils/dateInput";
 import { ActionIconButton } from "../../../../components/ActionIcon";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 function buildParams(status, find, sdate, edate, page) {
     const params = { status, find, sdate, edate };
@@ -231,7 +232,7 @@ export default function Index({
                                                 {item.user.name}
                                             </NavLinkBtn>
                                         </td>
-                                        <td>{item.amount ?? 0}</td>
+                                        <td>{formatCurrency(item.amount)}</td>
                                         <td>
                                             <div className="flex items-center">
                                                 {item.senderAccountNumber}{" "}
@@ -295,7 +296,7 @@ export default function Index({
                                         className="font-bold text-right"
                                     >{t("Total")}</td>
                                     <td className="font-bold">
-                                        {history?.sum}
+                                        {formatCurrency(history?.sum)}
                                     </td>
                                     <td colSpan="5"></td>
                                 </tr>

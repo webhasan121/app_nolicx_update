@@ -11,6 +11,7 @@ use App\Models\country;
 use App\Models\state;
 use App\Models\city;
 use App\Support\OrderNotice;
+use App\Support\VendorResellOrderSync;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -133,7 +134,10 @@ class CartCheckoutController extends Controller
 
                 $qty = 0;
                 $total = 0;
-                $shipping = strtolower((string) $request->delevery) === 'hand'
+                $isHandDelivery = strtolower((string) $request->delevery) === 'hand';
+                $orderStatus = $isHandDelivery ? 'Delivered' : 'Pending';
+                $receivedAt = $isHandDelivery ? now() : null;
+                $shipping = $isHandDelivery
                     ? 0
                     : ($request->area_condition == 'Dhaka' ? 80 : 120);
 
@@ -142,7 +146,8 @@ class CartCheckoutController extends Controller
                     'user_type' => 'user',
                     'belongs_to' => $reseller,
                     'belongs_to_type' => 'reseller',
-                    'status' => 'Pending',
+                    'status' => $orderStatus,
+                    'received_at' => $receivedAt,
                     'size' => 'Details',
                     'name' => 'Cart Order',
                     'delevery' => $request->delevery,
@@ -162,7 +167,7 @@ class CartCheckoutController extends Controller
                     $qty += $item->qty;
                     $total += $item->price * $item->qty;
 
-                    CartOrder::create([
+                    $cartOrder = CartOrder::create([
                         'user_id' => $user->id,
                         'user_type' => 'user',
                         'belongs_to' => $item->product?->user_id,
@@ -174,7 +179,10 @@ class CartCheckoutController extends Controller
                         'total' => $item->price * $item->qty,
                         'quantity' => $item->qty,
                         'buying_price' => $item->product?->buying_price ?? 0,
+                        'status' => $orderStatus,
                     ]);
+
+                    VendorResellOrderSync::syncCartOrder($order, $cartOrder);
 
                     $item->delete();
                 }

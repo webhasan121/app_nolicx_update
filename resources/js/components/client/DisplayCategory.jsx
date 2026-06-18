@@ -14,7 +14,7 @@ export default function DisplayCategory({ categories = [] }) {
   return (
     <div>
       <div
-        className="relative py-4 overflow-x-scroll"
+        className="relative py-4 overflow-x-auto"
         id="cat_div"
         ref={catDivRef}
       >

@@ -8,7 +8,7 @@ import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import Container from "../../../../components/dashboard/Container";
 import OverviewDiv from "../../../../components/dashboard/overview/Div";
-import { formatTk } from "../../../../utils/formatAmount";
+import { formatCurrency, formatTk } from "../../../../utils/formatAmount";
 import OverviewSection from "../../../../components/dashboard/overview/Section";
 import OrderStatus from "../../../../components/dashboard/OrderStatus";
 import Section from "../../../../components/dashboard/section/Section";
@@ -300,8 +300,8 @@ export default function Index({ filters, stats, orders }) {
                                         <td>
                                             <OrderStatus status={item.status} />
                                         </td>
-                                        <td>{item.total ?? 0}{t("TK")}</td>
-                                        <td>{item.comission ?? 0}{t("TK")}</td>
+                                        <td>{formatCurrency(item.total)}</td>
+                                        <td>{formatCurrency(item.comission)}</td>
                                         <td>{item.created_at_formatted}</td>
                                         <td>
                                             <div className="flex">
@@ -316,8 +316,8 @@ export default function Index({ filters, stats, orders }) {
                             <tfoot>
                                 <tr>
                                     <td colSpan="6">{orders?.count ?? 0}{t("Item")}</td>
-                                    <td>{orders?.sum_total ?? 0}</td>
-                                    <td>{orders?.sum_comission ?? 0}</td>
+                                    <td>{formatCurrency(orders?.sum_total)}</td>
+                                    <td>{formatCurrency(orders?.sum_comission)}</td>
                                     <td></td>
                                 </tr>
                             </tfoot>

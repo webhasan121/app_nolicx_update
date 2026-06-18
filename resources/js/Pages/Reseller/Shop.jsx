@@ -5,6 +5,7 @@ import Hr from "../../components/Hr";
 import PrimaryButton from "../../components/PrimaryButton";
 import Container from "../../components/dashboard/Container";
 import useTranslation from "../../hooks/useTranslation";
+import DistrictUpozilaSelect from "../../components/DistrictUpozilaSelect";
 
 export default function Shop({ shop = {} }) {
     const { auth } = usePage().props;
@@ -285,33 +286,17 @@ export default function Shop({ shop = {} }) {
                             </div>
                             <div className="w-full p-3 space-y-2 border-b text-md">
                                 <div className="font-bold">{t("Shop Location:")} </div>
-                                <div className="my-1">
-                                    <label className="my-1" htmlFor="dis">
-                                        {t("District")}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="dis"
-                                        className="w-full rounded-md ring-0"
-                                        placeholder={t("district")}
-                                        value={form.data.district}
-                                        onChange={(e) => form.setData("district", e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="my-1">
-                                    <label className="my-1" htmlFor="up">
-                                        {t("Upozila")}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="up"
-                                        className="w-full rounded-md ring-0"
-                                        placeholder={t("upozila")}
-                                        value={form.data.upozila}
-                                        onChange={(e) => form.setData("upozila", e.target.value)}
-                                    />
-                                </div>
+                                <DistrictUpozilaSelect
+                                    district={form.data.district}
+                                    upozila={form.data.upozila}
+                                    errors={form.errors}
+                                    className=""
+                                    labelWidth="100%"
+                                    districtLabel={t("District")}
+                                    upozilaLabel={t("Upozila")}
+                                    onDistrictChange={(value) => form.setData("district", value)}
+                                    onUpozilaChange={(value) => form.setData("upozila", value)}
+                                />
 
                                 <div className="my-1">
                                     <label className="my-1" htmlFor="vil">

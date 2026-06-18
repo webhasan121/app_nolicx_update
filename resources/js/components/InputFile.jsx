@@ -6,15 +6,15 @@ export default function InputFile({
     children,
     name,
     errors,
-    className = "",
+    className = "md:flex",
     labelWidth = "250px",
     inputClass = "w-full",
 }) {
 
     return (
         <div>
-            <div className={`my-3 form-group ${className}`}>
-                <div className="justify-start md:flex">
+            <div className="my-3 form-group">
+                <div className={`justify-start ${className}`}>
 
                     <div style={{ width: labelWidth }} className="shrink-0">
 

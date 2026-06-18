@@ -10,13 +10,16 @@ use App\Models\Category;
 use App\Models\productSalesIndex;
 use App\Models\Static_slider;
 use Illuminate\Support\Carbon;
+use Illuminate\Http\Request;
 use App\Models\Slider_has_slide;
 use App\Models\Slider as sliderModel;
+use App\Support\CountrySelection;
 
 class WelcomeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $country = CountrySelection::fromRequest($request);
         $medicineCategoryIds = $this->categoryTreeIds('medicine', 'Medicine');
         $womenCategoryIds = $this->categoryTreeIds('womens-item', "Women's Item");
         $groceryCategoryIds = $this->categoryTreeIds('grocery-item', 'Grocery Item');
@@ -26,6 +29,7 @@ class WelcomeController extends Controller
         $products = Product::query()
             ->reseller()
             ->active()
+            ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
             ->latest()
             ->limit(21)
             ->get();
@@ -61,23 +65,27 @@ class WelcomeController extends Controller
             'topSalesSliders' => $staticSliders->where('top_sales', true)->values(),
             'womensSliders' => $staticSliders->where('womens_item', true)->values(),
             'slides' => $slides,
+            'selectedCountry' => $country,
             'developer_percentage' => SystemSettings::get('DEVELOPER_PERCENTAGE', '0'),
             'management_percentage' => SystemSettings::get('MANAGEMENT_PERCENTAGE', '0'),
             'newProducts' => Product::select('id', 'name', 'price', 'thumbnail', 'slug')
                 ->where('badge', 'new')
+                ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
                 ->latest()
                 ->limit(12)
                 ->get(),
             'todaysProducts' => Product::whereDate('created_at', Carbon::today())
                 ->where('belongs_to_type', 'reseller')
+                ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
                 ->orderBy('vc')
                 ->limit(20)
                 ->get(),
-            'recommended' => $this->forYouProducts(),
+            'recommended' => $this->forYouProducts($country),
             'medicineProducts' => Product::query()
                 ->reseller()
                 ->active()
                 ->whereIn('category_id', $medicineCategoryIds ?: [0])
+                ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
                 ->latest()
                 ->limit(20)
                 ->get(),
@@ -85,6 +93,7 @@ class WelcomeController extends Controller
                 ->reseller()
                 ->active()
                 ->whereIn('category_id', $womenCategoryIds ?: [0])
+                ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
                 ->latest()
                 ->limit(20)
                 ->get(),
@@ -92,6 +101,7 @@ class WelcomeController extends Controller
                 ->reseller()
                 ->active()
                 ->whereIn('category_id', $groceryCategoryIds ?: [0])
+                ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
                 ->latest()
                 ->limit(20)
                 ->get(),
@@ -99,6 +109,7 @@ class WelcomeController extends Controller
                 ->reseller()
                 ->active()
                 ->whereIn('category_id', $foodCategoryIds ?: [0])
+                ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
                 ->latest()
                 ->limit(20)
                 ->get(),
@@ -106,10 +117,16 @@ class WelcomeController extends Controller
                 ->reseller()
                 ->active()
                 ->whereIn('category_id', $megaDealsCategoryIds ?: [0])
+                ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
                 ->latest()
                 ->limit(20)
                 ->get(),
-            'topSales' => Product::query()->reseller()->whereIn('id', productSalesIndex::query()->orderBy('total_sales', 'desc')->limit(20)->pluck('product_id'))->get()
+            'topSales' => Product::query()
+                ->reseller()
+                ->active()
+                ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
+                ->whereIn('id', productSalesIndex::query()->orderBy('total_sales', 'desc')->limit(20)->pluck('product_id'))
+                ->get()
         ]);
     }
 
@@ -133,7 +150,7 @@ class WelcomeController extends Controller
         return $ids;
     }
 
-    private function forYouProducts()
+    private function forYouProducts(?string $country = null)
     {
         $columns = [
             'id',
@@ -167,6 +184,7 @@ class WelcomeController extends Controller
             $savedProducts = Product::query()
                 ->reseller()
                 ->active()
+                ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
                 ->whereIn('id', $savedIds)
                 ->get($columns)
                 ->sortBy(fn($product) => array_search($product->id, $savedIds, true))
@@ -181,6 +199,7 @@ class WelcomeController extends Controller
             ->reseller()
             ->active()
             ->home()
+            ->when($country, fn($query) => CountrySelection::applyToProducts($query, $country))
             ->when($savedProducts->isNotEmpty(), fn($query) => $query->whereNotIn('id', $savedProducts->pluck('id')))
             ->orderBy('vc')
             ->limit(max(0, 20 - $savedProducts->count()))
@@ -197,4 +216,5 @@ class WelcomeController extends Controller
             $this->collectCategoryIds($child, $ids);
         }
     }
+
 }

@@ -4,7 +4,7 @@ import PrintLayout from "../../../../Layouts/Print";
 import ApplicationName from "../../../../components/ApplicationName";
 import Container from "../../../../components/dashboard/Container";
 import Table from "../../../../components/dashboard/table/Table";
-import { formatAmount } from "../../../../utils/formatAmount";
+import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function PrintSummery() {
     const { cod = [], filters = {}, summary = {} } = usePage().props;
@@ -74,11 +74,11 @@ export default function PrintSummery() {
                                     <td>{item.id}</td>
                                     <td>{item.order_id}</td>
                                     <td>{item.rider_name}</td>
-                                    <td>{formatAmount(item.amount)}</td>
-                                    <td>{formatAmount(item.rider_amount)}</td>
-                                    <td>{formatAmount(item.total_amount)}</td>
-                                    <td>{formatAmount(item.system_comission)}</td>
-                                    <td>{formatAmount(item.comission)}</td>
+                                    <td>{formatCurrency(item.amount)}</td>
+                                    <td>{formatCurrency(item.rider_amount)}</td>
+                                    <td>{formatCurrency(item.total_amount)}</td>
+                                    <td>{formatCurrency(item.system_comission)}</td>
+                                    <td>{formatCurrency(item.comission)}</td>
                                     <td>{item.status}</td>
                                     <td>{item.created_at_formatted}</td>
                                 </tr>
@@ -90,11 +90,11 @@ export default function PrintSummery() {
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td>{summary?.amount ?? 0}</td>
-                                <td>{summary?.rider_amount ?? 0}</td>
-                                <td>{summary?.total_amount ?? 0}</td>
-                                <td>{summary?.system_comission ?? 0}</td>
-                                <td>{summary?.comission ?? 0}</td>
+                                <td>{formatCurrency(summary?.amount)}</td>
+                                <td>{formatCurrency(summary?.rider_amount)}</td>
+                                <td>{formatCurrency(summary?.total_amount)}</td>
+                                <td>{formatCurrency(summary?.system_comission)}</td>
+                                <td>{formatCurrency(summary?.comission)}</td>
                                 <td></td>
                                 <td></td>
                             </tr>

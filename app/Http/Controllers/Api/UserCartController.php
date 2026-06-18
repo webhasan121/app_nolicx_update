@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\state;
 use App\Support\OrderNotice;
+use App\Support\VendorResellOrderSync;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -169,13 +170,18 @@ class UserCartController extends Controller
             foreach ($cartGroups as $reseller => $items) {
                 $qty = 0;
                 $total = 0;
+                $isHandDelivery = strtolower((string) $validated['delevery']) === 'hand';
+                $orderStatus = $isHandDelivery ? 'Delivered' : 'Pending';
+                $receivedAt = $isHandDelivery ? now() : null;
+                $shipping = $isHandDelivery ? 0 : ($validated['area_condition'] === 'Dhaka' ? 80 : 120);
 
                 $order = Order::create([
                     'user_id' => $user->id,
                     'user_type' => 'user',
                     'belongs_to' => $reseller,
                     'belongs_to_type' => 'reseller',
-                    'status' => 'Pending',
+                    'status' => $orderStatus,
+                    'received_at' => $receivedAt,
                     'size' => 'Details',
                     'name' => 'Cart Order',
                     'delevery' => $validated['delevery'],
@@ -187,14 +193,14 @@ class UserCartController extends Controller
                     'target_area' => $validated['upozila'],
                     'road_no' => $validated['road_no'] ?? null,
                     'house_no' => $validated['house_no'] ?? null,
-                    'shipping' => $validated['area_condition'] === 'Dhaka' ? 80 : 120,
+                    'shipping' => $shipping,
                 ]);
 
                 foreach ($items as $item) {
                     $qty += $item->qty;
                     $total += $item->price * $item->qty;
 
-                    CartOrder::create([
+                    $cartOrder = CartOrder::create([
                         'user_id' => $user->id,
                         'user_type' => 'user',
                         'belongs_to' => $item->product?->user_id,
@@ -206,7 +212,10 @@ class UserCartController extends Controller
                         'total' => $item->price * $item->qty,
                         'quantity' => $item->qty,
                         'buying_price' => $item->product?->buying_price ?? 0,
+                        'status' => $orderStatus,
                     ]);
+
+                    VendorResellOrderSync::syncCartOrder($order, $cartOrder);
 
                     $item->delete();
                 }
