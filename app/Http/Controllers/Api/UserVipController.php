@@ -207,6 +207,7 @@ class UserVipController extends Controller
             'name' => $package->name,
             'slug' => $package->slug,
             'price' => $package->price,
+            'image_url' => $package->image_url,
             'coin' => $package->coin,
             'm_coin' => $package->m_coin,
             'countdown' => $package->countdown,

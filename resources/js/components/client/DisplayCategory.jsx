@@ -2,12 +2,31 @@ import { useRef } from "react";
 import NavLink from "../NavLink";
 import useTranslation from "../../hooks/useTranslation";
 
+const PRIORITY_CATEGORY_SLUGS = [
+  "womens-item",
+  "mega-deals",
+  "medicine",
+  "grocery-item",
+  "food-items",
+];
+
 export default function DisplayCategory({ categories = [] }) {
   const catDivRef = useRef(null);
   const catWrapRef = useRef(null);
   const { t } = useTranslation();
 
+  const orderedCategories = categories
+    .filter((item) => item.slug !== "default-category")
+    .sort((left, right) => {
+      const leftPriority = PRIORITY_CATEGORY_SLUGS.indexOf(left.slug);
+      const rightPriority = PRIORITY_CATEGORY_SLUGS.indexOf(right.slug);
 
+      if (leftPriority === -1 && rightPriority === -1) return 0;
+      if (leftPriority === -1) return 1;
+      if (rightPriority === -1) return -1;
+
+      return leftPriority - rightPriority;
+    });
 
   if (!categories.length) return null;
 
@@ -23,9 +42,7 @@ export default function DisplayCategory({ categories = [] }) {
           className="flex gap-3"
           ref={catWrapRef}
         >
-          {categories
-            .filter((item) => item.slug !== "default-category")
-            .map((item) => {
+          {orderedCategories.map((item) => {
               const label = t(item.name ?? "");
 
               return (

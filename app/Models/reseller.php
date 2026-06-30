@@ -97,24 +97,29 @@ class reseller extends Model
             }
         });
 
-        static::updated(function (reseller $rider) {
+        static::updated(function (reseller $reseller) {
             /**
              * if the status field is updated,
              * and status is Active,
-             * then assign the rider role
+             * then assign the reseller role
              */
 
-            // get the rider role
-            $riderRoleName =  Role::where('name', 'reseller')->first();
-            if ($rider->isDirty('status') && $rider->status == 'Active') {
-                // assign role to user
-                $rider->user?->assignRole($riderRoleName);
-            } else {
+            if (! $reseller->wasChanged('status')) {
+                return;
+            }
 
-                // else remove the role if exists
-                if ($rider->user?->hasRole($riderRoleName)) {
-                    $rider->user?->removeRole($riderRoleName);
-                }
+            $resellerRole = Role::where('name', 'reseller')->first();
+            if (! $resellerRole) {
+                return;
+            }
+
+            if ($reseller->status == 'Active') {
+                $reseller->user?->assignRole($resellerRole);
+                return;
+            }
+
+            if ($reseller->user?->hasRole($resellerRole)) {
+                $reseller->user?->removeRole($resellerRole);
             }
         });
     }

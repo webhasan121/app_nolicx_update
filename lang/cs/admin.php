@@ -1264,6 +1264,7 @@ return array (
   'find name, id' => 'najít jméno, ID',
   'from' => 'od',
   'grocery items' => 'potraviny',
+  'hjgh' => 'hjgh',
   'in Dhaka' => 'v Dháce',
   'inactivate' => 'deaktivovat',
   'item' => 'položka',

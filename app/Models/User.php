@@ -504,4 +504,9 @@ class User extends Authenticatable
     public function levelHistory() {
         return $this->belongsTo(LevelHistory::class, 'user_id', 'id')->withTrashed();
     }
+
+    public function fcmDeviceTokens()
+    {
+        return $this->hasMany(FcmDeviceToken::class);
+    }
 }

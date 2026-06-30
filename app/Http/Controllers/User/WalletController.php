@@ -19,7 +19,7 @@ class WalletController extends Controller
         $find = trim((string) $request->query('find', ''));
         $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request);
         $query = Withdraw::query()
-            ->where(['user_id' => Auth::id(), 'status' => 'Pending'])
+            ->where('user_id', Auth::id())
             ->latest('id');
 
         if ($find !== '') {
@@ -54,6 +54,7 @@ class WalletController extends Controller
                         'id' => $cus->id,
                         'amount' => $cus->amount,
                         'status' => $cus->status,
+                        'status_label' => $this->withdrawStatusLabel($cus),
                         'created_at' => $cus->created_at?->toFormattedDateString(),
                         'created_at_human' => $cus->created_at?->diffForHumans(),
                     ];
@@ -82,7 +83,7 @@ class WalletController extends Controller
         $find = trim((string) $request->query('find', ''));
         $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request);
         $query = Withdraw::query()
-            ->where(['user_id' => Auth::id(), 'status' => 'Pending'])
+            ->where('user_id', Auth::id())
             ->latest('id');
 
         if ($find !== '') {
@@ -102,6 +103,7 @@ class WalletController extends Controller
                 'id' => $cus->id,
                 'amount' => $cus->amount,
                 'status' => $cus->status,
+                'status_label' => $this->withdrawStatusLabel($cus),
                 'created_at' => $cus->created_at?->toFormattedDateString(),
                 'created_at_human' => $cus->created_at?->diffForHumans(),
             ];
@@ -115,5 +117,14 @@ class WalletController extends Controller
             'wallet_balance' => auth()->user()->coin ?? 0,
             'available_balance' => auth()->user()->abailCoin(),
         ]);
+    }
+
+    private function withdrawStatusLabel(Withdraw $withdraw): string
+    {
+        if (!is_null($withdraw->is_rejected)) {
+            return 'Cancel';
+        }
+
+        return (int) $withdraw->status === 1 ? 'Accept' : 'Pending';
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\System;
 
+use App\HandleImageUpload;
 use App\Http\Controllers\Controller;
 use App\Models\Package_pays;
 use App\Models\Packages;
@@ -18,6 +19,8 @@ use Inertia\Response;
 
 class VipController extends Controller
 {
+    use HandleImageUpload;
+
     public function userEditReact($vip): Response
     {
         $vipData = $this->findVipUser($vip);
@@ -383,6 +386,7 @@ class VipController extends Controller
                 'id' => $packages->id,
                 'name' => $packages->name,
                 'price' => $packages->price,
+                'image_url' => $packages->image_url,
                 'countdown' => $packages->countdown,
                 'coin' => $packages->coin,
                 'm_coin' => $packages->m_coin,
@@ -531,6 +535,7 @@ class VipController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string'],
             'price' => ['required', 'numeric'],
+            'image' => ['nullable', 'image', 'max:2048'],
             'coin' => ['required', 'numeric'],
             'm_coin' => ['required', 'numeric'],
             'countdown' => ['required', 'numeric'],
@@ -542,11 +547,16 @@ class VipController extends Controller
             'paymentOptions.*.pay_to' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $image = $request->hasFile('image')
+            ? $this->handleImageUpload($request->file('image'), 'vip-packages')
+            : null;
+
+        DB::transaction(function () use ($validated, $image) {
             $package = Packages::create([
                 'name' => $validated['name'],
                 'slug' => Str::slug($validated['name']),
                 'price' => $validated['price'],
+                'image' => $image,
                 'countdown' => $validated['countdown'],
                 'status' => 1,
                 'coin' => $validated['coin'],
@@ -573,6 +583,7 @@ class VipController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string'],
             'price' => ['required', 'numeric'],
+            'image' => ['nullable', 'image', 'max:2048'],
             'coin' => ['required', 'numeric'],
             'm_coin' => ['nullable', 'numeric'],
             'countdown' => ['required', 'numeric'],
@@ -583,10 +594,15 @@ class VipController extends Controller
             'paymentOptions.*.pay_to' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () use ($validated, $packages) {
+        $image = $request->hasFile('image')
+            ? $this->handleImageUpload($request->file('image'), 'vip-packages', $packages->image)
+            : $packages->image;
+
+        DB::transaction(function () use ($validated, $packages, $image) {
             $packages->update([
                 'name' => $validated['name'],
                 'price' => $validated['price'],
+                'image' => $image,
                 'countdown' => $validated['countdown'],
                 'coin' => $validated['coin'],
                 'm_coin' => $validated['m_coin'] ?? null,

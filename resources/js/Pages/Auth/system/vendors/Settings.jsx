@@ -58,7 +58,7 @@ export default function Settings() {
                                 content="Set up your vendor membership status and important things."
                             />
                             <SectionInner>
-                                <div className="md:flex w-full flex-1 gap-10">
+                                <div className="flex w-full flex-1 flex-col gap-4 md:flex-row md:gap-10">
                                     <div className="p-3 bg-gray-100 rounded-md shadow-sm w-full">
                                         <hr />
                                         <div className="text-md border-b w-full p-3">
@@ -111,11 +111,11 @@ export default function Settings() {
                                     <div className="w-full bg-gray-50 p-3 rounded-md shadow-sm">
                                         <div>
                                             <Hr />
-                                            <div className="flex">
+                                            <div className="flex flex-wrap gap-3">
                                                 {["Active", "Pending", "Disabled", "Suspended"].map((status) => (
                                                     <div
                                                         key={status}
-                                                        className="flex items-center p-2 "
+                                                        className="flex items-center rounded border border-slate-200 bg-white p-2"
                                                     >
                                                         <TextInput
                                                             type="radio"
@@ -153,12 +153,12 @@ export default function Settings() {
                                                 manage their products.
                                             </div>
                                             <Hr />
-                                            <div className="flex justify-between items-center gap-2">
-                                                <div>Comission Rate (%) </div>
-                                                <div className="text-xs">
+                                            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                                                <div className="font-medium">Comission Rate (%)</div>
+                                                <div className="w-full text-xs md:w-auto">
                                                     <input
                                                         type="number"
-                                                        className="form-control rounded-md shoadow-sm"
+                                                        className="form-control w-full rounded-md shoadow-sm md:w-auto"
                                                         max="100"
                                                         value={
                                                             settingsForm.data.system_get_comission
@@ -181,11 +181,11 @@ export default function Settings() {
                                     </div>
 
                                     <div className="my-2 rounded bg-gray-50 border-gray-200 p-3">
-                                        <div className="p-3 w-full flex justify-between items-center">
+                                        <div className="flex w-full flex-col gap-3 p-3 md:flex-row md:items-center md:justify-between">
                                             <div className="font-bold">
                                                 Prevent adding unlimited product :
                                             </div>
-                                            <div className="flex gap-10">
+                                            <div className="flex flex-wrap gap-4 md:gap-10">
                                                 {[
                                                     { value: 1, label: "Yes" },
                                                     { value: 0, label: "No" },
@@ -221,13 +221,13 @@ export default function Settings() {
                                                 ))}
                                             </div>
                                         </div>
-                                        <div className="px-3 w-full flex justify-between items-center">
+                                        <div className="flex w-full flex-col gap-2 px-3 md:flex-row md:items-center md:justify-between">
                                             <div className="font-bold">Maximum Product : </div>
                                             <div>
                                                 <TextInput
                                                     type="number"
                                                     placeholder="100"
-                                                    className="w-20"
+                                                    className="w-full md:w-20"
                                                     value={
                                                         settingsForm.data.max_product_upload
                                                     }
@@ -247,11 +247,11 @@ export default function Settings() {
                                     </div>
 
                                     <div className="my-2 bg-gray-50 p-3">
-                                        <div className="px-3 w-full flex justify-between items-center">
+                                        <div className="flex w-full flex-col gap-3 px-3 md:flex-row md:items-center md:justify-between">
                                             <div className="font-bold">
                                                 Allow to resell products :
                                             </div>
-                                            <div className="flex gap-10">
+                                            <div className="flex flex-wrap gap-4 md:gap-10">
                                                 {[
                                                     { value: 1, label: "Yes" },
                                                     { value: 0, label: "No" },
@@ -302,7 +302,7 @@ export default function Settings() {
                         </SectionSection>
                     </form>
 
-                    <div className="md:flex justify-between items-start">
+                    <div className="flex flex-col items-start justify-between md:flex-row">
                         <SectionSection>
                             <SectionHeader
                                 title="Rejection"
@@ -317,7 +317,7 @@ export default function Settings() {
                             />
                             <SectionInner>
                                 <form onSubmit={submitRejection}>
-                                    <div className="flex mb-3">
+                                    <div className="mb-3 flex items-start gap-3">
                                         <TextInput
                                             type="checkbox"
                                             checked={Boolean(
@@ -329,18 +329,14 @@ export default function Settings() {
                                                     e.target.checked ? 1 : 0
                                                 )
                                             }
-                                            style={{
-                                                width: 25,
-                                                height: 25,
-                                                marginRight: 10,
-                                            }}
+                                            className="mt-1 h-6 w-6 shrink-0"
                                         />
                                         <InputLabel>Rejecte the request!</InputLabel>
                                     </div>
 
                                     <textarea
                                         rows="8"
-                                        className="p-3"
+                                        className="w-full rounded-md p-3"
                                         placeholder="Describe why you wish to reject .... "
                                         value={rejectionForm.data.rejected_for}
                                         onChange={(e) =>

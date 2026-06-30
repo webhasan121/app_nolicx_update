@@ -1283,6 +1283,7 @@ return array (
   'find name, id' => 'ابحث عن الاسم، المعرف',
   'from' => 'من',
   'grocery items' => 'عناصر البقالة',
+  'hjgh' => 'hjgh',
   'in Dhaka' => 'في دكا',
   'inactivate' => 'إلغاء التفعيل',
   'item' => 'عنصر',

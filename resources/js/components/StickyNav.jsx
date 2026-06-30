@@ -23,28 +23,35 @@ export default function StickyNav({ open, setOpen }) {
     }, []);
 
     const user = auth?.user;
-    const cartCount = auth?.cartCount ?? 0;
+    const [cartCount, setCartCount] = useState(auth?.cartCount ?? 0);
 
     const [show, setShow] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [search, setSearch] = useState("");
     const resolveCountry = (value) => {
-        const normalized = String(value ?? "").trim().toLowerCase();
+        const normalized = String(value ?? "")
+            .trim()
+            .toLowerCase();
 
         if (!normalized) {
             return "";
         }
 
         return (
-            countries.find((country) => (
-                String(country.name ?? "").trim().toLowerCase() === normalized ||
-                String(country.id) === String(value)
-            ))?.name ?? value
+            countries.find(
+                (country) =>
+                    String(country.name ?? "")
+                        .trim()
+                        .toLowerCase() === normalized ||
+                    String(country.id) === String(value),
+            )?.name ?? value
         );
     };
     const [selectedCountry, setSelectedCountry] = useState(() => {
         if (typeof window !== "undefined") {
-            const country = new URLSearchParams(window.location.search).get("country");
+            const country = new URLSearchParams(window.location.search).get(
+                "country",
+            );
 
             if (country) {
                 return resolveCountry(country);
@@ -55,8 +62,30 @@ export default function StickyNav({ open, setOpen }) {
     });
 
     useEffect(() => {
-        setSelectedCountry(resolveCountry(pageCountry || user?.country || "Bangladesh"));
+        setSelectedCountry(
+            resolveCountry(pageCountry || user?.country || "Bangladesh"),
+        );
     }, [pageCountry, user?.country, countries.length]);
+
+    useEffect(() => {
+        setCartCount(auth?.cartCount ?? 0);
+    }, [auth?.cartCount]);
+
+    useEffect(() => {
+        const handleCartUpdated = (event) => {
+            const nextCount = Number(event.detail?.cartCount);
+
+            if (Number.isFinite(nextCount)) {
+                setCartCount(nextCount);
+            }
+        };
+
+        window.addEventListener("cart:updated", handleCartUpdated);
+
+        return () => {
+            window.removeEventListener("cart:updated", handleCartUpdated);
+        };
+    }, []);
 
     const handleCountryChange = (country) => {
         setSelectedCountry(country);
@@ -80,7 +109,7 @@ export default function StickyNav({ open, setOpen }) {
                 preserveScroll: true,
                 preserveState: false,
                 replace: true,
-            }
+            },
         );
     };
 
@@ -98,6 +127,8 @@ export default function StickyNav({ open, setOpen }) {
         });
         setShow(false);
     };
+    const displayName =
+        user?.name?.length > 8 ? `${user.name.substring(0, 8)}..` : user?.name;
 
     return (
         <>
@@ -106,11 +137,11 @@ export default function StickyNav({ open, setOpen }) {
                     visible ? "block" : "hidden pointer-events-none"
                 }`}
             >
-                <div className="flex items-center justify-between w-full px-3 mx-auto max-w-8xl">
+                <div className="flex items-center justify-between w-full gap-2 px-2 mx-auto sm:px-3 max-w-8xl">
                     {/* LEFT SIDE */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center flex-1 min-w-0 gap-2 sm:gap-3 md:flex-none md:gap-4">
                         <button
-                            className="w-20 px-2 border-r"
+                            className="flex items-center justify-center w-12 h-12 px-2 border-r shrink-0 sm:w-16 md:w-20"
                             onClick={() => setOpen(!open)}
                         >
                             {!open ? (
@@ -120,36 +151,45 @@ export default function StickyNav({ open, setOpen }) {
                             )}
                         </button>
 
-                        <Link href="/" className="flex items-center">
-                            <img height="50" width="60" src="/icon.png" />
-                            <div className="text-lg font-bold ps-2">
+                        <Link href="/" className="flex items-center min-w-0">
+                            <img
+                                height="50"
+                                width="60"
+                                src="/icon.png"
+                                className="w-10 h-auto shrink-0 sm:w-12 md:w-[60px]"
+                            />
+                            <div className="text-base font-bold leading-none truncate ps-1 sm:ps-2 sm:text-lg">
                                 {import.meta.env.VITE_APP_NAME?.toUpperCase()}
                             </div>
                         </Link>
                     </div>
 
-                    <div className="items-center justify-between flex-1 hidden gap-4 px-4 md:flex">
+                    <div className="items-center justify-between flex-1 hidden gap-4 lg:flex">
                         <Link
                             href={route("shops.reseller")}
-                            className="block px-2 text-inherit"
+                            className="block px-2 shrink-0 text-inherit"
                         >
                             {t("Shops")}
                         </Link>
 
-                        <div className="flex items-center justify-end gap-2">
-                            <div className="relative w-72">
+                        <div className="flex items-center justify-end flex-1 min-w-0 gap-2">
+                            <div className="relative flex-1 max-w-xs xl:max-w-sm">
                                 <form onSubmit={handleSubmit}>
                                     <input
                                         type="search"
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        placeholder={t("Search Product By Title or Tags")}
-                                        className="h-10 w-full rounded-md border border-gray-200 px-3 pr-11 text-sm shadow-0 focus:border-gray-300 focus:shadow-0"
+                                        onChange={(e) =>
+                                            setSearch(e.target.value)
+                                        }
+                                        placeholder={t(
+                                            "Search Product By Title or Tags",
+                                        )}
+                                        className="w-full px-3 text-sm border border-gray-200 rounded-md h-9 pr-11 shadow-0 focus:border-gray-300 focus:shadow-0"
                                         style={{ marginBottom: 0 }}
                                     />
                                     <button
                                         type="submit"
-                                        className="absolute inset-y-0 right-0 flex items-center justify-center w-11 text-gray-500 hover:text-gray-800"
+                                        className="absolute inset-y-0 right-0 flex items-center justify-center text-gray-100 rounded-r-md w-11 hover:text-gray-800 bg_primary hover:bg_primary"
                                         aria-label={t("Search")}
                                     >
                                         <i className="fas fa-search"></i>
@@ -169,125 +209,152 @@ export default function StickyNav({ open, setOpen }) {
                     </div>
 
                     {/* RIGHT SIDE */}
-                    <div>
-                        <div className="flex items-center justify-between">
+                    <div className="shrink-0">
+                        <div className="flex items-center justify-between gap-0.5 sm:gap-1">
                             {/* SEARCH */}
                             <button
-                                className="mx-2 rounded md:hidden"
+                                className="rounded lg:hidden"
                                 onClick={() => setShow(true)}
+                                aria-label={t("Search")}
                             >
                                 <i className="p-2 fas fa-search text-md"></i>
                             </button>
-
-                            {user ? (
-                                <>
-                                    <LanguageSwitcher compact className="mx-1" />
-
-                                    {/* CART */}
-                                    <NavLink
-                                        href={route("carts.view")}
-                                        className="p-0 mr-1 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
-                                    >
-                                        <button className="flex h-10 items-center justify-center rounded-md px-2 text-sm">
-                                            <i className="fas fa-cart-plus"></i>
-                                            <span className="ml-1 text-green">
-                                                {cartCount}
-                                            </span>
-                                        </button>
-                                    </NavLink>
-
-                                    {/* DROPDOWN */}
-                                    <div className="relative flex sm:items-center sm:ms-2">
-                                        <button
-                                            onClick={() =>
-                                                setDropdownOpen(!dropdownOpen)
-                                            }
-                                            className="flex h-10 items-center rounded-md border bg-white px-3 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700"
+                            <div className="flex items-center shrink-0">
+                                {countries.length ? (
+                                    <CountrySearchSelect
+                                        value={selectedCountry}
+                                        options={countries}
+                                        onChange={handleCountryChange}
+                                        placeholder={t("Country")}
+                                        className="hidden md:block lg:hidden w-28"
+                                    />
+                                ) : null}
+                                <LanguageSwitcher compact className="hidden md:block" />
+                                {user ? (
+                                    <>
+                                        {/* CART */}
+                                        <NavLink
+                                            href={route("carts.view")}
+                                            className="p-0 mr-1.5 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                                         >
-                                            <div>
-                                                {user.name.length > 8
-                                                    ? user.name.substring(
-                                                          0,
-                                                          8,
-                                                      ) + ".."
-                                                    : user.name}
-                                            </div>
+                                            <button
+                                                className="relative flex items-center justify-center w-10 h-10 gap-0.5 text-sm rounded-md sm:w-auto sm:px-1.5"
+                                                aria-label={t("Cart")}
+                                            >
+                                                <i className="fas fa-cart-plus"></i>
+                                                <span className="absolute top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-green-600 px-1 text-[10px] font-semibold leading-none text-white">
+                                                    {cartCount}
+                                                </span>
+                                            </button>
+                                        </NavLink>
 
-                                            <div className="ms-1">
-                                                <svg
-                                                    className="w-4 h-4 fill-current"
-                                                    viewBox="0 0 20 20"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                        </button>
+                                        {/* DROPDOWN */}
+                                        <div className="relative flex sm:items-center ">
+                                            <button
+                                                onClick={() =>
+                                                    setDropdownOpen(
+                                                        !dropdownOpen,
+                                                    )
+                                                }
+                                                className="flex items-center justify-center w-10 h-10 px-0 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out bg-white border rounded-md sm:w-auto sm:justify-start sm:px-2 hover:text-gray-700"
+                                            >
+                                                <span className="text-base sm:hidden">
+                                                    <i className="fas fa-user"></i>
+                                                </span>
+                                                <div className="hidden truncate max-w-20 sm:block">
+                                                    {displayName}
+                                                </div>
 
-                                        {dropdownOpen && (
-                                            <div className="absolute right-0 top-full z-50 w-48 mt-2 bg-white border rounded-md shadow-lg">
-                                                <NavLink
-                                                    href={route("user.index")}
-                                                    className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
-                                                >
-                                                    {t("User Panel")}
-                                                </NavLink>
+                                                <div className="hidden ms-1 sm:block">
+                                                    <svg
+                                                        className="w-4 h-4 fill-current"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            </button>
 
-                                                <NavLink
-                                                    href={route(
-                                                        "upgrade.vendor.create",
-                                                        { upgrade: "vendor" },
-                                                    )}
-                                                    className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
-                                                >
-                                                    {t("Request Vendor")}
-                                                </NavLink>
+                                            {dropdownOpen && (
+                                                <div className="absolute right-0 z-50 w-48 mt-2 bg-white border rounded-md shadow-lg top-full">
+                                                    <NavLink
+                                                        href={route(
+                                                            "user.index",
+                                                        )}
+                                                        className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
+                                                    >
+                                                        {t("User Panel")}
+                                                    </NavLink>
 
-                                                <NavLink
-                                                    href={route(
-                                                        "upgrade.vendor.create",
-                                                        { upgrade: "reseller" },
-                                                    )}
-                                                    className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
-                                                >
-                                                    {t("Request Reseller")}
-                                                </NavLink>
+                                                    <NavLink
+                                                        href={route(
+                                                            "upgrade.vendor.create",
+                                                            {
+                                                                upgrade:
+                                                                    "vendor",
+                                                            },
+                                                        )}
+                                                        className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
+                                                    >
+                                                        {t("Request Vendor")}
+                                                    </NavLink>
 
-                                                <NavLink
-                                                    href={route("upgrade.rider.create")}
-                                                    className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
-                                                >
-                                                    {t("Request Rider")}
-                                                </NavLink>
+                                                    <NavLink
+                                                        href={route(
+                                                            "upgrade.vendor.create",
+                                                            {
+                                                                upgrade:
+                                                                    "reseller",
+                                                            },
+                                                        )}
+                                                        className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
+                                                    >
+                                                        {t("Request Reseller")}
+                                                    </NavLink>
 
-                                                <NavLink
-                                                    href={route("dashboard")}
-                                                    className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
-                                                >
-                                                    {t("Dashboard")}
-                                                </NavLink>
+                                                    <NavLink
+                                                        href={route(
+                                                            "upgrade.rider.create",
+                                                        )}
+                                                        className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
+                                                    >
+                                                        {t("Request Rider")}
+                                                    </NavLink>
 
-                                                <NavLink
-                                                    href={route("logout")}
-                                                    className="block w-full px-4 py-2 pt-2 text-left text-red-500 border-b-0 hover:bg-gray-100 hover:text-red-500 hover:border-transparent"
-                                                >
-                                                    {t("Logout")}
-                                                </NavLink>
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            ) : (
-                                <NavLink
-                                    href={route("login")}
-                                    className="px-3 pt-0 uppercase border-b-0 text-md text-inherit hover:text-inherit hover:border-transparent"
-                                >
-                                    <i className="pr-2 fas fa-sign-in"></i>
-                                    {t("Login")}
-                                </NavLink>
-                            )}
+                                                    <NavLink
+                                                        href={route(
+                                                            "dashboard",
+                                                        )}
+                                                        className="block px-4 py-2 pt-2 border-b-0 text-inherit hover:bg-gray-100 hover:text-inherit hover:border-transparent"
+                                                    >
+                                                        {t("Dashboard")}
+                                                    </NavLink>
+
+                                                    <NavLink
+                                                        href={route("logout")}
+                                                        className="block w-full px-4 py-2 pt-2 text-left text-red-500 border-b-0 hover:bg-gray-100 hover:text-red-500 hover:border-transparent"
+                                                    >
+                                                        {t("Logout")}
+                                                    </NavLink>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <NavLink
+                                        href={route("login")}
+                                        className="flex items-center justify-center h-10 gap-1 px-2 pt-0 text-xs uppercase border-b-0 whitespace-nowrap sm:px-3 sm:text-sm md:text-md text-inherit hover:text-inherit hover:border-transparent"
+                                    >
+                                        <i className="pr-1 sm:pr-2 fas fa-sign-in"></i>
+                                        <span className="max-[420px]:hidden">
+                                            {t("Login")}
+                                        </span>
+                                    </NavLink>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -302,7 +369,9 @@ export default function StickyNav({ open, setOpen }) {
                                 type="search"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder={t("Search Product By Title or Tags")}
+                                placeholder={t(
+                                    "Search Product By Title or Tags",
+                                )}
                                 className="w-full border rounded-md"
                             />
                             <hr className="my-2" />

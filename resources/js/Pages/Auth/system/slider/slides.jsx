@@ -91,23 +91,23 @@ export default function Slides({ slider, slides = [] }) {
                         <div className="w-full">
                             {forms.map((item, key) => (
                                 <div key={item.id} className="relative w-full p-3 mb-1 border rounded">
-                                    <div className="items-start w-full p-3 md:flex jusitfy-between">
+                                    <div className="grid w-full items-start gap-4 p-3 xl:grid-cols-[280px_minmax(0,1fr)]">
                                         <div className="p-2">
                                             {previews[key] ? (
                                                 <img
                                                     src={previews[key]}
-                                                    style={{ height: 150, width: "100%" }}
+                                                    className="h-[150px] w-full rounded object-cover"
                                                     alt=""
                                                 />
                                             ) : (
                                                 <img
                                                     src={`/storage/${item.image}`}
-                                                    style={{ height: 150, width: "100%" }}
+                                                    className="h-[150px] w-full rounded object-cover"
                                                     alt=""
                                                 />
                                             )}
 
-                                            <div className="relative">
+                                            <div className="relative mt-3">
                                                 <input
                                                     type="file"
                                                     id={`slider_image_${key}`}
@@ -120,15 +120,14 @@ export default function Slides({ slider, slides = [] }) {
                                                 />
                                                 <label
                                                     htmlFor={`slider_image_${key}`}
-                                                    className="p-1 border rounded shadow"
+                                                    className="inline-flex items-center justify-center p-2 border rounded shadow"
                                                 >
                                                     <i className="px-1 fas fa-upload"></i>
                                                 </label>
                                             </div>
-                                            <br />
 
-                                            <div className="flex items-center justify-between py-2 my-2 border-t border-b">
-                                                Background Color
+                                            <div className="flex items-center justify-between py-2 my-3 border-y">
+                                                <span className="text-sm font-medium">Background Color</span>
                                                 <input
                                                     type="color"
                                                     className="w-8 h-8 rounded shadow"
@@ -139,7 +138,7 @@ export default function Slides({ slider, slides = [] }) {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="p-2 space-y-2">
+                                        <div className="min-w-0 p-2 space-y-2">
                                             <p className="flex items-center justify-between text-xs text-end">
                                                 Title
                                                 <input
@@ -205,19 +204,19 @@ export default function Slides({ slider, slides = [] }) {
                                     </div>
 
                                     <Hr />
-                                    <div className="flex items-center justify-start space-x-2">
-                                        <DangerButton onClick={() => deleteSlide(item)}>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <DangerButton className="inline-flex justify-center w-auto" onClick={() => deleteSlide(item)}>
                                             <i className="fas fa-trash"></i>
                                         </DangerButton>
-                                        <PrimaryButton onClick={() => saveSlide(key)}>
+                                        <PrimaryButton className="inline-flex justify-center w-auto" onClick={() => saveSlide(key)}>
                                             <i className="pr-2 fas fa-save "></i> save
                                         </PrimaryButton>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        <div className="flex justify-end space-x-2">
-                            <PrimaryButton onClick={addNewSlides}>
+                        <div className="flex sm:justify-end">
+                            <PrimaryButton className="inline-flex justify-center w-auto" onClick={addNewSlides}>
                                 <i className="pr-2 fas fa-plus"></i> Slides
                             </PrimaryButton>
                         </div>

@@ -1265,6 +1265,7 @@ return array (
   'find name, id' => 'caută nume, ID',
   'from' => 'de la',
   'grocery items' => 'produse alimentare',
+  'hjgh' => 'hjgh',
   'in Dhaka' => 'în Dhaka',
   'inactivate' => 'dezactivează',
   'item' => 'articol',

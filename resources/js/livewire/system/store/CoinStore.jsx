@@ -35,9 +35,9 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
 
     return (
         <div>
-            <div className="w-full text-center bg-white rounded ">
-                <div className="items-start justify-between p-2 border border-green-900 rounded md:flex">
-                    <div className="flex items-center justify-between px-3 py-1 text-center lg:p-3 bold md:block">
+            <div className="w-full rounded bg-white text-center">
+                <div className="flex flex-col gap-3 rounded border border-green-900 p-2 md:flex-row md:items-start md:justify-between">
+                    <div className="flex items-center justify-between px-3 py-1 text-center bold lg:p-3 md:block md:text-left">
                         <div className="text-sm fs-5 fw-bold text-start">
                             <NavLink
                                 href="#"
@@ -63,7 +63,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                             </button>
                         </div> */}
                     </div>
-                    <div className="px-3 py-1 text-lg text-center text-green-900 lg:p-3 fw-bold">
+                    <div className="px-3 py-1 text-lg text-center text-green-900 fw-bold lg:p-3">
                         <div className="px-2 font-bold border rounded">
                             {store}
                         </div>
@@ -83,8 +83,8 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                         </div>
                     </div>
 
-                    <div className="px-3 py-1 lg:p-3 text-end">
-                        <div className="flex items-center text-xs">
+                    <div className="px-3 py-1 text-center lg:p-3 md:text-end">
+                        <div className="flex items-center justify-center text-xs md:justify-end">
                             <div className="text-red-900 text-start" style={{ color: "red" }}>
                                 <i className="fas fa-long-arrow-alt-up"></i>
                             </div>
@@ -102,14 +102,14 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                 <hr className="my-2" />
                 <div className="p-4">
                     <form onSubmit={submit}>
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
                             <div className="relative w-full">
                                 <InputLabel htmlFor="coin-method">{t("Payment Method")}</InputLabel>
                                 <select
                                     id="coin-method"
                                     value={form.data.method}
                                     onChange={(e) => form.setData("method", e.target.value)}
-                                    className="w-full py-2 rounded-md"
+                                    className="w-full rounded-md py-2"
                                 >
                                     <option value=""> {t("-- Choose --")} </option>
                                     {["Bkash", "Nogod", "Rocket", "Bank"].map((item) => (
@@ -162,7 +162,7 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-6 my-4">
+                                <div className="grid grid-cols-1 gap-4 my-4 md:grid-cols-2 md:gap-6">
                                     <div className="relative">
                                         <InputLabel htmlFor="coin-bankBranch">{t("Bank Branch")}</InputLabel>
                                         <TextInput
@@ -225,8 +225,12 @@ export default function CoinStore({ store = 0, take = 0, give = 0 }) {
                             ></textarea>
                         </div>
 
-                        <div className="flex justify-end">
-                            <PrimaryButton type="submit" disabled={form.processing}>
+                        <div className="flex justify-start sm:justify-end">
+                            <PrimaryButton
+                                type="submit"
+                                disabled={form.processing}
+                                className="inline-flex w-auto justify-center"
+                            >
                                 {t("Submit")}
                             </PrimaryButton>
                         </div>

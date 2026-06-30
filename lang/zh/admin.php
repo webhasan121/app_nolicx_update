@@ -1265,6 +1265,7 @@ return array (
   'find name, id' => '查找名称、ID',
   'from' => '从',
   'grocery items' => '杂货商品',
+  'hjgh' => 'hjgh',
   'in Dhaka' => '在达卡',
   'inactivate' => '停用',
   'item' => '商品',

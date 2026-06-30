@@ -140,8 +140,8 @@ export default function Index({ filters, overview, products, printUrl }) {
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center xl:w-auto">
                                     <select
                                         value={filters?.nav ?? "sold"}
                                         onChange={(e) =>
@@ -153,7 +153,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                                 find: search,
                                             })
                                         }
-                                        className="rounded py-1"
+                                        className="h-10 w-full rounded py-1 sm:w-auto"
                                     >
                                         <option value="all">{t("Both")}</option>
                                         <option value="sold">{t("Sold")}</option>
@@ -162,8 +162,8 @@ export default function Index({ filters, overview, products, printUrl }) {
 
                                     <TextInput
                                         type="date"
-                                        className="py-1"
-                                    value={fd || today}
+                                        className="h-10 w-full py-1 sm:w-auto"
+                                        value={fd || today}
                                         onChange={(e) => {
                                             const value = e.target.value;
 
@@ -178,8 +178,8 @@ export default function Index({ filters, overview, products, printUrl }) {
                                     />
                                     <TextInput
                                         type="date"
-                                        className="py-1"
-                                    value={lastDate}
+                                        className="h-10 w-full py-1 sm:w-auto"
+                                        value={lastDate}
                                         onChange={(e) => {
                                             const value = e.target.value;
 
@@ -195,7 +195,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                     <TextInput
                                         type="search"
                                         placeholder={t("Search products...")}
-                                        className="py-1"
+                                        className="h-10 w-full py-1 sm:w-56"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                         onKeyDown={(e) => {
@@ -214,6 +214,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                     />
                                     <PrimaryButton
                                         type="button"
+                                        className="inline-flex w-auto justify-center self-start"
                                         onClick={() => window.open(printUrl, "_blank")}
                                     >
                                         <i className="fas fa-print"></i>
@@ -221,7 +222,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                     {hasActiveFilters ? (
                                         <button
                                             type="button"
-                                            className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            className="inline-flex h-10 w-auto items-center justify-center self-start rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
                                             onClick={() => {
                                                 setFd("");
                                                 setLastDate("");
@@ -239,7 +240,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                         </button>
                                     ) : null}
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center xl:w-auto">
                                     <select
                                         value={filters?.user_type ?? "user"}
                                         onChange={(e) =>
@@ -251,7 +252,7 @@ export default function Index({ filters, overview, products, printUrl }) {
                                                 find: search,
                                             })
                                         }
-                                        className="rounded py-1"
+                                        className="h-10 w-full rounded py-1 sm:w-auto"
                                     >
                                         <option value="all">{t("Both")}</option>
                                         <option value="user">{t("Reseller Shop")}</option>
@@ -264,89 +265,91 @@ export default function Index({ filters, overview, products, printUrl }) {
                     />
                     <Hr />
                     <SectionInner>
-                        <Table data={products?.data ?? []} className="p-2">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>{t("ID")}</th>
-                                    <th>{t("Product")}</th>
-                                    <th>{t("Flow")}</th>
-                                    <th>{t("Owner")}</th>
-                                    <th>{t("Price")}</th>
-                                    <th>{t("Created")}</th>
-                                    <th>{t("Action")}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {(products?.data ?? []).map((item, index) => (
-                                    <tr key={item.id}>
-                                        <td>{(products?.from ?? 1) + index}</td>
-                                        <td>{item.id}</td>
-                                        <td>
-                                            <NavLink
-                                                className="text-xs"
-                                                href={route("products.details", {
-                                                    id: item.product_id ?? "",
-                                                    slug: item.product_slug ?? "",
-                                                })}
-                                            >
-                                                {item.product_thumbnail ? (
-                                                    <img
-                                                        width="30"
-                                                        height="30"
-                                                        src={item.product_thumbnail}
-                                                        alt=""
-                                                        className="mr-2 rounded-full"
-                                                    />
-                                                ) : null}
-                                                <ProductName value={item.product_name} />
-                                            </NavLink>
-                                            <br />
-                                            <div className="text-xs border rounded inline-block">
-                                                {item.product_status ?? "N/A"}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="flex items-center">
-                                                {item.user_type} <i className="fas fa-angle-right mx-2"></i>
-                                                {item.belongs_to_type}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <div className="text-gray-700">{item.owner_name ?? "N/A"}</div>
-                                                {(item.is_resel_count ?? 0) > 0 ? (
-                                                    <span className="rounded-full p-1 text-xs bg-indigo-900 text-white">
-                                                        <i className="fas fa-caret-left"></i>R
-                                                    </span>
-                                                ) : null}
-                                                {(item.resel_count ?? 0) > 0 ? (
-                                                    <span className="rounded-full p-1 text-xs bg-indigo-900 text-white">
-                                                        {item.resel_count}
-                                                        <i className="fas fa-caret-right"></i>
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {formatCurrency(item.product_price)}{item.offer_type ? (
-                                                <div className="flex items-center text-center p-1 rounded bg-gray-100 text-xs">{t("D:")}{item.discount ?? 0} | {item.discount_percent ?? 0}{t("% off")}</div>
-                                            ) : null}
-                                        </td>
-                                        <td>{item.product_created_at ?? "N/A"}</td>
-                                        <td>
-                                            <span className={statusClass[item.status] ?? "text-xs p-1 border rounded-md bg-gray-200 text-gray-900"}>
-                                                {item.status ?? "Unknown"}
-                                            </span>
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <Table data={products?.data ?? []} className="p-2">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>{t("ID")}</th>
+                                        <th>{t("Product")}</th>
+                                        <th>{t("Flow")}</th>
+                                        <th>{t("Owner")}</th>
+                                        <th>{t("Price")}</th>
+                                        <th>{t("Created")}</th>
+                                        <th>{t("Action")}</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </Table>
+                                </thead>
+                                <tbody>
+                                    {(products?.data ?? []).map((item, index) => (
+                                        <tr key={item.id}>
+                                            <td>{(products?.from ?? 1) + index}</td>
+                                            <td>{item.id}</td>
+                                            <td>
+                                                <NavLink
+                                                    className="text-xs"
+                                                    href={route("products.details", {
+                                                        id: item.product_id ?? "",
+                                                        slug: item.product_slug ?? "",
+                                                    })}
+                                                >
+                                                    {item.product_thumbnail ? (
+                                                        <img
+                                                            width="30"
+                                                            height="30"
+                                                            src={item.product_thumbnail}
+                                                            alt=""
+                                                            className="mr-2 rounded-full"
+                                                        />
+                                                    ) : null}
+                                                    <ProductName value={item.product_name} />
+                                                </NavLink>
+                                                <br />
+                                                <div className="inline-block rounded border text-xs">
+                                                    {item.product_status ?? "N/A"}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="flex items-center">
+                                                    {item.user_type} <i className="mx-2 fas fa-angle-right"></i>
+                                                    {item.belongs_to_type}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div className="text-gray-700">{item.owner_name ?? "N/A"}</div>
+                                                    {(item.is_resel_count ?? 0) > 0 ? (
+                                                        <span className="rounded-full bg-indigo-900 p-1 text-xs text-white">
+                                                            <i className="fas fa-caret-left"></i>R
+                                                        </span>
+                                                    ) : null}
+                                                    {(item.resel_count ?? 0) > 0 ? (
+                                                        <span className="rounded-full bg-indigo-900 p-1 text-xs text-white">
+                                                            {item.resel_count}
+                                                            <i className="fas fa-caret-right"></i>
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {formatCurrency(item.product_price)}{item.offer_type ? (
+                                                    <div className="flex items-center rounded bg-gray-100 p-1 text-center text-xs">{t("D:")}{item.discount ?? 0} | {item.discount_percent ?? 0}{t("% off")}</div>
+                                                ) : null}
+                                            </td>
+                                            <td>{item.product_created_at ?? "N/A"}</td>
+                                            <td>
+                                                <span className={statusClass[item.status] ?? "text-xs p-1 border rounded-md bg-gray-200 text-gray-900"}>
+                                                    {item.status ?? "Unknown"}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </div>
 
                         {(products?.total ?? 0) > 0 ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="text-sm text-slate-700">
                                         {`Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} items`}
                                     </div>

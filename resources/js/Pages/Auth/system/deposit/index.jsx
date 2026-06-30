@@ -132,14 +132,14 @@ export default function Index({
                     <SectionHeader
                         title=""
                         content={
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div className="flex flex-wrap items-center gap-2 py-1">
+                            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                                <div className="flex w-full flex-col gap-2 py-1 sm:flex-row sm:flex-wrap sm:items-center xl:w-auto">
                                     <select
                                         value={status}
                                         onChange={(e) =>
                                             visit(e.target.value, search.trim(), sdate, edate)
                                         }
-                                        className="py-1 mb-1 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 focus:ring-1"
+                                        className="mb-1 h-10 w-full rounded-md border border-gray-300 py-1 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:w-auto"
                                     >
                                         <option value="*">{t("All")}</option>
                                         <option value="0">{t("Pending")}</option>
@@ -152,7 +152,7 @@ export default function Index({
                                         onChange={(e) =>
                                             visit(status, search.trim(), e.target.value, edate)
                                         }
-                                        className="py-1"
+                                        className="h-10 w-full py-1 sm:w-auto"
                                     />
                                     <TextInput
                                         type="date"
@@ -161,7 +161,7 @@ export default function Index({
                                         onChange={(e) =>
                                             visit(status, search.trim(), sdate, e.target.value)
                                         }
-                                        className="py-1"
+                                        className="h-10 w-full py-1 sm:w-auto"
                                     />
                                     <TextInput
                                         type="search"
@@ -175,13 +175,13 @@ export default function Index({
                                             e.preventDefault();
                                             visit(status, search.trim(), sdate, edate);
                                         }}
-                                        className="py-1"
+                                        className="h-10 w-full py-1 sm:w-56"
                                         placeholder={t("Search deposits...")}
                                     />
                                     {hasActiveFilters ? (
                                         <button
                                             type="button"
-                                            className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            className="inline-flex h-10 w-auto items-center justify-center self-start rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
                                             onClick={() => {
                                                 setSearch("");
                                                 visit("*", "", "", "");
@@ -192,8 +192,12 @@ export default function Index({
                                     ) : null}
                                 </div>
 
-                                <div className="flex items-center justify-end py-1">
-                                    <PrimaryButton type="button" onClick={print}>
+                                <div className="flex py-1 xl:justify-end">
+                                    <PrimaryButton
+                                        type="button"
+                                        onClick={print}
+                                        className="inline-flex w-auto justify-center self-start"
+                                    >
                                         <i className="fas fa-print"></i>
                                     </PrimaryButton>
                                 </div>
@@ -205,107 +209,109 @@ export default function Index({
 
                     <div id="pdf-content">
                         <hr clas="my-1" />
-                        <Table data={history?.data ?? []}>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>{t("User")}</th>
-                                    <th>{t("Amount")}</th>
-                                    <th>{t("Payment")}</th>
-                                    <th>{t("Trx ID")}</th>
-                                    <th>{t("Status")}</th>
-                                    <th>{t("Date")}</th>
-                                    <th>{t("A/C")}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {(history?.data ?? []).map((item, index) => (
-                                    <tr key={item.id}>
-                                        <td>{(history?.from ?? 1) + index}</td>
-                                        <td>
-                                            <NavLinkBtn
-                                                href={route(
-                                                    "system.users.edit",
-                                                    { id: item.user.id },
-                                                )}
-                                            >
-                                                {item.user.name}
-                                            </NavLinkBtn>
-                                        </td>
-                                        <td>{formatCurrency(item.amount)}</td>
-                                        <td>
-                                            <div className="flex items-center">
-                                                {item.senderAccountNumber}{" "}
-                                                <i className="px-2 fas fa-caret-right"></i>
-                                                {item.paymentMethod}{" "}
-                                                <i className="px-2 fas fa-caret-right"></i>
-                                                {item.receiverAccountNumber}
-                                            </div>
-                                        </td>
-                                        <td>{item.transactionId ?? "N/A"}</td>
-                                        <td>
-                                            {item.confirmed
-                                                ? "Confirmed"
-                                                : "Pending"}
-                                        </td>
-                                        <td>{item.created_at_diff}</td>
-                                        <td>
-                                            <div className="flex items-center gap-2 px-2 py-1">
-                                                {item.confirmed ? (
+                        <div className="overflow-x-auto">
+                            <Table data={history?.data ?? []}>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>{t("User")}</th>
+                                        <th>{t("Amount")}</th>
+                                        <th>{t("Payment")}</th>
+                                        <th>{t("Trx ID")}</th>
+                                        <th>{t("Status")}</th>
+                                        <th>{t("Date")}</th>
+                                        <th>{t("A/C")}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(history?.data ?? []).map((item, index) => (
+                                        <tr key={item.id}>
+                                            <td>{(history?.from ?? 1) + index}</td>
+                                            <td>
+                                                <NavLinkBtn
+                                                    href={route(
+                                                        "system.users.edit",
+                                                        { id: item.user.id },
+                                                    )}
+                                                >
+                                                    {item.user.name}
+                                                </NavLinkBtn>
+                                            </td>
+                                            <td>{formatCurrency(item.amount)}</td>
+                                            <td>
+                                                <div className="flex items-center">
+                                                    {item.senderAccountNumber}{" "}
+                                                    <i className="px-2 fas fa-caret-right"></i>
+                                                    {item.paymentMethod}{" "}
+                                                    <i className="px-2 fas fa-caret-right"></i>
+                                                    {item.receiverAccountNumber}
+                                                </div>
+                                            </td>
+                                            <td>{item.transactionId ?? "N/A"}</td>
+                                            <td>
+                                                {item.confirmed
+                                                    ? "Confirmed"
+                                                    : "Pending"}
+                                            </td>
+                                            <td>{item.created_at_diff}</td>
+                                            <td>
+                                                <div className="flex items-center gap-2 px-2 py-1">
+                                                    {item.confirmed ? (
+                                                        <ActionIconButton
+                                                            action="confirm"
+                                                            className="cursor-default opacity-70"
+                                                            disabled
+                                                            title={t("Confirmed")}
+                                                        />
+                                                    ) : (
+                                                        <ActionIconButton
+                                                            action="confirm"
+                                                            title={t("Confirm")}
+                                                            onClick={() =>
+                                                                confirmDeposit(item.id)
+                                                            }
+                                                        />
+                                                    )}
                                                     <ActionIconButton
-                                                        action="confirm"
-                                                        className="cursor-default opacity-70"
-                                                        disabled
-                                                        title={t("Confirmed")}
-                                                    />
-                                                ) : (
-                                                    <ActionIconButton
-                                                        action="confirm"
-                                                        title={t("Confirm")}
+                                                        action="reject"
+                                                        className={`${
+                                                            item.confirmed
+                                                                ? "opacity-50 cursor-not-allowed"
+                                                                : ""
+                                                        }`}
+                                                        disabled={item.confirmed}
+                                                        title={
+                                                            item.confirmed
+                                                                ? "Confirmed deposits cannot be deleted"
+                                                                : "Delete"
+                                                        }
                                                         onClick={() =>
-                                                            confirmDeposit(item.id)
+                                                            denyDeposit(item.id)
                                                         }
                                                     />
-                                                )}
-                                                <ActionIconButton
-                                                    action="reject"
-                                                    className={`${
-                                                        item.confirmed
-                                                            ? "opacity-50 cursor-not-allowed"
-                                                            : ""
-                                                    }`}
-                                                    disabled={item.confirmed}
-                                                    title={
-                                                        item.confirmed
-                                                            ? "Confirmed deposits cannot be deleted"
-                                                            : "Delete"
-                                                    }
-                                                    onClick={() =>
-                                                        denyDeposit(item.id)
-                                                    }
-                                                />
-                                            </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td
+                                            colSpan="2"
+                                            className="font-bold text-right"
+                                        >{t("Total")}</td>
+                                        <td className="font-bold">
+                                            {formatCurrency(history?.sum)}
                                         </td>
+                                        <td colSpan="5"></td>
                                     </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td
-                                        colSpan="2"
-                                        className="font-bold text-right"
-                                    >{t("Total")}</td>
-                                    <td className="font-bold">
-                                        {formatCurrency(history?.sum)}
-                                    </td>
-                                    <td colSpan="5"></td>
-                                </tr>
-                            </tfoot>
-                        </Table>
+                                </tfoot>
+                            </Table>
+                        </div>
                         <div>
                             {pagination.pages.length ? (
                                 <div className="w-full pt-4">
-                                    <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                         <div className="text-sm text-slate-700">
                                             {resultSummary}
                                         </div>

@@ -166,23 +166,23 @@ export default function Index({ filters, stats, orders }) {
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1">
-                                <div className="flex items-center gap-2">
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:flex-wrap xl:items-center xl:gap-2">
+                                <div className="flex w-full gap-2 sm:col-span-2 xl:w-auto">
                                     <select className="h-10 w-24 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value={filters?.qf ?? "id"} onChange={(e) => apply({ qf: e.target.value })}>
                                         <option value="id">{t("Order")}</option>
                                         <option value="user_id">{t("Buyer")}</option>
                                         <option value="belongs_to">{t("Seller")}</option>
                                     </select>
-                                    <TextInput className="h-10 w-44 rounded-md border-slate-300 py-2 text-sm shadow-sm" type="search" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} placeholder={t("Search")} />
+                                    <TextInput className="h-10 w-full rounded-md border-slate-300 py-2 text-sm shadow-sm xl:w-44" type="search" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} placeholder={t("Search")} />
                                 </div>
 
-                                <select className="h-10 w-32 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value={filters?.type ?? ""} onChange={(e) => apply({ type: e.target.value })}>
+                                <select className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 xl:w-32" value={filters?.type ?? ""} onChange={(e) => apply({ type: e.target.value })}>
                                     <option value="">{t("Both (")}{stats?.orders ?? 0})</option>
                                     <option value="user">{t("U > R (")}{stats?.user_to_reseller ?? 0})</option>
                                     <option value="reseller">{t("R > V (")}{stats?.reseller_to_vendor ?? 0})</option>
                                 </select>
                                 <select
-                                    className="h-10 w-36 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 xl:w-36"
                                     value={filters?.status ?? ""}
                                     onChange={(e) => {
                                         const status = e.target.value;
@@ -207,25 +207,26 @@ export default function Index({ filters, stats, orders }) {
 
                                 <TextInput
                                     type="date"
-                                    className="h-10 w-36 rounded-md border-slate-300 py-2 text-sm font-medium shadow-sm"
+                                    className="h-10 w-full rounded-md border-slate-300 py-2 text-sm font-medium shadow-sm xl:w-36"
                                     value={filters?.sd || today}
                                     onChange={(e) => applyDate("sd", e.target.value)}
                                     id="sd"
                                 />
                                 <TextInput
                                     type="date"
-                                    className="h-10 w-36 rounded-md border-slate-300 py-2 text-sm font-medium shadow-sm"
+                                    className="h-10 w-full rounded-md border-slate-300 py-2 text-sm font-medium shadow-sm xl:w-36"
                                     value={filters?.ed ?? ""}
                                     onChange={(e) => applyDate("ed", e.target.value)}
                                     id="ed"
                                 />
-                                <PrimaryButton type="button" className="inline-flex h-10 w-12 items-center justify-center px-0" onClick={print}>
-                                    <i className="fas fa-print"></i>
-                                </PrimaryButton>
+                                <div className="flex w-full gap-2 sm:col-span-2 xl:w-auto">
+                                    <PrimaryButton type="button" className="inline-flex h-10 w-12 shrink-0 items-center justify-center px-0" onClick={print}>
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
                                 {hasActiveFilters ? (
                                     <button
                                         type="button"
-                                        className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                        className="h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50 xl:flex-none"
                                         onClick={() => {
                                             setSearchValue("");
                                             apply({
@@ -243,6 +244,7 @@ export default function Index({ filters, stats, orders }) {
                                         {t("Reset")}
                                     </button>
                                 ) : null}
+                                </div>
                             </div>
                         }
                         content={null}
@@ -250,7 +252,7 @@ export default function Index({ filters, stats, orders }) {
 
                     <SectionInner>
 
-                        <Table data={orders?.data ?? []}>
+                        <Table data={orders?.data ?? []} tableClassName="min-w-[1120px] xl:min-w-full">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -324,7 +326,7 @@ export default function Index({ filters, stats, orders }) {
                         </Table>
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex items-center justify-between w-full gap-3">
+                                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="text-sm text-slate-700">
                                         {resultSummary}
                                     </div>

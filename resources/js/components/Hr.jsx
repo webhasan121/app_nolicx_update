@@ -1,3 +1,3 @@
-export default function Hr() {
-    return <hr className="my-2" />;
+export default function Hr({ className = "" }) {
+    return <hr className={`my-2 ${className}`.trim()} />;
 }

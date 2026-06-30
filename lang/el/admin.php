@@ -1273,6 +1273,7 @@ return array (
   'find name, id' => 'βρείτε όνομα, id',
   'from' => 'από',
   'grocery items' => 'είδη παντοπωλείου',
+  'hjgh' => 'hjgh',
   'in Dhaka' => 'στο Ντάκα',
   'inactivate' => 'απενεργοποίηση',
   'item' => 'αντικείμενο',

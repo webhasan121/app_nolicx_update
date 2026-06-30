@@ -78,9 +78,9 @@ export default function History({ columns = [], histories = {}, filters = {}, pr
             header={<PageHeader>Star System - History</PageHeader>}
         >
             <Container>
-                <div className="flex items-center gap-2">
-                    <NavLinkBtn href={route("system.levels.index")}>Levels</NavLinkBtn>
-                    <NavLinkBtn href={route("system.levels.history")}>History</NavLinkBtn>
+                <div className="flex flex-wrap items-center gap-2">
+                    <NavLinkBtn href={route("system.levels.index")} className="inline-flex w-auto justify-center">Levels</NavLinkBtn>
+                    <NavLinkBtn href={route("system.levels.history")} className="inline-flex w-auto justify-center">History</NavLinkBtn>
                 </div>
             </Container>
 
@@ -88,25 +88,27 @@ export default function History({ columns = [], histories = {}, filters = {}, pr
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                                 <h2>Level-Up History</h2>
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end xl:w-auto">
                                     <form
                                         onSubmit={(e) => {
                                             e.preventDefault();
                                             requestHistories();
                                         }}
+                                        className="w-full sm:w-auto"
                                     >
                                         <TextInput
                                             type="search"
                                             placeholder="Search histories..."
-                                            className="py-1"
+                                            className="h-10 w-full py-2 sm:w-56"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                         />
                                     </form>
                                     <PrimaryButton
                                         type="button"
+                                        className="inline-flex w-auto justify-center self-start"
                                         onClick={() => window.open(printUrl, "_blank")}
                                     >
                                         <i className="fas fa-print"></i>
@@ -119,7 +121,7 @@ export default function History({ columns = [], histories = {}, filters = {}, pr
 
                     <SectionInner>
                         <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-                            <table className="min-w-full divide-y divide-gray-200 text-sm">
+                            <table className="min-w-[760px] divide-y divide-gray-200 text-sm xl:min-w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
                                         {columns.map((column, index) => (
@@ -168,7 +170,7 @@ export default function History({ columns = [], histories = {}, filters = {}, pr
 
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="text-sm text-slate-700">{resultSummary}</div>
                                     <div className="flex items-center md:justify-end">
                                         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

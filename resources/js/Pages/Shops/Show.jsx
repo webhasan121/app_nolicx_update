@@ -2,7 +2,7 @@ import { useState } from "react";
 import NavLink from "../../components/NavLink";
 import Hr from "../../components/Hr";
 import Container from "../../components/dashboard/Container";
-import ProductCard from "../../components/home/ProductCard";
+import ProductsLoop from "../../components/client/ProductsLoop";
 import UserLayout from "../../Layouts/User/App";
 
 export default function Show({ shop = {}, products = [] }) {
@@ -115,17 +115,10 @@ export default function Show({ shop = {}, products = [] }) {
                         <div className="py-2 text-sm">Products</div>
                         {products?.length ? (
                             <>
-                                <div
-                                    style={{
-                                        display: "grid",
-                                        gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-                                        gridGap: "10px",
-                                    }}
-                                >
-                                    {visibleProducts.map((product) => (
-                                        <ProductCard key={product.id} product={product} />
-                                    ))}
-                                </div>
+                                <ProductsLoop
+                                    products={visibleProducts}
+                                    gridClassName="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7"
+                                />
 
                                 {hasMoreProducts ? (
                                     <div className="flex justify-center py-6">

@@ -61,7 +61,7 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
     }, [flash]);
 
     return (
-        <div className="h-screen overflow-hidden font-sans antialiased bg-gray-100">
+        <div className="min-h-screen overflow-x-hidden font-sans antialiased bg-gray-100 md:h-screen md:overflow-hidden">
             <AutoTranslate />
             <CurrencyTextSync />
             <Head title={title} />
@@ -95,8 +95,8 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
                 <Navigation />
             </div>
 
-            <div className="h-screen pt-16">
-                <div className="flex h-full overflow-hidden sm:pl-6 lg:pl-8">
+            <div className="min-h-screen pt-16 md:h-screen">
+                <div className="flex min-h-[calc(100vh-4rem)] flex-col overflow-visible sm:pl-6 md:h-full md:flex-row md:overflow-hidden lg:pl-8">
                     <div
                         className="hidden h-full shrink-0 overflow-y-auto md:block"
                         style={{ width: 220 }}
@@ -118,10 +118,10 @@ export default function AppLayout({ children, header, title = "Dashboard" }) {
                         </div>
                     </div>
 
-                    <div className="w-full h-full overflow-x-hidden overflow-y-auto">
+                    <div className="min-w-0 w-full overflow-x-hidden overflow-y-visible md:h-full md:overflow-y-auto">
                         {header && (
                             <header className="">
-                                <div className="w-full px-2 px-4 py-6 mx-auto sm:px-6 lg:px-8">
+                                <div className="w-full px-3 py-4 mx-auto sm:px-6 sm:py-6 lg:px-8">
                                     {header}
                                 </div>
                             </header>

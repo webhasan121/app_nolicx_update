@@ -11,7 +11,8 @@ export default function Footer() {
 
     const branches = global?.branches || [];
 
-    const { support_mail, playstore_link, dbid_no, trade_license,whatsapp_no } = appConfig;
+    const { support_mail, playstore_link, dbid_no, trade_license, whatsapp_no } =
+        appConfig;
 
     const widgets = [
         {
@@ -68,32 +69,37 @@ export default function Footer() {
     return (
         <footer>
             {/* Top Section */}
-            <section className="px-6 pt-16 pb-8 mx-auto mb-8 border-b max-w-7xl">
+            <section className="px-6 pt-10 pb-8 mx-auto mb-8 border-b max-w-7xl">
                 <div className="flex flex-col gap-8 lg:flex-row lg:gap-16">
                     {/* Logo + Playstore */}
-                    <div className="flex flex-row lg:flex-col items-center lg:items-start md:w-[25%]">
+                    <div className="flex items-center justify-between w-full gap-3 flex-wrap lg:flex-col lg:items-start lg:w-[30%] xl:w-[25%]">
                         <Link
                             href="/"
-                            className="flex items-center w-full p-0 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
+                            className="flex items-center flex-1 min-w-0 p-0 border-b-0 text-inherit hover:text-inherit hover:border-transparent"
                         >
                             <img
                                 height="50"
                                 width="60"
                                 src="/icon.png"
                                 alt="logo"
+                                className="w-10 h-auto shrink-0 sm:w-12 lg:w-[60px]"
                             />
-                            <div className="text-4xl font-bold ps-2">
+                            <div className="text-xl font-bold leading-none truncate ps-2 sm:text-2xl lg:text-3xl xl:text-4xl">
                                 <ApplicationName />
                             </div>
                         </Link>
 
                         <a
                             href={playstore_link}
-                            className="w-[150px] md:w-[225px] lg:w-full border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent"
+                            className="w-[120px] shrink-0 border-b-0 p-0 text-inherit hover:text-inherit hover:border-transparent sm:w-[150px] lg:w-full lg:max-w-[200px] xl:max-w-[225px]"
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <img src="/playstore.png" alt="playstore" />
+                            <img
+                                src="/playstore.png"
+                                alt="playstore"
+                                className="w-full h-auto"
+                            />
                         </a>
                     </div>
 

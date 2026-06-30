@@ -65,15 +65,14 @@ export default function Checkout() {
             <Container>
                 <SectionSection>
                     <SectionInner>
-                        <div className="flex justify-start">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
                             <div
-                                className="mb-3 col-md-5"
-                                style={{ minWidth: "250px", maxWidth: "350px" }}
+                                className="w-full lg:max-w-[350px]"
                             >
                                 <VipCart item={pkg} active={pkg.id} />
                             </div>
 
-                            <div className="px-3 col-lg-7 w-100">
+                            <div className="w-full px-0 sm:px-2 lg:px-3">
                                 <div className="text-lg font-bold">
                                     Confirm Payment First
                                 </div>
@@ -94,12 +93,13 @@ export default function Checkout() {
                                         <div className="uppercase">
                                             {item.pay_type}
                                         </div>
-                                        <div className="flex justify-between">
-                                            <div className="p-2">
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="p-2 break-all">
                                                 {item.pay_to}
                                             </div>
                                             <PrimaryButton
                                                 type="button"
+                                                className="w-full sm:w-auto"
                                                 onClick={() =>
                                                     handleCopy(
                                                         item.id,
@@ -119,6 +119,7 @@ export default function Checkout() {
 
                         <div className="mt-4 text-center">
                             <SecondaryButton
+                                className="w-full sm:w-auto"
                                 onClick={() => setShowDetails(true)}
                             >
                                 View Details
@@ -149,15 +150,7 @@ export default function Checkout() {
                                 }}
                             />
 
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns:
-                                        "repeat(auto-fit, 155px)",
-                                    gridGap: "20px",
-                                    justifyContent: "center",
-                                }}
-                            >
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 <div className="shadow vip_item_info_box">
                                     <div>
                                         Package{" "}
@@ -225,7 +218,7 @@ export default function Checkout() {
                             {ownerPackage && (
                                 <div className="my-3 text-center">
                                     <PrimaryButton
-                                        className="text-white shadow btn btn-lg bg_primary"
+                                        className="w-full text-white shadow btn btn-lg bg_primary sm:w-auto"
                                         onClick={() => setShowPurchase(true)}
                                     >
                                         Procces to Purchase
@@ -252,10 +245,11 @@ export default function Checkout() {
                 <Modal
                     show={showPurchase}
                     onClose={() => setShowPurchase(false)}
+                    maxWidth="2xl"
                 >
                     <div className="p-3 border-b">Purchase Package</div>
 
-                    <form onSubmit={submit} className="p-3">
+                    <form onSubmit={submit} className="p-3 sm:p-4">
                         {/* Payment Section */}
                         <div className="p-3 border rounded">
                             <div className="mb-3">
@@ -379,7 +373,7 @@ export default function Checkout() {
                             </InputLabel>
 
                             <div className="p-3 border rounded">
-                                <div className="flex align-items-center">
+                                <div className="flex items-center">
                                     <input
                                         type="radio"
                                         id="daily_task"
@@ -408,7 +402,7 @@ export default function Checkout() {
                             <hr />
 
                             <div className="p-3 border rounded">
-                                <div className="flex align-items-center">
+                                <div className="flex items-center">
                                     <input
                                         type="radio"
                                         id="monthly_task"
@@ -468,9 +462,9 @@ export default function Checkout() {
 
                             <Hr />
 
-                            <div className="row">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 {/* Front NID */}
-                                <div className="col-lg-6">
+                                <div>
                                     <div>Front Side of NID</div>
 
                                     {data.nid_front && (
@@ -502,7 +496,7 @@ export default function Checkout() {
                                 </div>
 
                                 {/* Back NID */}
-                                <div className="col-lg-6">
+                                <div>
                                     <div>Back Side of NID</div>
 
                                     {data.nid_back && (
@@ -537,7 +531,7 @@ export default function Checkout() {
 
                         {/* Submit */}
                         <div className="mt-4 text-right">
-                            <PrimaryButton disabled={processing}>
+                            <PrimaryButton className="w-full sm:w-auto" disabled={processing}>
                                 Confirm{" "}
                                 <i className="mx-2 fas fa-arrow-right"></i>
                             </PrimaryButton>

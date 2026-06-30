@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\FcmDeviceTokenController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\PartnershipController;
 use App\Http\Controllers\Api\ProductController;
@@ -49,6 +50,9 @@ Route::prefix('auth')->controller(Auth::class)->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('fcm/token', [FcmDeviceTokenController::class, 'store']);
+    Route::delete('fcm/token', [FcmDeviceTokenController::class, 'destroy']);
+
     Route::get('profile', [ProfileController::class, 'show']);
     Route::post('profile/update', [ProfileController::class, 'update']);
 
@@ -70,6 +74,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('comments/{comment}/delete', [CommentController::class, 'destroy']);
 
     Route::prefix('user')->group(function () {
+        Route::post('fcm/token', [FcmDeviceTokenController::class, 'store']);
+        Route::delete('fcm/token', [FcmDeviceTokenController::class, 'destroy']);
+
         Route::get('/', [UserDashboardController::class, 'index']);
         Route::get('ref', [UserDashboardController::class, 'ref']);
         Route::post('check-ref', [UserDashboardController::class, 'checkRef']);

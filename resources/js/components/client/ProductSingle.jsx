@@ -150,7 +150,15 @@ export default function ProductSingle({
             const response = await axios.post("/cart/add", {
                 product_id: product.id,
             });
-            router.reload({ only: ["auth"] });
+
+            if (response.data?.cartCount !== undefined) {
+                window.dispatchEvent(
+                    new CustomEvent("cart:updated", {
+                        detail: { cartCount: response.data.cartCount },
+                    }),
+                );
+            }
+
             Swal.fire({
                 icon: response.data?.type || "success",
                 title: response.data?.message || "Product added to cart",
@@ -161,14 +169,14 @@ export default function ProductSingle({
             });
         } catch (error) {
             if (error.response?.status === 401) {
-                window.location.href = route("login");
+                router.get(route("login"));
             }
         }
     };
 
     const saveForLater = async () => {
         if (!auth?.user) {
-            window.location.href = route("login");
+            router.get(route("login"));
             return;
         }
 
@@ -201,7 +209,7 @@ export default function ProductSingle({
             });
         } catch (error) {
             if (error.response?.status === 401) {
-                window.location.href = route("login");
+                router.get(route("login"));
                 return;
             }
 

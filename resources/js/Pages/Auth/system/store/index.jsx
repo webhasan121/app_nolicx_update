@@ -224,20 +224,20 @@ export default function Index() {
               })
             : t("No :type found", { type: t(resultLabel) });
     const hasActiveFilters = Boolean(search.trim() || startDate || endDate);
-    const toolbarInputClass = "h-9 rounded-md border border-gray-300 bg-white px-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500";
+    const toolbarInputClass = "h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:w-auto";
     const toolbarButtonClass = "inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-semibold";
     const dateFilterControls = (
         <>
             <TextInput
                 type="date"
-                className={`${toolbarInputClass} w-36`}
+                className={`${toolbarInputClass} sm:w-36`}
                 value={startDate || today}
                 onChange={(e) => updateDateFilter("start", e.target.value)}
                 title={t("Start date")}
             />
             <TextInput
                 type="date"
-                className={`${toolbarInputClass} w-36`}
+                className={`${toolbarInputClass} sm:w-36`}
                 value={endDate}
                 onChange={(e) => updateDateFilter("end", e.target.value)}
                 title={t("End date")}
@@ -271,7 +271,7 @@ export default function Index() {
                         </span>
                     )}
                 </div>
-                <section className="grid grid-cols-2 gap-6 mb-6 lg:grid-cols-4">
+                <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
                     {widgets.map((widget, index) => (
                         <OverviewDiv
                             key={`${widget.label}-${index}`}
@@ -287,7 +287,7 @@ export default function Index() {
             <Hr />
 
             <Container>
-                <section className="grid grid-cols-1 gap-6 mt-6 mb-6 lg:grid-cols-2">
+                <section className="mt-6 mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
                     <div className="relative p-6 bg-white rounded-md shadow-md">
                         <CoinStore
                             store={formatCoin(coinStore.store)}
@@ -295,7 +295,7 @@ export default function Index() {
                             give={formatCoin(coinStore.give)}
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6">
                         <div className="relative p-6 bg-white rounded-md shadow-md">
                             <CoastStore store={formatCoin(coastStore.store)} />
                         </div>
@@ -309,13 +309,13 @@ export default function Index() {
             <Hr />
 
             <Container>
-                <div className="flex gap-4 mt-6">
+                <div className="mt-6 flex flex-wrap gap-3">
                     {tabs.map((tab) => (
                         <button
                             key={tab}
                             type="button"
                             onClick={() => setTab(tab)}
-                            className={`px-3 py-2 rounded-md ${
+                            className={`inline-flex w-auto items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${
                                 activeTab === tab
                                     ? "bg-blue-500 text-white"
                                     : "bg-gray-200 text-gray-700"
@@ -332,12 +332,12 @@ export default function Index() {
                             title={
                                 <div className="flex flex-col gap-3 border-b pb-4 xl:flex-row xl:items-center xl:justify-between">
                                     <h4 className="shrink-0 text-lg font-semibold leading-6">{t("Distributed Commissions")}</h4>
-                                    <div className="flex flex-wrap items-center justify-end gap-2 xl:flex-nowrap">
+                                    <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end xl:w-auto xl:flex-nowrap">
                                         {dateFilterControls}
                                         <TextInput
                                             type="search"
                                             placeholder={t("Search commissions...")}
-                                            className={`${toolbarInputClass} w-44`}
+                                            className={`${toolbarInputClass} sm:w-44`}
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                             onKeyDown={(e) => {
@@ -351,7 +351,7 @@ export default function Index() {
                                         />
                                         <PrimaryButton
                                             type="button"
-                                            className={`${toolbarButtonClass} min-w-10`}
+                                            className={`${toolbarButtonClass} min-w-10 self-start`}
                                             onClick={() => window.open(printUrl, "_blank")}
                                         >
                                             <i className="fas fa-print"></i>
@@ -359,7 +359,7 @@ export default function Index() {
                                         {hasActiveFilters ? (
                                             <button
                                                 type="button"
-                                                className={`${toolbarButtonClass} border border-gray-300 bg-white text-slate-700 shadow-sm hover:bg-gray-50`}
+                                                className={`${toolbarButtonClass} self-start border border-gray-300 bg-white text-slate-700 shadow-sm hover:bg-gray-50`}
                                                 onClick={() => {
                                                     setSearch("");
                                                     setStartDate("");
@@ -381,12 +381,12 @@ export default function Index() {
                                                 type="button"
                                                 onClick={distribute}
                                                 disabled={distributing}
-                                                className={`${toolbarButtonClass} bg-blue-500 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60`}
+                                                className={`${toolbarButtonClass} self-start bg-blue-500 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60`}
                                             >
                                                 {distributing ? t("Distributing...") : t("Distribute")}
                                             </button>
                                         ) : (
-                                            <div className={`${toolbarButtonClass} bg-blue-500 text-white`}>
+                                            <div className={`${toolbarButtonClass} self-start bg-blue-500 text-white`}>
                                                 {t(distributionStatusLabel)}
                                             </div>
                                         )}
@@ -398,7 +398,7 @@ export default function Index() {
 
                         <SectionInner>
                             <div className="overflow-x-auto border border-gray-200 shadow-sm rounded-xl">
-                                <table className="min-w-full text-sm divide-y divide-gray-200">
+                                <table className="min-w-[900px] text-sm divide-y divide-gray-200 xl:min-w-full">
                                     <thead className="bg-gray-50">
                                         <tr>
                                             {columns1.map((column, index) => (
@@ -443,7 +443,7 @@ export default function Index() {
                             </div>
                             {pagination.pages.length ? (
                                 <div className="w-full pt-4">
-                                    <div className="flex items-center justify-between w-full gap-3">
+                                    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                         <div className="text-sm text-slate-700">
                                             {resultSummary}
                                         </div>
@@ -491,12 +491,12 @@ export default function Index() {
                             title={
                                 <div className="flex flex-col gap-3 border-b pb-4 xl:flex-row xl:items-center xl:justify-between">
                                     <h4 className="shrink-0 text-lg font-semibold leading-6">{t("Withdrawal History")}</h4>
-                                    <div className="flex flex-wrap items-center justify-end gap-2 xl:flex-nowrap">
+                                    <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end xl:w-auto xl:flex-nowrap">
                                         {dateFilterControls}
                                         <TextInput
                                             type="search"
                                             placeholder={t("Search withdrawals...")}
-                                            className={`${toolbarInputClass} w-44`}
+                                            className={`${toolbarInputClass} sm:w-44`}
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                             onKeyDown={(e) => {
@@ -510,7 +510,7 @@ export default function Index() {
                                         />
                                         <PrimaryButton
                                             type="button"
-                                            className={`${toolbarButtonClass} min-w-10`}
+                                            className={`${toolbarButtonClass} min-w-10 self-start`}
                                             onClick={() => window.open(printUrl, "_blank")}
                                         >
                                             <i className="fas fa-print"></i>
@@ -518,7 +518,7 @@ export default function Index() {
                                         {hasActiveFilters ? (
                                             <button
                                                 type="button"
-                                                className={`${toolbarButtonClass} border border-gray-300 bg-white text-slate-700 shadow-sm hover:bg-gray-50`}
+                                                className={`${toolbarButtonClass} self-start border border-gray-300 bg-white text-slate-700 shadow-sm hover:bg-gray-50`}
                                                 onClick={() => {
                                                     setSearch("");
                                                     setStartDate("");
@@ -543,7 +543,7 @@ export default function Index() {
 
                         <SectionInner>
                             <div className="overflow-x-auto border border-gray-200 shadow-sm rounded-xl">
-                                <table className="min-w-full text-sm divide-y divide-gray-200">
+                                <table className="min-w-[980px] text-sm divide-y divide-gray-200 xl:min-w-full">
                                     <thead className="bg-gray-50">
                                         <tr>
                                             {columns2.map((column, index) => (
@@ -584,7 +584,7 @@ export default function Index() {
                             </div>
                             {pagination.pages.length ? (
                                 <div className="w-full pt-4">
-                                    <div className="flex items-center justify-between w-full gap-3">
+                                    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                         <div className="text-sm text-slate-700">
                                             {resultSummary}
                                         </div>

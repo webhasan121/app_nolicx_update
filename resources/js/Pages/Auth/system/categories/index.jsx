@@ -70,14 +70,14 @@ export default function Index({
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>{t("Categories")}{" "}
                                     <span className="text-sm text-gray-500">
                                         ({categoryCount})
                                     </span>
                                 </div>
                                 <PrimaryButton
-                                    className="ml-2"
+                                    className="w-full justify-center sm:ml-2 sm:w-auto"
                                     type="button"
                                     onClick={() => setShowCreateModal(true)}
                                 >

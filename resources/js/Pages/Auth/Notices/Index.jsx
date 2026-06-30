@@ -339,7 +339,9 @@ export default function NoticeIndex({
                                         </label>
                                     ))}
                                 </div>
-                                <div className="mt-1 text-xs text-gray-500">{t("Leave all unchecked to show the notice to every dashboard user.")}</div>
+                                <div className="mt-1 text-xs text-gray-500">
+                                    {t("Everyone in each selected role will receive this notice. Leave all unchecked to notify every dashboard role.")}
+                                </div>
                                 <InputError messages={form.errors.target_roles} className="mt-1" />
                             </div>
 
@@ -376,8 +378,8 @@ export default function NoticeIndex({
                                     />{t("Active")}</label>
                             </div>
 
-                            <div className="flex gap-2">
-                                <PrimaryButton disabled={form.processing}>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                                <PrimaryButton disabled={form.processing} className="inline-flex w-auto justify-center self-start">
                                     <i className={`fas ${editingId ? "fa-save" : "fa-plus"} pr-2`}></i>
                                     {editingId ? t("Update Notice") : t("Create Notice")}
                                 </PrimaryButton>
@@ -385,7 +387,7 @@ export default function NoticeIndex({
                                     <button
                                         type="button"
                                         onClick={resetForm}
-                                        className="rounded-md border border-gray-300 px-4 py-2 text-xs font-semibold uppercase text-gray-700"
+                                        className="inline-flex w-auto items-center justify-center self-start rounded-md border border-gray-300 px-4 py-2 text-xs font-semibold uppercase text-gray-700"
                                     >{t("Cancel")}</button>
                                 )}
                             </div>
@@ -399,10 +401,10 @@ export default function NoticeIndex({
                         content={canManage ? t("All notices are listed below.") : t("Notices for your account are listed below.")}
                     />
 
-                    <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+                    <div className="mb-4 flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                         <TextInput
                             type="date"
-                            className="h-10 w-40 py-2"
+                            className="h-10 w-full py-2 sm:w-40"
                             value={startDate}
                             onChange={(e) => {
                                 const value = e.target.value;
@@ -412,7 +414,7 @@ export default function NoticeIndex({
                         />
                         <TextInput
                             type="date"
-                            className="h-10 w-40 py-2"
+                            className="h-10 w-full py-2 sm:w-40"
                             value={endDate}
                             onChange={(e) => {
                                 const value = e.target.value;
@@ -438,13 +440,14 @@ export default function NoticeIndex({
                         <PrimaryButton
                             type="button"
                             onClick={() => applyFilters({ search: search.trim() })}
+                            className="inline-flex h-10 w-auto items-center justify-center self-start px-4"
                         >
                             <i className="fas fa-search"></i>
                         </PrimaryButton>
                         {(search || startDate || endDate) && (
                             <button
                                 type="button"
-                                className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                className="inline-flex h-10 w-auto items-center justify-center self-start rounded-md border border-gray-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
                                 onClick={() => {
                                     setSearch("");
                                     setStartDate("");
@@ -462,18 +465,18 @@ export default function NoticeIndex({
                     </div>
 
                     {canManage && noticeItems.length > 0 && (
-                        <div className="mb-4 flex flex-wrap items-center gap-2">
+                        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                             <button
                                 type="button"
                                 onClick={selectLoadedNotices}
-                                className="rounded border border-gray-300 bg-white px-3 py-2 text-xs font-semibold uppercase text-gray-700"
+                                className="inline-flex w-auto items-center justify-center self-start rounded border border-gray-300 bg-white px-3 py-2 text-xs font-semibold uppercase text-gray-700"
                             >
                                 {t("Select 50")}
                             </button>
                             <button
                                 type="button"
                                 onClick={clearSelectedNotices}
-                                className="rounded border border-gray-300 bg-white px-3 py-2 text-xs font-semibold uppercase text-gray-700"
+                                className="inline-flex w-auto items-center justify-center self-start rounded border border-gray-300 bg-white px-3 py-2 text-xs font-semibold uppercase text-gray-700"
                             >
                                 Clear
                             </button>
@@ -481,7 +484,7 @@ export default function NoticeIndex({
                                 type="button"
                                 onClick={bulkDeleteNotices}
                                 disabled={!selectedNoticeIds.length || bulkDeleting}
-                                className={`rounded border px-3 py-2 text-xs font-semibold uppercase ${
+                                className={`inline-flex w-auto items-center justify-center self-start rounded border px-3 py-2 text-xs font-semibold uppercase ${
                                     selectedNoticeIds.length && !bulkDeleting
                                         ? "border-red-200 bg-white text-red-700"
                                         : "pointer-events-none border-gray-200 bg-gray-100 text-gray-400"
@@ -528,17 +531,17 @@ export default function NoticeIndex({
                                         </div>
 
                                         {canManage && (
-                                            <div className="flex gap-2">
+                                            <div className="flex flex-col gap-2 sm:flex-row">
                                                 <button
                                                     type="button"
                                                     onClick={() => editNotice(notice)}
-                                                    className="rounded border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700"
+                                                    className="inline-flex w-auto items-center justify-center self-start rounded border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700"
                                                 >
                                                     <i className="fas fa-pen pr-1"></i>{t("Edit")}</button>
                                                 <button
                                                     type="button"
                                                     onClick={() => destroyNotice(notice)}
-                                                    className="rounded border border-red-200 px-3 py-1 text-xs font-semibold text-red-700"
+                                                    className="inline-flex w-auto items-center justify-center self-start rounded border border-red-200 px-3 py-1 text-xs font-semibold text-red-700"
                                                 >
                                                     <i className="fas fa-trash pr-1"></i>{t("Delete")}</button>
                                             </div>
@@ -585,11 +588,12 @@ export default function NoticeIndex({
                     </div>
 
                     {noticeMeta.has_more && (
-                        <div className="mt-4 flex justify-center">
+                        <div className="mt-4 flex justify-center sm:justify-start">
                             <PrimaryButton
                                 type="button"
                                 onClick={loadMoreNotices}
                                 disabled={loadingMore}
+                                className="inline-flex w-auto justify-center"
                             >
                                 {loadingMore ? t("Loading...") : t("Load More")}
                             </PrimaryButton>

@@ -24,6 +24,7 @@ export default function Table({
   data = [],
   children,
   emptyMessage = "Data Not Found",
+  tableClassName = "",
   ...props
 }) {
   const { t } = useTranslation();
@@ -51,7 +52,10 @@ export default function Table({
         `}
       </style>
 
-      <table id="myTable" className="w-full mb-2 border-collapse border">
+      <table
+        id="myTable"
+        className={`mb-2 w-full border-collapse border ${tableClassName}`}
+      >
         {children}
         {!hasData && (
           <tbody>

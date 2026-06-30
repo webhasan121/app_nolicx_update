@@ -112,11 +112,14 @@ export default function RiderConsignmentIndexPage({ riderInfo = {}, orders = [],
                                 <div>
                                     <button
                                         type="button"
-                                        className="w-full p-2 font-bold text-green-900 bg-green-200"
+                                        className="flex flex-col items-center justify-center w-full gap-1 py-3 font-bold leading-tight text-white bg-indigo-900"
                                         onClick={() => confirmOrder(order.route_id ?? order.id)}
                                     >
-                                        <i className="fas fa-check-circle ps-2"></i>{" "}
-                                        {t("Picked")} ({order.shipping}TK)
+                                        <span className="inline-flex items-center gap-1 text-[15px]">
+                                            <i className="fas fa-check-circle"></i>
+                                            {t("Picked")}
+                                        </span>
+                                        <span className="text-[15px]">({order.shipping}BDT)</span>
                                     </button>
                                 </div>
                             </div>

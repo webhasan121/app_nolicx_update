@@ -143,47 +143,47 @@ export default function Index({ filters, comissions }) {
             <Container>
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     <OverviewSection>
-                    <OverviewDiv
-                        title={t("Seller Total Profit")}
-                        content={formatCurrency(comissions?.summary?.profit)}
-                    />
-                    <OverviewDiv
-                        title={t("Cut comission")}
-                        content={formatCurrency(comissions?.summary?.take_comission)}
-                    />
-                    <OverviewDiv
-                        title={t("Distribute")}
-                        content={formatCurrency(comissions?.summary?.distribute_comission)}
-                    />
-                    <OverviewDiv
-                        title={t("Store")}
-                        content={formatCurrency(comissions?.summary?.store)}
-                    />
-                    <OverviewDiv
-                        title={t("Return")}
-                        content={formatCurrency(comissions?.summary?.return)}
-                    />
+                        <OverviewDiv
+                            title={t("Seller Total Profit")}
+                            content={formatCurrency(comissions?.summary?.profit)}
+                        />
+                        <OverviewDiv
+                            title={t("Cut comission")}
+                            content={formatCurrency(comissions?.summary?.take_comission)}
+                        />
+                        <OverviewDiv
+                            title={t("Distribute")}
+                            content={formatCurrency(comissions?.summary?.distribute_comission)}
+                        />
+                        <OverviewDiv
+                            title={t("Store")}
+                            content={formatCurrency(comissions?.summary?.store)}
+                        />
+                        <OverviewDiv
+                            title={t("Return")}
+                            content={formatCurrency(comissions?.summary?.return)}
+                        />
                     </OverviewSection>
                 </div>
 
                 <div className="mb-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="flex flex-wrap items-end justify-end gap-2">
+                    <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end sm:justify-end">
                         <TextInput
-                            className="w-full py-1 sm:w-40"
+                            className="h-10 w-full py-1 sm:w-40"
                             type="date"
                             value={filters?.from || today}
                             onChange={(e) => apply({ from: e.target.value })}
                         />
 
                         <TextInput
-                            className="w-full py-1 sm:w-40"
+                            className="h-10 w-full py-1 sm:w-40"
                             type="date"
                             value={filters?.to ?? ""}
                             onChange={(e) => apply({ to: e.target.value })}
                         />
 
                         <TextInput
-                            className="w-full py-1 sm:w-56"
+                            className="h-10 w-full py-1 sm:w-56"
                             type="search"
                             placeholder={t("Search comissions...")}
                             value={search}
@@ -198,14 +198,18 @@ export default function Index({ filters, comissions }) {
                             }}
                         />
 
-                        <PrimaryButton type="button" onClick={openPrintable} className="btn">
+                        <PrimaryButton
+                            type="button"
+                            onClick={openPrintable}
+                            className="inline-flex w-auto justify-center self-start"
+                        >
                             <i className="fas fa-print"></i>
                         </PrimaryButton>
 
                         {hasDateFilters ? (
                             <button
                                 type="button"
-                                className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                className="inline-flex h-10 w-auto items-center justify-center self-start rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
                                 onClick={() => {
                                     setSearch("");
                                     apply({
@@ -226,128 +230,131 @@ export default function Index({ filters, comissions }) {
 
                 <Section id="pdf-content">
                     <Hr />
-                    <Table data={comissions?.data ?? []}>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>{t("DT")}</th>
-                                <th>{t("ID")}</th>
-                                <th>{t("Order")}</th>
-                                <th>{t("Product")}</th>
-                                <th>{t("Buy")}</th>
-                                <th>{t("Sell")}</th>
-                                <th>{t("Profit")}</th>
-                                <th>{t("Rate")}</th>
-                                <th>{t("Take")}</th>
-                                <th>{t("Give")}</th>
-                                <th>{t("Store")}</th>
-                                <th>{t("Return")}</th>
-                                <th>{t("Confirmed")}</th>
-                                <th>{t("A/C")}</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {(comissions?.data ?? []).map((item, index) => (
-                                <tr key={item.id}>
-                                    <td>{(comissions?.from ?? 1) + index}</td>
-                                    <td>{item.created_at_formatted}</td>
-                                    <td>{item.id ?? "N/A"}</td>
-                                    <td>{item.order_id ?? 0}</td>
-                                    <td>{item.product_id ?? 0}</td>
-                                    <td>{formatCurrency(item.buying_price)}</td>
-                                    <td>{formatCurrency(item.selling_price)}</td>
-                                    <td>{formatCurrency(item.profit)}</td>
-                                    <td>{item.comission_range ?? 0} %</td>
-                                    <td>{formatCurrency(item.take_comission)}</td>
-                                    <td>{formatCurrency(item.distribute_comission)}</td>
-                                    <td>{formatCurrency(item.store)}</td>
-                                    <td>{formatCurrency(item.return)}</td>
-                                    <td>
-                                        {item.confirmed ? (
-                                            <>
-                                                <span className="p-1 px-2 rounded-xl bg-green-900 text-white">{t("Confirmed")}</span>
-                                                <NavLink href={route("system.comissions.take.refund", { id: item.id })}>
-                                                    {" "}{t("Refund")}</NavLink>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span className="p-1 px-2 rounded-xl bg-gray-900 text-white">{t("Pending")}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => confirmTakeComission(item.id)}
-                                                >{t("Confirm")}</button>
-                                            </>
-                                        )}
-                                    </td>
-                                    <td>
-                                        <div className="flex space-x-2">
-                                            <NavLink href={route("system.comissions.distributes", { id: item.id })}>{t("Details")}</NavLink>
-                                        </div>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <Table data={comissions?.data ?? []}>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>{t("DT")}</th>
+                                    <th>{t("ID")}</th>
+                                    <th>{t("Order")}</th>
+                                    <th>{t("Product")}</th>
+                                    <th>{t("Buy")}</th>
+                                    <th>{t("Sell")}</th>
+                                    <th>{t("Profit")}</th>
+                                    <th>{t("Rate")}</th>
+                                    <th>{t("Take")}</th>
+                                    <th>{t("Give")}</th>
+                                    <th>{t("Store")}</th>
+                                    <th>{t("Return")}</th>
+                                    <th>{t("Confirmed")}</th>
+                                    <th>{t("A/C")}</th>
                                 </tr>
-                            ))}
-                        </tbody>
+                            </thead>
 
-                        <tfoot>
-                            <tr>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th>
-                                    <SummaryBadge
-                                        value={comissions?.summary?.buying_price}
-                                        className="bg-slate-200 text-slate-700"
-                                    />
-                                </th>
-                                <th>
-                                    <SummaryBadge
-                                        value={comissions?.summary?.selling_price}
-                                        className="bg-blue-100 text-blue-700"
-                                    />
-                                </th>
-                                <th>
-                                    <SummaryBadge
-                                        value={comissions?.summary?.profit}
-                                        className="bg-emerald-100 text-emerald-700"
-                                    />
-                                </th>
-                                <td></td>
-                                <th>
-                                    <SummaryBadge
-                                        value={comissions?.summary?.take_comission}
-                                        className="bg-rose-100 text-rose-700"
-                                    />
-                                </th>
-                                <th>
-                                    <SummaryBadge
-                                        value={comissions?.summary?.distribute_comission}
-                                        className="bg-amber-100 text-amber-700"
-                                    />
-                                </th>
-                                <th>
-                                    <SummaryBadge
-                                        value={comissions?.summary?.store}
-                                        className="bg-violet-100 text-violet-700"
-                                    />
-                                </th>
-                                <th>
-                                    <SummaryBadge
-                                        value={comissions?.summary?.return}
-                                        className="bg-cyan-100 text-cyan-700"
-                                    />
-                                </th>
-                                <th></th>
-                                <th></th>
-                            </tr>
-                        </tfoot>
-                    </Table>
+                            <tbody>
+                                {(comissions?.data ?? []).map((item, index) => (
+                                    <tr key={item.id}>
+                                        <td>{(comissions?.from ?? 1) + index}</td>
+                                        <td>{item.created_at_formatted}</td>
+                                        <td>{item.id ?? "N/A"}</td>
+                                        <td>{item.order_id ?? 0}</td>
+                                        <td>{item.product_id ?? 0}</td>
+                                        <td>{formatCurrency(item.buying_price)}</td>
+                                        <td>{formatCurrency(item.selling_price)}</td>
+                                        <td>{formatCurrency(item.profit)}</td>
+                                        <td>{item.comission_range ?? 0} %</td>
+                                        <td>{formatCurrency(item.take_comission)}</td>
+                                        <td>{formatCurrency(item.distribute_comission)}</td>
+                                        <td>{formatCurrency(item.store)}</td>
+                                        <td>{formatCurrency(item.return)}</td>
+                                        <td>
+                                            {item.confirmed ? (
+                                                <>
+                                                    <span className="rounded-xl bg-green-900 px-2 py-1 text-white">{t("Confirmed")}</span>
+                                                    <NavLink href={route("system.comissions.take.refund", { id: item.id })}>
+                                                        {" "}{t("Refund")}
+                                                    </NavLink>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="rounded-xl bg-gray-900 px-2 py-1 text-white">{t("Pending")}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => confirmTakeComission(item.id)}
+                                                    >{t("Confirm")}</button>
+                                                </>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <div className="flex space-x-2">
+                                                <NavLink href={route("system.comissions.distributes", { id: item.id })}>{t("Details")}</NavLink>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+
+                            <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th>
+                                        <SummaryBadge
+                                            value={comissions?.summary?.buying_price}
+                                            className="bg-slate-200 text-slate-700"
+                                        />
+                                    </th>
+                                    <th>
+                                        <SummaryBadge
+                                            value={comissions?.summary?.selling_price}
+                                            className="bg-blue-100 text-blue-700"
+                                        />
+                                    </th>
+                                    <th>
+                                        <SummaryBadge
+                                            value={comissions?.summary?.profit}
+                                            className="bg-emerald-100 text-emerald-700"
+                                        />
+                                    </th>
+                                    <td></td>
+                                    <th>
+                                        <SummaryBadge
+                                            value={comissions?.summary?.take_comission}
+                                            className="bg-rose-100 text-rose-700"
+                                        />
+                                    </th>
+                                    <th>
+                                        <SummaryBadge
+                                            value={comissions?.summary?.distribute_comission}
+                                            className="bg-amber-100 text-amber-700"
+                                        />
+                                    </th>
+                                    <th>
+                                        <SummaryBadge
+                                            value={comissions?.summary?.store}
+                                            className="bg-violet-100 text-violet-700"
+                                        />
+                                    </th>
+                                    <th>
+                                        <SummaryBadge
+                                            value={comissions?.summary?.return}
+                                            className="bg-cyan-100 text-cyan-700"
+                                        />
+                                    </th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </Table>
+                    </div>
 
                     {pagination.pages.length ? (
                         <div className="w-full pt-4">
-                            <div className="flex w-full items-center justify-between gap-3">
+                            <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                 <div className="text-sm text-slate-700">
                                     {resultSummary}
                                 </div>

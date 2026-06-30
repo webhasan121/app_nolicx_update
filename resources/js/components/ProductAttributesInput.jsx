@@ -27,23 +27,25 @@ export default function ProductAttributesInput({ attributes = [], onChange }) {
     return (
         <div className="space-y-2">
             {rows.map((row, index) => (
-                <div className="flex items-center gap-2" key={index}>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center" key={index}>
                     <input
                         type="text"
                         value={row.name ?? ""}
                         onChange={(e) => updateRow(index, "name", e.target.value)}
                         placeholder="Name"
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     />
                     <input
                         type="text"
                         value={row.value ?? ""}
                         onChange={(e) => updateRow(index, "value", e.target.value)}
                         placeholder="Value"
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     />
                     <button
                         type="button"
                         onClick={() => removeRow(index)}
-                        className="flex items-center justify-center w-8 h-8 text-red-600 border rounded hover:bg-red-50"
+                        className="flex items-center justify-center w-10 h-10 text-red-600 border rounded hover:bg-red-50 sm:w-8 sm:h-8"
                         title="Remove attribute"
                     >
                         <i className="fas fa-minus"></i>

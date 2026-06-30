@@ -12,7 +12,6 @@ import SectionInner from "../../../../components/dashboard/section/Inner";
 import Table from "../../../../components/dashboard/table/Table";
 import useTranslation from "../../../../hooks/useTranslation";
 import { todayInputDate } from "../../../../utils/dateInput";
-import { ActionIconButton } from "../../../../components/ActionIcon";
 import { formatCurrency } from "../../../../utils/formatAmount";
 
 export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
@@ -130,8 +129,8 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex items-center gap-2">
+                            <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="w-full xl:w-auto">
                                     <select
                                         value={filters.type ?? "Pending"}
                                         onChange={(e) =>
@@ -142,7 +141,7 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                                 nextEdate: edate,
                                             })
                                         }
-                                        className="rounded-md border-gray-300 shadow-sm"
+                                        className="w-full rounded-md border-gray-300 shadow-sm sm:w-auto"
                                     >
                                         <option value="All">{t("All")}</option>
                                         <option value="Pending">{t("Pending")}</option>
@@ -152,10 +151,11 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                     </select>
                                 </div>
 
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:w-auto xl:flex-wrap xl:items-center xl:justify-end">
                                     <TextInput
                                         type="date"
-                                    value={sdate || today}
+                                        className="h-10 w-full py-2 xl:w-40"
+                                        value={sdate || today}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             setSdate(value);
@@ -169,7 +169,8 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                     />
                                     <TextInput
                                         type="date"
-                                    value={edate}
+                                        className="h-10 w-full py-2 xl:w-40"
+                                        value={edate}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             setEdate(value);
@@ -181,24 +182,34 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                             });
                                         }}
                                     />
-                                    <TextInput
-                                        type="search"
-                                        value={search}
-                                        placeholder={t("Search consignment...")}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key !== "Enter") {
-                                                return;
-                                            }
+                                    <div className="flex w-full gap-2 sm:col-span-2 xl:w-auto">
+                                        <TextInput
+                                            type="search"
+                                            className="h-10 w-full py-2 xl:w-52"
+                                            value={search}
+                                            placeholder={t("Search consignment...")}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key !== "Enter") {
+                                                    return;
+                                                }
 
-                                            e.preventDefault();
-                                            requestConsignment();
-                                        }}
-                                    />
+                                                e.preventDefault();
+                                                requestConsignment();
+                                            }}
+                                        />
+                                        <PrimaryButton
+                                            type="button"
+                                            className="h-10 shrink-0 justify-center px-4"
+                                            onClick={() => window.open(printUrl, "_blank")}
+                                        >
+                                            <i className="fas fa-print"></i>
+                                        </PrimaryButton>
+                                    </div>
                                     {hasActiveFilters ? (
                                         <button
                                             type="button"
-                                            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50 sm:col-span-2 xl:col-auto"
                                             onClick={() => {
                                                 setSearch("");
                                                 setSdate("");
@@ -215,12 +226,6 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                             {t("Reset")}
                                         </button>
                                     ) : null}
-                                    <PrimaryButton
-                                        type="button"
-                                        onClick={() => window.open(printUrl, "_blank")}
-                                    >
-                                        <i className="fas fa-print"></i>
-                                    </PrimaryButton>
                                 </div>
                             </div>
                         }
@@ -228,7 +233,11 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                     />
 
                     <SectionInner>
-                        <Table data={cod?.data ?? []} table-border="1">
+                        <Table
+                            data={cod?.data ?? []}
+                            tableClassName="min-w-[1180px] xl:min-w-full"
+                            table-border="1"
+                        >
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -242,7 +251,6 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                     <th>{t("C Rate")}</th>
                                     <th>{t("Status")}</th>
                                     <th>{t("Date")}</th>
-                                    <th>{t("A/C")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -259,11 +267,6 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
                                         <td>{formatCurrency(item.comission)}</td>
                                         <td>{item.status}</td>
                                         <td>{item.created_at_formatted}</td>
-                                        <td>
-                                            <div className="flex items-center gap-1">
-                                                <ActionIconButton action="delete" title={t("Delete")} />
-                                            </div>
-                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -286,7 +289,7 @@ export default function Index({ widgets = [], filters = {}, cod, printUrl }) {
 
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="text-sm text-slate-700">
                                         {resultSummary}
                                     </div>

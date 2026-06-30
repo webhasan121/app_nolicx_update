@@ -61,7 +61,7 @@ export default function Index() {
                     </div>
 
                     <div className="overflow-x-auto px-6 pb-6">
-                        <table className="min-w-full text-left text-sm">
+                        <table className="min-w-[760px] text-left text-sm xl:min-w-full">
                             <thead>
                                 <tr className="border-y border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                                     <th className="px-4 py-4">{t("Icon")}</th>

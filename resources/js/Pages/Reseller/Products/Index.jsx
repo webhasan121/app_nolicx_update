@@ -107,25 +107,35 @@ export default function Index({ products, filters, printUrl }) {
             title={t("Products")}
             header={
                 <PageHeader>
-                    <div className="flex items-start justify-between">{t("Products")}<div className="flex space-x-1">
-                            <NavLinkBtn href={route("vendor.products.create")}>
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div>{t("Products")}</div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+                            <NavLinkBtn
+                                href={route("vendor.products.create")}
+                                className="justify-center"
+                            >
                                 <i className="pr-2 fas fa-plus"></i> New
                             </NavLinkBtn>
-                            <NavLinkBtn href={route("reseller.resel-product.index")}>
+                            <NavLinkBtn
+                                href={route("reseller.resel-product.index")}
+                                className="justify-center"
+                            >
                                 Recel from vendor
                             </NavLinkBtn>
                         </div>
                     </div>
                     <br />
 
-                    <NavLink
-                        href={route("reseller.products.list", { nav: "own" })}
-                        active={nav === "own"}
-                    >{t("Your Product")}</NavLink>
-                    <NavLink
-                        href={route("reseller.products.list", { nav: "resel" })}
-                        active={nav === "resel"}
-                    >{t("Resel Product")}</NavLink>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2">
+                        <NavLink
+                            href={route("reseller.products.list", { nav: "own" })}
+                            active={nav === "own"}
+                        >{t("Your Product")}</NavLink>
+                        <NavLink
+                            href={route("reseller.products.list", { nav: "resel" })}
+                            active={nav === "resel"}
+                        >{t("Resel Product")}</NavLink>
+                    </div>
                 </PageHeader>
             }
         >
@@ -135,7 +145,7 @@ export default function Index({ products, filters, printUrl }) {
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
                                 <TextInput
                                     type="search"
                                     value={search}
@@ -149,10 +159,11 @@ export default function Index({ products, filters, printUrl }) {
                                         requestProducts({ search: search.trim() });
                                     }}
                                     placeholder={t("Search products...")}
-                                    className="py-1"
+                                    className="w-full py-1 sm:w-72"
                                     />
                                 <PrimaryButton
                                     type="button"
+                                    className="justify-center sm:w-auto"
                                     onClick={() => window.open(printUrl, "_blank")}
                                 >
                                     <i className="fas fa-print"></i>
@@ -160,8 +171,8 @@ export default function Index({ products, filters, printUrl }) {
                             </div>
                         }
                         content={
-                            <div className="flex items-center justify-between">
-                                <div>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                                     <NavLink
                                         href={route("reseller.products.list", {
                                             nav,
@@ -201,7 +212,10 @@ export default function Index({ products, filters, printUrl }) {
                         }
                     />
                     <SectionInner>
-                        <Table data={products?.data ?? []}>
+                        <Table
+                            data={products?.data ?? []}
+                            className="[&_table]:min-w-[1100px]"
+                        >
                             <thead>
                                 <tr>
                                     <th></th>
@@ -282,11 +296,11 @@ export default function Index({ products, filters, printUrl }) {
                         </Table>
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex items-center justify-between w-full gap-3">
+                                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                                     <div className="text-sm text-slate-700">
                                         {resultSummary}
                                     </div>
-                                    <div className="flex items-center md:justify-end">
+                                    <div className="w-full overflow-x-auto lg:w-auto">
                                         <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                             <button
                                                 type="button"

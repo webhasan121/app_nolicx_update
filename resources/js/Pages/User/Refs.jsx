@@ -167,7 +167,7 @@ export default function Refs() {
 
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex items-center justify-between w-full gap-3">
+                                <div className="flex items-center justify-between w-full gap-3 flex-wrap">
                                     <div className="text-sm text-slate-700">
                                         {resultSummary}
                                     </div>

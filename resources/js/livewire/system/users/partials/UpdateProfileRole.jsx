@@ -14,14 +14,14 @@ export default function UpdateProfileRole({
         <form onSubmit={onSubmit}>
             <div>
                 <InputFile label="User Role" error="role" name="role">
-                    <div className="flex">
+                    <div className="flex flex-wrap gap-3">
                         {roles.map((item) => (
                             <div
                                 key={item.id}
-                                className="flex items-center p-3 border shadow-sm"
+                                className="flex min-w-[140px] items-center rounded border p-3 shadow-sm"
                             >
                                 <TextInput
-                                    className="m-0"
+                                    className="m-0 shrink-0"
                                     type="checkbox"
                                     checked={roleForm.data.role.includes(
                                         item.name,
@@ -29,7 +29,7 @@ export default function UpdateProfileRole({
                                     onChange={() => onToggle(item.name)}
                                 />
 
-                                <InputLabel className="m-0 p-0 pl-3 text-md">
+                                <InputLabel className="m-0 p-0 pl-3 text-md break-all">
                                     {item.name}
                                 </InputLabel>
                             </div>

@@ -25,21 +25,21 @@ const MAX_OTHER_IMAGES = 8;
 
 function ProductNavigations({ productId, nav = "Product", t }) {
     return (
-        <div className="flex ">
+        <div className="mt-2 flex flex-wrap items-center gap-4">
             <NavLink
                 href={route("system.products.edit", {
                     product: productId,
                     nav: "Product",
                 })}
                 active={nav === "Product"}
+                className="pt-0"
             >{t("Product")}</NavLink>
 
-            <div>
-                <NavLink
-                    href={route("vendor.products.resell", { product: productId })}
-                    active={nav === "Resell"}
-                >{t("Resell")}</NavLink>
-            </div>
+            <NavLink
+                href={route("vendor.products.resell", { product: productId })}
+                active={nav === "Resell"}
+                className="pt-0"
+            >{t("Resell")}</NavLink>
         </div>
     );
 }
@@ -221,7 +221,7 @@ export default function Edit() {
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between text-xs">
+                            <div className="flex flex-col gap-3 text-xs sm:flex-row sm:items-start sm:justify-between">
                                 <div>
                                     {productData.deleted_at ? (
                                         <div
@@ -243,12 +243,14 @@ export default function Edit() {
                                     {productData.deleted_at ? (
                                         <SecondaryButton
                                             type="button"
+                                            className="w-full justify-center sm:w-auto"
                                             onClick={restoreFromTrash}
                                         >
                                             <i className="mr-2 fa-solid fa-sync"></i>{" "}{t("Restore")}</SecondaryButton>
                                     ) : (
                                         <SecondaryButton
                                             type="button"
+                                            className="w-full justify-center sm:w-auto"
                                             onClick={moveToTrash}
                                         >
                                             <i className="mr-2 fa-solid fa-trash"></i>{" "}{t("Trash")}</SecondaryButton>
@@ -257,8 +259,8 @@ export default function Edit() {
                             </div>
                         }
                         content={
-                            <div className="flex justify-between">
-                                <div>
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="min-w-0">
                                     <div>
                                         {productData.thumbnail_url ? (
                                             <Image
@@ -276,7 +278,7 @@ export default function Edit() {
                                         </strong>
                                     </div>
                                 </div>
-                                <div>
+                                <div className="text-left sm:text-right">
                                     <div className="text-sm">{t("Type :")}{productData.is_resel ? (
                                             <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">{t("Resel")}</span>
                                         ) : (
@@ -292,7 +294,7 @@ export default function Edit() {
                 </SectionSection>
 
                 <form onSubmit={save}>
-                    <div className="md:flex md:gap-4">
+                    <div className="flex flex-col gap-4 md:flex-row md:gap-4">
                         <SectionSection className="md:flex-1">
                             <SectionHeader title={t("Product Basic Info")} content="" />
                             <SectionInner>
@@ -471,8 +473,8 @@ export default function Edit() {
                             content={t("Define your product delevery option and charge from here.")}
                         />
                         <SectionInner>
-                            <div className="justify-between md:flex ">
-                                <div>
+                            <div className="flex flex-col gap-4 md:flex-row md:justify-between">
+                                <div className="md:w-[40%]">
                                     <InputFile
                                         error="cod"
                                         label={t("Available Cash-On-Delevery")}
@@ -539,7 +541,7 @@ export default function Edit() {
                                         />
                                     </InputFile>
                                 </div>
-                                <div>
+                                <div className="md:flex-1">
                                     <InputField
                                         label={t("Delevery Amount Inside Dhaka")}
                                         name="shipping_in_dhaka"
@@ -713,7 +715,7 @@ export default function Edit() {
                     </SectionSection>
 
                     <SectionSection>
-                        <div className="justify-between md:flex flex-rowreverse">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <SectionHeader
                                 title={t("Image Thumbnail")}
                                 content={
@@ -741,7 +743,7 @@ export default function Edit() {
                                 }
                             />
 
-                            <SectionInner>
+                            <SectionInner className="w-full md:w-auto">
                                 {productData.thumbnail_url && !form.data.thumb ? (
                                     <Image src={productData.thumbnail_url} />
                                 ) : null}
@@ -787,6 +789,7 @@ export default function Edit() {
                                         "repeat(auto-fit,100px)",
                                     gridGap: "10px",
                                 }}
+                                className="justify-start"
                             >
                                 {(productData.related_images ?? []).map((item) => (
                                     <div className="p-2 border" key={item.id}>
@@ -809,6 +812,7 @@ export default function Edit() {
                                         "repeat(auto-fit,50px)",
                                     gridGap: "10px",
                                 }}
+                                className="justify-start"
                             >
                                 {Array.from(form.data.newImage ?? []).map(
                                     (ni, index) => (
@@ -907,7 +911,7 @@ export default function Edit() {
                         </SectionInner>
                     </SectionSection>
 
-                    <PrimaryButton>{t("save")}</PrimaryButton>
+                    <PrimaryButton className="w-full justify-center sm:w-auto">{t("save")}</PrimaryButton>
                 </form>
             </Container>
         </AppLayout>

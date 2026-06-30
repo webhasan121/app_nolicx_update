@@ -81,7 +81,7 @@ function filterCategories(items, query) {
 function OverviewDiv({ title, children }) {
     return (
         <div
-            className="relative p-3 overflow-hidden rounded shadow d-block"
+            className="relative block p-3 overflow-hidden rounded shadow sm:p-4"
             style={{ backgroundColor: "orange", zIndex: 1, color: "white" }}
         >
             <style
@@ -113,8 +113,8 @@ function OverviewDiv({ title, children }) {
                 }}
             />
 
-            <div className="mb-3 text-md">{title}</div>
-            <div className="text-2xl text-end">{children}</div>
+            <div className="mb-3 text-sm leading-6 sm:text-base">{title}</div>
+            <div className="text-xl text-right break-words sm:text-2xl">{children}</div>
             <div className="div_wrapper"></div>
         </div>
     );
@@ -129,7 +129,7 @@ function ProductCard({ product }) {
             ? product.discount
             : product.price;
 
-    return (
+        return (
         <div className="relative overflow-hidden bg-white rounded shadow">
             {product?.offer_type ? (
                 <div className="bg-orange-500 discount-badge ">
@@ -150,12 +150,12 @@ function ProductCard({ product }) {
                 <img
                     style={{ height: 120 }}
                     src={`/storage/${product?.thumbnail}`}
-                    className="object-cover w-full"
+                    className="h-[120px] w-full object-cover"
                     alt="image"
                 />
             </div>
 
-            <div className="flex flex-col justify-between p-2 bg-white h-34">
+            <div className="flex min-h-[150px] flex-col justify-between bg-white p-2">
                 <NavLink
                     href={route("reseller.resel-product.veiw", {
                         pd: product?.id,
@@ -168,7 +168,7 @@ function ProductCard({ product }) {
                 </NavLink>
 
                 <div>
-                    <div className="mb-3 text-md">
+                    <div className="mb-3 text-sm sm:text-base">
                         {product?.offer_type ? (
                             <>
                                 <div className="bold">
@@ -195,7 +195,7 @@ function ProductCard({ product }) {
                         >
                             <PrimaryButton
                                 type="button"
-                                className="flex justify-between w-full text-center "
+                                className="flex justify-between w-full text-center"
                             >
                                 {t("Purchase")} <i className="pl-2 fas fa-angle-right"></i>
                             </PrimaryButton>
@@ -233,7 +233,7 @@ export default function Dashboard({
     return (
             <Container>
                 <div>
-                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                         <OverviewDiv title={t("Product")}>{tp}</OverviewDiv>
 
                         <OverviewDiv title={t("Vendor Shops")}>
@@ -290,14 +290,7 @@ export default function Dashboard({
                     <Hr />
                     <SectionInner>
                         <p className="mb-2 text-xs">{t("Resel Products from vendor")}</p>
-                        <div
-                            style={{
-                                display: "grid",
-                                justifyContent: "start",
-                                gridTemplateColumns: "repeat(auto-fill, 170px)",
-                                gridGap: 10,
-                            }}
-                        >
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                             {products.length > 0
                                 ? products.map((product) => (
                                       <ProductCard
@@ -308,12 +301,14 @@ export default function Dashboard({
                                 : null}
                         </div>
                     </SectionInner>
-                    <ResponsiveNavLink
-                        href={route("reseller.resel-product.index")}
-                        active={route().current("reseller.resel-product.*")}
-                    >
-                        <i className="w-6 pr-2 fas fa-sync"></i> {t("View All")}
-                    </ResponsiveNavLink>
+                    <div className="pt-2">
+                        <ResponsiveNavLink
+                            href={route("reseller.resel-product.index")}
+                            active={route().current("reseller.resel-product.*")}
+                        >
+                            <i className="w-6 pr-2 fas fa-sync"></i> {t("View All")}
+                        </ResponsiveNavLink>
+                    </div>
                 </div>
                 <Modal show={open} onClose={closeCategoryModal}>
                     <div className="flex flex-col gap-3 p-3 border-b sm:flex-row sm:items-center sm:justify-between">

@@ -36,29 +36,6 @@ export default function NoticeBell({ className = "", role = null }) {
 
     useEffect(() => {
         loadFeed().catch(() => {});
-
-        const interval = window.setInterval(() => {
-            loadFeed().catch(() => {});
-        }, 3000);
-
-        const handleFocus = () => {
-            loadFeed().catch(() => {});
-        };
-
-        const handleVisibilityChange = () => {
-            if (!document.hidden) {
-                loadFeed().catch(() => {});
-            }
-        };
-
-        window.addEventListener("focus", handleFocus);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        return () => {
-            window.clearInterval(interval);
-            window.removeEventListener("focus", handleFocus);
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-        };
     }, [noticeRole, user?.id]);
 
     useEffect(() => {
@@ -194,8 +171,8 @@ export default function NoticeBell({ className = "", role = null }) {
             </button>
 
             {open ? (
-                <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg">
-                    <div className="flex items-center justify-between border-b px-4 py-2">
+                <div className="fixed inset-x-2 top-[4.5rem] z-50 overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg sm:absolute sm:right-0 sm:left-auto sm:top-auto sm:mt-2 sm:w-80">
+                    <div className="flex flex-wrap items-start justify-between gap-2 border-b px-4 py-2">
                         <div>
                             <div className="font-semibold text-slate-800">{t("Notice")}</div>
                             <div className="text-[11px] font-medium text-slate-500">
@@ -203,7 +180,7 @@ export default function NoticeBell({ className = "", role = null }) {
                                 {unreadCount > 0 ? ` | ${t("New")}: ${unreadCount}` : ""}
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center justify-end gap-3">
                             {unreadCount > 0 ? (
                                 <button
                                     type="button"
@@ -222,7 +199,7 @@ export default function NoticeBell({ className = "", role = null }) {
                         </div>
                     </div>
 
-                    <div className="max-h-80 overflow-y-auto">
+                    <div className="max-h-[calc(100vh-7rem)] overflow-y-auto sm:max-h-80">
                         {notices.length ? (
                             notices.map((notice) => (
                                 <button

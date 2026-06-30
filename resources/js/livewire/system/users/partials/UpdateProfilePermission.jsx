@@ -52,19 +52,19 @@ export default function UpdateProfilePermission({
     return (
         <div className="">
             <InputLabel
-                style={{ width: 250 }}
+                style={{ width: "min(100%, 250px)" }}
                 className="mb-4"
             >
                 User Permission
             </InputLabel>
             <form onSubmit={onSubmit}>
-                <p>
+                <p className="space-y-2">
                     User has{" "}
                     {editUser?.permissions_via_role?.length ?? 0}{" "}
                     Permissions via Role. <br />
                     <SecondaryButton
                         type="button"
-                        className="py-1"
+                        className="mt-2 py-1"
                         onClick={onOpenViaRole}
                     >
                         check
@@ -79,6 +79,7 @@ export default function UpdateProfilePermission({
                                 "repeat(auto-fit, minmax(230px, 1fr))",
                             gap: 10,
                         }}
+                        className="w-full"
                     >
                         {groupedPermissions.map(([title, items]) => (
                             <PermissionGroup

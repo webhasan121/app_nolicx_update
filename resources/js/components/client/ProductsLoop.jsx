@@ -5,22 +5,15 @@ export default function ProductsLoop({
     showSaveForLater = false,
     savedForLater = false,
     onSaveForLaterChange = null,
+    gridClassName = "grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7",
 }) {
     if (!products.length) return null;
 
     return (
         <div>
-            <div
-                className=""
-                style={{
-                    display: "grid",
-                    justifyContent: "center",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-                    gridGap: "10px",
-                }}
-            >
+            <div className={gridClassName}>
                 {products.map((product) => (
-                    <div key={product.id} className="">
+                    <div key={product.id} className="min-w-0">
                         <ProductCard
                             product={product}
                             showSaveForLater={showSaveForLater}

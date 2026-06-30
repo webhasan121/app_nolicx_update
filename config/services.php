@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'fcm' => [
+        'project_id' => env('FCM_PROJECT_ID'),
+        'service_account_path' => env('FCM_SERVICE_ACCOUNT_PATH'),
+        'service_account_json' => env('FCM_SERVICE_ACCOUNT_JSON'),
+        'server_key' => env('FCM_SERVER_KEY'),
+        'android_channel_id' => env('FCM_ANDROID_CHANNEL_ID', 'default'),
+    ],
+
 ];

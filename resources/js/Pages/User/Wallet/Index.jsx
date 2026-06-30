@@ -15,13 +15,14 @@ import { formatCurrency } from "../../../utils/formatAmount";
 
 function EarningCard({ title, amount, href, t }) {
     return (
-        <div className="w-48 space-y-3">
-            <div className="p-3 rounded-lg shadow-md">
+        <div className="w-full">
+            <div className="space-y-3 rounded-lg p-3 shadow-md">
                 <div>
-                    <div className="">{title}</div>
+                    <div>{title}</div>
                 </div>
                 <div className="pt-2 text-lg font-bold text-indigo-900">
-                    {formatCurrency(amount)}</div>
+                    {formatCurrency(amount)}
+                </div>
                 <div className="text-xs">
                     <Link href={href} className="text-gray-600">
                         View All
@@ -117,7 +118,7 @@ export default function WalletIndex() {
         <UserDash>
             <Container>
                 <SectionSection>
-                    <div className="items-center justify-between md:flex">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <SectionHeader
                             title={t("Your Wallet")}
                             content={
@@ -133,7 +134,7 @@ export default function WalletIndex() {
                         />
                         <Link
                             href={route("user.wallet.withdraw")}
-                            className="px-2 py-2 text-sm font-bold uppercase border-0 rounded-lg ring-1"
+                            className="w-full rounded-lg px-3 py-2 text-center text-sm font-bold uppercase ring-1 md:w-auto"
                         >
                             Withdraw
                         </Link>
@@ -143,7 +144,7 @@ export default function WalletIndex() {
                 <SectionSection>
                     <SectionHeader title={t("Todays Earning")} />
                     <SectionInner>
-                        <div className="flex flex-wrap items-start justify-start space-x-3 spacy-y-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                             <EarningCard
                                 t={t}
                                 title={t("Task")}
@@ -178,7 +179,7 @@ export default function WalletIndex() {
                     <SectionHeader
                         title={t("Withdraws Requests")}
                         content={
-                            <div className="flex flex-wrap items-center justify-end gap-2">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                                 <TextInput
                                     type="search"
                                     value={search}
@@ -199,11 +200,12 @@ export default function WalletIndex() {
                                             }
                                         );
                                     }}
-                                    className="py-1"
+                                    className="w-full py-1 sm:w-auto"
                                     placeholder={t("Search requests...")}
                                 />
                                 <PrimaryButton
                                     type="button"
+                                    className="w-full sm:w-auto"
                                     onClick={() => window.open(printUrl, "_blank")}
                                 >
                                     <i className="fas fa-print"></i>
@@ -228,7 +230,7 @@ export default function WalletIndex() {
                                             <tr key={item.id}>
                                                 <td>#{(withdraw?.from ?? 1) + index}</td>
                                                 <td>{formatCurrency(item.amount)}</td>
-                                                <td>{item.status}</td>
+                                                <td>{t(item.status_label ?? item.status)}</td>
                                                 <td className="text-xs text-gray-500">
                                                     {item.created_at} - {item.created_at_human}
                                                 </td>
@@ -239,16 +241,16 @@ export default function WalletIndex() {
 
                                 {pagination.pages.length ? (
                                     <div className="w-full pt-4">
-                                        <div className="flex w-full items-center justify-between gap-3">
-                                            <div className="text-sm text-slate-700">
+                                        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="text-sm leading-6 text-slate-700">
                                                 {resultSummary}
                                             </div>
-                                            <div className="flex items-center md:justify-end">
+                                            <div className="flex w-full justify-center sm:w-auto sm:justify-end">
                                                 <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                                                     <button
                                                         type="button"
                                                         disabled={!pagination.prev?.url}
-                                                        className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                        className="border-r border-slate-200 px-3 py-2 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 sm:px-4 sm:text-sm"
                                                         onClick={() => goToPage(pagination.prev?.url)}
                                                     >{t("Previous")}</button>
                                                     {pagination.pages.map((link, index) => (
@@ -256,7 +258,7 @@ export default function WalletIndex() {
                                                             key={`${link.label}-${index}`}
                                                             type="button"
                                                             disabled={!link.url}
-                                                            className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                            className={`min-w-8 border-r border-slate-200 px-3 py-2 text-xs font-semibold transition sm:min-w-10 sm:px-4 sm:text-sm ${
                                                                 link.active
                                                                     ? "bg-slate-100 text-blue-600"
                                                                     : "bg-white text-slate-700 hover:bg-slate-50"
@@ -269,7 +271,7 @@ export default function WalletIndex() {
                                                     <button
                                                         type="button"
                                                         disabled={!pagination.next?.url}
-                                                        className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                        className="px-3 py-2 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 sm:px-4 sm:text-sm"
                                                         onClick={() => goToPage(pagination.next?.url)}
                                                     >{t("Next")}</button>
                                                 </div>

@@ -161,6 +161,7 @@ class UserOrderController extends Controller
         }
 
         $order->update(['status' => 'Cancelled']);
+        OrderNotice::statusChanged($order, 'Cancelled', $request->user()->id);
 
         return ApiResponse::success($this->listPayload($order->fresh('cartOrders.product')), 'Order cancelled');
     }
@@ -194,6 +195,8 @@ class UserOrderController extends Controller
                     ->whereNull('received_at')
                     ->update(['received_at' => $receivedAt]);
             }
+
+            OrderNotice::customerReceived($order, $request->user()->id);
         }
 
         return ApiResponse::success($this->detailsPayload($order->fresh(['cartOrders.product', 'hasRider.rider'])), 'Order marked as received');

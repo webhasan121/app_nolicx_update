@@ -646,6 +646,26 @@ class OrdersController extends Controller
             return Order::query()->with($relations)->findOrFail($orderId);
         }
 
+        if ($user->hasRole('reseller')) {
+            $resellerOrder = Order::query()
+                ->with($relations)
+                ->whereKey($orderId)
+                ->where(function ($query) use ($user) {
+                    $query
+                        ->where('belongs_to', $user->id)
+                        ->orWhere(function ($resellerQuery) use ($user) {
+                            $resellerQuery
+                                ->where('user_id', $user->id)
+                                ->where('user_type', 'reseller');
+                        });
+                })
+                ->first();
+
+            if ($resellerOrder) {
+                return $resellerOrder;
+            }
+        }
+
         return $this->resolveSellerOrder($orderId, $relations, $user);
     }
 

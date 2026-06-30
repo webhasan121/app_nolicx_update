@@ -25,6 +25,7 @@
         "@tailwindcss/vite": "^4.1.8",
         "ckeditor5": "^48.0.0",
         "clsx": "^2.1.1",
+        "pusher-js": "^8.4.0",
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
         "sweetalert2": "^11.26.20",

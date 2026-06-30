@@ -122,9 +122,9 @@ export default function Management({ applications = { data: [] }, filters = {}, 
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between items-start gap-4">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                                 <div>{t("Management Access")}</div>
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end xl:w-auto">
                                     <TextInput
                                         type="search"
                                         value={search}
@@ -138,11 +138,12 @@ export default function Management({ applications = { data: [] }, filters = {}, 
                                             visit();
                                         }}
                                         placeholder={t("Search applications...")}
-                                        className="my-1 py-1"
+                                        className="my-1 h-10 w-full py-2 sm:w-64"
                                     />
                                     <PrimaryButton
                                         type="button"
                                         onClick={() => window.open(printUrl, "_blank")}
+                                        className="inline-flex w-auto justify-center self-start"
                                     >
                                         <i className="fas fa-print"></i>
                                     </PrimaryButton>
@@ -154,7 +155,7 @@ export default function Management({ applications = { data: [] }, filters = {}, 
 
                     <div className="py-3">
                         <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-                            <table className="min-w-full divide-y divide-gray-200 text-sm">
+                            <table className="min-w-[900px] divide-y divide-gray-200 text-sm xl:min-w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-4 py-3 text-left font-semibold text-gray-600">{t("SL No.")}</th>
@@ -224,7 +225,7 @@ export default function Management({ applications = { data: [] }, filters = {}, 
 
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="text-sm text-slate-700">{resultSummary}</div>
                                     <div className="flex items-center md:justify-end">
                                         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

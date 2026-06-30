@@ -56,14 +56,7 @@ export default function Index({ q = "", country = "", product = {}, shop = [], c
                 {rows.length > 0 ? (
                     <>
                         <div className="product_section">
-                            <div
-                                style={{
-                                    display: "grid",
-                                    justifyContent: "start",
-                                    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-                                    gridGap: "10px",
-                                }}
-                            >
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7">
                                 {rows.map((prod) => (
                                     <ProductCart key={prod.id} product={prod} />
                                 ))}

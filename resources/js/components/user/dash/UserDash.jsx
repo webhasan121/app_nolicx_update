@@ -53,7 +53,7 @@ export default function UserDash({ children }) {
     }, [flash]);
 
     return (
-        <div className="h-screen overflow-hidden">
+        <div className="min-h-screen overflow-x-hidden md:h-screen md:overflow-hidden">
             <Head title={activeUserPageTitle()} />
             <style
                 dangerouslySetInnerHTML={{
@@ -132,9 +132,9 @@ export default function UserDash({ children }) {
             <div className="fixed top-0 left-0 right-0 z-50">
                 <Header />
             </div>
-            <div className="h-screen pt-16">
-                <div className="w-full pl-4 pr-1 sm:pl-6 lg:pl-8">
-                <div className="flex h-[calc(100vh-5.5rem)] overflow-hidden">
+            <div className="min-h-screen pt-16 md:h-screen">
+                <div className="w-full px-3 sm:px-6 lg:px-8">
+                <div className="flex min-h-[calc(100vh-5.5rem)] flex-col overflow-visible md:h-[calc(100vh-5.5rem)] md:flex-row md:overflow-hidden">
                     <div
                         id="user_asside"
                         className="py-3 rounded position-sm-absolute col-md-3 md:h-full md:overflow-y-auto"
@@ -240,7 +240,7 @@ export default function UserDash({ children }) {
                     </div>
                     <div
                         id="user_content"
-                        className="col-md-9 py-2 p-lg-3 w-full mb-[50px] md:h-full md:overflow-y-auto"
+                        className="col-md-9 w-full py-2 pb-20 md:h-full md:overflow-y-auto md:pb-4 lg:p-3"
                     >
                         {children}
                     </div>

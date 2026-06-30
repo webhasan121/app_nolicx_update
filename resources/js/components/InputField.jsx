@@ -25,7 +25,7 @@ export default function InputField({
 
     return (
         <div className={`my-3 ${className}`}>
-            <div style={{ width: labelWidth }}>
+            <div style={{ width: `min(100%, ${labelWidth})` }}>
                 <InputLabel
                     htmlFor={name}
                     className="block text-sm font-medium text-gray-700"

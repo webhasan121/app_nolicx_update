@@ -1265,6 +1265,7 @@ return array (
   'find name, id' => '名前またはIDで検索',
   'from' => 'から',
   'grocery items' => '食料品',
+  'hjgh' => 'hjgh',
   'in Dhaka' => 'ダッカ内',
   'inactivate' => '無効化',
   'item' => 'アイテム',

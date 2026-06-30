@@ -163,6 +163,7 @@ class OrderController extends Controller
             $order->update([
                 'status' => 'Cancelled',
             ]);
+            OrderNotice::statusChanged($order, 'Cancelled', auth()->id());
         }
 
         return back();

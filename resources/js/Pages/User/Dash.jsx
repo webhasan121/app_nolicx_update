@@ -63,66 +63,66 @@ export default function Dash() {
         <UserDash>
             <Container>
                 <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <div className="p-6 bg-white rounded-md shadow-md">
-                        <div className="flex items-center justify-between gap-6">
-                            <div className="relative">
-                                <h5 className="text-lg">{t("Welcome, back!")}</h5>
+                    <div className="rounded-md bg-white p-4 shadow-md sm:p-6">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                            <div className="min-w-0">
+                                <h5 className="text-lg leading-tight">{t("Welcome, back!")}</h5>
                                 <h3 className="px-0">
                                     <strong
-                                        className="text-green-900"
+                                        className="break-words text-green-900"
                                         style={{ fontSize: "22px" }}
                                     >
                                         {user.name.toUpperCase()}
                                     </strong>
                                 </h3>
                             </div>
-                            <div className="relative">
-                                <p className="mb-2 text-xs text-right">{t("Wallet Balance")}</p>
+                            <div className="w-full sm:w-auto sm:min-w-[170px]">
+                                <p className="mb-2 text-xs text-left sm:text-right">{t("Wallet Balance")}</p>
                                 <NavLink
                                     href={route("user.wallet.index")}
-                                    className="px-3 py-1 text-indigo-900 border rounded-lg shadow ring-1"
+                                    className="flex w-full items-center justify-center rounded-lg border px-3 py-2 text-center text-indigo-900 shadow ring-1 sm:w-auto"
                                 >
-                                    <span className="text-sm text-center">{formatCurrency(user.coin ?? 0)}</span>
+                                    <span className="text-sm text-center break-all">{formatCurrency(user.coin ?? 0)}</span>
                                 </NavLink>
                             </div>
                         </div>
-                        <p className="mt-1 text-sm text-gray-600">
+                        <p className="mt-3 text-sm leading-6 text-gray-600">
                             {t("We're glad to see you again. Check your dashboard for updates, tasks, and rewards waiting for you today.")}
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
                         {widgets.map((widget, index) => {
                             const title = index === 0 ? t("Current Level") : t("Upcoming");
 
                             return (
                                 <div
                                     key={`${widget.name}-${index}`}
-                                    className="relative p-6 bg-white rounded-md shadow-md"
+                                    className="relative rounded-md bg-white p-4 shadow-md sm:p-6"
                                 >
-                                    <div className="flex items-center justify-between mb-2">
+                                    <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                         <h6 className="text-sm font-semibold text-gray-600">{title}</h6>
-                                        <div className="inline-block px-4 py-1 text-sm text-center text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                        <div className="inline-flex max-w-full items-center justify-center self-start rounded-md bg-blue-600 px-3 py-1 text-xs text-white sm:self-auto sm:text-sm">
                                             <span>{widget.name}</span>
                                         </div>
                                     </div>
                                     {widget.data?.req_users !== undefined && widget.data?.vip_users !== undefined ? (
                                         <>
                                             {index === 0 ? (
-                                                <p className="mt-2 mb-1 text-sm font-semibold text-gray-600">
+                                                <p className="mb-2 mt-2 text-sm font-semibold text-gray-600">
                                                     {t("Achievement")}
                                                 </p>
                                             ) : null}
-                                            <p className="flex items-center justify-between text-xs">
+                                            <p className="flex items-center justify-between gap-3 text-xs">
                                                 <strong>{t("Normal Users")}</strong>
                                                 <span>{widget.data?.req_users}</span>
                                             </p>
-                                            <p className="flex items-center justify-between text-xs">
+                                            <p className="flex items-center justify-between gap-3 text-xs">
                                                 <strong>{t("VIP Users")}</strong>
                                                 <span>{widget.data?.vip_users}</span>
                                             </p>
                                             {widget.rewards !== null && widget.rewards !== undefined ? (
-                                                <p className="flex flex-col mt-2 text-xs text-gray-600">
+                                                <p className="mt-3 flex flex-col text-xs leading-5 text-gray-600">
                                                     <strong>{t("Level-Up Rewards")}</strong>
                                                     <span>{widget.rewards}</span>
                                                 </p>
@@ -136,7 +136,7 @@ export default function Dash() {
                 </section>
 
                 {/* Refer & Claim Section */}
-                <div className="items-start justify-between m-0 my-2 lg:flex">
+                <div className="my-4 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
                     {/* Refer Box */}
                     <SectionSection>
                         <SectionHeader
@@ -151,13 +151,13 @@ export default function Dash() {
                                 value={user_my_ref || ""}
                                 id="refID"
                                 disabled
-                                className="rounded form-control w-full"
+                                className="w-full rounded form-control"
                             />
 
-                            <div className="flex items-center mt-2">
+                            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <PrimaryButton
                                     onClick={copyRef}
-                                    className="my-1 text-right btn btn-success btn-sm PX-3"
+                                    className="my-1 w-full text-right btn btn-success btn-sm PX-3 sm:w-auto"
                                 >
                                     <i className="mr-1 fas fa-copy"></i>
                                     {copied ? t("copied") : t("copy")}
@@ -191,7 +191,7 @@ export default function Dash() {
                                             className="w-full border rounded"
                                         />
 
-                                        <div className="flex items-center justify-between mt-2">
+                                        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                             <PrimaryButton>{t("Apply")}</PrimaryButton>
                                             <div className="text-xs">{joined}</div>
                                         </div>
@@ -206,7 +206,7 @@ export default function Dash() {
                                             className="w-full border rounded bg-gray-100 text-gray-600"
                                         />
 
-                                        <div className="flex items-center justify-between mt-2">
+                                        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                             <PrimaryButton disabled>
                                                 {refClaim.status === "applied" ? t("Applied") : t("Locked")}
                                             </PrimaryButton>
@@ -246,18 +246,12 @@ export default function Dash() {
     `,
                         }}
                     />
-                    <div
-                        className="grid gap-3"
-                        style={{
-                            gridTemplateColumns:
-                                "repeat(auto-fill, minmax(200px, 1fr))",
-                        }}
-                    >
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         <Link
                             href={route("upgrade.vendor.index", {
                                 upgrade: "vendor",
                             })}
-                            className="p-5 border rounded shadow"
+                            className="rounded border p-5 shadow"
                             style={{
                                 background:
                                     "linear-gradient(135deg, #ebebeb, lightgreen, #ebebeb)",
@@ -277,7 +271,7 @@ export default function Dash() {
                             href={route("upgrade.vendor.index", {
                                 upgrade: "reseller",
                             })}
-                            className="p-5 border rounded shadow"
+                            className="rounded border p-5 shadow"
                             style={{
                                 background:
                                     "linear-gradient(135deg, #ebebeb, lightgreen, #ebebeb)",
@@ -295,7 +289,7 @@ export default function Dash() {
 
                         <Link
                             href={route("upgrade.rider.index")}
-                            className="p-5 border rounded shadow"
+                            className="rounded border p-5 shadow"
                             style={{
                                 background:
                                     "linear-gradient(135deg, #ebebeb, lightgreen, #ebebeb)",

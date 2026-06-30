@@ -143,8 +143,8 @@ export default function Shops({
             <Head title="Vendor Shops" />
 
             <Container>
-                <div className="items-center justify-between space-y-2 md:flex">
-                    <div className="flex items-center justify-start py-3">
+                <div className="space-y-2 md:flex md:items-center md:justify-between">
+                    <div className="flex flex-wrap items-center justify-start py-3">
                         <NavLink href="/">
                             <i className="fas fa-home pe-2"></i>
                         </NavLink>
@@ -154,13 +154,13 @@ export default function Shops({
                         </NavLink>
                     </div>
 
-                    <div className="flex w-full flex-col gap-2 rounded-md bg-white/70 p-2 shadow-sm md:max-w-2xl md:flex-row md:items-center md:justify-end md:bg-transparent md:p-0 md:shadow-none ms-auto">
-                        <div className="flex shrink-0 items-center gap-2">
+                    <div className="ms-auto flex w-full flex-col gap-2 rounded-md bg-white/70 p-2 shadow-sm md:max-w-2xl md:flex-row md:items-center md:justify-end md:bg-transparent md:p-0 md:shadow-none">
+                        <div className="flex flex-col gap-2 shrink-0 sm:flex-row sm:flex-wrap sm:items-center">
                             {auth?.user ? (
                                 <PrimaryButton
                                     type="button"
                                     onClick={getShopByMyLocation}
-                                    className="h-9 whitespace-nowrap bg-orange-500 px-3 py-1 text-xs uppercase tracking-wide text-white hover:bg-orange-600"
+                                    className="inline-flex h-10 w-auto items-center justify-center whitespace-nowrap bg-orange-500 px-3 py-1 text-xs uppercase tracking-wide text-white hover:bg-orange-600"
                                 >
                                     My Location ({userLocation || "ANY"}){" "}
                                     <i className="ps-1 fas fa-location"></i>
@@ -169,7 +169,7 @@ export default function Shops({
                             <SecondaryButton
                                 type="button"
                                 onClick={getAllShops}
-                                className="h-9 whitespace-nowrap px-3 py-1 text-xs uppercase tracking-wide"
+                                className="inline-flex h-10 w-auto items-center justify-center whitespace-nowrap px-3 py-1 text-xs uppercase tracking-wide"
                             >
                                 All Shops
                             </SecondaryButton>
@@ -186,13 +186,13 @@ export default function Shops({
                                 e.preventDefault();
                                 applySearch();
                             }}
-                            className="w-full px-3 py-1 text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+                            className="h-10 w-full rounded border border-gray-300 px-3 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
                             placeholder={selectedShop ? "Search products..." : "Search shops, state, city or town..."}
                             style={{ minWidth: 0, fontSize: '16px' }}
                         />
                         <PrimaryButton
                             type="button"
-                            className="ms-1"
+                            className="inline-flex w-auto justify-center self-start md:ms-1"
                             onClick={() => window.open(printUrl, "_blank")}
                         >
                             <i className="fas fa-print"></i>
@@ -222,8 +222,8 @@ export default function Shops({
                             </div>
                             <Container>
                                 <div>
-                                    <div className="flex flex-wrap gaps-10">
-                                        <div className="w-48 p-2 m-1 border rounded-lg">
+                                    <div className="grid grid-cols-1 gap-3 py-3 sm:grid-cols-2">
+                                        <div className="w-full rounded-lg border p-2">
                                             <p>Shop</p>
                                             <div>{selectedShop.shop_name_en}</div>
                                             <p className="text-xs">
@@ -247,7 +247,7 @@ export default function Shops({
                                             </div>
                                         </div>
 
-                                        <div className="w-48 p-2 m-1 border rounded-lg">
+                                        <div className="w-full rounded-lg border p-2">
                                             <p>Owner</p>
                                             <div className="text-md">
                                                 {selectedShop.user?.name ?? "N/A"}
@@ -269,7 +269,7 @@ export default function Shops({
                                     </div>
 
                                     <Hr />
-                                    <div className="flex justify-center space-x-3">
+                                    <div className="flex flex-wrap items-center justify-center gap-3">
                                         <div>
                                             <i className="fas fa-heart"></i>
                                         </div>
@@ -292,13 +292,7 @@ export default function Shops({
                                 {products ? (
                                     <>
                                         <div
-                                            style={{
-                                                display: "grid",
-                                                justifyContent: "start",
-                                                gridTemplateColumns:
-                                                    "repeat(auto-fill, 160px)",
-                                                gridGap: "10px",
-                                            }}
+                                            className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7"
                                         >
                                             {(products.data ?? []).map((pd) => (
                                                 <ReselProductCart
@@ -309,18 +303,18 @@ export default function Shops({
                                         </div>
                                         {productPagination.pages.length ? (
                                             <div className="w-full pt-4">
-                                                <div className="flex items-center justify-between w-full gap-3">
+                                                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                                     <div className="text-sm text-slate-700">
                                                         {products?.total > 0
                                                             ? `Showing ${products?.from ?? 0}-${products?.to ?? 0} of ${products?.total ?? 0} products`
                                                             : "No products found"}
                                                     </div>
-                                                    <div className="flex items-center md:justify-end">
-                                                        <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
+                                                    <div className="flex w-full justify-start md:w-auto md:justify-end">
+                                                        <div className="inline-flex flex-nowrap overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                                                             <button
                                                                 type="button"
                                                                 disabled={!productPagination.prev?.url}
-                                                                className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                                className="whitespace-nowrap border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                                 onClick={() => goToPage(productPagination.prev?.url)}
                                                             >
                                                                 Previous
@@ -328,12 +322,12 @@ export default function Shops({
                                                             {productPagination.pages.map((link, idx) => (
                                                                 <button
                                                                     key={`${link.label}-${idx}`}
-                                                                    type="button"
-                                                                    disabled={!link.url}
-                                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
-                                                                        link.active
-                                                                            ? "bg-slate-100 text-blue-600"
-                                                                            : "bg-white text-slate-700 hover:bg-slate-50"
+                                                                type="button"
+                                                                disabled={!link.url}
+                                                                className={`min-w-10 whitespace-nowrap border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                                    link.active
+                                                                        ? "bg-slate-100 text-blue-600"
+                                                                        : "bg-white text-slate-700 hover:bg-slate-50"
                                                                     } disabled:cursor-not-allowed disabled:opacity-50`}
                                                                     onClick={() => goToPage(link.url)}
                                                                 >
@@ -343,7 +337,7 @@ export default function Shops({
                                                             <button
                                                                 type="button"
                                                                 disabled={!productPagination.next?.url}
-                                                                className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                                className="whitespace-nowrap px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                                 onClick={() => goToPage(productPagination.next?.url)}
                                                             >
                                                                 Next
@@ -360,15 +354,7 @@ export default function Shops({
                     </div>
                 ) : (
                     <>
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, 300px)",
-                                justifyContent: "start",
-                                alignItems: "start",
-                                gridGap: "10px",
-                            }}
-                        >
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                             {(shops.data ?? []).length > 0 ? (
                                 shops.data.map((shop) => (
                                     <div key={shop.id}>
@@ -425,18 +411,18 @@ export default function Shops({
                         </div>
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex items-center justify-between w-full gap-3">
+                                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="text-sm text-slate-700">
                                         {shops?.total > 0
                                             ? `Showing ${shops?.from ?? 0}-${shops?.to ?? 0} of ${shops?.total ?? 0} shops`
                                             : "No shops found"}
                                     </div>
-                                    <div className="flex items-center md:justify-end">
-                                        <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
+                                    <div className="flex w-full justify-start md:w-auto md:justify-end">
+                                        <div className="inline-flex flex-nowrap overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                                             <button
                                                 type="button"
                                                 disabled={!pagination.prev?.url}
-                                                className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="whitespace-nowrap border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.prev?.url)}
                                             >
                                                 Previous
@@ -444,12 +430,12 @@ export default function Shops({
                                             {pagination.pages.map((link, idx) => (
                                                 <button
                                                     key={`${link.label}-${idx}`}
-                                                    type="button"
-                                                    disabled={!link.url}
-                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
-                                                        link.active
-                                                            ? "bg-slate-100 text-blue-600"
-                                                            : "bg-white text-slate-700 hover:bg-slate-50"
+                                                type="button"
+                                                disabled={!link.url}
+                                                className={`min-w-10 whitespace-nowrap border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                    link.active
+                                                        ? "bg-slate-100 text-blue-600"
+                                                        : "bg-white text-slate-700 hover:bg-slate-50"
                                                     } disabled:cursor-not-allowed disabled:opacity-50`}
                                                     onClick={() => goToPage(link.url)}
                                                 >
@@ -459,7 +445,7 @@ export default function Shops({
                                             <button
                                                 type="button"
                                                 disabled={!pagination.next?.url}
-                                                className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="whitespace-nowrap px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                                                 onClick={() => goToPage(pagination.next?.url)}
                                             >
                                                 Next

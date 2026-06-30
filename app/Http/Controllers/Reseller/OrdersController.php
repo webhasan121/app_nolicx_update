@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductComissionController;
 use App\Jobs\UpdateProductSalesIndex;
 use App\Models\Order;
 use App\Models\syncOrder;
+use App\Support\OrderNotice;
 use App\Support\TableDateFilter;
 use App\Support\VendorResellOrderSync;
 use Illuminate\Http\RedirectResponse;
@@ -140,6 +141,7 @@ class OrdersController extends Controller
                 'house_no' => $data->house_no ?? 'Not Defined !',
                 'road_no' => $data->road_no ?? 'Not Defined !',
                 'number' => $data->number,
+                'print_url' => route('vendor.orders.cprint', ['order' => $data->id]),
                 'user' => [
                     'name' => $data->user?->name ?? 'Not Found !',
                 ],
@@ -221,6 +223,7 @@ class OrdersController extends Controller
             if (auth()->user()->abailCoin() > $requiredBalance) {
                 $data->status = $payload['status'];
                 $data->save();
+                OrderNotice::statusChanged($data, $payload['status'], auth()->id());
 
                 $ct->confirmTakeComissions($data->id);
                 UpdateProductSalesIndex::dispatch();

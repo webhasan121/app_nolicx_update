@@ -32,6 +32,7 @@ class VipController extends Controller
                     'package' => [
                         'id' => $item->package?->id,
                         'name' => $item->package?->name,
+                        'image_url' => $item->package?->image_url,
                         'coin' => $item->package?->coin,
                         'countdown' => $item->package?->countdown,
                     ],

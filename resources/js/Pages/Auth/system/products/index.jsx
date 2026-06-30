@@ -141,9 +141,16 @@ export default function Index() {
             title={t("Products")}
             header={
                 <PageHeader>
-                    <div className="flex justify-between items-center">
-                        <div>{t("Products")}<br />
-                            <NavLink href={route("reseller.resel-product.index")}>{t("Browse")}</NavLink>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            {t("Products")}
+                            <br />
+                            <NavLink
+                                href={route("reseller.resel-product.index")}
+                                className="pt-0"
+                            >
+                                {t("Browse")}
+                            </NavLink>
                         </div>
                     </div>
                 </PageHeader>
@@ -153,8 +160,8 @@ export default function Index() {
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between items-start gap-4">
-                                <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:w-auto xl:flex-wrap xl:items-center">
                                     <select
                                         value={filters.filter ?? "Active"}
                                         onChange={(e) =>
@@ -167,7 +174,7 @@ export default function Index() {
                                                 nextIsIncludeResel: filters.isIncludeResel ?? true,
                                             })
                                         }
-                                        className="rounded-md border-gray-300 shadow-sm"
+                                        className="w-full rounded-md border-gray-300 shadow-sm xl:w-auto"
                                     >
                                         <option value="Active">{t("Active")}</option>
                                         <option value="Disable">{t("Disable")}</option>
@@ -187,14 +194,14 @@ export default function Index() {
                                                 nextIsIncludeResel: filters.isIncludeResel ?? true,
                                             });
                                         }}
-                                        className="rounded-md border-gray-300 shadow-sm"
+                                        className="w-full rounded-md border-gray-300 shadow-sm xl:w-auto"
                                     >
                                         <option value="all">{t("All")}</option>
                                         <option value="vendor">{t("Vendor")}</option>
                                         <option value="reseller">{t("Reseller")}</option>
                                     </select>
                                     {from === "reseller" ? (
-                                        <label className="flex items-center gap-2 text-sm text-slate-700">
+                                        <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2 xl:col-auto">
                                             <input
                                                 type="checkbox"
                                                 checked={filters.isIncludeResel ?? true}
@@ -208,14 +215,16 @@ export default function Index() {
                                                         nextIsIncludeResel: e.target.checked,
                                                     })
                                                 }
-                                            />{t("Include Resel")}</label>
+                                            />
+                                            {t("Include Resel")}
+                                        </label>
                                     ) : null}
                                 </div>
 
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:w-auto xl:flex-wrap xl:items-center xl:justify-end">
                                     <TextInput
                                         type="date"
-                                        className="py-1"
+                                        className="h-10 w-full py-2 xl:w-40"
                                         value={sd || today}
                                         onChange={(e) => {
                                             const value = e.target.value;
@@ -232,7 +241,7 @@ export default function Index() {
                                     />
                                     <TextInput
                                         type="date"
-                                        className="py-1"
+                                        className="h-10 w-full py-2 xl:w-40"
                                         value={ed}
                                         onChange={(e) => {
                                             const value = e.target.value;
@@ -247,25 +256,34 @@ export default function Index() {
                                             });
                                         }}
                                     />
-                                    <TextInput
-                                        type="search"
-                                        placeholder={t("Search products...")}
-                                        className="py-1"
-                                        value={find}
-                                        onChange={(e) => setFind(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key !== "Enter") {
-                                                return;
-                                            }
+                                    <div className="flex w-full gap-2 sm:col-span-2 xl:w-auto">
+                                        <TextInput
+                                            type="search"
+                                            placeholder={t("Search products...")}
+                                            className="h-10 w-full py-2 xl:w-52"
+                                            value={find}
+                                            onChange={(e) => setFind(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key !== "Enter") {
+                                                    return;
+                                                }
 
-                                            e.preventDefault();
-                                            requestProducts();
-                                        }}
-                                    />
+                                                e.preventDefault();
+                                                requestProducts();
+                                            }}
+                                        />
+                                        <PrimaryButton
+                                            type="button"
+                                            className="h-10 shrink-0 justify-center px-4"
+                                            onClick={() => window.open(printUrl, "_blank")}
+                                        >
+                                            <i className="fas fa-print"></i>
+                                        </PrimaryButton>
+                                    </div>
                                     {hasActiveFilters ? (
                                         <button
                                             type="button"
-                                            className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            className="h-10 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50 sm:col-span-2 xl:col-auto"
                                             onClick={() => {
                                                 setFrom("all");
                                                 setFind("");
@@ -285,12 +303,6 @@ export default function Index() {
                                             {t("Reset")}
                                         </button>
                                     ) : null}
-                                    <PrimaryButton
-                                        type="button"
-                                        onClick={() => window.open(printUrl, "_blank")}
-                                    >
-                                        <i className="fas fa-print"></i>
-                                    </PrimaryButton>
                                 </div>
                             </div>
                         }
@@ -298,7 +310,10 @@ export default function Index() {
                     />
 
                     <SectionInner>
-                        <Table data={rows}>
+                        <Table
+                            data={rows}
+                            tableClassName="min-w-[980px] xl:min-w-full"
+                        >
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -421,7 +436,7 @@ export default function Index() {
 
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="text-sm text-slate-700">
                                         {resultSummary}
                                     </div>

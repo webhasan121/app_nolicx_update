@@ -104,7 +104,7 @@ class CartOrder extends Model
 
     public function order()
     {
-        return $this->belongsTo(order::class)->withDefault(
+        return $this->belongsTo(Order::class)->withDefault(
             [
                 'id' => 0,
                 'total' => 0,
@@ -123,3 +123,4 @@ class CartOrder extends Model
         return $this->hasOne(syncOrder::class, 'user_cart_order_id', 'id');
     }
 }
+

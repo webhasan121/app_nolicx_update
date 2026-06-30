@@ -14,17 +14,7 @@ class ResellerShopController extends Controller
 
     public function show(Request $request, string $user): Response
     {
-        $account = auth()->user()->active_nav;
-        $shop = null;
-
-
-        if ($account === 'reseller') {
-            $shop = auth()->user()->resellerShop();
-        }
-
-        if ($account === 'vendor') {
-            $shop = auth()->user()->vendorShop();
-        }
+        ['account' => $account, 'shop' => $shop] = $this->resolveShopContext();
 
         $shopArray = $shop ? $shop->toArray() : [];
 
@@ -40,6 +30,10 @@ class ResellerShopController extends Controller
 
     public function update(Request $request, string $user): RedirectResponse
     {
+        ['shop' => $shop] = $this->resolveShopContext();
+        if (! $shop) {
+            return redirect()->back()->with('error', 'Active shop not found');
+        }
 
         $shopArray = $request->only([
             'id',
@@ -81,7 +75,54 @@ class ResellerShopController extends Controller
         // echo '</pre>';
         // exit();
         // address
-        auth()->user()->resellerShop()->update($shopArray);
+        $shop->update($shopArray);
         return redirect()->back()->with('success', 'Shop updated successfully');
+    }
+
+    private function resolveShopContext(): array
+    {
+        $user = auth()->user();
+        $account = $user?->active_nav;
+        $resellerShop = $user?->resellerShop();
+        $vendorShop = $user?->vendorShop();
+
+        if ($account === 'reseller' && $resellerShop) {
+            $this->syncDashboardIdentity('reseller');
+            return ['account' => 'reseller', 'shop' => $resellerShop];
+        }
+
+        if ($account === 'vendor' && $vendorShop) {
+            $this->syncDashboardIdentity('vendor');
+            return ['account' => 'vendor', 'shop' => $vendorShop];
+        }
+
+        if ($resellerShop) {
+            $this->syncDashboardIdentity('reseller');
+            return ['account' => 'reseller', 'shop' => $resellerShop];
+        }
+
+        if ($vendorShop) {
+            $this->syncDashboardIdentity('vendor');
+            return ['account' => 'vendor', 'shop' => $vendorShop];
+        }
+
+        return ['account' => $account, 'shop' => null];
+    }
+
+    private function syncDashboardIdentity(string $role): void
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return;
+        }
+
+        if (! $user->hasRole($role)) {
+            $user->assignRole($role);
+        }
+
+        if ($user->active_nav !== $role) {
+            $user->active_nav = $role;
+            $user->save();
+        }
     }
 }

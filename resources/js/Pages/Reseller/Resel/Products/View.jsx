@@ -254,6 +254,7 @@ export default function View({
                     background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
                     padding: 18px;
                     box-shadow: 0 12px 28px rgba(31, 41, 55, 0.08);
+                    overflow: hidden;
                 }
 
                 .resel-product-category {
@@ -364,6 +365,10 @@ export default function View({
                         font-size: 24px;
                     }
 
+                    .resel-product-image-area img {
+                        height: 220px !important;
+                    }
+
                     .resel-product-owner-grid {
                         grid-template-columns: 1fr;
                     }
@@ -374,19 +379,19 @@ export default function View({
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="items-center justify-between md:flex">
+                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                 <div className="text-md">
                                     Product Review for Resel
                                 </div>
-                                <div className="flex bg-indigo-900 border border-indigo-900 rounded-xl">
+                                <div className="inline-flex w-fit overflow-hidden rounded-xl border border-indigo-900 bg-indigo-900">
                                     <div
-                                        className="px-2 bg-white"
+                                        className="bg-white px-2 py-1"
                                         title="Total Resell Products"
                                     >
                                         {totalReselProducts}
                                     </div>
                                     <div
-                                        className="px-2 text-white"
+                                        className="px-2 py-1 text-white"
                                         title="Max Resell Products"
                                     >
                                         {shop?.max_resell_product ?? 0}
@@ -400,9 +405,9 @@ export default function View({
                                     wish to resel this product, just click on
                                     the button bellow
                                 </div>
-                                <div className="flex">
+                                <div className="mt-3 flex">
                                     {!ableToAdd ? (
-                                        <div className="p-2 text-red-800 bg-red-200">
+                                        <div className="rounded-md bg-red-200 p-3 text-red-800">
                                             You have reached the maximum number
                                             of products you can upload{" "}
                                             {shop?.max_resell_product ?? 0}.
@@ -417,6 +422,7 @@ export default function View({
                                         <PrimaryButton
                                             type="button"
                                             onClick={() => setShowConfirm(true)}
+                                            className="w-full justify-center sm:w-auto"
                                         >
                                             <i className="pr-2 fas fa-sync"></i>{" "}
                                             resell
@@ -429,7 +435,7 @@ export default function View({
                     <Hr />
 
                     <SectionInner>
-                        <div className="items-start gap-6 p-2 lg:flex">
+                        <div className="flex flex-col gap-6 p-2 lg:flex-row lg:items-start">
                             <div className="w-full lg:max-w-[420px]">
                                 <div className="resel-product-zoom">
                                     <div
@@ -474,13 +480,13 @@ export default function View({
                                         ) : null}
                                     </div>
 
-                                    {gallery.length > 1 ? (
-                                        <div className="relative flex items-center justify-center w-full gap-2">
+                                        {gallery.length > 1 ? (
+                                        <div className="relative flex w-full items-center justify-center gap-2">
                                             {gallery.length > 5 ? (
                                                 <button
                                                     type="button"
                                                     onClick={() => scrollThumbnails(-1)}
-                                                    className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
+                                                    className="z-10 flex h-12 w-8 shrink-0 items-center justify-center rounded border bg-white shadow-sm hover:bg-gray-50 sm:h-16"
                                                 >
                                                     <i className="fas fa-angle-left"></i>
                                                 </button>
@@ -488,7 +494,7 @@ export default function View({
 
                                             <div
                                                 ref={thumbnailScrollerRef}
-                                                className="flex max-w-[280px] gap-2 overflow-x-auto resel-product-thumbnail-strip scroll-smooth"
+                                                className="resel-product-thumbnail-strip flex w-full max-w-full gap-2 overflow-x-auto scroll-smooth"
                                             >
                                                 {gallery.map((item) => (
                                                     <button
@@ -530,7 +536,7 @@ export default function View({
                                                 <button
                                                     type="button"
                                                     onClick={() => scrollThumbnails(1)}
-                                                    className="z-10 flex items-center justify-center w-8 h-16 bg-white border rounded shadow-sm shrink-0 hover:bg-gray-50"
+                                                    className="z-10 flex h-12 w-8 shrink-0 items-center justify-center rounded border bg-white shadow-sm hover:bg-gray-50 sm:h-16"
                                                 >
                                                     <i className="fas fa-angle-right"></i>
                                                 </button>
@@ -540,7 +546,7 @@ export default function View({
                                 </div>
                             </div>
 
-                            <div className="relative flex-1 w-full min-w-0 px-4 py-3 lg:px-0 lg:py-0">
+                            <div className="relative w-full min-w-0 flex-1 py-1 lg:py-0">
                                 <div
                                     style={{
                                         position: "absolute",
@@ -597,7 +603,7 @@ export default function View({
                                                     {product.attr.name}
                                                 </h4>
                                                 <div
-                                                    className="flex items-center justify-start my-1"
+                                                    className="my-1 flex items-center justify-start"
                                                     style={{
                                                         flexWrap: "wrap",
                                                         gap: "10px",
@@ -606,13 +612,10 @@ export default function View({
                                                     {attrValues.map((attr) => (
                                                         <div
                                                             key={attr}
-                                                            className="mr-2 border rounded"
+                                                            className="mr-2 flex items-center justify-center rounded border px-2"
                                                             style={{
-                                                                width: "45px",
+                                                                minWidth: "45px",
                                                                 height: "35px",
-                                                                alignContent:
-                                                                    "center",
-                                                                textAlign: "center",
                                                             }}
                                                         >
                                                             {attr}
@@ -739,7 +742,7 @@ export default function View({
                                     <PrimaryButton
                                         type="button"
                                         onClick={() => setShowOrderModal(true)}
-                                        className="flex min-w-44 justify-between px-6 py-3"
+                                        className="flex w-full justify-between px-6 py-3 sm:min-w-44 sm:w-auto"
                                     >
                                         Purchase
                                         <i className="pl-4 fas fa-angle-right"></i>
@@ -755,6 +758,7 @@ export default function View({
                     <SectionInner>
                         <div className="font-bold">Description</div>
                         <div
+                            className="overflow-x-auto break-words [&_img]:h-auto [&_img]:max-w-full [&_table]:w-full"
                             dangerouslySetInnerHTML={{
                                 __html: product?.description ?? "",
                             }}
@@ -764,7 +768,7 @@ export default function View({
             </Container>
 
             <Modal show={showConfirm} onClose={() => setShowConfirm(false)}>
-                <div className="p-2 px-4">
+                <div className="p-2 px-4 sm:px-5">
                     <div className="py-2 font-bold">Resel Product</div>
                     <Hr />
                     <div className="text-sm">
@@ -793,7 +797,7 @@ export default function View({
                     </div>
                     <Hr />
                     <div>
-                        <div className="p-3 mb-2 bg-gray-100">
+                    <div className="mb-2 bg-gray-100 p-3">
                             <div className="mb-1">
                                 {product?.thumbnail_url ? (
                                     <img
@@ -806,7 +810,7 @@ export default function View({
                                 <p className="text-lg">{product?.title}</p>
 
                                 {product?.offer_type ? (
-                                    <div className="items-baseline md:flex">
+                                    <div className="flex flex-col gap-1 md:flex-row md:items-baseline">
                                         <div className="font-normal font-bold text-md">
                                             Price :{" "}
                                             <strong>
@@ -959,6 +963,7 @@ export default function View({
                         <PrimaryButton
                             type="button"
                             onClick={confirmClone}
+                            className="w-full justify-center sm:w-auto"
                         >
                             <i className="pr-2 fas fa-sync"></i> Confirm
                         </PrimaryButton>
@@ -972,29 +977,29 @@ export default function View({
                 maxWidth="md"
             >
                 <div>
-                    <div className="flex items-center justify-between p-3 border-b bold">
+                    <div className="bold flex flex-col gap-2 border-b p-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>Purchase</div>
                         <div className="text-lg bold">
                             {product?.total_price} TK
                         </div>
                     </div>
-                    <div className="flex items-start justify-start p-5 mb-3 bg-gray-100">
-                        <div className="flex">
+                    <div className="mb-3 flex flex-col gap-3 bg-gray-100 p-4 sm:flex-row sm:items-start sm:justify-start sm:p-5">
+                        <div className="flex shrink-0">
                             {product?.thumbnail_url ? (
                                 <img
                                     src={product.thumbnail_url}
-                                    className="w-12 h-12 mr-3 rounded shadow"
+                                    className="h-12 w-12 rounded shadow sm:mr-3"
                                     alt=""
                                 />
                             ) : null}
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <div className="text-lg bold">
                                 {product?.name ?? product?.title ?? "N/A"}
                             </div>
                             <div className="text-sm">
                                 {product?.offer_type ? (
-                                    <div className="flex items-baseline gap-2">
+                                    <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-2">
                                         <div className="bold">
                                             Price : {product?.total_price} TK
                                         </div>
@@ -1016,7 +1021,7 @@ export default function View({
                         </div>
                     </div>
 
-                    <form onSubmit={submitOrder} className="p-5">
+                    <form onSubmit={submitOrder} className="p-4 sm:p-5">
                         <InputField
                             className="md:flex"
                             labelWidth="140px"
@@ -1121,13 +1126,13 @@ export default function View({
                             </select>
                         </InputFile>
 
-                        <div className="p-3 my-3 text-sm rounded-md shadow-sm bg-indigo-50">
+                        <div className="my-3 rounded-md bg-indigo-50 p-3 text-sm shadow-sm">
                             <div className="text-xs">
                                 {Number(product?.unit) < 1
                                     ? "Stock Out"
                                     : `You can order maximum ${product?.unit} item`}
                             </div>
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                 <div>Total</div>
                                 <div>
                                     {orderForm.data.quantity || 0} *{" "}
@@ -1215,6 +1220,7 @@ export default function View({
                         <PrimaryButton
                             type="submit"
                             disabled={orderForm.processing}
+                            className="w-full justify-center sm:w-auto"
                         >
                             Order
                         </PrimaryButton>

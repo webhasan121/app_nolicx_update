@@ -111,7 +111,7 @@ function ProductCard({ product, onPurchase, t }) {
     }, [product]);
 
     return (
-        <div className="relative overflow-hidden bg-white rounded shadow">
+        <div className="relative flex h-full flex-col overflow-hidden bg-white rounded shadow">
             {product.offer_type ? (
                 <div className="bg-orange-500 discount-badge">
                     {discountPercent}%</div>
@@ -122,13 +122,13 @@ function ProductCard({ product, onPurchase, t }) {
                     <img
                         style={{ height: "120px" }}
                         src={product.thumbnail_url}
-                        className="object-cover w-full"
+                        className="object-cover w-full sm:h-36"
                         alt="image"
                     />
                 ) : null}
             </div>
 
-            <div className="flex flex-col justify-between p-2 bg-white h-34">
+            <div className="flex flex-1 flex-col justify-between p-2 bg-white">
                 <NavLink
                     href={route("reseller.resel-product.veiw", {
                         pd: product.id,
@@ -159,7 +159,7 @@ function ProductCard({ product, onPurchase, t }) {
                         <Hr />
                         <PrimaryButton
                             type="button"
-                            className="flex justify-between w-full text-center"
+                            className="flex w-full justify-between text-center"
                             onClick={() => onPurchase(product)}
                         >{t("Purchase")}{" "}
                             <i className="pl-2 fas fa-angle-right"></i>
@@ -323,9 +323,9 @@ export default function Index({
             title={t("Resel Products")}
             header={
                 <PageHeader>
-                    <div className="flex justify-between">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div>{t("Resel Products")}<br />
-                            <div>
+                            <div className="flex flex-wrap gap-x-4 gap-y-2">
                                 <NavLink
                                     href={route("reseller.resel-product.index")}
                                     active={route().current(
@@ -335,16 +335,16 @@ export default function Index({
                             </div>
                         </div>
 
-                        <div>
-                            <div className="flex bg-indigo-900 border border-indigo-900 rounded-xl">
+                        <div className="self-start lg:self-auto">
+                            <div className="flex overflow-hidden bg-indigo-900 border border-indigo-900 rounded-xl">
                                 <div
-                                    className="px-2 bg-white"
+                                    className="px-3 py-1 bg-white"
                                     title={t("Total Resell Products")}
                                 >
                                     {totalReselProducts}
                                 </div>
                                 <div
-                                    className="px-2 text-white"
+                                    className="px-3 py-1 text-white"
                                     title={t("Max Resell Products")}
                                 >
                                     {shop?.max_resell_product ?? 0}
@@ -363,11 +363,11 @@ export default function Index({
 
                 <div>
                     <div>
-                        <div className="flex flex-wrap items-center justify-between gap-2 py-2">
+                        <div className="flex flex-col gap-2 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                             <button
                                 type="button"
                                 onClick={() => setShowCategoryModal(true)}
-                                className="flex items-center justify-between gap-3 px-3 py-2 text-sm border rounded-md hover:bg-white"
+                                className="flex items-center justify-between gap-3 px-3 py-2 text-sm border rounded-md hover:bg-white sm:w-auto"
                             >
                                 <span>{t("Categories")}</span>
                                 <i className="fas fa-angle-right"></i>
@@ -378,26 +378,18 @@ export default function Index({
                                 onChange={(e) => setSearch(e.target.value)}
                                 onKeyDown={(e) => {
                                     if (e.key !== "Enter") {
-                                        return;
-                                    }
+                                    return;
+                                }
 
-                                    e.preventDefault();
-                                    requestProducts({ search: search.trim() });
-                                }}
-                                className="py-1"
+                                e.preventDefault();
+                                requestProducts({ search: search.trim() });
+                            }}
+                                className="w-full py-1 sm:w-80"
                                 placeholder={t("Search products...")}
                             />
                         </div>
 
-                        <div
-                            style={{
-                                display: "grid",
-                                justifyContent: "start",
-                                gridTemplateColumns:
-                                    "repeat(auto-fill, 160px)",
-                                gridGap: "10px",
-                            }}
-                        >
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                             {(products?.data ?? []).map((product) => (
                                 <ProductCard
                                     key={product.id}
@@ -415,11 +407,11 @@ export default function Index({
 
                     {pagination.pages.length ? (
                         <div className="w-full pt-4">
-                            <div className="flex items-center justify-between w-full gap-3">
+                            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                                 <div className="text-sm text-slate-700">
                                     {resultSummary}
                                 </div>
-                                <div className="flex items-center md:justify-end">
+                                <div className="w-full overflow-x-auto lg:w-auto">
                                     <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                         <button
                                             type="button"
@@ -511,12 +503,12 @@ export default function Index({
             >
                 {activeProduct ? (
                     <div>
-                        <div className="flex items-center justify-between p-3 border-b bold">
+                        <div className="flex flex-col gap-2 p-3 border-b sm:flex-row sm:items-center sm:justify-between bold">
                             <div>{t("Purchase")}</div>
                             <div className="text-lg bold">
                                 {activeProduct.total_price}{t("TK")}</div>
                         </div>
-                        <div className="flex items-start justify-start p-5 mb-3 bg-gray-100">
+                        <div className="flex flex-col items-start justify-start gap-3 p-5 mb-3 bg-gray-100 sm:flex-row">
                             <div className="flex">
                                 {activeProduct.thumbnail_url ? (
                                     <img
@@ -676,7 +668,7 @@ export default function Index({
                                         ? "Stock Out"
                                         : `You can order maximum ${activeProduct.unit} item`}
                                 </div>
-                                <div className="flex items-center justify-between">
+                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                     <div>{t("Total")}</div>
                                     <div>
                                         {orderForm.data.quantity || 0} *{" "}
@@ -764,7 +756,9 @@ export default function Index({
                                 </select>
                             </InputFile>
 
-                            <PrimaryButton type="submit">{t("Order")}</PrimaryButton>
+                            <PrimaryButton type="submit" className="justify-center w-full sm:w-auto">
+                                {t("Order")}
+                            </PrimaryButton>
                         </form>
                     </div>
                 ) : null}

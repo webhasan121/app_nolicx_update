@@ -1,10 +1,11 @@
-import { useForm, usePage } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import { useEffect, useId, useRef, useState } from "react";
 import AppLayout from "../../../../../Layouts/App";
 import DangerButton from "../../../../../components/DangerButton";
 import Hr from "../../../../../components/Hr";
 import InputField from "../../../../../components/InputField";
 import InputLabel from "../../../../../components/InputLabel";
+import TextInput from "../../../../../components/TextInput";
 import NavLink from "../../../../../components/NavLink";
 import PrimaryButton from "../../../../../components/PrimaryButton";
 import SecondaryButton from "../../../../../components/SecondaryButton";
@@ -31,6 +32,7 @@ export default function Create() {
         countdown: "",
         ref_owner_get_coin: "",
         owner_get_coin: "",
+        image: null,
         description: "",
         paymentOptions,
     });
@@ -127,15 +129,19 @@ export default function Create() {
 
     const submit = (e) => {
         e.preventDefault();
-        form.post(route("system.vip.store"));
+        form.post(route("system.vip.store"), {
+            forceFormData: true,
+        });
     };
 
     return (
         <AppLayout
             title={t("VIP")}
             header={
-                <PageHeader>{t("VIP")}<br />
-                    <div>
+                <PageHeader>
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>{t("VIP")}</div>
+                        <div className="flex flex-wrap items-center gap-3">
                         <NavLink
                             href={route("system.vip.index")}
                             active={
@@ -148,10 +154,12 @@ export default function Create() {
                             href={route("system.vip.users")}
                             active={route().current("system.vip.users")}
                         >{t("User")}</NavLink>
+                        </div>
                     </div>
                 </PageHeader>
             }
         >
+            <Head title={t("Add VIP Package")} />
             <Container>
                 <SectionSection>
                     <SectionHeader
@@ -165,14 +173,40 @@ export default function Create() {
                                 <InputField
                                     label={t("Package Name")}
                                     name="name"
-                                    className="md:flex"
                                     inputClass="w-full"
                                     error={form.errors.name}
                                     value={form.data.name}
                                     onChange={(e) => form.setData("name", e.target.value)}
                                 />
 
-                                <div className="md:flex">
+                                <div className="p-2 my-3 bg-white border rounded">
+                                    <InputLabel className="py-1" htmlFor="package_image">
+                                        {t("Package Image")}
+                                    </InputLabel>
+                                    {form.data.image && (
+                                        <img
+                                            src={URL.createObjectURL(form.data.image)}
+                                            alt="Package preview"
+                                            className="object-contain w-32 h-24 mb-2 border rounded"
+                                        />
+                                    )}
+                                    <TextInput
+                                        id="package_image"
+                                        type="file"
+                                        accept="image/*"
+                                        className="w-full"
+                                        onChange={(e) =>
+                                            form.setData("image", e.target.files[0] ?? null)
+                                        }
+                                    />
+                                    {form.errors.image && (
+                                        <div className="text-xs text-red-600">
+                                            {form.errors.image}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid gap-3 lg:grid-cols-2">
                                     <InputField
                                         label={t("Package Price")}
                                         name="price"
@@ -189,7 +223,7 @@ export default function Create() {
                                         onChange={(e) => form.setData("countdown", e.target.value)}
                                     />
                                 </div>
-                                <div className="md:flex">
+                                <div className="grid gap-3 lg:grid-cols-2">
                                     <InputField
                                         label={t("Daily Reward")}
                                         name="coin"
@@ -206,7 +240,7 @@ export default function Create() {
                                     />
                                 </div>
                                 <Hr />
-                                <div className="md:flex">
+                                <div className="grid gap-3 lg:grid-cols-2">
                                     <InputField
                                         label={t("By Referred Reward")}
                                         name="ref_owner_get_coin"
@@ -216,17 +250,26 @@ export default function Create() {
                                             form.setData("ref_owner_get_coin", e.target.value)
                                         }
                                     />
+                                    <InputField
+                                        label={t("Owner Reward")}
+                                        name="owner_get_coin"
+                                        error={form.errors.owner_get_coin}
+                                        value={form.data.owner_get_coin}
+                                        onChange={(e) =>
+                                            form.setData("owner_get_coin", e.target.value)
+                                        }
+                                    />
                                 </div>
                                 <Hr />
                             </div>
 
-                            <div className="p-0 my-4 mx-0 border p-2">
-                                <div className="flex justify-between items-center">
+                            <div className="my-4 rounded border bg-white p-3 sm:p-4">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <h4>{t("Payment Option")}</h4>
                                     <SecondaryButton
                                         type="button"
                                         onClick={addPaymentOption}
-                                        className="btn btn-sm btn-info"
+                                        className="inline-flex h-10 w-10 self-start justify-center px-0"
                                     >
                                         <i className="fas fa-plus"></i>
                                     </SecondaryButton>
@@ -236,17 +279,17 @@ export default function Create() {
                                     {form.data.paymentOptions.map((option, index) => (
                                         <div
                                             key={index}
-                                            className="p-2 rounded border my-2 bg-white"
+                                            className="my-3 rounded border bg-slate-50 p-3"
                                         >
-                                            <div className="md:flex p-0 m-0">
-                                                <div>
+                                            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end">
+                                                <div className="min-w-0">
                                                     <label
-                                                        className="py-1"
+                                                        className="py-1 text-sm font-medium text-gray-700"
                                                         htmlFor={`pay_type_${index}`}
                                                     >{t("Payment Method")}</label>
-                                                    <input
+                                                    <TextInput
                                                         type="text"
-                                                        className="form-control"
+                                                        className="w-full"
                                                         placeholder={t("Payment Method")}
                                                         value={option.pay_type}
                                                         onChange={(e) =>
@@ -259,14 +302,14 @@ export default function Create() {
                                                         id={`pay_type_${index}`}
                                                     />
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <label
-                                                        className="py-1"
+                                                        className="py-1 text-sm font-medium text-gray-700"
                                                         htmlFor={`pay_to_${index}`}
                                                     >{t("Payment Number/AC")}</label>
-                                                    <input
+                                                    <TextInput
                                                         type="text"
-                                                        className="form-control"
+                                                        className="w-full"
                                                         placeholder={t("Payment To")}
                                                         value={option.pay_to}
                                                         onChange={(e) =>
@@ -282,7 +325,7 @@ export default function Create() {
 
                                                 <DangerButton
                                                     type="button"
-                                                    className="btn border btn-sm"
+                                                    className="inline-flex h-10 w-10 justify-center self-start justify-self-start px-0 md:self-end md:justify-self-end"
                                                     onClick={() =>
                                                         removePaymentOption(index)
                                                     }
@@ -301,13 +344,14 @@ export default function Create() {
                                 <InputLabel className="py-1" htmlFor="desciption">
                                     Description
                                 </InputLabel>
-                                <main>
+                                <main className="min-w-0">
                                     {trixReady && (
-                                        <trix-toolbar
-                                            id={`my_toolbar_${inputId}`}
-                                        ></trix-toolbar>
+                                        <div className="overflow-x-auto">
+                                            <trix-toolbar
+                                                id={`my_toolbar_${inputId}`}
+                                            ></trix-toolbar>
+                                        </div>
                                     )}
-                                    <div className="more-stuff-inbetween"></div>
                                     <input
                                         type="hidden"
                                         name="content"
@@ -335,7 +379,9 @@ export default function Create() {
                             </div>
 
                             <Hr />
-                            <PrimaryButton>{t("save")}</PrimaryButton>
+                            <PrimaryButton className="w-full justify-center sm:w-auto">
+                                {t("save")}
+                            </PrimaryButton>
                         </form>
                     </SectionInner>
                 </SectionSection>

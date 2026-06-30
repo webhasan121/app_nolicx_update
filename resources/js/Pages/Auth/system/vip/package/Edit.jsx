@@ -30,6 +30,7 @@ export default function Edit() {
         coin: pack?.coin ?? "",
         m_coin: pack?.m_coin ?? "",
         ref_owner_get_coin: pack?.ref_owner_get_coin ?? "",
+        image: null,
         description: pack?.description ?? "",
         paymentOptions,
     });
@@ -126,7 +127,9 @@ export default function Edit() {
 
     const submit = (e) => {
         e.preventDefault();
-        form.post(route("system.package.update", { packages: pack.id }));
+        form.post(route("system.package.update", { packages: pack.id }), {
+            forceFormData: true,
+        });
     };
 
     return (
@@ -170,6 +173,35 @@ export default function Edit() {
                                                 form.setData("price", e.target.value)
                                             }
                                         />
+                                    </div>
+                                </div>
+                                <div className="w-md py-2 border-b">
+                                    <div className="text-sm">{t("Package Image")}</div>
+                                    <div className="text-md">
+                                        {(form.data.image || pack?.image_url) && (
+                                            <img
+                                                src={
+                                                    form.data.image
+                                                        ? URL.createObjectURL(form.data.image)
+                                                        : pack.image_url
+                                                }
+                                                alt="Package"
+                                                className="object-contain w-32 h-24 my-2 border rounded"
+                                            />
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="form-control"
+                                            onChange={(e) =>
+                                                form.setData("image", e.target.files[0] ?? null)
+                                            }
+                                        />
+                                        {form.errors.image && (
+                                            <div className="text-xs text-red-600">
+                                                {form.errors.image}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="w-md py-2 border-b">

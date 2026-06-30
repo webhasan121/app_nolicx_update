@@ -1,7 +1,11 @@
 import NavLinkBtn from "@/Components/NavLinkBtn";
 import Hr from "./Hr";
+import { useState } from "react";
 
 export default function VipCart({ item, style = {}, active = "", type }) {
+    const [showImage, setShowImage] = useState(false);
+    const [zoom, setZoom] = useState(1);
+
     if (!item) {
         return (
             <div className="text-center alert alert-info">No Data Found !</div>
@@ -73,47 +77,88 @@ export default function VipCart({ item, style = {}, active = "", type }) {
                 opacity: 0;
                 transition: all linear .3s;
             }
+
+            .vip_price_row {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .vip_package_image_button {
+                width: 70px;
+                height: 58px;
+                padding: 0;
+                border: 1px solid #e5e7eb;
+                border-radius: 4px;
+                background: #fff;
+                overflow: hidden;
+                cursor: zoom-in;
+            }
+
+            .vip_package_image_button img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
           `,
                 }}
             />
 
             <div
                 style={typeof style === "object" ? style : {}}
-                className={`rounded-md shadow-lg vip_cart border br_primary text-center ${
+                className={`vip_cart rounded-md border br_primary text-center shadow-lg ${
                     isActive ? "selected" : "unSelected"
                 }`}
             >
-                <div className="text-center head bolder">
+                <div className="px-2 text-center head bolder break-words">
                     {item.name?.toUpperCase()}
                 </div>
 
-                <div className="px-3 pb-3">
+                <div className="px-3 pb-3 sm:px-4 sm:pb-4">
                     <Hr />
-                    <div
-                        className="vip_price text_secondary"
-                        style={{
-                            fontSize: "35px",
-                            fontWeight: "bolder",
-                            lineHeight: "40px",
-                        }}
-                    >
-                        {item.price}
+                    <div className="vip_price_row">
                         <div
-                            className="inline-block"
+                            className="vip_price text_secondary"
                             style={{
-                                fontSize: "15px",
-                                textAlign: "left",
-                                lineHeight: "5px",
-                                fontWeight: "300",
-                                marginLeft: "5px",
+                                fontSize: "clamp(30px, 8vw, 35px)",
+                                fontWeight: "bolder",
+                                lineHeight: "40px",
                             }}
                         >
-                            TK
+                            {item.price}
+                            <div
+                                className="inline-block"
+                                style={{
+                                    fontSize: "15px",
+                                    textAlign: "left",
+                                    lineHeight: "5px",
+                                    fontWeight: "300",
+                                    marginLeft: "5px",
+                                }}
+                            >
+                                TK
+                            </div>
                         </div>
+                        {item.image_url && (
+                            <button
+                                type="button"
+                                className="vip_package_image_button"
+                                onClick={() => {
+                                    setZoom(1);
+                                    setShowImage(true);
+                                }}
+                                aria-label="Open package image"
+                            >
+                                <img src={item.image_url} alt={item.name ?? "Package"} />
+                            </button>
+                        )}
                     </div>
 
                     <div
-                        className="py-4 vip_info text_sm"
+                        className="py-4 vip_info text-sm leading-7 sm:text-base"
                         style={{ fontWeight: 300 }}
                     >
                         <div>{item.countdown} Minute daily time</div>
@@ -130,6 +175,51 @@ export default function VipCart({ item, style = {}, active = "", type }) {
                     )}
                 </div>
             </div>
+            {showImage && item.image_url && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75"
+                    onClick={() => setShowImage(false)}
+                >
+                    <div
+                        className="max-w-full p-3 bg-white rounded shadow-xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex justify-end gap-2 mb-3">
+                            <button
+                                type="button"
+                                className="px-3 py-1 border rounded"
+                                onClick={() => setZoom((value) => Math.max(0.5, value - 0.25))}
+                            >
+                                -
+                            </button>
+                            <button
+                                type="button"
+                                className="px-3 py-1 border rounded"
+                                onClick={() => setZoom((value) => Math.min(3, value + 0.25))}
+                            >
+                                +
+                            </button>
+                            <button
+                                type="button"
+                                className="px-3 py-1 border rounded"
+                                onClick={() => setShowImage(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                        <div className="max-w-full overflow-auto" style={{ maxHeight: "75vh" }}>
+                            <img
+                                src={item.image_url}
+                                alt={item.name ?? "Package"}
+                                style={{
+                                    width: `${Math.round(420 * zoom)}px`,
+                                    maxWidth: "none",
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

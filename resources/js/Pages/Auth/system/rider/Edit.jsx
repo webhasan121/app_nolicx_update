@@ -141,9 +141,11 @@ export default function Edit() {
                     </div>
                     <div className="text-xs">{rider?.status}</div>
                     <div className="text-red">{rider?.rejected_for}</div>
-                    <NavLink active={nav === "user"} href={route("system.rider.edit", { id: rider?.id, nav: "user" })}>{t("User")}</NavLink>
-                    <NavLink active={nav === "document"} href={route("system.rider.edit", { id: rider?.id, nav: "document" })}>{t("Documents")}</NavLink>
-                    <NavLink active={nav === "delevary"} href={route("system.rider.edit", { id: rider?.id, nav: "delevary" })}>{t("Delevary")}</NavLink>
+                    <div className="mt-2 flex flex-wrap items-center gap-4">
+                        <NavLink active={nav === "user"} href={route("system.rider.edit", { id: rider?.id, nav: "user" })}>{t("User")}</NavLink>
+                        <NavLink active={nav === "document"} href={route("system.rider.edit", { id: rider?.id, nav: "document" })}>{t("Documents")}</NavLink>
+                        <NavLink active={nav === "delevary"} href={route("system.rider.edit", { id: rider?.id, nav: "delevary" })}>{t("Delevary")}</NavLink>
+                    </div>
                 </PageHeader>
             }
         >
@@ -155,13 +157,13 @@ export default function Edit() {
                             <>
                                 <Hr />
                                 <form onSubmit={submitStatus}>
-                                    <div className="flex items-center justify-between">
-                                        <div>
+                                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                        <div className="w-full md:w-auto">
                                             <div>
                                                 <p className="text-sm">{t("update :")}{rider?.updated_at_human}</p>
                                             </div>
                                             <p className="text-sm">{t("Current Status is :")}<strong> {rider?.status} </strong>{t(". Change status to -")}</p>
-                                            <select className="rounded-lg py-1" value={statusForm.data.status} onChange={(e) => statusForm.setData("status", e.target.value)}>
+                                            <select className="w-full rounded-lg py-1 md:w-auto" value={statusForm.data.status} onChange={(e) => statusForm.setData("status", e.target.value)}>
                                                 <option value="Select Status">{t("-- Select --")}</option>
                                                 <option value="Active">{t("Active")}</option>
                                                 <option value="Pending">{t("Pending")}</option>
@@ -170,17 +172,17 @@ export default function Edit() {
                                             </select>
 
                                             <div className="mt-1">
-                                                <textarea className="rounded-lg" rows="2"></textarea>
+                                                <textarea className="w-full rounded-lg" rows="2"></textarea>
                                             </div>
                                         </div>
                                     </div>
                                     <Hr />
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                                         <div className="text-md">{t("Comission (%)")}</div>
-                                        <TextInput value={statusForm.data.comission} onChange={(e) => statusForm.setData("comission", e.target.value)} placeholder="" />
+                                        <TextInput className="w-full md:w-auto" value={statusForm.data.comission} onChange={(e) => statusForm.setData("comission", e.target.value)} placeholder="" />
                                     </div>
                                     <Hr />
-                                    <PrimaryButton className="ml-2"><i className="fas fa-sync pr-2"></i>{t("Update")}</PrimaryButton>
+                                    <PrimaryButton className="w-full justify-center md:ml-2 md:w-auto"><i className="fas fa-sync pr-2"></i>{t("Update")}</PrimaryButton>
                                 </form>
                             </>
                         }
@@ -206,9 +208,9 @@ export default function Edit() {
                                 </InputFile>
                                 <Hr />
                                 <InputFile label={t("Rider Photo Front")} name="nid_photo_front" error="nid_photo_front">
-                                    <div className="flex">
-                                        {rider?.nid_photo_front_url ? <img src={rider.nid_photo_front_url} alt="nid_photo_front" /> : null}
-                                        {rider?.nid_photo_back_url ? <img src={rider.nid_photo_back_url} alt="nid_photo_back" /> : null}
+                                    <div className="flex flex-col gap-3 sm:flex-row">
+                                        {rider?.nid_photo_front_url ? <img className="w-full max-w-xs" src={rider.nid_photo_front_url} alt="nid_photo_front" /> : null}
+                                        {rider?.nid_photo_back_url ? <img className="w-full max-w-xs" src={rider.nid_photo_back_url} alt="nid_photo_back" /> : null}
                                     </div>
                                 </InputFile>
                             </SectionInner>
@@ -242,7 +244,7 @@ export default function Edit() {
                             <SectionHeader
                                 title={editUser?.name}
                                 content={
-                                    <div>
+                                    <div className="flex flex-wrap items-center gap-4">
                                         <NavLink href="#" active={userNav === "profile"} className={userNav === "profile" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("profile"); }}>{t("Profile")}</NavLink>
                                         <NavLink href="#" active={userNav === "role"} className={userNav === "role" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("role"); }}>{t("Permission")}</NavLink>
                                     </div>
@@ -256,13 +258,13 @@ export default function Edit() {
                                     <UpdateProfileInformation editUser={editUser} defaultAdminRef={defaultAdminRef} profileForm={profileForm} onSubmit={submitProfile} />
                                     <Hr />
                                     <InputFile label={t("User Coin")} error="coin" name="coin">
-                                        <div className="rounded-lg">
-                                            <TextInput type="text" className=" border-0 w-32" disabled value={editUser?.coin ?? 0} />
-                                            <div className="p-2 bg-ref-900 rounded border inline-block">
+                                        <div className="space-y-3 rounded-lg">
+                                            <TextInput type="text" className="w-full border-0 sm:w-32" disabled value={editUser?.coin ?? 0} />
+                                            <div className="inline-block w-full rounded border bg-ref-900 p-2 sm:w-auto">
                                                 <div className="text-xs">{t("Recharge")}</div>
-                                                <form onSubmit={openRechargeModal}>
-                                                    <TextInput type="number" className="py-1 w-32 mr-1" value={profileForm.data.rechargeAmount} onChange={(e) => profileForm.setData("rechargeAmount", e.target.value)} />
-                                                    <PrimaryButton>{t("Apply")}</PrimaryButton>
+                                                <form onSubmit={openRechargeModal} className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                                                    <TextInput type="number" className="w-full py-1 sm:w-32" value={profileForm.data.rechargeAmount} onChange={(e) => profileForm.setData("rechargeAmount", e.target.value)} />
+                                                    <PrimaryButton className="w-fit self-start whitespace-nowrap">{t("Apply")}</PrimaryButton>
                                                 </form>
                                             </div>
                                         </div>
@@ -294,7 +296,7 @@ export default function Edit() {
                             <PermissionGroup key={title} title={title} permissions={items} selected={editUser?.permissions_via_role ?? []} onToggle={() => {}} disabled />
                         ))}
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-4 flex justify-end">
                         <DangerButton type="button" onClick={() => setShowViaRole(false)}>{t("Close")}</DangerButton>
                     </div>
                 </div>
@@ -306,7 +308,7 @@ export default function Edit() {
                     <Hr />
                     <p className="py-5">{t("Are you sure to add")}{profileForm.data.rechargeAmount}{t("TK amount to")}{editUser?.name}, {editUser?.email}</p>
                     <Hr />
-                    <div className="flex">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                         <SecondaryButton type="button" onClick={() => setShowRechargeModal(false)}>{t("Cancel")}</SecondaryButton>
                         <PrimaryButton type="button" onClick={submitRecharge}>{t("Recharge")}</PrimaryButton>
                         <DangerButton type="button" onClick={submitRefund}>{t("Refund")}</DangerButton>

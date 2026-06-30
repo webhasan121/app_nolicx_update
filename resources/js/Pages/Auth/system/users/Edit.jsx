@@ -134,9 +134,15 @@ export default function Edit() {
         <AppLayout
             title={t("User Update")}
             header={
-                <PageHeader>{t("User Update")}<br />
-                    <NavLink href={route("system.users.view")}>
-                        <i className="fa-solid fa-up-right-from-square me-2"></i>{t("Users")}</NavLink>
+                <PageHeader>
+                    <span className="block">{t("User Update")}</span>
+                    <NavLink
+                        href={route("system.users.view")}
+                        className="mt-2 inline-flex pt-0"
+                    >
+                        <i className="fa-solid fa-up-right-from-square me-2"></i>
+                        {t("Users")}
+                    </NavLink>
                 </PageHeader>
             }
         >
@@ -146,7 +152,7 @@ export default function Edit() {
                         <SectionHeader
                             title={editUser?.name}
                             content={
-                                <div>
+                                <div className="flex flex-wrap items-center gap-4">
                                     <NavLink
                                         href="#"
                                         active={nav === "profile"}
@@ -182,19 +188,22 @@ export default function Edit() {
 
                                 <Hr />
                                 <InputFile label={t("User Coin")} error="coin" name="coin">
-                                    <div className="rounded-lg">
+                                    <div className="space-y-3 rounded-lg">
                                         <TextInput
                                             type="text"
-                                            className=" border-0 w-32"
+                                            className="w-full border-0 sm:w-32"
                                             disabled
                                             value={editUser?.coin ?? 0}
                                         />
-                                        <div className="p-2 bg-ref-900 rounded border inline-block">
+                                        <div className="inline-block w-full rounded border bg-ref-900 p-2 sm:w-auto">
                                             <div className="text-xs">{t("Recharge")}</div>
-                                            <form onSubmit={openRechargeModal}>
+                                            <form
+                                                onSubmit={openRechargeModal}
+                                                className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center"
+                                            >
                                                 <TextInput
                                                     type="number"
-                                                    className="py-1 w-32 mr-1"
+                                                    className="w-full py-1 sm:w-32"
                                                     value={profileForm.data.rechargeAmount}
                                                     onChange={(e) =>
                                                         profileForm.setData(
@@ -203,7 +212,9 @@ export default function Edit() {
                                                         )
                                                     }
                                                 />
-                                                <PrimaryButton>{t("Apply")}</PrimaryButton>
+                                                <PrimaryButton className="w-fit self-start whitespace-nowrap">
+                                                    {t("Apply")}
+                                                </PrimaryButton>
                                             </form>
                                         </div>
                                     </div>
@@ -272,7 +283,7 @@ export default function Edit() {
                                 />
                             ))}
                         </div>
-                        <div className="mt-4">
+                        <div className="mt-4 flex justify-end">
                             <DangerButton
                                 type="button"
                                 onClick={() => setShowViaRole(false)}
@@ -292,7 +303,7 @@ export default function Edit() {
                         <p className="py-5">{t("Are you sure to add")}{profileForm.data.rechargeAmount}{t("TK amount to")}{editUser?.name}, {editUser?.email}
                         </p>
                         <Hr />
-                        <div className="flex">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                             <SecondaryButton
                                 type="button"
                                 onClick={() => setShowRechargeModal(false)}

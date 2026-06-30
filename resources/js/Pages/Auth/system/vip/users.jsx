@@ -95,7 +95,7 @@ export default function Users() {
             title={t("VIP Users")}
             header={
                 <PageHeader>
-                    <div className="md:flex items-center justify-between">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div className="mb-1">{t("VIP Users")}</div>
                     </div>
                 </PageHeader>
@@ -105,9 +105,9 @@ export default function Users() {
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex w-full flex-nowrap items-center gap-2 overflow-x-auto">
+                            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:flex-wrap xl:items-center">
                                 <select
-                                    className="h-9 w-32 shrink-0 rounded-md border-gray-300 py-1 text-sm"
+                                    className="h-10 w-full rounded-md border-gray-300 py-1 text-sm xl:w-32"
                                     value={nav}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -141,7 +141,7 @@ export default function Users() {
                                     <option value="Trash">{t("Trash")}</option>
                                 </select>
                                 <select
-                                    className="h-9 w-52 shrink-0 rounded-md border-gray-300 py-1 text-sm"
+                                    className="h-10 w-full rounded-md border-gray-300 py-1 text-sm xl:w-52"
                                     value={quickFilter}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -173,7 +173,7 @@ export default function Users() {
                                 </select>
                                 <TextInput
                                     type="date"
-                                    className="h-9 w-36 shrink-0 py-1 text-sm"
+                                    className="h-10 w-full py-1 text-sm xl:w-36"
                                     value={sdate}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -184,7 +184,7 @@ export default function Users() {
                                 />
                                 <TextInput
                                     type="date"
-                                    className="h-9 w-36 shrink-0 py-1 text-sm"
+                                    className="h-10 w-full py-1 text-sm xl:w-36"
                                     value={edate}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -193,27 +193,29 @@ export default function Users() {
                                     }}
                                     title={t("End Date")}
                                 />
-                                <input
-                                    type="search"
-                                    className="h-9 w-52 shrink-0 rounded-lg border-gray-400 py-1"
-                                    placeholder={t("find name, id")}
-                                    value={search}
-                                    onChange={(e) => {
-                                        setSearch(e.target.value);
-                                        applyFilters({ search: e.target.value, page: undefined });
-                                    }}
-                                />
-                                <PrimaryButton
-                                    type="button"
-                                    className="h-9 shrink-0"
-                                    onClick={() => window.open(printUrl, "_blank")}
-                                >
-                                    <i className="fas fa-print"></i>
-                                </PrimaryButton>
+                                <div className="flex w-full gap-2 sm:col-span-2 xl:w-auto">
+                                    <input
+                                        type="search"
+                                        className="h-10 w-full rounded-lg border-gray-400 py-1"
+                                        placeholder={t("find name, id")}
+                                        value={search}
+                                        onChange={(e) => {
+                                            setSearch(e.target.value);
+                                            applyFilters({ search: e.target.value, page: undefined });
+                                        }}
+                                    />
+                                    <PrimaryButton
+                                        type="button"
+                                        className="h-10 shrink-0 justify-center px-4"
+                                        onClick={() => window.open(printUrl, "_blank")}
+                                    >
+                                        <i className="fas fa-print"></i>
+                                    </PrimaryButton>
+                                </div>
                                 {hasActiveFilters ? (
                                     <button
                                         type="button"
-                                        className="h-9 shrink-0 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                        className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50 sm:col-span-2 xl:w-auto"
                                         onClick={() => {
                                             setSearch("");
                                             setNav("All");
@@ -243,7 +245,7 @@ export default function Users() {
 
                     <SectionInner>
                         <div>
-                            <Table data={vip?.data ?? []}>
+                            <Table data={vip?.data ?? []} tableClassName="min-w-[980px] xl:min-w-full">
                                     <thead>
                                         <tr>
                                             <th></th>
@@ -319,7 +321,7 @@ export default function Users() {
 
                             {pagination.pages.length ? (
                                     <div className="w-full pt-4">
-                                        <div className="flex w-full items-center justify-between gap-3">
+                                        <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                             <div className="text-sm text-slate-700">
                                                 {resultSummary}
                                             </div>

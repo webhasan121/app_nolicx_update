@@ -9,6 +9,26 @@ import TextInput from "../../components/TextInput";
 import UserLayout from "../../Layouts/User/App";
 import useTranslation from "../../hooks/useTranslation";
 
+const PRIORITY_CATEGORY_SLUGS = [
+    "womens-item",
+    "mega-deals",
+    "medicine",
+    "grocery-item",
+    "food-items",
+];
+
+const orderCategories = (categories = []) =>
+    [...categories].sort((left, right) => {
+        const leftPriority = PRIORITY_CATEGORY_SLUGS.indexOf(left.slug);
+        const rightPriority = PRIORITY_CATEGORY_SLUGS.indexOf(right.slug);
+
+        if (leftPriority === -1 && rightPriority === -1) return 0;
+        if (leftPriority === -1) return 1;
+        if (rightPriority === -1) return -1;
+
+        return leftPriority - rightPriority;
+    });
+
 function Heading() {
     const { t } = useTranslation();
 
@@ -63,6 +83,7 @@ export default function CategoryIndex({
     const [search, setSearch] = useState(filters.search || "");
     const rows = products ?? [];
     const pageTitle = formatCategoryTitle(categories, cat);
+    const orderedCategories = orderCategories(categories);
 
     const visitCategory = (
         nextSearch,
@@ -120,7 +141,7 @@ export default function CategoryIndex({
                 <Heading />
 
                 <div className="product_section">
-                    <div className="items-start justify-start lg:flex">
+                    <div className="items-start justify-start sm:flex">
                         <div
                             style={{ width: "300px" }}
                             className="hidden bg-white rounded-lg md:block max-h-[calc(100vh-110px)] overflow-y-auto"
@@ -136,7 +157,7 @@ export default function CategoryIndex({
                                         </Link>
                                         <br />
                                     </div>
-                                    {categories.map((item) => (
+                                    {orderedCategories.map((item) => (
                                         <CatLoop
                                             key={item.id}
                                             item={item}
@@ -176,7 +197,7 @@ export default function CategoryIndex({
                                                 </Link>
                                                 <br />
                                             </div>
-                                            {categories.map((item) => (
+                                            {orderedCategories.map((item) => (
                                                 <CatLoop
                                                     key={item.id}
                                                     item={item}
@@ -203,7 +224,7 @@ export default function CategoryIndex({
                                         }
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 ml-auto">
+                                <div className="flex items-center gap-2 sm:ml-auto">
                                     <div className="relative">
                                         <select
                                             value={filters.sort || "desc"}
@@ -220,16 +241,7 @@ export default function CategoryIndex({
                                 </div>
                             </div>
 
-                            <div
-                                className="w-full"
-                                style={{
-                                    display: "grid",
-                                    justifyContent: "start",
-                                    gridTemplateColumns:
-                                        "repeat(auto-fill, minmax(160px, 1fr))",
-                                    gridGap: "10px",
-                                }}
-                            >
+                            <div className="grid w-full grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
                                 {rows.map((product) => (
                                     <ProductCard
                                         key={product.id}

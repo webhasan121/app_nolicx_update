@@ -1266,6 +1266,7 @@ return array (
   'find name, id' => 'buscar nome, ID',
   'from' => 'de',
   'grocery items' => 'itens de mercearia',
+  'hjgh' => 'hjgh',
   'in Dhaka' => 'em Dhaka',
   'inactivate' => 'desativar',
   'item' => 'item',

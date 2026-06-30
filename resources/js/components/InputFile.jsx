@@ -16,7 +16,10 @@ export default function InputFile({
             <div className="my-3 form-group">
                 <div className={`justify-start ${className}`}>
 
-                    <div style={{ width: labelWidth }} className="shrink-0">
+                    <div
+                        style={{ width: `min(100%, ${labelWidth})` }}
+                        className="shrink-0"
+                    >
 
                         <InputLabel
                             htmlFor={name ?? label}

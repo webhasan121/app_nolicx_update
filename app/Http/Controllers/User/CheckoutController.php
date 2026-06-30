@@ -23,6 +23,7 @@ class CheckoutController extends Controller
                 'id' => $package->id,
                 'name' => $package->name,
                 'price' => $package->price,
+                'image_url' => $package->image_url,
                 'coin' => $package->coin,
                 'countdown' => $package->countdown,
                 'description' => $package->description,

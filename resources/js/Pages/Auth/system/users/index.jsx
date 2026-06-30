@@ -129,16 +129,16 @@ export default function Index() {
                             title=""
                             content={
                                 <form
-                                    className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-end"
+                                    className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-end"
                                     onSubmit={(e) => {
                                         e.preventDefault();
                                         applyFilters();
                                     }}
                                 >
-                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:w-auto xl:flex-wrap xl:items-center xl:justify-end">
                                         <TextInput
                                             type="date"
-                                            className="h-10 w-40 py-2"
+                                            className="h-10 w-full py-2 xl:w-40"
                                             value={sd || today}
                                             onChange={(e) => {
                                                 const value = e.target.value;
@@ -154,7 +154,7 @@ export default function Index() {
                                         />
                                         <TextInput
                                             type="date"
-                                            className="h-10 w-40 py-2"
+                                            className="h-10 w-full py-2 xl:w-40"
                                             value={ed}
                                             onChange={(e) => {
                                                 const value = e.target.value;
@@ -168,25 +168,34 @@ export default function Index() {
                                                 });
                                             }}
                                         />
-                                        <TextInput
-                                            type="search"
-                                            placeholder={t("Search users...")}
-                                            className="h-10 w-52 py-2"
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key !== "Enter") {
-                                                    return;
-                                                }
+                                        <div className="flex w-full gap-2 sm:col-span-2 xl:w-auto">
+                                            <TextInput
+                                                type="search"
+                                                placeholder={t("Search users...")}
+                                                className="h-10 w-full py-2 xl:w-52"
+                                                value={search}
+                                                onChange={(e) => setSearch(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key !== "Enter") {
+                                                        return;
+                                                    }
 
-                                                e.preventDefault();
-                                                applyFilters();
-                                            }}
-                                        />
+                                                    e.preventDefault();
+                                                    applyFilters();
+                                                }}
+                                            />
+                                            <PrimaryButton
+                                                type="button"
+                                                className="h-10 shrink-0 justify-center px-4"
+                                                onClick={() => window.open(printUrl, "_blank")}
+                                            >
+                                                <i className="fas fa-print"></i>
+                                            </PrimaryButton>
+                                        </div>
                                         {hasActiveFilters ? (
                                             <button
                                                 type="button"
-                                                className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                                className="h-10 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50 sm:col-span-2 xl:col-auto"
                                                 onClick={() => {
                                                     setSearch("");
                                                     setSd("");
@@ -202,12 +211,6 @@ export default function Index() {
                                                 {t("Reset")}
                                             </button>
                                         ) : null}
-                                        <PrimaryButton
-                                            type="button"
-                                            onClick={() => window.open(printUrl, "_blank")}
-                                        >
-                                            <i className="fas fa-print"></i>
-                                        </PrimaryButton>
                                     </div>
                                 </form>
                             }
@@ -215,7 +218,10 @@ export default function Index() {
 
                         <SectionInner>
                             <div>
-                                <Table data={users?.data ?? []}>
+                                <Table
+                                    data={users?.data ?? []}
+                                    tableClassName="min-w-[980px] xl:min-w-full"
+                                >
                                         <thead>
                                             <tr>
                                                 <th>#</th>
@@ -299,7 +305,7 @@ export default function Index() {
 
                                 {pagination.pages.length ? (
                                         <div className="w-full pt-4">
-                                            <div className="flex w-full items-center justify-between gap-3">
+                                            <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                                 <div className="text-sm text-slate-700">
                                                     {resultSummary}
                                                 </div>

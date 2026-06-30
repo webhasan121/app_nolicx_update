@@ -171,8 +171,8 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between items-center">
-                                <div>
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                                <div className="flex flex-wrap items-center gap-3">
                                     <NavLink
                                         href={`?nav=web`}
                                         active={nav === "web"}
@@ -199,7 +199,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                     >{t("Both")}</NavLink>
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex w-full flex-col gap-2 sm:flex-row xl:w-auto">
                                     <TextInput
                                         type="search"
                                         value={search}
@@ -220,10 +220,10 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                                                 }
                                             );
                                         }}
-                                        className="py-1"
+                                        className="h-10 w-full py-2 xl:w-64"
                                         placeholder={t("Search sliders...")}
                                     />
-                                    <SecondaryButton onClick={() => setShowCreateModal(true)}>
+                                    <SecondaryButton className="w-full justify-center sm:w-auto" onClick={() => setShowCreateModal(true)}>
                                         <i className="fas fa-plus pr-2"></i>{t("Add")}</SecondaryButton>
                                 </div>
                             </div>
@@ -233,7 +233,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
 
                     <SectionInner>
                         <div>
-                            <Table data={rows}>
+                            <Table data={rows} tableClassName="min-w-[820px] xl:min-w-full">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -274,7 +274,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
 
                             {pagination.pages.length ? (
                                 <div className="w-full pt-4">
-                                    <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                         <div className="text-sm text-slate-700">
                                             {resultSummary}
                                         </div>
@@ -322,15 +322,15 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                 <div className="p-3">
                     <strong></strong>
                     <form onSubmit={submitCreate}>
-                        <div className="flex">
+                        <div className="flex flex-col gap-2 sm:flex-row">
                             <TextInput
                                 value={createForm.data.sliderName}
                                 onChange={(e) => createForm.setData("sliderName", e.target.value)}
-                                className="rounded-0 py-1 w-full"
+                                className="w-full py-2"
                                 placeholder={t("Give Slider Name")}
                             />
                             <select
-                                className="py-1 rounded shadow"
+                                className="h-10 rounded border-gray-300 shadow sm:w-36"
                                 value={createForm.data.sliderPlacement}
                                 onChange={(e) => createForm.setData("sliderPlacement", e.target.value)}
                             >
@@ -360,13 +360,13 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                         {createForm.errors.status ? (
                             <span className="text-xs text-red-900">{createForm.errors.status}</span>
                         ) : null}
-                        <div className="flex justify-between">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
                             <SecondaryButton
                                 type="button"
-                                className="mt-2"
+                                className="mt-2 w-full justify-center sm:w-auto"
                                 onClick={() => setShowCreateModal(false)}
                             >{t("Cancel")}</SecondaryButton>
-                            <PrimaryButton className="mt-2">{t("Add")}</PrimaryButton>
+                            <PrimaryButton className="mt-2 w-full justify-center sm:w-auto">{t("Add")}</PrimaryButton>
                         </div>
                     </form>
                 </div>
@@ -388,7 +388,7 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                             <TextInput
                                 value={updateForm.data.name}
                                 onChange={(e) => updateForm.setData("name", e.target.value)}
-                                className="rounded-0 py-1 w-full"
+                                className="w-full py-2"
                                 placeholder={t("Give Slider Name")}
                             />
                         </div>
@@ -429,16 +429,16 @@ export default function Index({ nav = "web", slider = {}, filters = {}, updateab
                             </div>
                         </div>
 
-                        <div className="flex justify-between">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
                             <SecondaryButton
                                 type="button"
-                                className="mt-2"
+                                className="mt-2 w-full justify-center sm:w-auto"
                                 onClick={() => {
                                     setShowEditModal(false);
                                     router.get(route("system.slider.index"), { nav, find: search.trim() }, { preserveScroll: true });
                                 }}
                             >{t("Cancel")}</SecondaryButton>
-                            <PrimaryButton className="mt-2">{t("Update")}</PrimaryButton>
+                            <PrimaryButton className="mt-2 w-full justify-center sm:w-auto">{t("Update")}</PrimaryButton>
                         </div>
                     </form>
                 </div>

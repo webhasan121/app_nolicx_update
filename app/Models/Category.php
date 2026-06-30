@@ -25,13 +25,21 @@ class Category extends Model
 
     public static function getAll()
     {
-        return self::whereNull('belongs_to')->orWhere('belongs_to', false)
+        return self::query()
+            ->select('id', 'user_id', 'name', 'slug', 'image', 'belongs_to')
+            ->where(function ($query) {
+                $query->whereNull('belongs_to')->orWhere('belongs_to', false);
+            })
             ->with(['children' => function ($query) {
                 $query
+                    ->select('id', 'user_id', 'name', 'slug', 'image', 'belongs_to')
                     ->with(['children' => function ($childQuery) {
                         $childQuery
+                            ->select('id', 'user_id', 'name', 'slug', 'image', 'belongs_to')
                             ->with(['children' => function ($grandChildQuery) {
-                                $grandChildQuery->orderBy('name');
+                                $grandChildQuery
+                                    ->select('id', 'user_id', 'name', 'slug', 'image', 'belongs_to')
+                                    ->orderBy('name');
                             }])
                             ->orderBy('name');
                     }])

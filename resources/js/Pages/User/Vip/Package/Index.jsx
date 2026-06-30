@@ -33,14 +33,7 @@ export default function VipPackageIndex() {
             <Container>
                 <SectionSection>
                     <SectionInner>
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns:
-                                    "repeat(auto-fit, minmax(200px, 1fr))",
-                                gap: "20px",
-                            }}
-                        >
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                             {packages.map((item) => (
                                 <VipCart
                                     key={item.id}

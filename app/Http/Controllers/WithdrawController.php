@@ -21,7 +21,7 @@ class WithdrawController extends Controller
     // request form user
     public function storeFromUser(Request $request)
     {
-        if (auth()->user()->myWithdraw()->where(['status' => 0])->exists()) {
+        if (auth()->user()->myWithdraw()->where('status', 0)->whereNull('is_rejected')->exists()) {
             return redirect()->back()->withInput()->with('warning', "A Request already in Pending. You are unable to request again!");
         }
 

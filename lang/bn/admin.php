@@ -1281,6 +1281,7 @@ return array (
   'find name, id' => 'নাম, আইডি খুঁজুন',
   'from' => 'থেকে',
   'grocery items' => 'মুদি পণ্য',
+  'hjgh' => 'hjgh',
   'in Dhaka' => 'ঢাকায়',
   'inactivate' => 'নিষ্ক্রিয়',
   'item' => 'আইটেম',

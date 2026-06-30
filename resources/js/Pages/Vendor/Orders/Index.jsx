@@ -156,7 +156,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
             header={
                 <PageHeader>{t("Orders")}<br />
                     {isReseller ? (
-                        <div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-2">
                             <NavLink href={route("vendor.orders.index")} active={route().current("vendor.orders.*")}>{t("User Orders")}</NavLink>
                             <NavLink href={route("reseller.resel-order.index")} active={route().current("reseller.resel-order.*")}>{t("My Resel Order")}</NavLink>
                         </div>
@@ -177,8 +177,8 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                     <SectionSection>
                         <SectionHeader
                             title={
-                                <div className="flex items-center justify-between gap-3">
-                                    <div className="flex flex-wrap items-center justify-start gap-2">
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex flex-col gap-2 lg:flex-row lg:flex-wrap lg:items-center">
                                         <Dropdown
                                             align="left"
                                             trigger={
@@ -225,7 +225,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                             type="date"
                                             value={filters.start_date || today}
                                             onChange={(e) => updateDateFilters({ start_date: e.target.value })}
-                                            className="min-w-[168px] py-1"
+                                            className="w-full py-1 sm:w-auto sm:min-w-[168px]"
                                             title="First Date"
                                         />
                                         <label className="sr-only" htmlFor="order_end_date">Last Date</label>
@@ -234,34 +234,40 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                             type="date"
                                             value={filters.end_date ?? ""}
                                             onChange={(e) => updateDateFilters({ end_date: e.target.value })}
-                                            className="min-w-[168px] py-1"
+                                            className="w-full py-1 sm:w-auto sm:min-w-[168px]"
                                             title="Last Date"
                                         />
                                     </div>
 
-                                    <div className="flex flex-wrap items-center justify-end gap-2">
-                                        <TextInput
-                                            type="search"
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key !== "Enter") {
-                                                    return;
-                                                }
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                                        <div className="flex w-full items-center gap-2 sm:w-auto md:min-w-[260px]">
+                                            <TextInput
+                                                type="search"
+                                                value={search}
+                                                onChange={(e) => setSearch(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key !== "Enter") {
+                                                        return;
+                                                    }
 
-                                                e.preventDefault();
-                                                updateFilters({ find: search.trim() });
-                                            }}
-                                            className="py-1"
-                                            placeholder={t("Search orders...")}
-                                        />
-                                        <PrimaryButton type="button" onClick={() => window.open(printUrl, "_blank")}>
-                                            <i className="fas fa-print"></i>
-                                        </PrimaryButton>
+                                                    e.preventDefault();
+                                                    updateFilters({ find: search.trim() });
+                                                }}
+                                                className="w-full py-1 sm:w-auto"
+                                                placeholder={t("Search orders...")}
+                                            />
+                                            <PrimaryButton
+                                                type="button"
+                                                className="h-[34px] shrink-0 justify-center px-4 py-1 text-sm"
+                                                onClick={() => window.open(printUrl, "_blank")}
+                                            >
+                                                <i className="fas fa-print"></i>
+                                            </PrimaryButton>
+                                        </div>
                                         {hasActiveFilters ? (
                                             <button
                                                 type="button"
-                                                className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50 sm:w-auto"
                                                 onClick={() => {
                                                     setSearch("");
                                                     updateFilters({
@@ -283,8 +289,8 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                 </div>
                             }
                             content={
-                                <div className="flex justify-between">
-                                    <div>
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="flex flex-wrap gap-x-2 gap-y-1">
                                         {navs.map((nav) => (
                                             <NavLink
                                                 key={nav}
@@ -296,10 +302,12 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                         ))}
                                     </div>
 
-                                    <NavLink
-                                        href={route("vendor.orders.index", buildQuery(filters, { nav: "Trash", page: 1 }))}
-                                        active={filters.nav === "Trash"}
-                                    >{t("Trash")}</NavLink>
+                                    <div>
+                                        <NavLink
+                                            href={route("vendor.orders.index", buildQuery(filters, { nav: "Trash", page: 1 }))}
+                                            active={filters.nav === "Trash"}
+                                        >{t("Trash")}</NavLink>
+                                    </div>
                                 </div>
                             }
                         />
@@ -316,7 +324,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                             </Table>
                             ) : null}
 
-                            <Table data={rows}>
+                            <Table data={rows} className="[&_table]:min-w-[1080px]">
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -373,16 +381,16 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
 
                             {pagination.pages.length ? (
                                     <div className="w-full pt-4">
-                                        <div className="flex items-center justify-between w-full gap-3">
+                                        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                             <div className="text-sm text-slate-700">
                                                 {resultSummary}
                                             </div>
-                                            <div className="flex items-center md:justify-end">
+                                            <div className="flex w-full justify-center sm:w-auto sm:justify-end">
                                                 <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
                                                     <button
                                                         type="button"
                                                         disabled={!pagination.prev?.url}
-                                                        className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                        className="px-3 py-2 text-xs transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 sm:px-4 sm:text-sm"
                                                         onClick={() => goToPage(pagination.prev?.url)}
                                                     >{t("Previous")}</button>
                                                     {pagination.pages.map((link, idx) => (
@@ -390,7 +398,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                             key={`${link.label}-${idx}`}
                                                             type="button"
                                                             disabled={!link.url}
-                                                            className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                            className={`min-w-8 border-r border-slate-200 px-3 py-2 text-xs font-semibold transition sm:min-w-10 sm:px-4 sm:text-sm ${
                                                                 link.active
                                                                     ? "bg-slate-100 text-blue-600"
                                                                     : "bg-white text-slate-700 hover:bg-slate-50"
@@ -403,7 +411,7 @@ export default function Index({ filters = {}, summary = {}, list = {}, activeNav
                                                     <button
                                                         type="button"
                                                         disabled={!pagination.next?.url}
-                                                        className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                        className="px-3 py-2 text-xs transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 sm:px-4 sm:text-sm"
                                                         onClick={() => goToPage(pagination.next?.url)}
                                                     >{t("Next")}</button>
                                                 </div>

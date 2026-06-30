@@ -14,7 +14,7 @@ Route::post('/consignments/{order}/confirm', [ConsignmentController::class, 'con
 // Route::get('my-consignments', Index::class)->name('rider.consignment');
 Route::get('/consignments/{id}', [ConsignmentController::class, 'show'])->name('rider.consignment.view')->middleware(AbleTo::class . ':access_rider_dashboard');
 Route::post('/consignments/{consignment}/status', function (Request $request, cod $consignment) {
-    abort_unless($consignment->rider_id === auth()->id(), 403);
+    abort_unless((int) $consignment->rider_id === (int) auth()->id(), 403);
 
     $payload = $request->validate([
         'status' => ['required', 'string', 'in:Received,Completed'],

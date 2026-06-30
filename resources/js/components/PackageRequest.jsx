@@ -58,10 +58,10 @@ export default function PackageRequest({ isRequestedAccepted }) {
           }
 
           return (
-            <div key={req.id} className="items-start justify-between m-0 md:flex">
+            <div key={req.id} className="m-0 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
 
               <div className="mt-4">
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gridGap: "20px" }}>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
                   <div className="block border bold vip_item_info_box">
                     <div className="text-left">
@@ -73,7 +73,7 @@ export default function PackageRequest({ isRequestedAccepted }) {
                     <i className="fas fa-caret-right"></i>
                   </div>
 
-                  <Hr />
+                  <Hr className="hidden xl:block" />
 
                   <div>
                     <div className="text-md">Active From</div>
@@ -87,11 +87,11 @@ export default function PackageRequest({ isRequestedAccepted }) {
                     </div>
                   </div>
 
-                  <Hr />
+                  <Hr className="hidden xl:block" />
                 </div>
               </div>
 
-              <div className="px-2 py-4 text-sm">
+              <div className="px-0 py-2 text-sm sm:px-2 sm:py-4">
 
                 <div className="mb-1 text-white bg-indigo-900 border vip_item_info_box">
                   <div>Package</div>
@@ -123,7 +123,7 @@ export default function PackageRequest({ isRequestedAccepted }) {
 
               </div>
 
-              <div className="hidden mt-4 lg:block">
+              <div className="mt-2 hidden lg:block">
                 <VipCart
                   item={req.package}
                   type="owner"

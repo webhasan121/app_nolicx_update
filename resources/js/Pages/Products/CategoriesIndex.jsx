@@ -5,8 +5,29 @@ import UserLayout from "../../Layouts/User/App";
 import NavLink from "../../components/NavLink";
 import useTranslation from "../../hooks/useTranslation";
 
+const PRIORITY_CATEGORY_SLUGS = [
+    "womens-item",
+    "mega-deals",
+    "medicine",
+    "grocery-item",
+    "food-items",
+];
+
+const orderCategories = (categories = []) =>
+    [...categories].sort((left, right) => {
+        const leftPriority = PRIORITY_CATEGORY_SLUGS.indexOf(left.slug);
+        const rightPriority = PRIORITY_CATEGORY_SLUGS.indexOf(right.slug);
+
+        if (leftPriority === -1 && rightPriority === -1) return 0;
+        if (leftPriority === -1) return 1;
+        if (rightPriority === -1) return -1;
+
+        return leftPriority - rightPriority;
+    });
+
 export default function CategoriesIndex({ categories = [] }) {
     const { t } = useTranslation();
+    const orderedCategories = orderCategories(categories);
 
     return (
         <UserLayout title={t("Category")}>
@@ -19,7 +40,7 @@ export default function CategoriesIndex({ categories = [] }) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 xl:grid-cols-10">
-                    {categories
+                    {orderedCategories
                         .filter((item) => item.slug !== "default-category")
                         .map((item) => (
                             <div

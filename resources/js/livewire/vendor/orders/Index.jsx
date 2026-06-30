@@ -157,7 +157,7 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                     {t("Orders")}
                     <br />
                     {isReseller ? (
-                        <div>
+                        <div className="flex flex-wrap gap-2">
                             <NavLink
                                 href={route("vendor.orders.index")}
                                 active={route().current("vendor.orders.*")}
@@ -187,12 +187,12 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center space-x-2">
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-2 lg:flex-row lg:flex-wrap lg:items-center">
                                     <Dropdown
                                         align="left"
                                         trigger={
-                                            <SecondaryButton className="inline-flex items-center ">
+                                            <SecondaryButton className="inline-flex w-auto items-center justify-center self-start">
                                                 {t("Delivery")} <i className="fas fa-angle-down ps-2"></i>
                                             </SecondaryButton>
                                         }
@@ -216,7 +216,7 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
 
                                     <Dropdown
                                         trigger={
-                                            <SecondaryButton>
+                                            <SecondaryButton className="inline-flex w-auto items-center justify-center self-start">
                                                 {t("Area")} <i className="fas fa-angle-down ps-2"></i>
                                             </SecondaryButton>
                                         }
@@ -235,7 +235,7 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                         </div>
                                     </Dropdown>
 
-                                    <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                                         <label className="sr-only" htmlFor="order_start_date">{t("First Date")}</label>
                                         <div>
                                             <TextInput
@@ -243,7 +243,7 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                                 type="date"
                                                 value={filters.start_date || today}
                                                 onChange={(e) => updateDateFilters({ start_date: e.target.value })}
-                                                className="py-1"
+                                                className="h-10 w-full py-1 sm:w-auto"
                                                 title={t("First Date")}
                                             />
                                         </div>
@@ -254,14 +254,14 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                                 type="date"
                                                 value={filters.end_date ?? ""}
                                                 onChange={(e) => updateDateFilters({ end_date: e.target.value })}
-                                                className="py-1"
+                                                className="h-10 w-full py-1 sm:w-auto"
                                                 title={t("Last Date")}
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center md:min-w-[260px]">
                                     <TextInput
                                         type="search"
                                         value={search}
@@ -274,11 +274,12 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                             e.preventDefault();
                                             updateFilters({ find: search.trim() });
                                         }}
-                                        className="py-1"
+                                        className="h-10 w-full py-1 sm:w-auto"
                                         placeholder={t("Search orders...")}
                                     />
                                     <PrimaryButton
                                         type="button"
+                                        className="inline-flex h-10 w-auto shrink-0 justify-center self-start px-4 py-1 text-sm sm:h-[34px]"
                                         onClick={() => window.open(orderIndex?.print_url, "_blank")}
                                     >
                                         <i className="fas fa-print"></i>
@@ -287,8 +288,8 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                             </div>
                         }
                         content={
-                            <div className="flex justify-between gap-3">
-                                <div>
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="flex flex-wrap gap-x-2 gap-y-1">
                                     {navs.map((nav) => (
                                         <NavLink
                                             key={nav}
@@ -300,28 +301,33 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                     ))}
                                 </div>
 
-                                <NavLink
-                                    href={route("dashboard", buildQuery(filters, { nav: "Trashed", page: 1 }))}
-                                    active={filters.nav === "Trashed"}
-                                >
-                                    {t("Trash")}
-                                </NavLink>
+                                <div>
+                                    <NavLink
+                                        href={route("dashboard", buildQuery(filters, { nav: "Trashed", page: 1 }))}
+                                        active={filters.nav === "Trashed"}
+                                    >
+                                        {t("Trash")}
+                                    </NavLink>
+                                </div>
                             </div>
                         }
                     />
 
                     <SectionInner>
                         {hasActiveFilters ? (
-                        <Table data={rows}>
-                            <thead>
-                                <tr>
-                                    <th colSpan="3"> {rows.length} {t("Products")} </th>
-                                    <th>{list.sum_total ?? 0} TK</th>
-                                </tr>
-                            </thead>
-                        </Table>
+                        <div className="overflow-x-auto">
+                            <Table data={rows}>
+                                <thead>
+                                    <tr>
+                                        <th colSpan="3"> {rows.length} {t("Products")} </th>
+                                        <th>{list.sum_total ?? 0} TK</th>
+                                    </tr>
+                                </thead>
+                            </Table>
+                        </div>
                         ) : null}
 
+                        <div className="overflow-x-auto">
                         <Table data={rows}>
                                 <thead>
                                     <tr>
@@ -376,19 +382,20 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                     ))}
                                 </tbody>
                         </Table>
+                        </div>
 
                         {pagination.pages.length ? (
                                 <div className="w-full pt-4">
-                                    <div className="flex items-center justify-between w-full gap-3">
-                                        <div className="text-sm text-slate-700">
+                                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="text-sm leading-6 text-slate-700">
                                             {resultSummary}
                                         </div>
-                                        <div className="flex items-center md:justify-end">
-                                            <div className="overflow-hidden bg-white border shadow-sm rounded-xl border-slate-200">
+                                        <div className="flex w-full justify-start sm:w-auto sm:justify-end">
+                                            <div className="inline-flex flex-nowrap overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                                                 <button
                                                     type="button"
                                                     disabled={!pagination.prev?.url}
-                                                    className="px-4 py-2 text-sm transition border-r border-slate-200 text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    className="whitespace-nowrap border-r border-slate-200 px-3 py-2 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 sm:px-4 sm:text-sm"
                                                     onClick={() => goToPage(pagination.prev?.url)}
                                                 >
                                                     {t("Previous")}
@@ -398,7 +405,7 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                                         key={`${link.label}-${pageIndex}`}
                                                         type="button"
                                                         disabled={!link.url}
-                                                        className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                        className={`min-w-8 whitespace-nowrap border-r border-slate-200 px-3 py-2 text-xs font-semibold transition sm:min-w-10 sm:px-4 sm:text-sm ${
                                                             link.active
                                                                 ? "bg-slate-100 text-blue-600"
                                                                 : "bg-white text-slate-700 hover:bg-slate-50"
@@ -411,7 +418,7 @@ export default function Index({ orderIndex, activeNav, embedded = false }) {
                                                 <button
                                                     type="button"
                                                     disabled={!pagination.next?.url}
-                                                    className="px-4 py-2 text-sm transition text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                    className="whitespace-nowrap px-3 py-2 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 sm:px-4 sm:text-sm"
                                                     onClick={() => goToPage(pagination.next?.url)}
                                                 >
                                                     {t("Next")}

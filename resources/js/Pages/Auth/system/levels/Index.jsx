@@ -144,9 +144,9 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
             header={<PageHeader>{t("Star System - Levels")}</PageHeader>}
         >
             <Container>
-                <div className="flex items-center gap-2">
-                    <NavLinkBtn href={route("system.levels.index")}>Levels</NavLinkBtn>
-                    <NavLinkBtn href={route("system.levels.history")}>History</NavLinkBtn>
+                <div className="flex flex-wrap items-center gap-2">
+                    <NavLinkBtn href={route("system.levels.index")} className="inline-flex w-auto justify-center">Levels</NavLinkBtn>
+                    <NavLinkBtn href={route("system.levels.history")} className="inline-flex w-auto justify-center">History</NavLinkBtn>
                 </div>
             </Container>
 
@@ -154,30 +154,32 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                                 <h2>{t("Levels")}</h2>
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end xl:w-auto">
                                     <form
                                         onSubmit={(e) => {
                                             e.preventDefault();
                                             requestLevels();
                                         }}
+                                        className="w-full sm:w-auto"
                                     >
                                         <TextInput
                                             type="search"
                                             placeholder={t("Search levels...")}
-                                            className="py-1"
+                                            className="h-10 w-full py-2 sm:w-56"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                         />
                                     </form>
                                     <PrimaryButton
                                         type="button"
+                                        className="inline-flex w-auto justify-center self-start"
                                         onClick={() => window.open(printUrl, "_blank")}
                                     >
                                         <i className="fas fa-print"></i>
                                     </PrimaryButton>
-                                    <PrimaryButton type="button" onClick={openCreateModal}>
+                                    <PrimaryButton type="button" className="inline-flex w-auto justify-center self-start" onClick={openCreateModal}>
                                         <i className="mr-2 fas fa-plus"></i>
                                         <span>{t("Add New")}</span>
                                     </PrimaryButton>
@@ -189,7 +191,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
 
                     <SectionInner>
                         <div className="overflow-x-auto border border-gray-200 shadow-sm rounded-xl">
-                            <table className="min-w-full text-sm divide-y divide-gray-200">
+                            <table className="min-w-[900px] text-sm divide-y divide-gray-200 xl:min-w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
                                         {columns.map((column, index) => (
@@ -257,7 +259,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
 
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="text-sm text-slate-700">{resultSummary}</div>
                                     <div className="flex items-center md:justify-end">
                                         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -316,7 +318,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                             ) : null}
                         </div>
 
-                        <div className="grid grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                             <div className="relative">
                                 <InputLabel>Normal Users</InputLabel>
                                 <TextInput
@@ -376,7 +378,7 @@ export default function Index({ columns = [], levels = {}, filters = {}, printUr
                         </div>
 
                         <div className="flex justify-end">
-                            <PrimaryButton type="submit" disabled={form.processing}>{t("Save Level")}</PrimaryButton>
+                            <PrimaryButton type="submit" className="w-full justify-center sm:w-auto" disabled={form.processing}>{t("Save Level")}</PrimaryButton>
                         </div>
                     </form>
                 </div>

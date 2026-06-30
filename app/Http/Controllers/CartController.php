@@ -10,6 +10,7 @@ class CartController extends Controller
     public function store(Request $request)
     {
         $product = \App\Models\Product::findOrFail($request->product_id);
+        $count = auth()->user()->myCarts()->count();
 
         $exists = auth()->user()
             ->myCarts()
@@ -20,6 +21,7 @@ class CartController extends Controller
             return response()->json([
                 'type' => 'info',
                 'message' => 'Product already in cart',
+                'cartCount' => $count,
             ]);
         }
 

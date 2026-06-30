@@ -10,11 +10,17 @@ class Packages extends Model
 {
 
     use SoftDeletes;
+
+    protected $appends = [
+        'image_url',
+    ];
+
     //
     protected $fillable = [
         'name',
         'slug',
         'price',
+        'image',
         'coin',
         'm_coin',
         'countdown', //how many times user may stay to complate task
@@ -47,6 +53,11 @@ class Packages extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 1);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
     }
 
     public function user()

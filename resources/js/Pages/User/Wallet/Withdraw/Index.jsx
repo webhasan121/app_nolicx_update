@@ -62,7 +62,7 @@ export default function WithdrawIndex() {
                     <SectionSection>
                         <div className="flex items-center justify-between">
                             <div>{t("Last Activity")}</div>
-                            <NavLink href="">{t("History")}</NavLink>
+                            <NavLink href={route("user.wallet.index")}>{t("History")}</NavLink>
                         </div>
 
                         <div className="mt-2">
@@ -95,8 +95,12 @@ export default function WithdrawIndex() {
                                                     <form
                                                         className={`${wtd.is_rejected ? "d-none" : "d-block"}`}
                                                         onSubmit={(e) => {
-                                                            confirm(t("Are you sure to cancel this withdraw request?")) &&
                                                             e.preventDefault();
+
+                                                            if (!confirm(t("Are you sure to cancel this withdraw request?"))) {
+                                                                return;
+                                                            }
+
                                                             cancelWithdraw(wtd.id);
                                                         }}
                                                     >

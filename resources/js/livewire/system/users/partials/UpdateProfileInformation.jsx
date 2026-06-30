@@ -70,7 +70,7 @@ export default function UpdateProfileInformation({
                             />
                         </div>
                         <hr />
-                        <div className="flex items-start my-2">
+                        <div className="my-2 flex items-start gap-3">
                             <TextInput
                                 type="checkbox"
                                 id="reference"
@@ -83,13 +83,9 @@ export default function UpdateProfileInformation({
                                         e.target.checked ? defaultAdminRef : ""
                                     )
                                 }
-                                style={{
-                                    width: 25,
-                                    height: 25,
-                                    marginRight: 25,
-                                }}
+                                className="mt-1 h-6 w-6 shrink-0"
                             />
-                            <div>
+                            <div className="min-w-0">
                                 <p className="bold font-bold fw-bold m-0">
                                     Set Default Admin Ref
                                 </p>

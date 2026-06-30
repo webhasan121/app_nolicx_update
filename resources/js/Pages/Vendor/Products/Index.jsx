@@ -149,15 +149,18 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
         <AppLayout
             title={t("Products")}
             header={
-                <PageHeader>{t("Products")}<br />
-                    <div>
-                        <NavLink href={route("vendor.products.view")} active={route().current("vendor.products.*")}>{t("Your Product")}</NavLink>
+                <PageHeader>
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>{t("Products")}</div>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <NavLink href={route("vendor.products.view")} active={route().current("vendor.products.*")}>{t("Your Product")}</NavLink>
                         {isReseller ? (
                             <NavLink
                                 href={route("reseller.resel-product.index")}
                                 active={route().current("reseller.resel-product.*")}
                             >{t("Reseller Product")}</NavLink>
                         ) : null}
+                        </div>
                     </div>
                 </PageHeader>
             }
@@ -168,7 +171,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                 <Section>
                     <SectionHeader title={t("Your Products")} content={t("Your have product to resel")} />
                     <SectionInner>
-                        <NavLinkBtn href={route("vendor.products.create")}>
+                        <NavLinkBtn href={route("vendor.products.create")} className="inline-flex w-full justify-center sm:w-auto">
                             Add Product
                         </NavLinkBtn>
                     </SectionInner>
@@ -179,25 +182,25 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between items-center">
-                                <div>
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="w-full xl:w-auto">
                                     {selectedModel.length < 1 ? (
-                                        <div>
+                                        <div className="flex flex-wrap items-center gap-3">
                                             <NavLink href={route("vendor.products.view", buildQuery(filters, { nav: "Active", take: "" }))} active={(filters.nav ?? "Active") === "Active" && !filters.take}>{t("Active")}</NavLink>
                                             <NavLink href={route("vendor.products.view", buildQuery(filters, { take: "trash", nav: "" }))} active={isTrash}>{t("Trash")}</NavLink>
                                         </div>
                                     ) : isTrash ? (
-                                        <PrimaryButton type="button" onClick={() => postBulkAction("vendor.products.bulk-restore")}>{t("Restore")}</PrimaryButton>
+                                        <PrimaryButton type="button" className="w-full justify-center sm:w-auto" onClick={() => postBulkAction("vendor.products.bulk-restore")}>{t("Restore")}</PrimaryButton>
                                     ) : (
-                                        <PrimaryButton type="button" onClick={() => postBulkAction("vendor.products.bulk-trash")}>{t("Move to Trash")}</PrimaryButton>
+                                        <PrimaryButton type="button" className="w-full justify-center sm:w-auto" onClick={() => postBulkAction("vendor.products.bulk-trash")}>{t("Move to Trash")}</PrimaryButton>
                                     )}
                                 </div>
 
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:w-auto xl:flex-wrap xl:items-center xl:justify-end">
                                     <select
                                         value={statusFilterValue}
                                         onChange={(e) => updateStatusFilter(e.target.value)}
-                                        className="w-36 rounded-md border-gray-300 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="h-10 w-full rounded-md border-gray-300 px-3 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 xl:w-36"
                                         aria-label="Status"
                                     >
                                         <option value="Active">{t("Active")}</option>
@@ -208,29 +211,34 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                                         type="date"
                                         value={filters.start_date ?? ""}
                                         onChange={(e) => updateDateFilter("start_date", e.target.value)}
-                                        className="w-36 rounded-md border-gray-300 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="h-10 w-full rounded-md border-gray-300 px-3 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 xl:w-36"
                                         aria-label="Start date"
                                     />
                                     <input
                                         type="date"
                                         value={filters.end_date ?? ""}
                                         onChange={(e) => updateDateFilter("end_date", e.target.value)}
-                                        className="w-36 rounded-md border-gray-300 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="h-10 w-full rounded-md border-gray-300 px-3 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 xl:w-36"
                                         aria-label="End date"
                                     />
-                                    <TextInput
-                                        type="search"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder={t("Search by name")}
-                                        className="hidden lg:block py-1"
-                                    />
+                                    <div className="flex w-full gap-2 sm:col-span-2 xl:w-auto">
+                                        <TextInput
+                                            type="search"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            placeholder={t("Search by name")}
+                                            className="h-10 w-full py-2 xl:w-56"
+                                        />
+                                        <PrimaryButton type="button" className="h-10 shrink-0 justify-center px-4 xl:hidden" onClick={() => window.open(printUrl, "_blank")}>
+                                            <i className="fas fa-print"></i>
+                                        </PrimaryButton>
+                                    </div>
                                     {hasActiveToolbarFilter ? (
-                                        <PrimaryButton type="button" onClick={resetToolbarFilters}>
+                                        <PrimaryButton type="button" className="h-10 w-full justify-center sm:col-span-1 xl:w-auto" onClick={resetToolbarFilters}>
                                             {t("Reset")}
                                         </PrimaryButton>
                                     ) : null}
-                                    <PrimaryButton type="button" className="mr-2" onClick={() => window.open(printUrl, "_blank")}>
+                                    <PrimaryButton type="button" className="hidden h-10 justify-center px-4 xl:inline-flex" onClick={() => window.open(printUrl, "_blank")}>
                                         <i className="fas fa-print"></i>
                                     </PrimaryButton>
                                 </div>
@@ -239,7 +247,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
                         content=""
                     />
                     <SectionInner>
-                        <Table data={rows}>
+                        <Table data={rows} tableClassName="min-w-[1100px] xl:min-w-full">
                                 <thead>
                                     <tr>
                                         <th></th>
@@ -310,7 +318,7 @@ export default function Index({ filters = {}, products = { data: [], links: [] }
 
                         {pagination.pages.length ? (
                                 <div className="w-full pt-4">
-                                    <div className="flex w-full items-center justify-between gap-3">
+                                    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                         <div className="text-sm text-slate-700">
                                             {resultSummary}
                                         </div>

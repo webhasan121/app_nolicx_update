@@ -21,12 +21,17 @@ export default function VipIndex() {
         <UserDash>
             <Container>
                 <SectionSection>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <SectionHeader
                             title={t("VIP Package")}
                             content={t("your vip package, visit packages and purchase one.")}
                         />
-                        <PrimaryButton onClick={() => setShow(true)}>{t("Purchase")}</PrimaryButton>
+                        <PrimaryButton
+                            onClick={() => setShow(true)}
+                            className="!inline-block w-full sm:w-auto"
+                        >
+                            {t("Purchase")}
+                        </PrimaryButton>
                     </div>
                 </SectionSection>
 
@@ -46,16 +51,8 @@ export default function VipIndex() {
                         </div>
                     ) : null}
                 </div>
-                <Modal show={show} onClose={() => setShow(false)}>
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns:
-                                "repeat(auto-fit, minmax(250px, 1fr))",
-                            gap: "20px",
-                            padding: "30px 50px",
-                        }}
-                    >
+                <Modal show={show} onClose={() => setShow(false)} maxWidth="2xl">
+                    <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:gap-5 sm:p-6">
                         {packages.map((item) => (
                             <VipCart
                                 key={item.id}

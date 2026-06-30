@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use App\Support\TranslationManager;
 use App\Support\SystemSettings;
 use App\Support\CountrySelection;
+use Illuminate\Support\Collection;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -44,37 +45,23 @@ class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
 
 
-            'auth' => function () {
+            'auth' => function () use ($request) {
                 $user = auth()->user();
 
                 if ($user) {
                     $roles = $user->getRoleNames();
 
-                    if (!$roles->contains($user->active_nav)) {
-                        $user->active_nav = $roles[0] ?? $user->active_nav;
+                    $isDashboardRequest = $request->is('dashboard') || $request->is('dashboard/*');
+
+                    $resolvedActiveNav = $this->resolveActiveNav(
+                        $roles,
+                        $user->active_nav,
+                        $isDashboardRequest
+                    );
+
+                    if ($resolvedActiveNav !== $user->active_nav) {
+                        $user->active_nav = $resolvedActiveNav;
                         $user->save();
-                    }
-
-                    if (empty($user->active_nav)) {
-                        if (count($roles) > 2) {
-                            $user->active_nav = $roles[0] ?? $user->active_nav;
-                            $user->save();
-                        } else {
-                            if ($roles->contains('venodor')) {
-                                $user->active_nav = 'vendor';
-                                $user->save();
-                            }
-
-                            if ($roles->contains('reseller')) {
-                                $user->active_nav = 'reseller';
-                                $user->save();
-                            }
-
-                            if ($roles->contains('rider')) {
-                                $user->active_nav = 'rider';
-                                $user->save();
-                            }
-                        }
                     }
                 }
 
@@ -157,5 +144,33 @@ class HandleInertiaRequests extends Middleware
                 ];
             },
         ]);
+    }
+
+    private function resolveActiveNav(Collection $roles, ?string $current, bool $isDashboardRoute = false): string
+    {
+        $roles = $roles->filter()->values();
+
+        $dashboardRoles = collect(['system', 'vendor', 'reseller', 'rider']);
+        $hasDashboardRole = $roles->intersect($dashboardRoles)->isNotEmpty();
+
+        if (
+            $current &&
+            $roles->contains($current) &&
+            !($isDashboardRoute && $current === 'user' && $hasDashboardRole)
+        ) {
+            return $current;
+        }
+
+        if ($roles->contains('system') || $roles->contains('admin')) {
+            return 'system';
+        }
+
+        foreach (['vendor', 'reseller', 'rider'] as $dashboardRole) {
+            if ($roles->contains($dashboardRole)) {
+                return $dashboardRole;
+            }
+        }
+
+        return $roles->first() ?? 'user';
     }
 }

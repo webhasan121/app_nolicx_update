@@ -20,7 +20,7 @@ import useTranslation from "../../../hooks/useTranslation";
 
 const MAX_OTHER_IMAGES = 8;
 
-export default function Create({ categories = [], shop, ableToCreate = true }) {
+export default function Create({ categories = [], shop, ableToCreate = true, requiresShop = false }) {
     const { t } = useTranslation();
     const inputId = useId().replace(/:/g, "");
     const editorRef = useRef(null);
@@ -214,23 +214,31 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                     <SectionHeader
                         title={t("Product Create Form")}
                         content={
-                            <>
-                                Create new product to sell to a cheaf price. to make more profit, define your{" "}
-                                <strong>{t("Bying Price")}</strong> and <strong>{t("Selling Price")}</strong>. Keep it mind that,{" "}
-                                <b>{t("Super Admin")}</b> takes <strong> {shop?.system_get_comission ?? "N/A"}% </strong> of
-                                comission from your profit.
-                                <br />
-                                {!ableToCreate && (
-                                    <span className="p-3 text-red-900 bg-red-200 rounded shadow-lg">{t("You have reached your maximum product upload limit (")}{shop?.max_product_upload ?? 0}{t("). Please contact support to increase your limit.")}</span>
+                            <div className="space-y-3 break-words leading-7">
+                                <p>
+                                    Create new product to sell to a cheaf price. to make more profit, define your{" "}
+                                    <strong>{t("Bying Price")}</strong> and <strong>{t("Selling Price")}</strong>. Keep it mind that,{" "}
+                                    <b>{t("Super Admin")}</b> takes <strong>{shop?.system_get_comission ?? "N/A"}%</strong> of
+                                    comission from your profit.
+                                </p>
+                                {requiresShop && (
+                                    <div className="block w-full rounded bg-red-200 p-3 text-sm leading-6 text-red-900 shadow-lg">
+                                        {t("Please complete your shop profile before creating products.")}
+                                    </div>
                                 )}
-                            </>
+                                {!requiresShop && !ableToCreate && (
+                                    <div className="block w-full rounded bg-red-200 p-3 text-sm leading-6 text-red-900 shadow-lg">
+                                        {t("You have reached your maximum product upload limit (")}{shop?.max_product_upload ?? 0}{t("). Please contact support to increase your limit.")}
+                                    </div>
+                                )}
+                            </div>
                         }
                     />
                 </Section>
 
                 <form onSubmit={submit}>
-                    <div className="md:flex md:gap-4">
-                        <Section className="md:flex-1">
+                    <div className="flex flex-col gap-4 xl:flex-row">
+                        <Section className="xl:flex-1">
                             <SectionHeader title={t("Product Basic Info")} content="" />
                             <SectionInner>
                                 <InputField
@@ -281,7 +289,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                             </SectionInner>
                         </Section>
 
-                        <Section className="md:w-[324px] md:flex-none">
+                        <Section className="xl:w-[324px] xl:flex-none">
                             <SectionHeader title={t("Product Price")} content="" />
                             <SectionInner>
                                 <div>
@@ -326,7 +334,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                     </InputFile>
                                     {form.data.offer_type && (
                                         <InputField
-                                            className="md:flex"
+                                            className=""
                                             labelWidth="250px"
                                             label={t("Product Discount Price")}
                                             name="discount"
@@ -358,8 +366,8 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                 content={t("Define your product delevery option and charge from here.")}
                             />
                             <SectionInner>
-                                <div className="justify-between md:flex">
-                                    <div>
+                                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
+                                    <div className="min-w-0">
                                         <InputFile error="cod" label={t("Available Cash-On-Delevery")} className="lg:flex" name="cod">
                                             <input
                                                 type="checkbox"
@@ -387,7 +395,7 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                                             />
                                         </InputFile>
                                     </div>
-                                    <div>
+                                    <div className="min-w-0">
                                         <InputField
                                             label={t("Delevery Amount Inside Dhaka")}
                                             name="shipping_in_dhaka"
@@ -503,34 +511,41 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                         </Section>
 
                         <Section>
-                            <div className="justify-between md:flex flex-rowreverse">
-                                <SectionHeader
-                                    title={t("Image Thumbnail")}
-                                    content={
-                                        <div>{t("Provide a mendatory thumbnail image for your products. This image consider for the thumbnail for social media platform.")}
-                                            <div className="relative mt-3">
-                                                <p className="mb-2 text-xs">{t("600 x 600 image thumbnail")}</p>
-                                                <input
-                                                    type="file"
-                                                    className="absolute hidden p-1 border"
-                                                    id="prod_thumbnail"
-                                                    onChange={(e) => form.setData("thumb", e.target.files?.[0] ?? null)}
-                                                />
-                                                <label
-                                                    htmlFor="prod_thumbnail"
-                                                    className="inline-flex items-center justify-center border rounded cursor-pointer w-9 h-9"
-                                                >
-                                                    <i className="fas fa-upload"></i>
-                                                </label>
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="flex-1">
+                                    <SectionHeader
+                                        title={t("Image Thumbnail")}
+                                        content={
+                                            <div>
+                                                {t("Provide a mendatory thumbnail image for your products. This image consider for the thumbnail for social media platform.")}
+                                                <div className="relative mt-3">
+                                                    <p className="mb-2 text-xs">{t("600 x 600 image thumbnail")}</p>
+                                                    <input
+                                                        type="file"
+                                                        className="absolute hidden p-1 border"
+                                                        id="prod_thumbnail"
+                                                        onChange={(e) => form.setData("thumb", e.target.files?.[0] ?? null)}
+                                                    />
+                                                    <label
+                                                        htmlFor="prod_thumbnail"
+                                                        className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded border"
+                                                    >
+                                                        <i className="fas fa-upload"></i>
+                                                    </label>
+                                                </div>
                                             </div>
-                                        </div>
-                                    }
-                                />
+                                        }
+                                    />
+                                </div>
 
-                                <SectionInner>
+                                <SectionInner className="w-full xl:w-auto">
                                     {thumbPreview ? (
-                                        <img src={thumbPreview} width="100px" height="200px" alt="" />
-                                    ) : null}
+                                        <img src={thumbPreview} className="h-auto max-w-[140px] rounded border" alt="" />
+                                    ) : (
+                                        <div className="flex h-[140px] w-full items-center justify-center rounded border border-dashed border-slate-300 text-sm text-slate-400 xl:w-[140px]">
+                                            {t("No image")}
+                                        </div>
+                                    )}
                                 </SectionInner>
                             </div>
                         </Section>
@@ -605,9 +620,12 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                             />
                             <SectionInner>
                                 <InputFile label={t("Description")} labelWidth="250px" error="description" errors={form.errors}>
-                                    <main>
-                                        {trixReady && <trix-toolbar id={`my_toolbar_${inputId}`}></trix-toolbar>}
-                                        <div className="more-stuff-inbetween"></div>
+                                    <main className="min-w-0">
+                                        {trixReady ? (
+                                            <div className="overflow-x-auto">
+                                                <trix-toolbar id={`my_toolbar_${inputId}`}></trix-toolbar>
+                                            </div>
+                                        ) : null}
                                         <input
                                             type="hidden"
                                             name="content"
@@ -634,7 +652,15 @@ export default function Create({ categories = [], shop, ableToCreate = true }) {
                             </SectionInner>
                         </Section>
 
-                        <PrimaryButton type="submit" disabled={form.processing}>{t("create")}</PrimaryButton>
+                        <div className="pb-4">
+                            <PrimaryButton
+                                type="submit"
+                                className="w-full justify-center sm:w-auto"
+                                disabled={form.processing || requiresShop || !ableToCreate}
+                            >
+                                {t("create")}
+                            </PrimaryButton>
+                        </div>
                     </div>
                 </form>
             </Container>

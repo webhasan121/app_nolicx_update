@@ -210,21 +210,22 @@ export default function Index({
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-between gap-3">
-                                <div className="flex space-x-2">
+                            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center md:shrink-0">
                                     <select
                                         value={nav}
                                         onChange={(e) =>
                                             changeNav(e.target.value)
                                         }
-                                        className="rounded py-1"
+                                        className="w-full rounded py-1 sm:w-auto md:min-w-[160px]"
                                     >
                                         <option value="all">{t("Both")}</option>
                                         <option value="sold">{t("Sold")}</option>
                                         <option value="selling">{t("On-Selling")}</option>
                                     </select>
                                 </div>
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+
+                                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center md:justify-end">
                                     <div>
                                         <input
                                             type="date"
@@ -232,7 +233,7 @@ export default function Index({
                                             onChange={(e) =>
                                                 updateStartDate(e.target.value)
                                             }
-                                            className="rounded py-1 text-sm"
+                                            className="w-full rounded py-1 text-sm sm:w-auto md:min-w-[150px]"
                                             title={formattedFd}
                                         />
                                     </div>
@@ -243,14 +244,14 @@ export default function Index({
                                             onChange={(e) =>
                                                 updateLastDate(e.target.value)
                                             }
-                                            className="rounded py-1 text-sm"
+                                            className="w-full rounded py-1 text-sm sm:w-auto md:min-w-[150px]"
                                             title={formattedLastDate}
                                         />
                                     </div>
                                     {hasActiveFilters ? (
                                         <button
                                             type="button"
-                                            className="rounded border px-3 py-1 text-sm text-slate-700"
+                                            className="w-full rounded border px-3 py-2 text-sm text-slate-700 sm:w-auto"
                                             onClick={() => {
                                                 setSearch("");
                                                 setNav("sold");
@@ -266,36 +267,42 @@ export default function Index({
                                             }}
                                         >{t("Reset")}</button>
                                     ) : null}
-                                    <TextInput
-                                        type="search"
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key !== "Enter") {
-                                                return;
-                                            }
+                                    <div className="flex w-full items-center gap-2 sm:w-auto md:min-w-[260px]">
+                                        <TextInput
+                                            type="search"
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key !== "Enter") {
+                                                    return;
+                                                }
 
-                                            e.preventDefault();
-                                            requestProducts({
-                                                search: search.trim(),
-                                            });
-                                        }}
-                                        className="py-1"
-                                        placeholder={t("Search products...")}
-                                    />
-                                    <PrimaryButton
-                                        type="button"
-                                        onClick={() => window.open(printUrl, "_blank")}
-                                    >
-                                        <i className="fas fa-print"></i>
-                                    </PrimaryButton>
+                                                e.preventDefault();
+                                                requestProducts({
+                                                    search: search.trim(),
+                                                });
+                                            }}
+                                            className="w-full py-1 sm:w-auto"
+                                            placeholder={t("Search products...")}
+                                        />
+                                        <PrimaryButton
+                                            type="button"
+                                            className="h-[34px] shrink-0 justify-center px-4 py-1 text-sm"
+                                            onClick={() => window.open(printUrl, "_blank")}
+                                        >
+                                            <i className="fas fa-print"></i>
+                                        </PrimaryButton>
+                                    </div>
                                 </div>
                             </div>
                         }
                     />
                     <hr />
                     <SectionInner>
-                        <Table data={products.data ?? []} className="p-2">
+                        <Table
+                            data={products.data ?? []}
+                            className="p-2 [&_table]:min-w-[980px]"
+                        >
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -396,16 +403,16 @@ export default function Index({
                         </Table>
                         {pagination.pages.length ? (
                             <div className="w-full pt-4">
-                                <div className="flex w-full items-center justify-between gap-3">
+                                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <div className="text-sm text-slate-700">
                                         {resultSummary}
                                     </div>
-                                    <div className="flex items-center md:justify-end">
+                                    <div className="flex w-full justify-center sm:w-auto sm:justify-end">
                                         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                                             <button
                                                 type="button"
                                                 disabled={!pagination.prev?.url}
-                                                className="border-r border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="border-r border-slate-200 px-3 py-2 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 sm:px-4 sm:text-sm"
                                                 onClick={() => goToPage(pagination.prev?.url)}
                                             >{t("Previous")}</button>
                                             {pagination.pages.map((link, idx) => (
@@ -413,7 +420,7 @@ export default function Index({
                                                     key={`${link.label}-${idx}`}
                                                     type="button"
                                                     disabled={!link.url}
-                                                    className={`min-w-10 border-r border-slate-200 px-4 py-2 text-sm font-semibold transition ${
+                                                    className={`min-w-8 border-r border-slate-200 px-3 py-2 text-xs font-semibold transition sm:min-w-10 sm:px-4 sm:text-sm ${
                                                         link.active
                                                             ? "bg-slate-100 text-blue-600"
                                                             : "bg-white text-slate-700 hover:bg-slate-50"
@@ -426,7 +433,7 @@ export default function Index({
                                             <button
                                                 type="button"
                                                 disabled={!pagination.next?.url}
-                                                className="px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                                                className="px-3 py-2 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 sm:px-4 sm:text-sm"
                                                 onClick={() => goToPage(pagination.next?.url)}
                                             >{t("Next")}</button>
                                         </div>

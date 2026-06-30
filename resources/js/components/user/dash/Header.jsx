@@ -1,4 +1,5 @@
 import { Link, usePage, router } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 import ApplicationName from "../../ApplicationName";
 import Dropdown from "../../Dropdown";
 import DropdownLink from "../../DropdownLink";
@@ -15,13 +16,38 @@ export default function Header() {
     const { auth, roles, active_nav, permissions = [] } = usePage().props;
     const { t } = useTranslation();
     const user = auth.user;
-
+    const [cartCount, setCartCount] = useState(auth?.cartCount ?? 0);
 
     const roleNames = user?.roles?.map((r) => r.name) ?? [];
+    const displayName = user?.name
+        ? user.name.length > 8
+            ? `${user.name.slice(0, 8)}...`
+            : user.name
+        : "User";
 
     const permissionNames = Array.isArray(permissions)
         ? permissions
         : permissions?.map?.((p) => p.name) ?? [];
+
+    useEffect(() => {
+        setCartCount(auth?.cartCount ?? 0);
+    }, [auth?.cartCount]);
+
+    useEffect(() => {
+        const handleCartUpdated = (event) => {
+            const nextCount = Number(event.detail?.cartCount);
+
+            if (Number.isFinite(nextCount)) {
+                setCartCount(nextCount);
+            }
+        };
+
+        window.addEventListener("cart:updated", handleCartUpdated);
+
+        return () => {
+            window.removeEventListener("cart:updated", handleCartUpdated);
+        };
+    }, []);
 
     const logout = () => {
         router.get(route("logout"));
@@ -34,15 +60,22 @@ export default function Header() {
                     __html: `
       .cart-count {
         position: absolute;
-        top: 5px;
-        right: 0;
-        background-color: green;
+        top: 2px;
+        right: 2px;
+        min-width: 16px;
+        height: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #16a34a;
         color: white;
         font-size: 9px;
         font-weight: bold;
         border-radius: 50%;
-        padding: 0 4px;
-        transform: translate(50%, -50%);
+        padding: 0 3px;
+        line-height: 1;
+        transform: none;
+        z-index: 2;
       }
 
       .navbar-expand-lg .navbar-nav {
@@ -51,46 +84,53 @@ export default function Header() {
 
       @media (max-width: 991px) {
         .cart-count {
-          top: 5px;
-          right: 0;
+          top: 2px;
+          right: 2px;
         }
       }
     `,
                 }}
             />
 
-            <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-                <nav className="flex h-16 items-center justify-between">
+            <div className="w-full px-3 mx-auto sm:px-4 lg:px-8">
+                <nav className="flex h-16 items-center justify-between gap-2">
                     {/* LOGO */}
-                    <Link href="/" className="flex items-center">
-                        <img height="50" width="60" src="/icon.png" alt="" />
-                        <div className="text-lg font-bold ps-2">
+                    <Link href="/" className="flex items-center flex-1 min-w-0 sm:flex-none">
+                        <img
+                            height="50"
+                            width="60"
+                            src="/icon.png"
+                            alt=""
+                            className="w-10 h-auto shrink-0 sm:w-12 md:w-[60px]"
+                        />
+                        <div className="text-base font-bold leading-none truncate ps-1 sm:ps-2 sm:text-lg">
                             <ApplicationName />
                         </div>
                     </Link>
 
-                    <div>
-                        <ul className="flex items-center">
-                            <li className="hidden px-2 md:block">
+                    <div className="shrink-0">
+                        <ul className="flex items-center gap-2 sm:gap-2.5">
+                            <li className="hidden md:block">
                                 <LanguageSwitcher compact />
                             </li>
 
                             {/* CART */}
-                            <li className="px-2">
+                            <li>
                                 <div className="relative">
                                     <Link
-                                        className="nav-link"
+                                        className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50"
                                         href={route("carts.view")}
+                                        aria-label={t("Cart")}
                                     >
                                         <i className="fas fa-shopping-cart"></i>
                                         <span className="cart-count">
-                                            {auth.cartCount ?? "0"}
+                                            {cartCount}
                                         </span>
                                     </Link>
                                 </div>
                             </li>
 
-                            <li className="px-2">
+                            <li>
                                 <NoticeBell role="user" />
                             </li>
 
@@ -99,10 +139,15 @@ export default function Header() {
                                 align="right"
                                 width="48"
                                 trigger={
-                                    <button className="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md border border-transparent text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                                        {user?.name?.slice(0, 8) + "..."}
+                                    <button className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white px-0 text-sm font-medium leading-4 text-gray-500 shadow-sm transition duration-150 ease-in-out hover:bg-slate-50 hover:text-gray-700 focus:outline-none sm:w-auto sm:max-w-[124px] sm:justify-start sm:px-2">
+                                        <span className="text-base sm:hidden">
+                                            <i className="fas fa-user"></i>
+                                        </span>
+                                        <span className="hidden max-w-[72px] truncate sm:block">
+                                            {displayName}
+                                        </span>
                                         <svg
-                                            className="w-4 h-4 fill-current ms-1"
+                                            className="hidden w-4 h-4 fill-current ms-1 sm:block"
                                             viewBox="0 0 20 20"
                                         >
                                             <path

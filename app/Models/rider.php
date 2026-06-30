@@ -76,17 +76,22 @@ class rider extends Model
              * then assign the rider role
              */
 
-            // get the rider role
-            $riderRoleName =  Role::where('name', 'rider')->first();
-            if ($rider->isDirty('status') && $rider->status == 'Active') {
-                // assign role to user
-                $rider->user?->assignRole($riderRoleName);
-            } else {
+            if (! $rider->wasChanged('status')) {
+                return;
+            }
 
-                // else remove the role if exists
-                if ($rider->user?->hasRole($riderRoleName)) {
-                    $rider->user?->removeRole($riderRoleName);
-                }
+            $riderRole = Role::where('name', 'rider')->first();
+            if (! $riderRole) {
+                return;
+            }
+
+            if ($rider->status == 'Active') {
+                $rider->user?->assignRole($riderRole);
+                return;
+            }
+
+            if ($rider->user?->hasRole($riderRole)) {
+                $rider->user?->removeRole($riderRole);
             }
         });
     }

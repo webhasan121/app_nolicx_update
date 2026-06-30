@@ -266,18 +266,24 @@ class ProductsController extends Controller
         }
 
         if (!$shop) {
-            return redirect()->route('vendor.shops.create');
+            return Inertia::render('Vendor/Products/Create', [
+                'categories' => Category::getAll()->toArray(),
+                'shop' => null,
+                'ableToCreate' => false,
+                'requiresShop' => true,
+            ]);
         }
 
         $ableToCreate = auth()->user()->myProducts()->count() < ($shop->max_product_upload ?? 0);
 
         return Inertia::render('Vendor/Products/Create', [
-            'categories' => Category::getAll(),
+            'categories' => Category::getAll()->toArray(),
             'shop' => [
                 'system_get_comission' => $shop->system_get_comission ?? 'N/A',
                 'max_product_upload' => $shop->max_product_upload ?? 0,
             ],
             'ableToCreate' => $ableToCreate,
+            'requiresShop' => false,
         ]);
     }
 
@@ -307,7 +313,7 @@ class ProductsController extends Controller
             : auth()->user()->resellerShop();
 
         if (!$shop) {
-            return redirect()->route('vendor.shops.create');
+            return redirect()->back()->with('error', 'Please complete your shop profile before creating products.');
         }
 
         if (auth()->user()->myProducts()->count() >= ($shop->max_product_upload ?? 0)) {

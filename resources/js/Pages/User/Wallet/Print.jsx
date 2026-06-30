@@ -46,7 +46,7 @@ export default function Print() {
                                 <tr key={item.id}>
                                     <td>#{index + 1}</td>
                                     <td>{formatCurrency(item.amount)}</td>
-                                    <td>{item.status}</td>
+                                    <td>{item.status_label ?? item.status}</td>
                                     <td>
                                         {item.created_at} - {item.created_at_human}
                                     </td>

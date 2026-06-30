@@ -1265,6 +1265,7 @@ return array (
   'find name, id' => 'zoek naam, ID',
   'from' => 'van',
   'grocery items' => 'boodschappen',
+  'hjgh' => 'hjgh',
   'in Dhaka' => 'in Dhaka',
   'inactivate' => 'deactiveren',
   'item' => 'item',

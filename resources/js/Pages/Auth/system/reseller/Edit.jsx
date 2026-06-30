@@ -162,7 +162,7 @@ export default function Edit() {
                     <br />
                     <span className="text-xs">{reseller?.status ?? "Pending"}</span>
                     <br />
-                    <div>
+                    <div className="mt-2 flex flex-wrap items-center gap-4">
                         <NavLink active={nav === "user"} href={route("system.reseller.edit", { id: reseller?.id, nav: "user" })}>{t("user")}</NavLink>
                         <NavLink active={nav === "documents"} href={route("system.reseller.edit", { id: reseller?.id, nav: "documents" })}>{t("Documents")}</NavLink>
                         <NavLink active={nav === "products"} href={route("system.reseller.edit", { id: reseller?.id, nav: "products" })}>{t("Products")}</NavLink>
@@ -178,7 +178,7 @@ export default function Edit() {
                         <SectionHeader
                             title={t("Reseller and Shops")}
                             content={
-                                <div className="md:flex w-full flex-1 gap-10">
+                                <div className="flex w-full flex-1 flex-col gap-4 md:flex-row md:gap-10">
                                     <div className="p-3 bg-gray-100 rounded-md shadow-sm w-full">
                                         <hr />
                                         <div className="text-md border-b w-full p-3"><div className="font-bold">{t("Reseller ID:")}</div><div>{reseller?.id ?? "N/A"}</div></div>
@@ -200,10 +200,10 @@ export default function Edit() {
                         <SectionInner>
                             <Hr />
                             <form onSubmit={submitStatus}>
-                                <div className="flex items-center justify-between">
-                                    <div>
+                                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                    <div className="w-full md:w-auto">
                                         <p className="text-sm">{t("Current Status is :")}<strong>{reseller?.status}</strong>{t(". Change status to -")}</p>
-                                        <select id="resStatus" className="rounded-lg py-1" value={statusForm.data.status} onChange={(e) => statusForm.setData("status", e.target.value)}>
+                                        <select id="resStatus" className="w-full rounded-lg py-1 md:w-auto" value={statusForm.data.status} onChange={(e) => statusForm.setData("status", e.target.value)}>
                                             <option value="Select Status">{t("-- Select --")}</option>
                                             <option value="Pending">{t("Pending")}</option>
                                             <option value="Disabled">{t("Disabled")}</option>
@@ -211,26 +211,26 @@ export default function Edit() {
                                             <option value="Active">{t("Active")}</option>
                                         </select>
                                     </div>
-                                    <div className="text-end">
+                                    <div className="text-left md:text-end">
                                         <p className="text-sm">{t("update :")}{reseller?.updated_at_human ?? ""}</p>
-                                        <PrimaryButton className="ml-2">{t("set")}</PrimaryButton>
+                                        <PrimaryButton className="w-full justify-center md:ml-2 md:w-auto">{t("set")}</PrimaryButton>
                                     </div>
                                 </div>
                             </form>
                             <Hr />
                             <form onSubmit={submitComission}>
-                                <div className="flex justify-between items-start"><div><input type="text" className="rounded shadow" value={comissionForm.data.comission} onChange={(e) => comissionForm.setData("comission", e.target.value)} /><div className="text-xs">{t("You take")}{reseller?.system_get_comission ?? "0"}{t("% profit from this vendor revinew.")}</div></div></div>
+                                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between"><div className="w-full md:w-auto"><input type="text" className="w-full rounded shadow md:w-auto" value={comissionForm.data.comission} onChange={(e) => comissionForm.setData("comission", e.target.value)} /><div className="text-xs">{t("You take")}{reseller?.system_get_comission ?? "0"}{t("% profit from this vendor revinew.")}</div></div></div>
                                 <div className="my-2 rounded bg-gray-50 border-gray-200 p-3">
-                                    <div className="p-3 w-full flex justify-between items-center"><div className="font-bold">{t("Prevent adding unlimited product :")}</div><div className="flex gap-10"><div className="flex items-center"><input type="radio" name="allow_max_product_upload" value="1" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_product_upload === "1"} onChange={(e) => comissionForm.setData("allow_max_product_upload", e.target.value)} /><div className="px-2">{t("Yes")}</div></div><div className="flex items-center"><input type="radio" name="allow_max_product_upload" value="0" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_product_upload === "0"} onChange={(e) => comissionForm.setData("allow_max_product_upload", e.target.value)} /><div className="px-2">{t("No")}</div></div></div></div>
-                                    <div className="px-3 w-full flex justify-between items-center"><div className="font-bold">{t("Maximum Product :")}</div><div><TextInput type="number" placeholder="100" className="w-20" value={comissionForm.data.max_product_upload} onChange={(e) => comissionForm.setData("max_product_upload", e.target.value)} /></div></div>
+                                    <div className="flex w-full flex-col gap-3 p-3 md:flex-row md:items-center md:justify-between"><div className="font-bold">{t("Prevent adding unlimited product :")}</div><div className="flex flex-wrap gap-4 md:gap-10"><div className="flex items-center"><input type="radio" name="allow_max_product_upload" value="1" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_product_upload === "1"} onChange={(e) => comissionForm.setData("allow_max_product_upload", e.target.value)} /><div className="px-2">{t("Yes")}</div></div><div className="flex items-center"><input type="radio" name="allow_max_product_upload" value="0" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_product_upload === "0"} onChange={(e) => comissionForm.setData("allow_max_product_upload", e.target.value)} /><div className="px-2">{t("No")}</div></div></div></div>
+                                    <div className="flex w-full flex-col gap-2 px-3 md:flex-row md:items-center md:justify-between"><div className="font-bold">{t("Maximum Product :")}</div><div><TextInput type="number" placeholder="100" className="w-full md:w-20" value={comissionForm.data.max_product_upload} onChange={(e) => comissionForm.setData("max_product_upload", e.target.value)} /></div></div>
                                     <div className="text-xs text-gray-500 px-3">{t("If you set the maximum product, then the vendor will not be able to upload more than this number of products.")}</div>
                                 </div>
                                 <div className="my-2 bg-gray-50 p-3">
-                                    <div className="px-3 w-full flex justify-between items-center"><div className="font-bold">{t("Allow to resell products :")}</div><div className="flex gap-10"><div className="flex items-center"><input type="radio" name="allow_max_resell_product" value="1" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_resell_product === "1"} onChange={(e) => comissionForm.setData("allow_max_resell_product", e.target.value)} /><div className="px-2">{t("Yes")}</div></div><div className="flex items-center"><input type="radio" name="allow_max_resell_product" value="0" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_resell_product === "0"} onChange={(e) => comissionForm.setData("allow_max_resell_product", e.target.value)} /><div className="px-2">{t("No")}</div></div></div></div>
-                                    <div className="px-3 w-full flex justify-between items-center"><div className="font-bold">{t("Maximum Resel Product :")}</div><div><TextInput type="number" placeholder="100" className="w-20" value={comissionForm.data.max_resell_product} onChange={(e) => comissionForm.setData("max_resell_product", e.target.value)} /></div></div>
+                                    <div className="flex w-full flex-col gap-3 px-3 md:flex-row md:items-center md:justify-between"><div className="font-bold">{t("Allow to resell products :")}</div><div className="flex flex-wrap gap-4 md:gap-10"><div className="flex items-center"><input type="radio" name="allow_max_resell_product" value="1" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_resell_product === "1"} onChange={(e) => comissionForm.setData("allow_max_resell_product", e.target.value)} /><div className="px-2">{t("Yes")}</div></div><div className="flex items-center"><input type="radio" name="allow_max_resell_product" value="0" style={{ width: "20px", height: "20px" }} checked={comissionForm.data.allow_max_resell_product === "0"} onChange={(e) => comissionForm.setData("allow_max_resell_product", e.target.value)} /><div className="px-2">{t("No")}</div></div></div></div>
+                                    <div className="flex w-full flex-col gap-2 px-3 md:flex-row md:items-center md:justify-between"><div className="font-bold">{t("Maximum Resel Product :")}</div><div><TextInput type="number" placeholder="100" className="w-full md:w-20" value={comissionForm.data.max_resell_product} onChange={(e) => comissionForm.setData("max_resell_product", e.target.value)} /></div></div>
                                     <div className="text-xs text-gray-500 px-3">{t("If you allow the vendor to resell products, then the vendor will be able to resell products from other resellers.")}</div>
                                 </div>
-                                <div className="my-2 bg-gray-50 p-3"><div className="px-3 w-full flex justify-between items-center"><div className="font-bold">{t("Define Fixed Amount :")}</div><div><TextInput type="number" placeholder="100" className="w-20" value={comissionForm.data.fixed_amount} onChange={(e) => comissionForm.setData("fixed_amount", e.target.value)} /></div></div></div>
+                                <div className="my-2 bg-gray-50 p-3"><div className="flex w-full flex-col gap-2 px-3 md:flex-row md:items-center md:justify-between"><div className="font-bold">{t("Define Fixed Amount :")}</div><div><TextInput type="number" placeholder="100" className="w-full md:w-20" value={comissionForm.data.fixed_amount} onChange={(e) => comissionForm.setData("fixed_amount", e.target.value)} /></div></div></div>
                                 <div><PrimaryButton>{t("Update")}</PrimaryButton></div>
                             </form>
                         </SectionInner>
@@ -250,9 +250,9 @@ export default function Edit() {
                                     <Hr />
                                     <form onSubmit={submitDeadline}>
                                         <InputFile label={t("set New Date")} error="deatline">
-                                            <div className="flex">
-                                                <TextInput type="date" className="py-1" value={deadlineForm.data.deatline} onChange={(e) => deadlineForm.setData("deatline", e.target.value)} />
-                                                <PrimaryButton className="ms-2 py-1">{t("set")}</PrimaryButton>
+                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                                <TextInput type="date" className="w-full py-1 sm:w-auto" value={deadlineForm.data.deatline} onChange={(e) => deadlineForm.setData("deatline", e.target.value)} />
+                                                <PrimaryButton className="py-1 sm:ms-2">{t("set")}</PrimaryButton>
                                             </div>
                                         </InputFile>
                                     </form>
@@ -264,11 +264,11 @@ export default function Edit() {
                                 </InputFile>
                                 <Hr />
                                 <InputFile label={t("NID Image (front side)")} error="nid_front">
-                                    {reseller?.documents?.nid_front_url ? <img width="300px" height="200px" src={reseller.documents.nid_front_url} alt="" /> : <div>{t("N/A")}</div>}
+                                    {reseller?.documents?.nid_front_url ? <img className="w-full max-w-xs" width="300px" height="200px" src={reseller.documents.nid_front_url} alt="" /> : <div>{t("N/A")}</div>}
                                 </InputFile>
                                 <Hr />
                                 <InputFile label={t("NID Image (back side)")} error="nid_back">
-                                    {reseller?.documents?.nid_back_url ? <img width="300px" height="200px" src={reseller.documents.nid_back_url} alt="" /> : <div>{t("N/A")}</div>}
+                                    {reseller?.documents?.nid_back_url ? <img className="w-full max-w-xs" width="300px" height="200px" src={reseller.documents.nid_back_url} alt="" /> : <div>{t("N/A")}</div>}
                                 </InputFile>
                                 <Hr />
                             </SectionSection>
@@ -278,7 +278,7 @@ export default function Edit() {
                                 </InputFile>
                                 <Hr />
                                 <InputFile label={t("TIN Image")} error="shop_tin">
-                                    {reseller?.documents?.shop_tin_image_url ? <img width="300px" height="200px" src={reseller.documents.shop_tin_image_url} alt="" /> : <div>{t("N/A")}</div>}
+                                    {reseller?.documents?.shop_tin_image_url ? <img className="w-full max-w-xs" width="300px" height="200px" src={reseller.documents.shop_tin_image_url} alt="" /> : <div>{t("N/A")}</div>}
                                 </InputFile>
                             </SectionSection>
                             <SectionSection>
@@ -287,7 +287,7 @@ export default function Edit() {
                                 </InputFile>
                                 <Hr />
                                 <InputFile label={t("Trade License Image")} error="shop_trade_image">
-                                    {reseller?.documents?.shop_trade_image_url ? <img width="300px" height="200px" src={reseller.documents.shop_trade_image_url} alt="" /> : <div>{t("N/A")}</div>}
+                                    {reseller?.documents?.shop_trade_image_url ? <img className="w-full max-w-xs" width="300px" height="200px" src={reseller.documents.shop_trade_image_url} alt="" /> : <div>{t("N/A")}</div>}
                                 </InputFile>
                             </SectionSection>
                         </>
@@ -304,7 +304,7 @@ export default function Edit() {
                                 <SectionHeader
                                     title={editUser?.name}
                                     content={
-                                        <div>
+                                        <div className="flex flex-wrap items-center gap-4">
                                             <NavLink href="#" active={userNav === "profile"} className={userNav === "profile" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("profile"); }}>{t("Profile")}</NavLink>
                                             <NavLink href="#" active={userNav === "role"} className={userNav === "role" ? "active" : ""} onClick={(e) => { e.preventDefault(); setUserNav("role"); }}>{t("Permission")}</NavLink>
                                         </div>
@@ -318,13 +318,13 @@ export default function Edit() {
                                         <UpdateProfileInformation editUser={editUser} defaultAdminRef={defaultAdminRef} profileForm={profileForm} onSubmit={submitProfile} />
                                         <Hr />
                                         <InputFile label={t("User Coin")} error="coin" name="coin">
-                                            <div className="rounded-lg">
-                                                <TextInput type="text" className=" border-0 w-32" disabled value={editUser?.coin ?? 0} />
-                                                <div className="p-2 bg-ref-900 rounded border inline-block">
+                                            <div className="space-y-3 rounded-lg">
+                                                <TextInput type="text" className="w-full border-0 sm:w-32" disabled value={editUser?.coin ?? 0} />
+                                                <div className="inline-block w-full rounded border bg-ref-900 p-2 sm:w-auto">
                                                     <div className="text-xs">{t("Recharge")}</div>
-                                                    <form onSubmit={openRechargeModal}>
-                                                        <TextInput type="number" className="py-1 w-32 mr-1" value={profileForm.data.rechargeAmount} onChange={(e) => profileForm.setData("rechargeAmount", e.target.value)} />
-                                                        <PrimaryButton>{t("Apply")}</PrimaryButton>
+                                                    <form onSubmit={openRechargeModal} className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                                                        <TextInput type="number" className="w-full py-1 sm:w-32" value={profileForm.data.rechargeAmount} onChange={(e) => profileForm.setData("rechargeAmount", e.target.value)} />
+                                                        <PrimaryButton className="w-fit self-start whitespace-nowrap">{t("Apply")}</PrimaryButton>
                                                     </form>
                                                 </div>
                                             </div>
@@ -357,7 +357,7 @@ export default function Edit() {
                             <PermissionGroup key={title} title={title} permissions={items} selected={editUser?.permissions_via_role ?? []} onToggle={() => {}} disabled />
                         ))}
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-4 flex justify-end">
                         <DangerButton type="button" onClick={() => setShowViaRole(false)}>{t("Close")}</DangerButton>
                     </div>
                 </div>
@@ -369,7 +369,7 @@ export default function Edit() {
                     <Hr />
                     <p className="py-5">{t("Are you sure to add")}{profileForm.data.rechargeAmount}{t("TK amount to")}{editUser?.name}, {editUser?.email}</p>
                     <Hr />
-                    <div className="flex">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                         <SecondaryButton type="button" onClick={() => setShowRechargeModal(false)}>{t("Cancel")}</SecondaryButton>
                         <PrimaryButton type="button" onClick={submitRecharge}>{t("Recharge")}</PrimaryButton>
                         <DangerButton type="button" onClick={submitRefund}>{t("Refund")}</DangerButton>

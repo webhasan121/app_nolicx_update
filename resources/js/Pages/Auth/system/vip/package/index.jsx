@@ -1,4 +1,4 @@
-import { router, usePage } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import AppLayout from "../../../../../Layouts/App";
 import NavLink from "../../../../../components/NavLink";
@@ -127,8 +127,10 @@ export default function Index() {
         <AppLayout
             title={t("VIP")}
             header={
-                <PageHeader>{t("VIP")}<br />
-                    <div>
+                <PageHeader>
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>{t("VIP")}</div>
+                        <div className="flex flex-wrap items-center gap-3">
                         <NavLink
                             href={route("system.vip.index")}
                             active={route().current("system.vip.index")}
@@ -139,24 +141,26 @@ export default function Index() {
                             active={route().current("system.vip.users")}
                         >
                             <i className="fa-solid fa-up-right-from-square me-2"></i>{t("User")}</NavLink>
+                        </div>
                     </div>
                 </PageHeader>
             }
         >
+            <Head title={t("VIP Packages")} />
             <Container>
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex flex-wrap items-start justify-between gap-4">
-                                <NavLinkBtn href={route("system.vip.crate")}>
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <NavLinkBtn href={route("system.vip.crate")} className="inline-flex w-full justify-center sm:w-auto">
                                     New
                                 </NavLinkBtn>
 
-                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="flex w-full flex-col gap-2 sm:flex-row xl:w-auto">
                                     <TextInput
                                         type="search"
                                         placeholder={t("Search packages...")}
-                                        className="py-1 my-1"
+                                        className="h-10 w-full py-2 xl:w-64"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                         onKeyDown={(e) => {
@@ -170,6 +174,7 @@ export default function Index() {
                                     />
                                     <PrimaryButton
                                         type="button"
+                                        className="h-10 shrink-0 justify-center px-4 sm:w-auto"
                                         onClick={() => window.open(printUrl, "_blank")}
                                     >
                                         <i className="fas fa-print"></i>
@@ -178,7 +183,7 @@ export default function Index() {
                             </div>
                         }
                         content={
-                            <>
+                            <div className="flex flex-wrap items-center gap-3">
                                 <NavLink
                                     href={route("system.vip.index", {
                                         nav: "Active",
@@ -193,13 +198,13 @@ export default function Index() {
                                     })}
                                     active={nav === "Trash"}
                                 >{t("Trash")}</NavLink>
-                            </>
+                            </div>
                         }
                     />
 
                     <SectionInner>
                         <div>
-                            <Table data={rows}>
+                            <Table data={rows} tableClassName="min-w-[980px] xl:min-w-full">
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -243,7 +248,7 @@ export default function Index() {
                                                         <button
                                                             type="button"
                                                             onClick={() => handleStatusToggle(item)}
-                                                            className={`inline-flex rounded px-3 py-1 text-xs font-bold text-white ${
+                                                            className={`inline-flex whitespace-nowrap rounded px-3 py-1 text-xs font-bold text-white ${
                                                                 Number(item.status ?? 0) === 1
                                                                     ? "bg-green-600"
                                                                     : "bg-gray-500"
@@ -260,7 +265,7 @@ export default function Index() {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div className="flex items-center gap-1">
+                                                    <div className="flex items-center justify-center gap-1">
                                                         <ActionIconLink
                                                             href={route(
                                                                 "system.package.edit",
@@ -295,7 +300,7 @@ export default function Index() {
 
                             {pagination.pages.length ? (
                                     <div className="w-full pt-4">
-                                        <div className="flex items-center justify-between w-full gap-3">
+                                        <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                             <div className="text-sm text-slate-700">
                                                 {resultSummary}
                                             </div>

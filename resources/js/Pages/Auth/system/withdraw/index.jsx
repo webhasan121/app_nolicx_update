@@ -18,7 +18,7 @@ import { ActionIconLink } from "../../../../components/ActionIcon";
 export default function Index({ filters, stats, withdraw }) {
     const { t } = useTranslation();
     const controlClass =
-        "h-9 rounded-md border border-gray-300 bg-white px-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500";
+        "h-10 w-full rounded-md border border-gray-300 bg-white px-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 md:h-9 md:w-auto";
     const [queryValue, setQueryValue] = useState(filters?.q ?? "");
     const [inlineSdate, setInlineSdate] = useState(filters?.sdate ?? "");
     const [inlineEdate, setInlineEdate] = useState(filters?.edate ?? "");
@@ -133,11 +133,11 @@ export default function Index({ filters, stats, withdraw }) {
                         title=""
                         content={
                             <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                                <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
+                                <div className="flex flex-1 flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
                                     <select
                                         value={filters?.fst ?? "All"}
                                         onChange={(e) => apply({ fst: e.target.value, page: undefined })}
-                                        className={`${controlClass} w-full md:w-36`}
+                                        className={`${controlClass} md:w-36`}
                                         id="filter_status"
                                     >
                                         <option value="All">{t("All")}{stats?.total ?? 0}</option>
@@ -150,11 +150,11 @@ export default function Index({ filters, stats, withdraw }) {
                                         value={queryValue}
                                         onChange={(e) => setQueryValue(e.target.value)}
                                         placeholder={t("Search user...")}
-                                        className={`${controlClass} w-full md:w-56`}
+                                        className={`${controlClass} md:w-56`}
                                     />
                                 </div>
 
-                                <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                                <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
                                     <TextInput
                                         type="date"
                                         value={inlineSdate || today}
@@ -163,7 +163,7 @@ export default function Index({ filters, stats, withdraw }) {
                                             setInlineSdate(value);
                                             apply({ sdate: value, edate: inlineEdate, page: undefined });
                                         }}
-                                        className={`${controlClass} w-full md:w-44`}
+                                        className={`${controlClass} md:w-44`}
                                         title={t("Start Date")}
                                     />
                                     <TextInput
@@ -174,16 +174,16 @@ export default function Index({ filters, stats, withdraw }) {
                                             setInlineEdate(value);
                                             apply({ sdate: inlineSdate, edate: value, page: undefined });
                                         }}
-                                        className={`${controlClass} w-full md:w-44`}
+                                        className={`${controlClass} md:w-44`}
                                         title={t("End Date")}
                                     />
-                                    <PrimaryButton type="button" onClick={print} className="h-9 min-w-10 justify-center px-3">
+                                    <PrimaryButton type="button" onClick={print} className="inline-flex h-10 w-auto justify-center self-start px-3 md:h-9 md:min-w-10">
                                         <i className="fas fa-print"></i>
                                     </PrimaryButton>
                                     {hasActiveFilters ? (
                                         <button
                                             type="button"
-                                            className="h-9 rounded-md border border-gray-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50"
+                                            className="inline-flex h-10 w-auto items-center justify-center self-start rounded-md border border-gray-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-gray-50 md:h-9"
                                             onClick={() => {
                                                 setQueryValue("");
                                                 setInlineSdate("");
@@ -208,67 +208,69 @@ export default function Index({ filters, stats, withdraw }) {
                     <br />
 
 
-                    <Table data={withdraw?.data ?? []}>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>{t("ID")}</th>
-                                <th>{t("User")}</th>
-                                <th>{t("Amount")}</th>
-                                <th>{t("Status")}</th>
-                                <th>{t("Date")}</th>
-                                <th>{t("A/C")}</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {(withdraw?.data ?? []).map((item, index) => (
-                                <tr key={item.id} className={!item.seen_by_admin ? "bg-gray-200 font-bold" : ""}>
-                                    <td>{(withdraw?.from ?? 1) + index}</td>
-                                    <td>{item.id}</td>
-                                    <td>
-                                        <div>
-                                            <div className="flex">
-                                                {item.user?.name}
-                                                {item.user?.subscription ? (
-                                                    <span className="px-1 text-white bg-indigo-900 rounded ms-1">{t("vip")}</span>
-                                                ) : null}
-                                                <span className="px-1 text-white bg-gray-900 rounded-full ms-1">
-                                                    U
-                                                </span>
-                                            </div>
-
-                                            {item.user?.email}
-                                        </div>
-                                    </td>
-                                    <td>{formatCurrency(item.amount)}</td>
-                                    <td>
-                                        {!item.is_rejected ? (
-                                            item.status ? "Accept" : "Pending"
-                                        ) : (
-                                            <div className="p-1">{t("Reject")}</div>
-                                        )}
-                                    </td>
-                                    <td>{item.created_at_formatted}</td>
-                                    <td>
-                                        <div className="flex">
-                                            <ActionIconLink href={route("system.withdraw.view", { id: item.id })} action="details" title={t("Details")} />
-                                        </div>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <Table data={withdraw?.data ?? []}>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>{t("ID")}</th>
+                                    <th>{t("User")}</th>
+                                    <th>{t("Amount")}</th>
+                                    <th>{t("Status")}</th>
+                                    <th>{t("Date")}</th>
+                                    <th>{t("A/C")}</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                        <tfoot>
-                            <tr className="font-bold">
-                                <td colSpan="3" className="font-bold text-right">{t("Total")}</td>
-                                <td className="font-bold">{formatCurrency(withdraw?.sum_amount)}</td>
-                                <td colSpan="3"></td>
-                            </tr>
-                        </tfoot>
-                    </Table>
+                            </thead>
+
+                            <tbody>
+                                {(withdraw?.data ?? []).map((item, index) => (
+                                    <tr key={item.id} className={!item.seen_by_admin ? "bg-gray-200 font-bold" : ""}>
+                                        <td>{(withdraw?.from ?? 1) + index}</td>
+                                        <td>{item.id}</td>
+                                        <td>
+                                            <div>
+                                                <div className="flex">
+                                                    {item.user?.name}
+                                                    {item.user?.subscription ? (
+                                                        <span className="ms-1 rounded bg-indigo-900 px-1 text-white">{t("vip")}</span>
+                                                    ) : null}
+                                                    <span className="ms-1 rounded-full bg-gray-900 px-1 text-white">
+                                                        U
+                                                    </span>
+                                                </div>
+
+                                                {item.user?.email}
+                                            </div>
+                                        </td>
+                                        <td>{formatCurrency(item.amount)}</td>
+                                        <td>
+                                            {!item.is_rejected ? (
+                                                item.status ? "Accept" : "Pending"
+                                            ) : (
+                                                <div className="p-1">{t("Reject")}</div>
+                                            )}
+                                        </td>
+                                        <td>{item.created_at_formatted}</td>
+                                        <td>
+                                            <div className="flex">
+                                                <ActionIconLink href={route("system.withdraw.view", { id: item.id })} action="details" title={t("Details")} />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot>
+                                <tr className="font-bold">
+                                    <td colSpan="3" className="font-bold text-right">{t("Total")}</td>
+                                    <td className="font-bold">{formatCurrency(withdraw?.sum_amount)}</td>
+                                    <td colSpan="3"></td>
+                                </tr>
+                            </tfoot>
+                        </Table>
+                    </div>
                     {pagination.pages.length ? (
                         <div className="w-full pt-4">
-                            <div className="flex w-full items-center justify-between gap-3">
+                            <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                 <div className="text-sm text-slate-700">
                                     {resultSummary}
                                 </div>

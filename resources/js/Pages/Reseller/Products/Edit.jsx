@@ -25,7 +25,7 @@ const MAX_OTHER_IMAGES = 8;
 
 function ProductNavigations({ productId, nav = "Product", t }) {
     return (
-        <div className="flex ">
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
             <NavLink
                 href={route("vendor.products.edit", {
                     product: productId,
@@ -52,8 +52,6 @@ export default function Edit() {
     const [trixReady, setTrixReady] = useState(
         typeof window !== "undefined" && !!window.Trix
     );
-    console.log("productData", productData);
-
     const form = useForm({
         name: productData?.name ?? "",
         title: productData?.title ?? "",
@@ -217,7 +215,9 @@ export default function Edit() {
             title={t("Product Edit")}
             header={
                 <PageHeader>{t("Product Edit")}<br />
-                    <ProductNavigations productId={productData.encrypted_id} t={t} />
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
+                        <ProductNavigations productId={productData.encrypted_id} t={t} />
+                    </div>
                 </PageHeader>
             }
         >
@@ -226,7 +226,7 @@ export default function Edit() {
                 <SectionSection>
                     <SectionHeader
                         title={
-                            <div className="flex justify-between text-xs">
+                            <div className="flex flex-col gap-3 text-xs sm:flex-row sm:items-start sm:justify-between">
                                 <div>
                                     {productData.deleted_at ? (
                                         <div
@@ -242,7 +242,7 @@ export default function Edit() {
                                         </div>
                                     )}
                                 </div>
-                                <div>
+                                <div className="self-start sm:self-auto">
                                     {productData.deleted_at ? (
                                         <SecondaryButton
                                             type="button"
@@ -260,8 +260,8 @@ export default function Edit() {
                             </div>
                         }
                         content={
-                            <div className="flex justify-between">
-                                <div>
+                            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                <div className="min-w-0">
                                     <div>
                                         {productData.thumbnail_url ? (
                                             <Image src={productData.thumbnail_url} />
@@ -275,8 +275,8 @@ export default function Edit() {
                                         </strong>
                                     </div>
                                 </div>
-                                <div>
-                                    <div className="text-sm">{t("Type :")}{productData.is_resel ? (
+                                <div className="self-start lg:self-auto">
+                                    <div className="flex flex-wrap items-center gap-2 text-sm">{t("Type :")}{productData.is_resel ? (
                                             <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">{t("Resel")}</span>
                                         ) : (
                                             <span className="px-2 text-white bg-indigo-900 rounded-lg text-md">{t("Owner")}</span>
@@ -289,7 +289,7 @@ export default function Edit() {
                 </SectionSection>
 
                 <form onSubmit={save}>
-                    <div className="md:flex md:gap-4">
+                    <div className="flex flex-col gap-4 md:flex-row">
                         <SectionSection className="md:flex-1">
                             <SectionHeader title={t("Product Basic Info")} content="" />
                             <SectionInner>
@@ -354,7 +354,7 @@ export default function Edit() {
                         <SectionSection className="md:w-[324px] md:flex-none">
                             <SectionHeader title={t("Product Price")} content="" />
                             <SectionInner>
-                                <div>
+                                <div className="space-y-3">
                                     <InputField
                                         className="mx-1 "
                                         labelWidth="100px"
@@ -468,8 +468,8 @@ export default function Edit() {
                             content={t("Define your product delevery option and charge from here.")}
                         />
                         <SectionInner>
-                            <div className="justify-between md:flex ">
-                                <div>
+                            <div className="flex flex-col gap-4 lg:flex-row lg:justify-between">
+                                <div className="flex-1">
                                     <InputFile
                                         error="cod"
                                         label={t("Available Cash-On-Delevery")}
@@ -536,7 +536,7 @@ export default function Edit() {
                                         />
                                     </InputFile>
                                 </div>
-                                <div>
+                                <div className="flex-1">
                                     <InputField
                                         label={t("Delevery Amount Inside Dhaka")}
                                         name="shipping_in_dhaka"
@@ -711,7 +711,7 @@ export default function Edit() {
                     </SectionSection>
 
                     <SectionSection>
-                        <div className="justify-between md:flex flex-rowreverse">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <SectionHeader
                                 title={t("Image Thumbnail")}
                                 content={
@@ -739,7 +739,7 @@ export default function Edit() {
                                 }
                             />
 
-                            <SectionInner>
+                            <SectionInner className="md:flex md:justify-end">
                                 {productData.thumbnail_url && !form.data.thumb ? (
                                     <Image src={productData.thumbnail_url} />
                                 ) : null}
@@ -778,19 +778,13 @@ export default function Edit() {
                         />
 
                         <SectionInner>
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns:
-                                        "repeat(auto-fit,100px)",
-                                    gridGap: "10px",
-                                }}
-                            >
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                                 {(productData.related_images ?? []).map((item) => (
-                                    <div className="p-2 border" key={item.id}>
+                                    <div className="p-2 border rounded" key={item.id}>
                                         <Image src={item.url} />
                                         <button
                                             type="button"
+                                            className="mt-2 text-sm text-red-600"
                                             onClick={() =>
                                                 eraseOldImage(item.id)
                                             }
@@ -800,14 +794,7 @@ export default function Edit() {
                             </div>
 
                             <Hr />
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns:
-                                        "repeat(auto-fit,50px)",
-                                    gridGap: "10px",
-                                }}
-                            >
+                            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
                                 {Array.from(form.data.newImage ?? []).map(
                                     (ni, index) => (
                                         <div
@@ -868,7 +855,7 @@ export default function Edit() {
                                 error="description"
                                 errors={errors}
                             >
-                                <main>
+                                <main className="min-w-0 overflow-hidden">
                                     {trixReady && (
                                         <trix-toolbar id={`my_toolbar_${inputId}`}></trix-toolbar>
                                     )}
@@ -905,7 +892,9 @@ export default function Edit() {
                         </SectionInner>
                     </SectionSection>
 
-                    <PrimaryButton>{t("save")}</PrimaryButton>
+                    <div className="flex justify-start">
+                        <PrimaryButton className="justify-center w-full sm:w-auto">{t("save")}</PrimaryButton>
+                    </div>
                 </form>
             </Container>
         </AppLayout>

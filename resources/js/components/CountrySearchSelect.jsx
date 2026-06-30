@@ -5,6 +5,7 @@ export default function CountrySearchSelect({
     options = [],
     onChange,
     placeholder = "Country",
+    className = "",
 }) {
     const selected = useMemo(
         () =>
@@ -46,7 +47,7 @@ export default function CountrySearchSelect({
     };
 
     return (
-        <div className="relative w-36">
+        <div className={`relative w-36 ${className}`.trim()}>
             <input
                 type="search"
                 value={query}
@@ -61,7 +62,7 @@ export default function CountrySearchSelect({
                 placeholder={placeholder}
                 autoComplete="off"
                 aria-label={placeholder}
-                className="h-10 w-full rounded-md border border-gray-200 px-3 pr-9 text-sm shadow-0 focus:border-gray-300 focus:ring-1 focus:ring-gray-200"
+                className="w-full px-3 text-sm border border-gray-200 rounded-md h-9 pr-9 shadow-0 focus:border-gray-300 focus:ring-1 focus:ring-gray-200"
                 style={{ marginBottom: 0 }}
             />
             <button
@@ -70,10 +71,10 @@ export default function CountrySearchSelect({
                     e.preventDefault();
                     setOpen((current) => !current);
                 }}
-                className="absolute inset-y-0 right-0 flex items-center justify-center w-9 text-gray-500"
+                className="absolute inset-y-0 right-0 flex items-center justify-center text-gray-500 w-9"
                 aria-label={placeholder}
             >
-                <i className="fas fa-chevron-down text-xs"></i>
+                <i className="text-xs fas fa-chevron-down"></i>
             </button>
 
             {open ? (

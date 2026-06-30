@@ -97,13 +97,22 @@ class Vendor extends Model
         });
 
         static::updated(function (Vendor $vendor) {
-            $vendorRole = Role::where('name', 'rider')->first();
-            if ($vendor->isDirty('status') && $vendor->status == 'Active') {
+            if (! $vendor->wasChanged('status')) {
+                return;
+            }
+
+            $vendorRole = Role::where('name', 'vendor')->first();
+            if (! $vendorRole) {
+                return;
+            }
+
+            if ($vendor->status == 'Active') {
                 $vendor->user?->assignRole($vendorRole);
-            } else {
-                if ($vendor->user?->hasRole($vendorRole)) {
-                    $vendor->user?->removeRole($vendorRole);
-                }
+                return;
+            }
+
+            if ($vendor->user?->hasRole($vendorRole)) {
+                $vendor->user?->removeRole($vendorRole);
             }
         });
     }

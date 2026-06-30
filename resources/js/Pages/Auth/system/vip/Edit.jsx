@@ -84,9 +84,13 @@ export default function Edit() {
         <AppLayout
             title={t("Edit VIP Users")}
             header={
-                <PageHeader>{t("Edit VIP Users")}<br />
-                    <NavLink href={route("system.vip.users")}>{t("Index")}<i className="fa-solid fa-arrow-right ms-2"></i>
-                    </NavLink>
+                <PageHeader>
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>{t("Edit VIP Users")}</div>
+                        <NavLink href={route("system.vip.users")}>
+                            {t("Index")}<i className="fa-solid fa-arrow-right ms-2"></i>
+                        </NavLink>
+                    </div>
                 </PageHeader>
             }
         >
@@ -94,41 +98,44 @@ export default function Edit() {
                 <Section>
                     <SectionHeader
                         title={
-                            <div className="flex items-center justify-between text-wrap">
-                                <div className="flex items-center">
-                                    <NavLink
-                                        href={route("system.users.edit", {
-                                            id: vipData?.user_id,
-                                        })}
-                                    >
-                                        {vipData?.name ?? "N/A"}
-                                    </NavLink>
-                                    <div className="px-2"></div>
-                                    <div className="text-xs">
-                                        {vipData?.created_at_formatted}
+                            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                <div className="min-w-0">
+                                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+                                        <NavLink
+                                            href={route("system.users.edit", {
+                                                id: vipData?.user_id,
+                                            })}
+                                            className="break-words"
+                                        >
+                                            {vipData?.name ?? "N/A"}
+                                        </NavLink>
+                                        <div className="hidden px-2 sm:block"></div>
+                                        <div className="text-xs">
+                                            {vipData?.created_at_formatted}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="px-2 py-1 text-sm text-white border rounded shadow bg-slate-900">
+                                <div className="inline-flex w-fit rounded border bg-slate-900 px-2 py-1 text-sm text-white shadow">
                                     {vipData?.package_name ?? "N/A"}
                                 </div>
                             </div>
                         }
                         content={
-                            <div className="flex text-sm">
+                            <div className="flex flex-wrap items-center gap-2 text-sm">
                                 <button
                                     type="button"
                                     onClick={() => updateStatus("active")}
-                                    className={`px-2 rounded cursor-pointer ${isActive ? "bg-indigo-800 text-white text-bold" : ""}`}
+                                    className={`rounded px-3 py-1 cursor-pointer ${isActive ? "bg-indigo-800 text-white text-bold" : "bg-slate-100 text-slate-700"}`}
                                 >{t("Active")}</button>
                                 <button
                                     type="button"
                                     onClick={() => updateStatus("pending")}
-                                    className={`px-2 rounded cursor-pointer space-x-2 ${isPending ? "bg-indigo-800 text-white text-bold" : ""}`}
+                                    className={`rounded px-3 py-1 cursor-pointer ${isPending ? "bg-indigo-800 text-white text-bold" : "bg-slate-100 text-slate-700"}`}
                                 >{t("Pending")}</button>
                                 <button
                                     type="button"
                                     onClick={() => updateStatus("reject")}
-                                    className={`px-2 rounded cursor-pointer ${isTrash ? "bg-indigo-800 text-white text-bold" : ""}`}
+                                    className={`rounded px-3 py-1 cursor-pointer ${isTrash ? "bg-indigo-800 text-white text-bold" : "bg-slate-100 text-slate-700"}`}
                                 >{t("Trash")}</button>
                             </div>
                         }
@@ -140,9 +147,9 @@ export default function Edit() {
                     </SectionInner>
                     <hr />
                     <SectionInner>
-                        <div className="flex items-center justify-end space-x-2">
-                            <SecondaryButton type="button" onClick={reCalculateComission}>{t("Re-Calculate Comission")}</SecondaryButton>
-                            <SecondaryButton type="button" onClick={pushBackComission}>{t("Push Back Comission")}</SecondaryButton>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                            <SecondaryButton type="button" className="w-full justify-center sm:w-auto" onClick={reCalculateComission}>{t("Re-Calculate Comission")}</SecondaryButton>
+                            <SecondaryButton type="button" className="w-full justify-center sm:w-auto" onClick={pushBackComission}>{t("Push Back Comission")}</SecondaryButton>
                         </div>
                     </SectionInner>
                 </Section>
@@ -154,68 +161,64 @@ export default function Edit() {
                     />
 
                     <SectionInner>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-                            <div className="py-2 border-b w-md">
+                        <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
+                            <div className="min-w-0 border-b py-2">
                                 <div className="text-sm">{t("Payment Method")}</div>
                                 <div className="text-md">{vipData?.payment_by ?? "N/A"}</div>
                             </div>
-                            <div className="py-2 border-b w-md">
+                            <div className="min-w-0 border-b py-2">
                                 <div className="text-sm">{t("TRX ID")}</div>
                                 <div className="text-md">{vipData?.trx ?? "N/A"}</div>
                             </div>
-                            <div className="py-2 border-b w-md">
+                            <div className="min-w-0 border-b py-2">
                                 <div className="text-sm">{t("NID")}</div>
                                 <div className="text-md">{vipData?.nid ?? "N/A"}</div>
                             </div>
-                            <div className="py-2 border-b w-md">
+                            <div className="min-w-0 border-b py-2">
                                 <div className="text-sm">{t("Phone")}</div>
                                 <div className="text-md">{vipData?.phone ?? "N/A"}</div>
                             </div>
-                            <div className="py-2 border-b w-md">
+                            <div className="min-w-0 border-b py-2">
                                 <div className="text-sm">{t("Date")}</div>
                                 <div className="text-md">{vipData?.created_at_formatted}</div>
                             </div>
-                            <div className="py-2 border-b w-md">
+                            <div className="min-w-0 border-b py-2">
                                 <div className="text-sm">{t("Comission")}</div>
                                 <div className="text-md">{vipData?.comission ?? "N/A"}{t("TK")}</div>
                             </div>
-                            <div className="py-2 border-b w-md">
+                            <div className="min-w-0 border-b py-2">
                                 <div className="text-sm">{t("Reffer By")}</div>
-                                <div className="text-md">
+                                <div className="text-md break-words">
                                     {vipData?.refer_by_name ?? "N/A"} - {vipData?.refer_by_email ?? "N/A"}
                                 </div>
                             </div>
-                            <div className="py-2 border-b w-md">
+                            <div className="min-w-0 border-b py-2">
                                 <div className="text-sm">{t("Ref Code")}</div>
                                 <div className="text-md">{vipData?.reference ?? "N/A"}</div>
                             </div>
                         </div>
                     </SectionInner>
 
-                    <div className="flex mt-2 space-x-3">
+                    <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
                         {vipData?.nid_front_url ? (
                             <img
-                                className="border rounded"
+                                className="h-auto w-full rounded border object-cover"
                                 src={vipData.nid_front_url}
-                                width="300px"
-                                height="80px"
                                 alt="NID Front"
                             />
                         ) : null}
                         {vipData?.nid_back_url ? (
                             <img
-                                className="border rounded"
+                                className="h-auto w-full rounded border object-cover"
                                 src={vipData.nid_back_url}
-                                width="300px"
-                                height="80px"
                                 alt="NID Back"
                             />
                         ) : null}
                     </div>
                 </Section>
 
-                <div className="items-start justify-start md:flex">
-                    <Section>
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-start">
+                    <Section className="xl:flex-1">
                         <SectionHeader
                             title={t("User VIP Package Update")}
                             content={
@@ -227,7 +230,7 @@ export default function Edit() {
                         />
                         <SectionInner>
                             {(vips ?? []).map((item) => (
-                                <div key={item.id} className="flex items-center p-2 mb-3 border rounded">
+                                <div key={item.id} className="mb-3 flex flex-col gap-2 rounded border p-3 sm:flex-row sm:items-center">
                                     <input
                                         id={`package_${item.id}`}
                                         type="radio"
@@ -237,7 +240,7 @@ export default function Edit() {
                                         checked={Number(selectedPackage) === Number(item.id)}
                                         onChange={() => setSelectedPackage(item.id)}
                                     />
-                                    <div className="flex items-center">
+                                    <div className="flex flex-wrap items-center">
                                         <InputLabel htmlFor={`package_${item.id}`}>{item.name}</InputLabel>
                                         <i className="px-2 fa-solid fa-arrow-right"></i>
                                         <div>{item.price}{t("TK")}</div>
@@ -246,12 +249,12 @@ export default function Edit() {
                             ))}
                             <br />
                             <div className="text-end">
-                                <SecondaryButton type="button">{t("Procced to Migrate")}</SecondaryButton>
+                                <SecondaryButton type="button" className="w-full justify-center sm:w-auto">{t("Procced to Migrate")}</SecondaryButton>
                             </div>
                         </SectionInner>
                     </Section>
 
-                    <Section>
+                    <Section className="xl:flex-1">
                         <SectionHeader
                             title={t("Update Task Type")}
                             content={
@@ -262,7 +265,7 @@ export default function Edit() {
                         />
                         <SectionInner>
                             <form onSubmit={updateTask}>
-                                <div className="flex flex-wrap">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                                     <div className="flex items-center p-2 m-1 border rounded">
                                         <input
                                             type="radio"
@@ -302,7 +305,7 @@ export default function Edit() {
                                 </div>
                                 <br />
                                 <div className="text-end">
-                                    <PrimaryButton type="submit">{t("Update")}</PrimaryButton>
+                                    <PrimaryButton type="submit" className="w-full justify-center sm:w-auto">{t("Update")}</PrimaryButton>
                                 </div>
                             </form>
                         </SectionInner>
@@ -319,7 +322,7 @@ export default function Edit() {
                         <SectionInner>
                             <form onSubmit={updateValidity}>
                                 <div className="w-full p-3 my-2 text-red-900 bg-red-100 rounded">
-                                    <div className="p-2 rounded">{t("Package will expire on")}<strong>{vipData?.valid_till_formatted}</strong>
+                                    <div className="rounded p-2 break-words">{t("Package will expire on")}<strong>{vipData?.valid_till_formatted}</strong>
                                         {vipData?.valid_till_human ? ` (${vipData.valid_till_human})` : ""}
                                     </div>
 
@@ -334,7 +337,7 @@ export default function Edit() {
                                     </div>
                                 </div>
                                 <div className="text-end">
-                                    <PrimaryButton type="submit">{t("Update Validation")}</PrimaryButton>
+                                    <PrimaryButton type="submit" className="w-full justify-center sm:w-auto">{t("Update Validation")}</PrimaryButton>
                                 </div>
                             </form>
                         </SectionInner>
@@ -348,8 +351,10 @@ export default function Edit() {
                             />
 
                             <SectionInner>
-                                <DangerButton className="mr-1" type="button" onClick={restore}>{t("Restore")}</DangerButton>
-                                <DangerButton type="button" onClick={destroy}>{t("Permanently Delete")}</DangerButton>
+                                <div className="flex flex-col gap-2 sm:flex-row">
+                                    <DangerButton className="w-full justify-center sm:mr-1 sm:w-auto" type="button" onClick={restore}>{t("Restore")}</DangerButton>
+                                    <DangerButton className="w-full justify-center sm:w-auto" type="button" onClick={destroy}>{t("Permanently Delete")}</DangerButton>
+                                </div>
                             </SectionInner>
                         </Section>
                     ) : null}
@@ -366,7 +371,7 @@ export default function Edit() {
                     />
 
                     <SectionInner>
-                        <NavLinkBtn href="#">
+                        <NavLinkBtn href="#" className="inline-flex w-full justify-center sm:w-auto">
                             View All
                         </NavLinkBtn>
                     </SectionInner>

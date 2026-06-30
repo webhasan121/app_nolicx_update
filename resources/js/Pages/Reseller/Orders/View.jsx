@@ -20,7 +20,7 @@ const progressLabels = ["Placed", "Accept", "Collecting", "Delivery", "Delivered
 function StatusBox({ active, checked, children, title }) {
     return (
         <div
-            className={`p-2 px-3 rounded-md cursor-pointer text-gray-600 border-gray-600 text-center ${
+            className={`min-w-0 rounded-md px-2 py-2 text-center text-sm cursor-pointer text-gray-600 border-gray-600 ${
                 checked ? "bg-indigo-900 text-white" : active ? "bg-gray-100" : ""
             }`}
             title={title}
@@ -60,10 +60,10 @@ export default function View({ order }) {
                 <PageHeader>
                     Your Reseller Orders
                     <br />
-                    <div className="text-sm font-normal">
+                    <div className="text-sm font-normal break-words">
                         {order?.user_type} <i className="fas fa-caret-right mx-2"></i> {order?.belongs_to_type}
                     </div>
-                    <div className="text-xs flex items-center sapce-x-2">
+                    <div className="flex flex-wrap items-center text-xs">
                         {order?.delevery} Delvevery <i className="fas fa-caret-right px-2"></i>{" "}
                         {order?.area_condition === "Dhaka" ? "Inside Dhaka" : "Outside of Dhaka"}
                     </div>
@@ -74,10 +74,10 @@ export default function View({ order }) {
 
             <Container>
                 <Section>
-                    <div className="flex justify-between items-center space-y-2">
-                        <div className="md:flex justify-between items-center space-y-2 w-full overflow-hidden overflow-x-auto">
+                    <div className="flex flex-col gap-3">
+                        <div className="flex w-full flex-col gap-3 md:flex-row md:items-start md:justify-between">
                             <div>
-                                <div className="mb-2 flex gap-2">
+                                <div className="mb-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:flex lg:min-w-max">
                                     {progressFlow.map((step, index) => (
                                         <StatusBox
                                             key={step}
@@ -98,7 +98,7 @@ export default function View({ order }) {
                                 </div>
                             </div>
                             <div>
-                                <div className="mb-2 flex gap-2">
+                                <div className="mb-2 grid grid-cols-2 gap-2">
                                     {["Hold", "Reject"].map((step) => (
                                         <StatusBox key={step} checked={order?.status === step} active={order?.status === "Delivered"}>
                                             {step}
@@ -114,7 +114,7 @@ export default function View({ order }) {
                         </div>
                     </div>
 
-                    <div className="flex justify-end items-center space-x-2">
+                    <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
                         {order?.name === "Resel" ? (
                             order?.synced ? (
                                 <div className="inline-flex items-center px-2 bg-gray-200 text-xs rounded shadow">
@@ -137,15 +137,15 @@ export default function View({ order }) {
                 </OverviewSection>
 
                 <Section>
-                    <div className="flex justify-between items-start px-5">
+                    <div className="flex flex-col gap-4 px-2 sm:px-5 lg:flex-row lg:items-start lg:justify-between">
                         <div className="order-info">
                             <div>Order ID: {order?.id}</div>
                             <div>
                                 Date: <span className="text-xs"> {order?.created_at_daytime}</span>
                             </div>
-                            <ActionIconLink href={route("vendor.orders.cprint", { order: order?.id })} action="print" title="Print" />
+                            <ActionIconLink href={order?.print_url ?? route("vendor.orders.cprint", { order: order?.id })} action="print" title="Print" />
                         </div>
-                        <div className="order-total text-end">
+                        <div className="order-total text-left lg:text-end">
                             <table className="table">
                                 <tbody>
                                     <tr>
@@ -167,74 +167,76 @@ export default function View({ order }) {
                         </div>
                     </div>
 
-                    <Table data={order?.cart_orders ?? []}>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>ID</th>
-                                <th>Product</th>
-                                <th>Owner</th>
-                                <th>Resel Price</th>
-                                <th>Quantity</th>
-                                <th>Total</th>
-                                <th>Attr</th>
-                                <th>Buying Price</th>
-                                <th>Profit</th>
-                                <th>Comissions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(order?.cart_orders ?? []).map((item, index) => (
-                                <tr key={item.id}>
-                                    <td>{index + 1}</td>
-                                    <td>{item.id ?? "N/A"}</td>
-                                    <td>
-                                        <div>
-                                            {item.product_thumbnail ? (
-                                                <img width="30px" height="30px" src={item.product_thumbnail} alt="" />
-                                            ) : null}
-                                            <div><ProductName value={item.product_title} /></div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <NavLink href={item.owner_shop_url}>{item.owner_shop_name}</NavLink>
-                                        {item.owner_phone}
-                                    </td>
-                                    <td>{formatCurrency(item.price)}</td>
-                                    <td>{item.quantity}</td>
-                                    <td>{formatCurrency(item.total)}</td>
-                                    <td>{item.size ?? "N/A"}</td>
-                                    <td>{order?.name === "Resel" ? formatCurrency(item.buying_price) : ""}</td>
-                                    <td>{order?.name === "Resel" ? formatCurrency(item.profit) : ""}</td>
-                                    <th></th>
+                    <div className="overflow-x-auto">
+                        <Table data={order?.cart_orders ?? []}>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>ID</th>
+                                    <th>Product</th>
+                                    <th>Owner</th>
+                                    <th>Resel Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Attr</th>
+                                    <th>Buying Price</th>
+                                    <th>Profit</th>
+                                    <th>Comissions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                        <tfoot>
-                            <tr className="border-t">
-                                <td colSpan="6" className="text-right">
-                                    Sub Total
-                                </td>
-                                <td>{formatCurrency(order?.cart_sum_total)}</td>
-                            </tr>
-                            <tr>
-                                <td colSpan="6" className="text-right">
-                                    Shipping
-                                </td>
-                                <td>{formatCurrency(order?.shipping)}</td>
-                            </tr>
-                            <tr className="border-t font-bold text-lg bg-gray-100">
-                                <td colSpan="6" className="text-right">
-                                    Total
-                                </td>
-                                <td>{formatCurrency(shippingTotal)}</td>
-                                <td colSpan="6"></td>
-                            </tr>
-                        </tfoot>
-                    </Table>
+                            </thead>
+                            <tbody>
+                                {(order?.cart_orders ?? []).map((item, index) => (
+                                    <tr key={item.id}>
+                                        <td>{index + 1}</td>
+                                        <td>{item.id ?? "N/A"}</td>
+                                        <td>
+                                            <div>
+                                                {item.product_thumbnail ? (
+                                                    <img width="30px" height="30px" src={item.product_thumbnail} alt="" />
+                                                ) : null}
+                                                <div><ProductName value={item.product_title} /></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <NavLink href={item.owner_shop_url}>{item.owner_shop_name}</NavLink>
+                                            {item.owner_phone}
+                                        </td>
+                                        <td>{formatCurrency(item.price)}</td>
+                                        <td>{item.quantity}</td>
+                                        <td>{formatCurrency(item.total)}</td>
+                                        <td>{item.size ?? "N/A"}</td>
+                                        <td>{order?.name === "Resel" ? formatCurrency(item.buying_price) : ""}</td>
+                                        <td>{order?.name === "Resel" ? formatCurrency(item.profit) : ""}</td>
+                                        <th></th>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot>
+                                <tr className="border-t">
+                                    <td colSpan="6" className="text-right">
+                                        Sub Total
+                                    </td>
+                                    <td>{formatCurrency(order?.cart_sum_total)}</td>
+                                </tr>
+                                <tr>
+                                    <td colSpan="6" className="text-right">
+                                        Shipping
+                                    </td>
+                                    <td>{formatCurrency(order?.shipping)}</td>
+                                </tr>
+                                <tr className="border-t bg-gray-100 text-lg font-bold">
+                                    <td colSpan="6" className="text-right">
+                                        Total
+                                    </td>
+                                    <td>{formatCurrency(shippingTotal)}</td>
+                                    <td colSpan="6"></td>
+                                </tr>
+                            </tfoot>
+                        </Table>
+                    </div>
                 </Section>
 
-                <div className="max-w-md">
+                <div className="w-full max-w-md">
                     <Section>
                         <div className="flex justify-between items-center">
                             <div>Shipping</div>
@@ -283,24 +285,26 @@ export default function View({ order }) {
                 <div className="p-2">
                     COMISSIONS
                     <Hr />
-                    <Table data={order?.comissions ?? []}>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Amount</th>
-                                <th>Product</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(order?.comissions ?? []).map((item, index) => (
-                                <tr key={item.id}>
-                                    <td>{index + 1}</td>
-                                    <td>{formatCurrency(item.take_comission)}</td>
-                                    <td><ProductName value={item.product_name} /></td>
+                    <div className="overflow-x-auto">
+                        <Table data={order?.comissions ?? []}>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Amount</th>
+                                    <th>Product</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </Table>
+                            </thead>
+                            <tbody>
+                                {(order?.comissions ?? []).map((item, index) => (
+                                    <tr key={item.id}>
+                                        <td>{index + 1}</td>
+                                        <td>{formatCurrency(item.take_comission)}</td>
+                                        <td><ProductName value={item.product_name} /></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    </div>
                 </div>
             </Modal>
         </AppLayout>
