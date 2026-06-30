@@ -201,18 +201,24 @@ export default function Edit() {
 
                     <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
                         {vipData?.nid_front_url ? (
-                            <img
-                                className="h-auto w-full rounded border object-cover"
-                                src={vipData.nid_front_url}
-                                alt="NID Front"
-                            />
+                            <div className="space-y-2">
+                                <div className="text-sm font-medium">{t("NID Front")}</div>
+                                <img
+                                    className="h-auto w-full rounded border object-cover"
+                                    src={vipData.nid_front_url}
+                                    alt="NID Front"
+                                />
+                            </div>
                         ) : null}
                         {vipData?.nid_back_url ? (
-                            <img
-                                className="h-auto w-full rounded border object-cover"
-                                src={vipData.nid_back_url}
-                                alt="NID Back"
-                            />
+                            <div className="space-y-2">
+                                <div className="text-sm font-medium">{t("NID Back")}</div>
+                                <img
+                                    className="h-auto w-full rounded border object-cover"
+                                    src={vipData.nid_back_url}
+                                    alt="NID Back"
+                                />
+                            </div>
                         ) : null}
                     </div>
                 </Section>

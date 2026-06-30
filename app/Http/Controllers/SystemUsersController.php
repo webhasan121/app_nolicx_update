@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\UserHasRefs;
 use App\Models\Vip;
 use App\Models\Order;
-use App\Support\TableDateFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\View;
@@ -181,7 +180,6 @@ class SystemUsersController extends Controller
         $sd = $request->input('sd');
         $ed = $request->input('ed');
         $status = $request->input('status', 'All');
-        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['status' => 'All']);
 
         $query = User::query()
             ->withoutAdmin()
@@ -206,7 +204,7 @@ class SystemUsersController extends Controller
         }
 
         $this->applyStatusFilter($query, $status);
-        $this->applyDateFilter($query, $sd, $ed, $defaultToday);
+        $this->applyDateFilter($query, $sd, $ed);
 
         $users = $query->paginate(config('app.paginate'))->withQueryString();
         $totalUsers = User::query()->withoutAdmin()->count();
@@ -295,7 +293,6 @@ class SystemUsersController extends Controller
         $sd = $request->input('sd');
         $ed = $request->input('ed');
         $status = $request->input('status', 'All');
-        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request, ['status' => 'All']);
 
         $query = User::query()
             ->withoutAdmin()
@@ -320,7 +317,7 @@ class SystemUsersController extends Controller
         }
 
         $this->applyStatusFilter($query, $status);
-        $this->applyDateFilter($query, $sd, $ed, $defaultToday);
+        $this->applyDateFilter($query, $sd, $ed);
 
         $users = $query->get()->values()->map(function ($user) {
             $subscription = $user->subscription;
@@ -431,9 +428,34 @@ class SystemUsersController extends Controller
         return redirect()->back()->with('success', 'Permission Synced !');
     }
 
-    private function applyDateFilter($query, ?string $sd, ?string $ed, bool $defaultToday = false): void
+    private function applyDateFilter($query, ?string $sd, ?string $ed): void
     {
-        TableDateFilter::apply($query, $sd, $ed, $defaultToday);
+        if (!empty($sd) && !empty($ed)) {
+            $start = Carbon::parse($sd)->startOfDay();
+            $end = Carbon::parse($ed)->endOfDay();
+
+            if ($start->gt($end)) {
+                [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+            }
+
+            $query->whereBetween('created_at', [$start, $end]);
+            return;
+        }
+
+        if (!empty($sd)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($sd)->startOfDay(),
+                Carbon::parse($sd)->endOfDay(),
+            ]);
+            return;
+        }
+
+        if (!empty($ed)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($ed)->startOfDay(),
+                Carbon::parse($ed)->endOfDay(),
+            ]);
+        }
     }
 
     private function applyStatusFilter($query, string $status): void

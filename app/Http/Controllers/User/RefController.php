@@ -4,7 +4,6 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Support\TableDateFilter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,16 +14,14 @@ class RefController extends Controller
     {
         $user = $request->user();
         $find = trim((string) $request->query('find', ''));
-        $query = $this->refUsersQuery($request);
-        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request);
+        $baseQuery = $this->refUsersQuery($request);
+        $query = (clone $baseQuery);
 
         if ($find !== '') {
             $this->applySearch($query, $find);
-        } elseif ($defaultToday) {
-            $query->whereDate('created_at', today());
         }
 
-        $totalRefUsers = (clone $query)->count();
+        $totalRefUsers = (clone $baseQuery)->count();
         $refUsers = $query->paginate(config('app.paginate'))->withQueryString();
 
         return Inertia::render('User/Refs', [
@@ -56,12 +53,9 @@ class RefController extends Controller
     {
         $find = trim((string) $request->query('find', ''));
         $query = $this->refUsersQuery($request);
-        $defaultToday = TableDateFilter::hasOnlyDefaultFilters($request);
 
         if ($find !== '') {
             $this->applySearch($query, $find);
-        } elseif ($defaultToday) {
-            $query->whereDate('created_at', today());
         }
 
         $refUsers = $query

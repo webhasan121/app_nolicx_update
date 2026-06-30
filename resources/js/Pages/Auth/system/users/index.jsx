@@ -11,7 +11,6 @@ import Table from "../../../../components/dashboard/table/Table";
 import PrimaryButton from "../../../../components/PrimaryButton";
 import TextInput from "../../../../components/TextInput";
 import useTranslation from "../../../../hooks/useTranslation";
-import { todayInputDate } from "../../../../utils/dateInput";
 import { ActionIconLink } from "../../../../components/ActionIcon";
 
 export default function Index() {
@@ -20,7 +19,6 @@ export default function Index() {
     const [search, setSearch] = useState(filters.search ?? "");
     const [sd, setSd] = useState(filters.sd ?? "");
     const [ed, setEd] = useState(filters.ed ?? "");
-    const today = todayInputDate();
 
     const requestUsers = ({
         nextSearch = search,
@@ -139,7 +137,7 @@ export default function Index() {
                                         <TextInput
                                             type="date"
                                             className="h-10 w-full py-2 xl:w-40"
-                                            value={sd || today}
+                                            value={sd}
                                             onChange={(e) => {
                                                 const value = e.target.value;
                                                 const nextEd = ed;
